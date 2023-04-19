@@ -1,0 +1,702 @@
+/*
+  Warnings:
+
+  - You are about to drop the column `summary` on the `subject_course` table. All the data in the column will be lost.
+  - You are about to alter the column `latest_written_datetime` on the `subject_course` table. The data in that column could be lost. The data in that column will be cast from `DateTime(3)` to `DateTime(0)`.
+  - A unique constraint covering the columns `[user_id]` on the table `session_userprofile` will be added. If there are existing duplicate values, this will fail.
+  - Added the required column `summury` to the `subject_course` table without a default value. This is not possible if the table is not empty.
+
+*/
+-- AlterTable
+ALTER TABLE `subject_course` DROP COLUMN `summary`,
+    ADD COLUMN `summury` VARCHAR(400) NOT NULL,
+    MODIFY `latest_written_datetime` DATETIME(0) NULL;
+
+-- AlterTable
+ALTER TABLE `subject_department` MODIFY `id` INTEGER NOT NULL;
+
+-- AlterTable
+ALTER TABLE `subject_lecture` MODIFY `num_people` INTEGER NULL;
+
+-- CreateTable
+CREATE TABLE `auth_group` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(150) NOT NULL,
+
+    UNIQUE INDEX `name`(`name`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `auth_group_permissions` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `group_id` INTEGER NOT NULL,
+    `permission_id` INTEGER NOT NULL,
+
+    INDEX `auth_group__permission_id_1f49ccbbdc69d2fc_fk_auth_permission_id`(`permission_id`),
+    UNIQUE INDEX `group_id`(`group_id`, `permission_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `auth_permission` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(255) NOT NULL,
+    `content_type_id` INTEGER NOT NULL,
+    `codename` VARCHAR(100) NOT NULL,
+
+    UNIQUE INDEX `content_type_id`(`content_type_id`, `codename`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `auth_user` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `password` VARCHAR(128) NOT NULL,
+    `last_login` DATETIME(0) NULL,
+    `is_superuser` BOOLEAN NOT NULL,
+    `username` VARCHAR(150) NOT NULL,
+    `first_name` VARCHAR(30) NOT NULL,
+    `last_name` VARCHAR(150) NOT NULL,
+    `email` VARCHAR(254) NOT NULL,
+    `is_staff` BOOLEAN NOT NULL,
+    `is_active` BOOLEAN NOT NULL,
+    `date_joined` DATETIME(0) NOT NULL,
+
+    UNIQUE INDEX `username`(`username`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `auth_user_groups` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `user_id` INTEGER NOT NULL,
+    `group_id` INTEGER NOT NULL,
+
+    INDEX `auth_user_groups_group_id_33ac548dcf5f8e37_fk_auth_group_id`(`group_id`),
+    UNIQUE INDEX `user_id`(`user_id`, `group_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `auth_user_user_permissions` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `user_id` INTEGER NOT NULL,
+    `permission_id` INTEGER NOT NULL,
+
+    INDEX `auth_user_u_permission_id_384b62483d7071f0_fk_auth_permission_id`(`permission_id`),
+    UNIQUE INDEX `user_id`(`user_id`, `permission_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `django_admin_log` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `action_time` DATETIME(0) NOT NULL,
+    `object_id` LONGTEXT NULL,
+    `object_repr` VARCHAR(200) NOT NULL,
+    `action_flag` SMALLINT UNSIGNED NOT NULL,
+    `change_message` LONGTEXT NOT NULL,
+    `content_type_id` INTEGER NULL,
+    `user_id` INTEGER NOT NULL,
+
+    INDEX `djang_content_type_id_697914295151027a_fk_django_content_type_id`(`content_type_id`),
+    INDEX `django_admin_log_user_id_52fdd58701c5f563_fk_auth_user_id`(`user_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `django_content_type` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `app_label` VARCHAR(100) NOT NULL,
+    `model` VARCHAR(100) NOT NULL,
+
+    UNIQUE INDEX `django_content_type_app_label_45f3b1d93ec8c61c_uniq`(`app_label`, `model`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `django_migrations` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `app` VARCHAR(255) NOT NULL,
+    `name` VARCHAR(255) NOT NULL,
+    `applied` DATETIME(0) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `django_session` (
+    `session_key` VARCHAR(40) NOT NULL,
+    `session_data` LONGTEXT NOT NULL,
+    `expire_date` DATETIME(0) NOT NULL,
+
+    INDEX `django_session_de54fa62`(`expire_date`),
+    PRIMARY KEY (`session_key`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `main_famoushumanityreviewdailyfeed` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `date` DATE NOT NULL,
+    `priority` DOUBLE NOT NULL,
+    `visible` BOOLEAN NOT NULL,
+
+    UNIQUE INDEX `main_famoushumanityreviewdailyfeed_date_0fbb607a_uniq`(`date`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `main_famoushumanityreviewdailyfeed_reviews` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `famoushumanityreviewdailyfeed_id` INTEGER NOT NULL,
+    `review_id` INTEGER NOT NULL,
+
+    INDEX `main_famoushumanityreview_review_id_f305d8aa_fk_review_review_id`(`review_id`),
+    UNIQUE INDEX `main_famoushumani_famoushumanityreviewdailyfeed_id_97def4df_uniq`(`famoushumanityreviewdailyfeed_id`, `review_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `main_famousmajorreviewdailyfeed` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `date` DATE NOT NULL,
+    `priority` DOUBLE NOT NULL,
+    `department_id` INTEGER NOT NULL,
+    `visible` BOOLEAN NOT NULL,
+
+    INDEX `main_famousmajorrevi_department_id_a0a5a3a5_fk_subject_d`(`department_id`),
+    UNIQUE INDEX `main_famousreviewdailyfeed_date_94cf00dd_uniq`(`date`, `department_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `main_famousmajorreviewdailyfeed_reviews` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `famousmajorreviewdailyfeed_id` INTEGER NOT NULL,
+    `review_id` INTEGER NOT NULL,
+
+    INDEX `main_famousmajorreviewdai_review_id_c0d3bbec_fk_review_review_id`(`review_id`),
+    UNIQUE INDEX `main_famousreviewdailyfee_famousreviewdailyfeed_id_12d71d0b_uniq`(`famousmajorreviewdailyfeed_id`, `review_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `main_rankedreviewdailyfeed` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `date` DATE NOT NULL,
+    `priority` DOUBLE NOT NULL,
+    `visible` BOOLEAN NOT NULL,
+    `semester_id` INTEGER NULL,
+
+    UNIQUE INDEX `main_rankedreviewdailyfeed_date_635bca2a_uniq`(`date`),
+    INDEX `main_rankedreviewdai_semester_id_f71e3a66_fk_subject_s`(`semester_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `main_ratedailyuserfeed` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `date` DATE NOT NULL,
+    `priority` DOUBLE NOT NULL,
+    `visible` BOOLEAN NOT NULL,
+    `user_id` INTEGER NOT NULL,
+
+    INDEX `main_ratedailyuserfe_user_id_31a534d5_fk_session_u`(`user_id`),
+    UNIQUE INDEX `main_ratedailyuserfeed_date_user_id_4142794f_uniq`(`date`, `user_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `main_relatedcoursedailyuserfeed` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `date` DATE NOT NULL,
+    `priority` DOUBLE NOT NULL,
+    `course_id` INTEGER NOT NULL,
+    `user_id` INTEGER NOT NULL,
+    `visible` BOOLEAN NOT NULL,
+
+    INDEX `main_relatedcourseda_course_id_129fc5e2_fk_subject_c`(`course_id`),
+    INDEX `main_relatedcoursedai_user_id_a1be2390_fk_session_userprofile_id`(`user_id`),
+    UNIQUE INDEX `main_relatedcoursedailyuserfeed_date_6043d8bb_uniq`(`date`, `user_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `main_reviewwritedailyuserfeed` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `date` DATE NOT NULL,
+    `priority` DOUBLE NOT NULL,
+    `lecture_id` INTEGER NOT NULL,
+    `user_id` INTEGER NOT NULL,
+    `visible` BOOLEAN NOT NULL,
+
+    INDEX `main_reviewwritedail_lecture_id_75ed0f87_fk_subject_l`(`lecture_id`),
+    INDEX `main_reviewwritedaily_user_id_9ffd0881_fk_session_userprofile_id`(`user_id`),
+    UNIQUE INDEX `main_reviewwritedailyuserfeed_date_1e7bc6d7_uniq`(`date`, `user_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `review_humanitybestreview` (
+    `review_id` INTEGER NOT NULL,
+
+    PRIMARY KEY (`review_id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `review_majorbestreview` (
+    `review_id` INTEGER NOT NULL,
+
+    PRIMARY KEY (`review_id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `review_review` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `course_id` INTEGER NOT NULL,
+    `lecture_id` INTEGER NOT NULL,
+    `content` MEDIUMTEXT NOT NULL,
+    `grade` SMALLINT NOT NULL,
+    `load` SMALLINT NOT NULL,
+    `speech` SMALLINT NOT NULL,
+    `writer_id` INTEGER NULL,
+    `writer_label` VARCHAR(200) NOT NULL,
+    `updated_datetime` DATETIME(0) NOT NULL,
+    `like` INTEGER NOT NULL,
+    `is_deleted` INTEGER NOT NULL,
+    `written_datetime` DATETIME(0) NULL,
+
+    INDEX `review_comment_e5e30a4a`(`written_datetime`),
+    UNIQUE INDEX `review_comment_writer_id_af700a5d_uniq`(`writer_id`, `lecture_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `review_reviewvote` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `review_id` INTEGER NOT NULL,
+    `userprofile_id` INTEGER NULL,
+    `created_datetime` DATETIME(6) NULL,
+
+    INDEX `review_reviewvote_created_datetime_450f85e2`(`created_datetime`),
+    UNIQUE INDEX `review_commentvote_comment_id_e4594aea_uniq`(`review_id`, `userprofile_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `session_userprofile_favorite_departments` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `userprofile_id` INTEGER NOT NULL,
+    `department_id` INTEGER NOT NULL,
+
+    UNIQUE INDEX `userprofile_id`(`userprofile_id`, `department_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `session_userprofile_majors` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `userprofile_id` INTEGER NOT NULL,
+    `department_id` INTEGER NOT NULL,
+
+    INDEX `session_userprof_department_id_db568678_fk_subject_department_id`(`department_id`),
+    UNIQUE INDEX `session_userprofile_majors_userprofile_id_12b76c49_uniq`(`userprofile_id`, `department_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `session_userprofile_minors` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `userprofile_id` INTEGER NOT NULL,
+    `department_id` INTEGER NOT NULL,
+
+    INDEX `session_userprof_department_id_7a7ea3ed_fk_subject_department_id`(`department_id`),
+    UNIQUE INDEX `session_userprofile_minors_userprofile_id_d01e3e38_uniq`(`userprofile_id`, `department_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `session_userprofile_specialized_major` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `userprofile_id` INTEGER NOT NULL,
+    `department_id` INTEGER NOT NULL,
+
+    INDEX `session_userprof_department_id_919e11be_fk_subject_department_id`(`department_id`),
+    UNIQUE INDEX `session_userprofile_specialized_maj_userprofile_id_3951a553_uniq`(`userprofile_id`, `department_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `session_userprofile_taken_lectures` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `userprofile_id` INTEGER NOT NULL,
+    `lecture_id` INTEGER NOT NULL,
+
+    UNIQUE INDEX `userprofile_id`(`userprofile_id`, `lecture_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `subject_classtime` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `day` SMALLINT NOT NULL,
+    `begin` TIME(0) NOT NULL,
+    `end` TIME(0) NOT NULL,
+    `type` VARCHAR(1) NOT NULL,
+    `building_id` VARCHAR(10) NULL,
+    `building_full_name` VARCHAR(60) NULL,
+    `building_full_name_en` VARCHAR(60) NULL,
+    `room_name` VARCHAR(20) NULL,
+    `unit_time` SMALLINT NULL,
+    `lecture_id` INTEGER NULL,
+
+    INDEX `subject_classtime_72a11f01`(`lecture_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `subject_course_professors` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `course_id` INTEGER NOT NULL,
+    `professor_id` INTEGER NOT NULL,
+
+    UNIQUE INDEX `course_id`(`course_id`, `professor_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `subject_course_related_courses_posterior` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `from_course_id` INTEGER NOT NULL,
+    `to_course_id` INTEGER NOT NULL,
+
+    INDEX `subject_course_relat_to_course_id_5fbd4d28_fk_subject_c`(`to_course_id`),
+    UNIQUE INDEX `subject_course_related_c_from_course_id_to_course_eaec2f22_uniq`(`from_course_id`, `to_course_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `subject_course_related_courses_prior` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `from_course_id` INTEGER NOT NULL,
+    `to_course_id` INTEGER NOT NULL,
+
+    INDEX `subject_course_relat_to_course_id_52f44705_fk_subject_c`(`to_course_id`),
+    UNIQUE INDEX `subject_course_related_c_from_course_id_to_course_74e1ae5f_uniq`(`from_course_id`, `to_course_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `subject_courseuser` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `latest_read_datetime` DATETIME(0) NOT NULL,
+    `course_id` INTEGER NOT NULL,
+    `user_profile_id` INTEGER NOT NULL,
+
+    INDEX `subject_courseuser_user_profile_id_4d15ef1b_fk_session_u`(`user_profile_id`),
+    UNIQUE INDEX `subject_courseuser_course_id_a26ac0b3_uniq`(`course_id`, `user_profile_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `subject_examtime` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `day` SMALLINT NOT NULL,
+    `begin` TIME(0) NOT NULL,
+    `end` TIME(0) NOT NULL,
+    `lecture_id` INTEGER NOT NULL,
+
+    INDEX `subject_examtime_72a11f01`(`lecture_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `subject_lecture_professors` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `lecture_id` INTEGER NOT NULL,
+    `professor_id` INTEGER NOT NULL,
+
+    UNIQUE INDEX `lecture_id`(`lecture_id`, `professor_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `subject_professor` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `professor_name` VARCHAR(100) NOT NULL,
+    `professor_name_en` VARCHAR(100) NULL,
+    `professor_id` INTEGER NOT NULL,
+    `major` VARCHAR(30) NOT NULL,
+    `grade_sum` DOUBLE NOT NULL,
+    `load_sum` DOUBLE NOT NULL,
+    `speech_sum` DOUBLE NOT NULL,
+    `review_total_weight` DOUBLE NOT NULL,
+    `grade` DOUBLE NOT NULL,
+    `load` DOUBLE NOT NULL,
+    `speech` DOUBLE NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `subject_professor_course_list` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `professor_id` INTEGER NOT NULL,
+    `course_id` INTEGER NOT NULL,
+
+    UNIQUE INDEX `professor_id`(`professor_id`, `course_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `subject_semester` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `year` INTEGER NOT NULL,
+    `semester` INTEGER NOT NULL,
+    `beginning` DATETIME(0) NOT NULL,
+    `end` DATETIME(0) NOT NULL,
+    `courseRegistrationPeriodStart` DATETIME(0) NULL,
+    `courseRegistrationPeriodEnd` DATETIME(0) NULL,
+    `courseAddDropPeriodEnd` DATETIME(0) NULL,
+    `courseDropDeadline` DATETIME(0) NULL,
+    `courseEvaluationDeadline` DATETIME(0) NULL,
+    `gradePosting` DATETIME(0) NULL,
+    `courseDesciptionSubmission` DATETIME(0) NULL,
+
+    INDEX `subject_semester_1b3810e0`(`semester`),
+    INDEX `subject_semester_84cdc76c`(`year`),
+    UNIQUE INDEX `subject_semester_year_680c861f_uniq`(`year`, `semester`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `support_notice` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `start_time` DATETIME(0) NOT NULL,
+    `end_time` DATETIME(0) NOT NULL,
+    `title` VARCHAR(100) NOT NULL,
+    `content` LONGTEXT NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `support_rate` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `score` SMALLINT NOT NULL,
+    `year` SMALLINT NOT NULL,
+    `created_datetime` DATETIME(0) NULL,
+    `user_id` INTEGER NOT NULL,
+    `version` VARCHAR(20) NOT NULL,
+
+    INDEX `support_rate_created_datetime_d38a29eb`(`created_datetime`),
+    UNIQUE INDEX `support_rate_user_id_year_a62fc7f7_uniq`(`user_id`, `year`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `timetable_oldtimetable` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `student_id` VARCHAR(10) NOT NULL,
+    `year` INTEGER NULL,
+    `semester` SMALLINT NULL,
+    `table_no` SMALLINT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `timetable_oldtimetable_lectures` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `oldtimetable_id` INTEGER NOT NULL,
+    `lecture_id` INTEGER NOT NULL,
+
+    INDEX `timetable_oldtimetable_lecture_id_b19d5300_fk_subject_lecture_id`(`lecture_id`),
+    UNIQUE INDEX `timetable_oldtimetable_lecture_oldtimetable_id_27bf3d09_uniq`(`oldtimetable_id`, `lecture_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `timetable_timetable` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `year` INTEGER NULL,
+    `semester` SMALLINT NULL,
+    `user_id` INTEGER NOT NULL,
+    `arrange_order` SMALLINT NOT NULL,
+
+    INDEX `timetable_timetable_arrange_order_84c8935c`(`arrange_order`),
+    INDEX `timetable_timetable_semester_d8ce5d37_uniq`(`semester`),
+    INDEX `timetable_timetable_user_id_0d214170_fk_session_userprofile_id`(`user_id`),
+    INDEX `timetable_timetable_year_907cf59a_uniq`(`year`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `timetable_timetable_lectures` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `timetable_id` INTEGER NOT NULL,
+    `lecture_id` INTEGER NOT NULL,
+
+    INDEX `timetable_timetable_le_lecture_id_79aa5f2e_fk_subject_lecture_id`(`lecture_id`),
+    UNIQUE INDEX `timetable_timetable_lecture_timetable_id_57195f56_uniq`(`timetable_id`, `lecture_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `timetable_wishlist` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `user_id` INTEGER NOT NULL,
+
+    UNIQUE INDEX `user_id`(`user_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `timetable_wishlist_lectures` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `wishlist_id` INTEGER NOT NULL,
+    `lecture_id` INTEGER NOT NULL,
+
+    INDEX `timetable_wishlist_lec_lecture_id_1ab5d523_fk_subject_lecture_id`(`lecture_id`),
+    UNIQUE INDEX `timetable_wishlist_lectures_wishlist_id_e4c47efe_uniq`(`wishlist_id`, `lecture_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateIndex
+CREATE UNIQUE INDEX `session_userprofile_user_id_09dd6af1_uniq` ON `session_userprofile`(`user_id`);
+
+-- AddForeignKey
+ALTER TABLE `auth_group_permissions` ADD CONSTRAINT `auth_group__permission_id_1f49ccbbdc69d2fc_fk_auth_permission_id` FOREIGN KEY (`permission_id`) REFERENCES `auth_permission`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `auth_group_permissions` ADD CONSTRAINT `auth_group_permission_group_id_689710a9a73b7457_fk_auth_group_id` FOREIGN KEY (`group_id`) REFERENCES `auth_group`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `auth_permission` ADD CONSTRAINT `auth__content_type_id_508cf46651277a81_fk_django_content_type_id` FOREIGN KEY (`content_type_id`) REFERENCES `django_content_type`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `auth_user_groups` ADD CONSTRAINT `auth_user_groups_group_id_33ac548dcf5f8e37_fk_auth_group_id` FOREIGN KEY (`group_id`) REFERENCES `auth_group`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `auth_user_groups` ADD CONSTRAINT `auth_user_groups_user_id_4b5ed4ffdb8fd9b0_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `auth_user_user_permissions` ADD CONSTRAINT `auth_user_u_permission_id_384b62483d7071f0_fk_auth_permission_id` FOREIGN KEY (`permission_id`) REFERENCES `auth_permission`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `auth_user_user_permissions` ADD CONSTRAINT `auth_user_user_permissi_user_id_7f0938558328534a_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `django_admin_log` ADD CONSTRAINT `djang_content_type_id_697914295151027a_fk_django_content_type_id` FOREIGN KEY (`content_type_id`) REFERENCES `django_content_type`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `django_admin_log` ADD CONSTRAINT `django_admin_log_user_id_52fdd58701c5f563_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `main_famoushumanityreviewdailyfeed_reviews` ADD CONSTRAINT `e567529fdfd543a96610b342fea2bb84` FOREIGN KEY (`famoushumanityreviewdailyfeed_id`) REFERENCES `main_famoushumanityreviewdailyfeed`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `main_famoushumanityreviewdailyfeed_reviews` ADD CONSTRAINT `main_famoushumanityreview_review_id_f305d8aa_fk_review_review_id` FOREIGN KEY (`review_id`) REFERENCES `review_review`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `main_famousmajorreviewdailyfeed` ADD CONSTRAINT `main_famousmajorrevi_department_id_a0a5a3a5_fk_subject_d` FOREIGN KEY (`department_id`) REFERENCES `subject_department`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `main_famousmajorreviewdailyfeed_reviews` ADD CONSTRAINT `D122ed8a8adef1dafa8cd66f142ebb40` FOREIGN KEY (`famousmajorreviewdailyfeed_id`) REFERENCES `main_famousmajorreviewdailyfeed`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `main_famousmajorreviewdailyfeed_reviews` ADD CONSTRAINT `main_famousmajorreviewdai_review_id_c0d3bbec_fk_review_review_id` FOREIGN KEY (`review_id`) REFERENCES `review_review`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `main_rankedreviewdailyfeed` ADD CONSTRAINT `main_rankedreviewdai_semester_id_f71e3a66_fk_subject_s` FOREIGN KEY (`semester_id`) REFERENCES `subject_semester`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `main_ratedailyuserfeed` ADD CONSTRAINT `main_ratedailyuserfe_user_id_31a534d5_fk_session_u` FOREIGN KEY (`user_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `main_relatedcoursedailyuserfeed` ADD CONSTRAINT `main_relatedcourseda_course_id_129fc5e2_fk_subject_c` FOREIGN KEY (`course_id`) REFERENCES `subject_course`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `main_relatedcoursedailyuserfeed` ADD CONSTRAINT `main_relatedcoursedai_user_id_a1be2390_fk_session_userprofile_id` FOREIGN KEY (`user_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `main_reviewwritedailyuserfeed` ADD CONSTRAINT `main_reviewwritedail_lecture_id_75ed0f87_fk_subject_l` FOREIGN KEY (`lecture_id`) REFERENCES `subject_lecture`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `main_reviewwritedailyuserfeed` ADD CONSTRAINT `main_reviewwritedaily_user_id_9ffd0881_fk_session_userprofile_id` FOREIGN KEY (`user_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `session_userprofile_majors` ADD CONSTRAINT `session_userpr_userprofile_id_20f3742a_fk_session_userprofile_id` FOREIGN KEY (`userprofile_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `session_userprofile_majors` ADD CONSTRAINT `session_userprof_department_id_db568678_fk_subject_department_id` FOREIGN KEY (`department_id`) REFERENCES `subject_department`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `session_userprofile_minors` ADD CONSTRAINT `session_userpr_userprofile_id_dad5ef83_fk_session_userprofile_id` FOREIGN KEY (`userprofile_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `session_userprofile_minors` ADD CONSTRAINT `session_userprof_department_id_7a7ea3ed_fk_subject_department_id` FOREIGN KEY (`department_id`) REFERENCES `subject_department`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `session_userprofile_specialized_major` ADD CONSTRAINT `session_userpr_userprofile_id_ca859cbe_fk_session_userprofile_id` FOREIGN KEY (`userprofile_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `session_userprofile_specialized_major` ADD CONSTRAINT `session_userprof_department_id_919e11be_fk_subject_department_id` FOREIGN KEY (`department_id`) REFERENCES `subject_department`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `subject_classtime` ADD CONSTRAINT `subject_classtime_lecture_id_bf773e65_fk_subject_lecture_id` FOREIGN KEY (`lecture_id`) REFERENCES `subject_lecture`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `subject_course_related_courses_posterior` ADD CONSTRAINT `subject_course_relat_from_course_id_f520f461_fk_subject_c` FOREIGN KEY (`from_course_id`) REFERENCES `subject_course`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `subject_course_related_courses_posterior` ADD CONSTRAINT `subject_course_relat_to_course_id_5fbd4d28_fk_subject_c` FOREIGN KEY (`to_course_id`) REFERENCES `subject_course`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `subject_course_related_courses_prior` ADD CONSTRAINT `subject_course_relat_from_course_id_e994f30a_fk_subject_c` FOREIGN KEY (`from_course_id`) REFERENCES `subject_course`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `subject_course_related_courses_prior` ADD CONSTRAINT `subject_course_relat_to_course_id_52f44705_fk_subject_c` FOREIGN KEY (`to_course_id`) REFERENCES `subject_course`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `subject_courseuser` ADD CONSTRAINT `subject_courseuser_course_id_2e4ccc6e_fk_subject_course_id` FOREIGN KEY (`course_id`) REFERENCES `subject_course`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `subject_courseuser` ADD CONSTRAINT `subject_courseuser_user_profile_id_4d15ef1b_fk_session_u` FOREIGN KEY (`user_profile_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `subject_examtime` ADD CONSTRAINT `subject_examtime_lecture_id_a35fa20c_fk_subject_lecture_id` FOREIGN KEY (`lecture_id`) REFERENCES `subject_lecture`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `support_rate` ADD CONSTRAINT `support_rate_user_id_6d69ec9d_fk_session_userprofile_id` FOREIGN KEY (`user_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `timetable_oldtimetable_lectures` ADD CONSTRAINT `timetable_oldtimetab_lecture_id_530c66bb_fk_subject_l` FOREIGN KEY (`lecture_id`) REFERENCES `subject_lecture`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `timetable_oldtimetable_lectures` ADD CONSTRAINT `timetable_oldtimetab_oldtimetable_id_88e61f89_fk_timetable` FOREIGN KEY (`oldtimetable_id`) REFERENCES `timetable_oldtimetable`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `timetable_timetable` ADD CONSTRAINT `timetable_timetable_user_id_0d214170_fk_session_userprofile_id` FOREIGN KEY (`user_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `timetable_timetable_lectures` ADD CONSTRAINT `timetable_timetable__lecture_id_0aa33315_fk_subject_l` FOREIGN KEY (`lecture_id`) REFERENCES `subject_lecture`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `timetable_timetable_lectures` ADD CONSTRAINT `timetable_timetable__timetable_id_733ab103_fk_timetable` FOREIGN KEY (`timetable_id`) REFERENCES `timetable_timetable`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `timetable_wishlist` ADD CONSTRAINT `timetable_wishlist_user_id_d057a6e4_fk_session_userprofile_id` FOREIGN KEY (`user_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `timetable_wishlist_lectures` ADD CONSTRAINT `timetable_wishlist_lec_lecture_id_1ab5d523_fk_subject_lecture_id` FOREIGN KEY (`lecture_id`) REFERENCES `subject_lecture`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `timetable_wishlist_lectures` ADD CONSTRAINT `timetable_wishlist_wishlist_id_efc7ae12_fk_timetable_wishlist_id` FOREIGN KEY (`wishlist_id`) REFERENCES `timetable_wishlist`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- RenameIndex
+ALTER TABLE `subject_lecture` RENAME INDEX `subject_lecture_deleted_idx` TO `subject_lecture_deleted_bedc6156_uniq`;
+
+-- RenameIndex
+ALTER TABLE `subject_lecture` RENAME INDEX `subject_lecture_type_en_idx` TO `subject_lecture_type_en_45ee2d3a_uniq`;
