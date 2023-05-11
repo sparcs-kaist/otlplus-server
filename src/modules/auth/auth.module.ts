@@ -6,6 +6,7 @@ import { JwtCookieStrategy } from "./strategy/jwt-cookie.strategy";
 import { UserRepository } from "../../prisma/repositories/user.repository";
 import { JwtModule } from "@nestjs/jwt";
 import settings from "../../settings";
+import { UserService } from "../user/user.service";
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import settings from "../../settings";
   providers: [
     AuthService,
     JwtCookieStrategy,
+    UserService,
     UserRepository,
   ],
   exports: [AuthService],

@@ -1,6 +1,7 @@
 import { UserRepository } from "../../prisma/repositories/user.repository";
-import { NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 
+@Injectable()
 export class UserService {
   constructor(private readonly userRepository: UserRepository) {
   }
@@ -9,5 +10,10 @@ export class UserService {
     const user =  this.userRepository.findBySid(sid);
     if (!user) {
       throw new NotFoundException(`Can't find user with sid: ${sid}`);
-    }  }
+    }
+  }
+
+  public async import_student_lectures(studentId: string): Promise<void> {
+
+  }
 }

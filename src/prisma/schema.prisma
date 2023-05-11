@@ -254,7 +254,7 @@ model review_reviewvote {
 
 model session_userprofile {
   id                                    Int                                     @id @default(autoincrement())
-  user_id                               Int                                     @unique(map: "session_userprofile_user_id_09dd6af1_uniq")
+//  user_id                               Int                                     @unique(map: "session_userprofile_user_id_09dd6af1_uniq")
   student_id                            String                                  @db.VarChar(10)
   sid                                   String                                  @db.VarChar(30)
 //  language                              String                                  @db.VarChar(15)
