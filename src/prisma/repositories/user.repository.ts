@@ -5,5 +5,9 @@ import { PrismaService } from "../prisma.service";
 export class UserRepository{
   constructor(private readonly prisma: PrismaService){}
 
-
+  async findBySid(sid: string){
+    return await this.prisma.session_userprofile.findFirst({
+      where: { sid: sid }
+    })
+  }
 }
