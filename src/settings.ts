@@ -2,7 +2,8 @@ import dotenv from 'dotenv';
 import { dotEnvOptions } from './dotenv-options';
 import { PrismaClientOptions } from 'prisma/prisma-client/runtime';
 dotenv.config(dotEnvOptions);
-console.log(`Execution environment: ${process.env.EXEC_ENV}`);
+console.log(`NODE_ENV environment: ${process.env.NODE_ENV}`);
+console.log(`DATABASE_URL: ${process.env.DATABASE_URL}`);
 
 export default () => {
   return {

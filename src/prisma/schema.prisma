@@ -7,218 +7,115 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model session_userprofile {
-  id                                    Int                                     @id @default(autoincrement())
-  user_id                               Int                                     @unique(map: "session_userprofile_user_id_09dd6af1_uniq")
-  student_id                            String                                  @db.VarChar(10)
-  sid                                   String                                  @db.VarChar(30)
-  language                              String                                  @db.VarChar(15)
-  portal_check                          Int?                                    @default(0)
-  department_id                         Int?
-  email                                 String?                                 @db.VarChar(255)
-  main_ratedailyuserfeed                main_ratedailyuserfeed[]
-  main_relatedcoursedailyuserfeed       main_relatedcoursedailyuserfeed[]
-  main_reviewwritedailyuserfeed         main_reviewwritedailyuserfeed[]
-  session_userprofile_majors            session_userprofile_majors[]
-  session_userprofile_minors            session_userprofile_minors[]
-  session_userprofile_specialized_major session_userprofile_specialized_major[]
-  subject_courseuser                    subject_courseuser[]
-  support_rate                          support_rate[]
-  timetable_timetable                   timetable_timetable[]
-  timetable_wishlist                    timetable_wishlist?
+model auth_group {
+  id                     Int                      @id @default(autoincrement())
+  name                   String                   @unique(map: "name") @db.VarChar(150)
+  auth_group_permissions auth_group_permissions[]
+  auth_user_groups       auth_user_groups[]
 }
 
-model subject_department {
-  id                                    Int                                     @id
-  num_id                                String                                  @db.VarChar(4)
-  code                                  String                                  @db.VarChar(5)
-  name                                  String                                  @db.VarChar(60)
-  name_en                               String?                                 @db.VarChar(60)
-  visible                               Boolean
-  main_famousmajorreviewdailyfeed       main_famousmajorreviewdailyfeed[]
-  session_userprofile_majors            session_userprofile_majors[]
-  session_userprofile_minors            session_userprofile_minors[]
-  session_userprofile_specialized_major session_userprofile_specialized_major[]
+model auth_group_permissions {
+  id              Int             @id @default(autoincrement())
+  group_id        Int
+  permission_id   Int
+  auth_permission auth_permission @relation(fields: [permission_id], references: [id], onUpdate: Restrict, map: "auth_group__permission_id_1f49ccbbdc69d2fc_fk_auth_permission_id")
+  auth_group      auth_group      @relation(fields: [group_id], references: [id], onUpdate: Restrict, map: "auth_group_permission_group_id_689710a9a73b7457_fk_auth_group_id")
+
+  @@unique([group_id, permission_id], map: "group_id")
+  @@index([permission_id], map: "auth_group__permission_id_1f49ccbbdc69d2fc_fk_auth_permission_id")
 }
 
-model subject_course {
-  id                                                                                                               Int                                        @id @default(autoincrement())
-  old_code                                                                                                         String                                     @db.VarChar(10)
-  department_id                                                                                                    Int
-  type                                                                                                             String                                     @db.VarChar(12)
-  type_en                                                                                                          String                                     @db.VarChar(36)
-  title                                                                                                            String                                     @db.VarChar(100)
-  title_en                                                                                                         String                                     @db.VarChar(200)
-  summury                                                                                                          String                                     @db.VarChar(400)
-  grade_sum                                                                                                        Float
-  load_sum                                                                                                         Float
-  speech_sum                                                                                                       Float
-  review_total_weight                                                                                              Float
-  grade                                                                                                            Float
-  load                                                                                                             Float
-  speech                                                                                                           Float
-  latest_written_datetime                                                                                          DateTime?                                  @db.DateTime(0)
-  main_relatedcoursedailyuserfeed                                                                                  main_relatedcoursedailyuserfeed[]
-  subject_course_related_courses_posterior_subject_course_related_courses_posterior_from_course_idTosubject_course subject_course_related_courses_posterior[] @relation("subject_course_related_courses_posterior_from_course_idTosubject_course")
-  subject_course_related_courses_posterior_subject_course_related_courses_posterior_to_course_idTosubject_course   subject_course_related_courses_posterior[] @relation("subject_course_related_courses_posterior_to_course_idTosubject_course")
-  subject_course_related_courses_prior_subject_course_related_courses_prior_from_course_idTosubject_course         subject_course_related_courses_prior[]     @relation("subject_course_related_courses_prior_from_course_idTosubject_course")
-  subject_course_related_courses_prior_subject_course_related_courses_prior_to_course_idTosubject_course           subject_course_related_courses_prior[]     @relation("subject_course_related_courses_prior_to_course_idTosubject_course")
-  subject_courseuser                                                                                               subject_courseuser[]
+model auth_permission {
+  id                         Int                          @id @default(autoincrement())
+  name                       String                       @db.VarChar(255)
+  content_type_id            Int
+  codename                   String                       @db.VarChar(100)
+  auth_group_permissions     auth_group_permissions[]
+  django_content_type        django_content_type          @relation(fields: [content_type_id], references: [id], onUpdate: Restrict, map: "auth__content_type_id_508cf46651277a81_fk_django_content_type_id")
+  auth_user_user_permissions auth_user_user_permissions[]
+
+  @@unique([content_type_id, codename], map: "content_type_id")
 }
 
-model subject_lecture {
-  id                              Int                               @id @default(autoincrement())
-  code                            String                            @db.VarChar(10)
-  old_code                        String                            @db.VarChar(10)
-  year                            Int
-  semester                        Int                               @db.SmallInt
-  department_id                   Int
-  class_no                        String                            @db.VarChar(4)
-  title                           String                            @db.VarChar(100)
-  title_en                        String                            @db.VarChar(200)
-  type                            String                            @db.VarChar(12)
-  type_en                         String                            @db.VarChar(36)
-  audience                        Int
-  credit                          Int
-  num_classes                     Int
-  num_labs                        Int
-  credit_au                       Int
-  limit                           Int
-  num_people                      Int?
-  is_english                      Boolean
-  deleted                         Boolean
-  course_id                       Int
-  grade_sum                       Float
-  load_sum                        Float
-  speech_sum                      Float
-  grade                           Float
-  load                            Float
-  speech                          Float
-  review_total_weight             Float
-  class_title                     String?                           @db.VarChar(100)
-  class_title_en                  String?                           @db.VarChar(100)
-  common_title                    String?                           @db.VarChar(100)
-  common_title_en                 String?                           @db.VarChar(100)
-  main_reviewwritedailyuserfeed   main_reviewwritedailyuserfeed[]
-  subject_classtime               subject_classtime[]
-  subject_examtime                subject_examtime[]
-  timetable_oldtimetable_lectures timetable_oldtimetable_lectures[]
-  timetable_timetable_lectures    timetable_timetable_lectures[]
-  timetable_wishlist_lectures     timetable_wishlist_lectures[]
-
-  @@index([deleted], map: "subject_lecture_deleted_bedc6156_uniq")
-  @@index([type_en], map: "subject_lecture_type_en_45ee2d3a_uniq")
+model auth_user {
+  id                         Int                          @id @default(autoincrement())
+  password                   String                       @db.VarChar(128)
+  last_login                 DateTime?                    @db.DateTime(0)
+  is_superuser               Boolean
+  username                   String                       @unique(map: "username") @db.VarChar(150)
+  first_name                 String                       @db.VarChar(30)
+  last_name                  String                       @db.VarChar(150)
+  email                      String                       @db.VarChar(254)
+  is_staff                   Boolean
+  is_active                  Boolean
+  date_joined                DateTime                     @db.DateTime(0)
+  auth_user_groups           auth_user_groups[]
+  auth_user_user_permissions auth_user_user_permissions[]
+  django_admin_log           django_admin_log[]
 }
 
-//model auth_group {
-//  id                     Int                      @id @default(autoincrement())
-//  name                   String                   @unique(map: "name") @db.VarChar(150)
-//  auth_group_permissions auth_group_permissions[]
-//  auth_user_groups       auth_user_groups[]
-//}
+model auth_user_groups {
+  id         Int        @id @default(autoincrement())
+  user_id    Int
+  group_id   Int
+  auth_group auth_group @relation(fields: [group_id], references: [id], onUpdate: Restrict, map: "auth_user_groups_group_id_33ac548dcf5f8e37_fk_auth_group_id")
+  auth_user  auth_user  @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "auth_user_groups_user_id_4b5ed4ffdb8fd9b0_fk_auth_user_id")
 
-//model auth_group_permissions {
-//  id              Int             @id @default(autoincrement())
-//  group_id        Int
-//  permission_id   Int
-//  auth_permission auth_permission @relation(fields: [permission_id], references: [id], onUpdate: Restrict, map: "auth_group__permission_id_1f49ccbbdc69d2fc_fk_auth_permission_id")
-//  auth_group      auth_group      @relation(fields: [group_id], references: [id], onUpdate: Restrict, map: "auth_group_permission_group_id_689710a9a73b7457_fk_auth_group_id")
-//
-//  @@unique([group_id, permission_id], map: "group_id")
-//  @@index([permission_id], map: "auth_group__permission_id_1f49ccbbdc69d2fc_fk_auth_permission_id")
-// }
+  @@unique([user_id, group_id], map: "user_id")
+  @@index([group_id], map: "auth_user_groups_group_id_33ac548dcf5f8e37_fk_auth_group_id")
+}
 
-// model auth_permission {
-//   id                         Int                          @id @default(autoincrement())
-//  name                       String                       @db.VarChar(255)
-//  content_type_id            Int
-//  codename                   String                       @db.VarChar(100)
-//  auth_group_permissions     auth_group_permissions[]
-//  django_content_type        django_content_type          @relation(fields: [content_type_id], references: [id], onUpdate: Restrict, map: "auth__content_type_id_508cf46651277a81_fk_django_content_type_id")
-//  auth_user_user_permissions auth_user_user_permissions[]
+model auth_user_user_permissions {
+  id              Int             @id @default(autoincrement())
+  user_id         Int
+  permission_id   Int
+  auth_permission auth_permission @relation(fields: [permission_id], references: [id], onUpdate: Restrict, map: "auth_user_u_permission_id_384b62483d7071f0_fk_auth_permission_id")
+  auth_user       auth_user       @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "auth_user_user_permissi_user_id_7f0938558328534a_fk_auth_user_id")
 
-//  @@unique([content_type_id, codename], map: "content_type_id")
-// }
+  @@unique([user_id, permission_id], map: "user_id")
+  @@index([permission_id], map: "auth_user_u_permission_id_384b62483d7071f0_fk_auth_permission_id")
+}
 
-// model auth_user {
-//  id                         Int                          @id @default(autoincrement())
-//  password                   String                       @db.VarChar(128)
-//  last_login                 DateTime?                    @db.DateTime(0)
-//  is_superuser               Boolean
-//  username                   String                       @unique(map: "username") @db.VarChar(150)
-//  first_name                 String                       @db.VarChar(30)
-//  last_name                  String                       @db.VarChar(150)
-//  email                      String                       @db.VarChar(254)
-//  is_staff                   Boolean
-//  is_active                  Boolean
-//  date_joined                DateTime                     @db.DateTime(0)
-//  auth_user_groups           auth_user_groups[]
-//  auth_user_user_permissions auth_user_user_permissions[]
-//  django_admin_log           django_admin_log[]
-// }
+model django_admin_log {
+  id                  Int                  @id @default(autoincrement())
+  action_time         DateTime             @db.DateTime(0)
+  object_id           String?              @db.LongText
+  object_repr         String               @db.VarChar(200)
+  action_flag         Int                  @db.UnsignedSmallInt
+  change_message      String               @db.LongText
+  content_type_id     Int?
+  user_id             Int
+  django_content_type django_content_type? @relation(fields: [content_type_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "djang_content_type_id_697914295151027a_fk_django_content_type_id")
+  auth_user           auth_user            @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "django_admin_log_user_id_52fdd58701c5f563_fk_auth_user_id")
 
-// model auth_user_groups {
-//  id         Int        @id @default(autoincrement())
-//  user_id    Int
-//  group_id   Int
-//  auth_group auth_group @relation(fields: [group_id], references: [id], onUpdate: Restrict, map: "auth_user_groups_group_id_33ac548dcf5f8e37_fk_auth_group_id")
-//  auth_user  auth_user  @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "auth_user_groups_user_id_4b5ed4ffdb8fd9b0_fk_auth_user_id")
+  @@index([content_type_id], map: "djang_content_type_id_697914295151027a_fk_django_content_type_id")
+  @@index([user_id], map: "django_admin_log_user_id_52fdd58701c5f563_fk_auth_user_id")
+}
 
-//  @@unique([user_id, group_id], map: "user_id")
-//  @@index([group_id], map: "auth_user_groups_group_id_33ac548dcf5f8e37_fk_auth_group_id")
-// }
+model django_content_type {
+  id               Int                @id @default(autoincrement())
+  app_label        String             @db.VarChar(100)
+  model            String             @db.VarChar(100)
+  auth_permission  auth_permission[]
+  django_admin_log django_admin_log[]
 
-// model auth_user_user_permissions {
-//  id              Int             @id @default(autoincrement())
-//  user_id         Int
-//  permission_id   Int
-//  auth_permission auth_permission @relation(fields: [permission_id], references: [id], onUpdate: Restrict, map: "auth_user_u_permission_id_384b62483d7071f0_fk_auth_permission_id")
-//  auth_user       auth_user       @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "auth_user_user_permissi_user_id_7f0938558328534a_fk_auth_user_id")
+  @@unique([app_label, model], map: "django_content_type_app_label_45f3b1d93ec8c61c_uniq")
+}
 
-//  @@unique([user_id, permission_id], map: "user_id")
-//  @@index([permission_id], map: "auth_user_u_permission_id_384b62483d7071f0_fk_auth_permission_id")
-// }
+model django_migrations {
+  id      Int      @id @default(autoincrement())
+  app     String   @db.VarChar(255)
+  name    String   @db.VarChar(255)
+  applied DateTime @db.DateTime(0)
+}
 
-// model django_admin_log {
-//  id                  Int                  @id @default(autoincrement())
-//  action_time         DateTime             @db.DateTime(0)
-//  object_id           String?              @db.LongText
-//  object_repr         String               @db.VarChar(200)
-//  action_flag         Int                  @db.UnsignedSmallInt
-//  change_message      String               @db.LongText
-//  content_type_id     Int?
-//  user_id             Int
-//  django_content_type django_content_type? @relation(fields: [content_type_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "djang_content_type_id_697914295151027a_fk_django_content_type_id")
-//  auth_user           auth_user            @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "django_admin_log_user_id_52fdd58701c5f563_fk_auth_user_id")
-//
-//  @@index([content_type_id], map: "djang_content_type_id_697914295151027a_fk_django_content_type_id")
-//  @@index([user_id], map: "django_admin_log_user_id_52fdd58701c5f563_fk_auth_user_id")
-// }
+model django_session {
+  session_key  String   @id @db.VarChar(40)
+  session_data String   @db.LongText
+  expire_date  DateTime @db.DateTime(0)
 
-// model django_content_type {
-//  id               Int                @id @default(autoincrement())
-//  app_label        String             @db.VarChar(100)
-//  model            String             @db.VarChar(100)
-//  auth_permission  auth_permission[]
-//  django_admin_log django_admin_log[]
-
-//  @@unique([app_label, model], map: "django_content_type_app_label_45f3b1d93ec8c61c_uniq")
-// }
-
-// model django_migrations {
-//  id      Int      @id @default(autoincrement())
-//  app     String   @db.VarChar(255)
-//  name    String   @db.VarChar(255)
-//  applied DateTime @db.DateTime(0)
-// }
-
-// model django_session {
-//  session_key  String   @id @db.VarChar(40)
-//  session_data String   @db.LongText
-//  expire_date  DateTime @db.DateTime(0)
-//
-//  @@index([expire_date], map: "django_session_de54fa62")
-// }
+  @@index([expire_date], map: "django_session_de54fa62")
+}
 
 model main_famoushumanityreviewdailyfeed {
   id                                         Int                                          @id @default(autoincrement())
@@ -355,6 +252,30 @@ model review_reviewvote {
   @@index([created_datetime], map: "review_reviewvote_created_datetime_450f85e2")
 }
 
+model session_userprofile {
+  id                                    Int                                     @id @default(autoincrement())
+  user_id                               Int                                     @unique(map: "session_userprofile_user_id_09dd6af1_uniq")
+  student_id                            String                                  @db.VarChar(10)
+  sid                                   String                                  @db.VarChar(30)
+//  language                              String                                  @db.VarChar(15)
+//  portal_check                          Int?                                    @default(0)
+  department_id                         Int?
+  email                                 String?                                 @db.VarChar(255)
+  first_name                            String                       @db.VarChar(30)
+  last_name                             String                       @db.VarChar(150)
+  date_joined                DateTime                     @db.DateTime(0)
+  main_ratedailyuserfeed                main_ratedailyuserfeed[]
+  main_relatedcoursedailyuserfeed       main_relatedcoursedailyuserfeed[]
+  main_reviewwritedailyuserfeed         main_reviewwritedailyuserfeed[]
+  session_userprofile_majors            session_userprofile_majors[]
+  session_userprofile_minors            session_userprofile_minors[]
+  session_userprofile_specialized_major session_userprofile_specialized_major[]
+  subject_courseuser                    subject_courseuser[]
+  support_rate                          support_rate[]
+  timetable_timetable                   timetable_timetable[]
+  timetable_wishlist                    timetable_wishlist?
+}
+
 model session_userprofile_favorite_departments {
   id             Int @id @default(autoincrement())
   userprofile_id Int
@@ -421,6 +342,31 @@ model subject_classtime {
   @@index([lecture_id], map: "subject_classtime_72a11f01")
 }
 
+model subject_course {
+  id                                                                                                               Int                                        @id @default(autoincrement())
+  old_code                                                                                                         String                                     @db.VarChar(10)
+  department_id                                                                                                    Int
+  type                                                                                                             String                                     @db.VarChar(12)
+  type_en                                                                                                          String                                     @db.VarChar(36)
+  title                                                                                                            String                                     @db.VarChar(100)
+  title_en                                                                                                         String                                     @db.VarChar(200)
+  summury                                                                                                          String                                     @db.VarChar(400)
+  grade_sum                                                                                                        Float
+  load_sum                                                                                                         Float
+  speech_sum                                                                                                       Float
+  review_total_weight                                                                                              Float
+  grade                                                                                                            Float
+  load                                                                                                             Float
+  speech                                                                                                           Float
+  latest_written_datetime                                                                                          DateTime?                                  @db.DateTime(0)
+  main_relatedcoursedailyuserfeed                                                                                  main_relatedcoursedailyuserfeed[]
+  subject_course_related_courses_posterior_subject_course_related_courses_posterior_from_course_idTosubject_course subject_course_related_courses_posterior[] @relation("subject_course_related_courses_posterior_from_course_idTosubject_course")
+  subject_course_related_courses_posterior_subject_course_related_courses_posterior_to_course_idTosubject_course   subject_course_related_courses_posterior[] @relation("subject_course_related_courses_posterior_to_course_idTosubject_course")
+  subject_course_related_courses_prior_subject_course_related_courses_prior_from_course_idTosubject_course         subject_course_related_courses_prior[]     @relation("subject_course_related_courses_prior_from_course_idTosubject_course")
+  subject_course_related_courses_prior_subject_course_related_courses_prior_to_course_idTosubject_course           subject_course_related_courses_prior[]     @relation("subject_course_related_courses_prior_to_course_idTosubject_course")
+  subject_courseuser                                                                                               subject_courseuser[]
+}
+
 model subject_course_professors {
   id           Int @id @default(autoincrement())
   course_id    Int
@@ -463,6 +409,19 @@ model subject_courseuser {
   @@index([user_profile_id], map: "subject_courseuser_user_profile_id_4d15ef1b_fk_session_u")
 }
 
+model subject_department {
+  id                                    Int                                     @id
+  num_id                                String                                  @db.VarChar(4)
+  code                                  String                                  @db.VarChar(5)
+  name                                  String                                  @db.VarChar(60)
+  name_en                               String?                                 @db.VarChar(60)
+  visible                               Boolean
+  main_famousmajorreviewdailyfeed       main_famousmajorreviewdailyfeed[]
+  session_userprofile_majors            session_userprofile_majors[]
+  session_userprofile_minors            session_userprofile_minors[]
+  session_userprofile_specialized_major session_userprofile_specialized_major[]
+}
+
 model subject_examtime {
   id              Int             @id @default(autoincrement())
   day             Int             @db.SmallInt
@@ -472,6 +431,50 @@ model subject_examtime {
   subject_lecture subject_lecture @relation(fields: [lecture_id], references: [id], onUpdate: Restrict, map: "subject_examtime_lecture_id_a35fa20c_fk_subject_lecture_id")
 
   @@index([lecture_id], map: "subject_examtime_72a11f01")
+}
+
+model subject_lecture {
+  id                              Int                               @id @default(autoincrement())
+  code                            String                            @db.VarChar(10)
+  old_code                        String                            @db.VarChar(10)
+  year                            Int
+  semester                        Int                               @db.SmallInt
+  department_id                   Int
+  class_no                        String                            @db.VarChar(4)
+  title                           String                            @db.VarChar(100)
+  title_en                        String                            @db.VarChar(200)
+  type                            String                            @db.VarChar(12)
+  type_en                         String                            @db.VarChar(36)
+  audience                        Int
+  credit                          Int
+  num_classes                     Int
+  num_labs                        Int
+  credit_au                       Int
+  limit                           Int
+  num_people                      Int?
+  is_english                      Boolean
+  deleted                         Boolean
+  course_id                       Int
+  grade_sum                       Float
+  load_sum                        Float
+  speech_sum                      Float
+  grade                           Float
+  load                            Float
+  speech                          Float
+  review_total_weight             Float
+  class_title                     String?                           @db.VarChar(100)
+  class_title_en                  String?                           @db.VarChar(100)
+  common_title                    String?                           @db.VarChar(100)
+  common_title_en                 String?                           @db.VarChar(100)
+  main_reviewwritedailyuserfeed   main_reviewwritedailyuserfeed[]
+  subject_classtime               subject_classtime[]
+  subject_examtime                subject_examtime[]
+  timetable_oldtimetable_lectures timetable_oldtimetable_lectures[]
+  timetable_timetable_lectures    timetable_timetable_lectures[]
+  timetable_wishlist_lectures     timetable_wishlist_lectures[]
+
+  @@index([deleted], map: "subject_lecture_deleted_bedc6156_uniq")
+  @@index([type_en], map: "subject_lecture_type_en_45ee2d3a_uniq")
 }
 
 model subject_lecture_professors {

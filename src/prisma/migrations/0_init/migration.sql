@@ -1,23 +1,3 @@
-/*
-  Warnings:
-
-  - You are about to drop the column `summary` on the `subject_course` table. All the data in the column will be lost.
-  - You are about to alter the column `latest_written_datetime` on the `subject_course` table. The data in that column could be lost. The data in that column will be cast from `DateTime(3)` to `DateTime(0)`.
-  - A unique constraint covering the columns `[user_id]` on the table `session_userprofile` will be added. If there are existing duplicate values, this will fail.
-  - Added the required column `summury` to the `subject_course` table without a default value. This is not possible if the table is not empty.
-
-*/
--- AlterTable
-ALTER TABLE `subject_course` DROP COLUMN `summary`,
-    ADD COLUMN `summury` VARCHAR(400) NOT NULL,
-    MODIFY `latest_written_datetime` DATETIME(0) NULL;
-
--- AlterTable
-ALTER TABLE `subject_department` MODIFY `id` INTEGER NOT NULL;
-
--- AlterTable
-ALTER TABLE `subject_lecture` MODIFY `num_people` INTEGER NULL;
-
 -- CreateTable
 CREATE TABLE `auth_group` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
@@ -285,6 +265,21 @@ CREATE TABLE `review_reviewvote` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `session_userprofile` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `user_id` INTEGER NOT NULL,
+    `student_id` VARCHAR(10) NOT NULL,
+    `sid` VARCHAR(30) NOT NULL,
+    `language` VARCHAR(15) NOT NULL,
+    `portal_check` INTEGER NULL DEFAULT 0,
+    `department_id` INTEGER NULL,
+    `email` VARCHAR(255) NULL,
+
+    UNIQUE INDEX `session_userprofile_user_id_09dd6af1_uniq`(`user_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `session_userprofile_favorite_departments` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `userprofile_id` INTEGER NOT NULL,
@@ -356,6 +351,28 @@ CREATE TABLE `subject_classtime` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `subject_course` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `old_code` VARCHAR(10) NOT NULL,
+    `department_id` INTEGER NOT NULL,
+    `type` VARCHAR(12) NOT NULL,
+    `type_en` VARCHAR(36) NOT NULL,
+    `title` VARCHAR(100) NOT NULL,
+    `title_en` VARCHAR(200) NOT NULL,
+    `summury` VARCHAR(400) NOT NULL,
+    `grade_sum` DOUBLE NOT NULL,
+    `load_sum` DOUBLE NOT NULL,
+    `speech_sum` DOUBLE NOT NULL,
+    `review_total_weight` DOUBLE NOT NULL,
+    `grade` DOUBLE NOT NULL,
+    `load` DOUBLE NOT NULL,
+    `speech` DOUBLE NOT NULL,
+    `latest_written_datetime` DATETIME(0) NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `subject_course_professors` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `course_id` INTEGER NOT NULL,
@@ -400,6 +417,18 @@ CREATE TABLE `subject_courseuser` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `subject_department` (
+    `id` INTEGER NOT NULL,
+    `num_id` VARCHAR(4) NOT NULL,
+    `code` VARCHAR(5) NOT NULL,
+    `name` VARCHAR(60) NOT NULL,
+    `name_en` VARCHAR(60) NULL,
+    `visible` BOOLEAN NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `subject_examtime` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `day` SMALLINT NOT NULL,
@@ -408,6 +437,46 @@ CREATE TABLE `subject_examtime` (
     `lecture_id` INTEGER NOT NULL,
 
     INDEX `subject_examtime_72a11f01`(`lecture_id`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `subject_lecture` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `code` VARCHAR(10) NOT NULL,
+    `old_code` VARCHAR(10) NOT NULL,
+    `year` INTEGER NOT NULL,
+    `semester` SMALLINT NOT NULL,
+    `department_id` INTEGER NOT NULL,
+    `class_no` VARCHAR(4) NOT NULL,
+    `title` VARCHAR(100) NOT NULL,
+    `title_en` VARCHAR(200) NOT NULL,
+    `type` VARCHAR(12) NOT NULL,
+    `type_en` VARCHAR(36) NOT NULL,
+    `audience` INTEGER NOT NULL,
+    `credit` INTEGER NOT NULL,
+    `num_classes` INTEGER NOT NULL,
+    `num_labs` INTEGER NOT NULL,
+    `credit_au` INTEGER NOT NULL,
+    `limit` INTEGER NOT NULL,
+    `num_people` INTEGER NULL,
+    `is_english` BOOLEAN NOT NULL,
+    `deleted` BOOLEAN NOT NULL,
+    `course_id` INTEGER NOT NULL,
+    `grade_sum` DOUBLE NOT NULL,
+    `load_sum` DOUBLE NOT NULL,
+    `speech_sum` DOUBLE NOT NULL,
+    `grade` DOUBLE NOT NULL,
+    `load` DOUBLE NOT NULL,
+    `speech` DOUBLE NOT NULL,
+    `review_total_weight` DOUBLE NOT NULL,
+    `class_title` VARCHAR(100) NULL,
+    `class_title_en` VARCHAR(100) NULL,
+    `common_title` VARCHAR(100) NULL,
+    `common_title_en` VARCHAR(100) NULL,
+
+    INDEX `subject_lecture_deleted_bedc6156_uniq`(`deleted`),
+    INDEX `subject_lecture_type_en_45ee2d3a_uniq`(`type_en`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -563,9 +632,6 @@ CREATE TABLE `timetable_wishlist_lectures` (
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- CreateIndex
-CREATE UNIQUE INDEX `session_userprofile_user_id_09dd6af1_uniq` ON `session_userprofile`(`user_id`);
-
 -- AddForeignKey
 ALTER TABLE `auth_group_permissions` ADD CONSTRAINT `auth_group__permission_id_1f49ccbbdc69d2fc_fk_auth_permission_id` FOREIGN KEY (`permission_id`) REFERENCES `auth_permission`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
@@ -695,8 +761,3 @@ ALTER TABLE `timetable_wishlist_lectures` ADD CONSTRAINT `timetable_wishlist_lec
 -- AddForeignKey
 ALTER TABLE `timetable_wishlist_lectures` ADD CONSTRAINT `timetable_wishlist_wishlist_id_efc7ae12_fk_timetable_wishlist_id` FOREIGN KEY (`wishlist_id`) REFERENCES `timetable_wishlist`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
--- RenameIndex
-ALTER TABLE `subject_lecture` RENAME INDEX `subject_lecture_deleted_idx` TO `subject_lecture_deleted_bedc6156_uniq`;
-
--- RenameIndex
-ALTER TABLE `subject_lecture` RENAME INDEX `subject_lecture_type_en_idx` TO `subject_lecture_type_en_45ee2d3a_uniq`;
