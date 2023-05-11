@@ -4,10 +4,13 @@ import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 import { JwtCookieStrategy } from "./strategy/jwt-cookie.strategy";
 import { UserRepository } from "../../prisma/repositories/user.repository";
+import { JwtModule } from "@nestjs/jwt";
+import settings from "../../settings";
 
 @Module({
   imports: [
-    PrismaModule
+    PrismaModule,
+    JwtModule.registerAsync({}),
   ],
   controllers: [AuthController],
   providers: [

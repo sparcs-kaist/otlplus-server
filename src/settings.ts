@@ -40,11 +40,13 @@ const getAWSConfig = () => {
   }
 }
 
-const getJwtConfig = ():JwtModuleOptions => {
+const getJwtConfig = () => {
   return {
     secret: process.env.ACCESS_SECRET,
+    refreshSecret: process.env.REFRESH_SECRET,
     signOptions: {
       expiresIn: process.env.EXPIRES_IN,
+      refreshExpiresIn: process.env.REFRESH_EXPIRES_IN,
     },
   }
 }
