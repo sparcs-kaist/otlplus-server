@@ -19,28 +19,31 @@ export default () => {
 const getPrismaConfig = (): PrismaClientOptions => {
   return {
     datasources: {
-      db:{
+      db: {
         url: process.env.DATABASE_URL,
-      }
+      },
     },
     errorFormat: 'pretty',
-    log: [`query`,`error`],
-  }
-}
+    log: [`query`, `error`],
+  };
+};
 
 const getReplicatedPrismaConfig = (): PrismaClientOptions => {
-  return {
-
-  }
-}
+  return {};
+};
 
 const getAWSConfig = () => {
-  return {
+  return {};
+};
 
+<<<<<<< Updated upstream
   }
 }
 
 const getJwtConfig = () => {
+=======
+const getJwtConfig = (): JwtModuleOptions => {
+>>>>>>> Stashed changes
   return {
     secret: process.env.ACCESS_SECRET,
     refreshSecret: process.env.REFRESH_SECRET,
@@ -48,5 +51,18 @@ const getJwtConfig = () => {
       expiresIn: process.env.EXPIRES_IN,
       refreshExpiresIn: process.env.REFRESH_EXPIRES_IN,
     },
+<<<<<<< Updated upstream
   }
 }
+=======
+  };
+};
+
+const getSsoConfig = (): any => {
+  return {
+    ssoIsBeta: process.env.SSO_IS_BETA,
+    ssoClientId: process.env.SSO_CLIENT_ID,
+    ssoSecretKey: process.env.SSO_SECRET_KEY,
+  };
+};
+>>>>>>> Stashed changes
