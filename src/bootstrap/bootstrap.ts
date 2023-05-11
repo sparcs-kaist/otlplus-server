@@ -8,6 +8,7 @@ import { AppModule } from "../app.module";
 import morgan = require("morgan");
 import { PrismaService } from "../prisma/prisma.service";
 import cookieParser from "cookie-parser";
+import session from "express-session";
 
 let cachedServer: Server;
 
@@ -26,6 +27,14 @@ async function bootstrap() {
       transform: true
     })
   );
+
+  app.use(
+    session({
+      secret: 'sessionid',
+      resave: false,
+      saveUninitialized: false,
+    })
+  )
   app.use(cookieParser());
   // Logs requests
   app.use(

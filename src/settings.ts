@@ -13,6 +13,7 @@ export default () => {
     ormReplicatedConfig: () => getReplicatedPrismaConfig(),
     awsconfig: () => getAWSConfig(),
     getJwtConfig: () => getJwtConfig(),
+    getSsoConfig: () => getSsoConfig(),
   };
 };
 
@@ -36,14 +37,7 @@ const getAWSConfig = () => {
   return {};
 };
 
-<<<<<<< Updated upstream
-  }
-}
-
 const getJwtConfig = () => {
-=======
-const getJwtConfig = (): JwtModuleOptions => {
->>>>>>> Stashed changes
   return {
     secret: process.env.ACCESS_SECRET,
     refreshSecret: process.env.REFRESH_SECRET,
@@ -51,11 +45,7 @@ const getJwtConfig = (): JwtModuleOptions => {
       expiresIn: process.env.EXPIRES_IN,
       refreshExpiresIn: process.env.REFRESH_EXPIRES_IN,
     },
-<<<<<<< Updated upstream
   }
-}
-=======
-  };
 };
 
 const getSsoConfig = (): any => {
@@ -65,4 +55,3 @@ const getSsoConfig = (): any => {
     ssoSecretKey: process.env.SSO_SECRET_KEY,
   };
 };
->>>>>>> Stashed changes

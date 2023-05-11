@@ -17,7 +17,8 @@ export class AuthService{
     }
 
     public async ssoLogin(){
-            //@Todo: Implement SSO Login
+        //@Todo: Implement SSO Login
+
     }
 
     public getCookieWithAccessToken(user: session_userprofile) {
