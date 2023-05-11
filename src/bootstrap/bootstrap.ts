@@ -7,6 +7,7 @@ import { AppModule } from "../app.module";
 // import { AuthGuard, MockAuthGuard } from '../../common/guards/auth.guard'
 import morgan = require("morgan");
 import { PrismaService } from "../prisma/prisma.service";
+import cookieParser from "cookie-parser";
 
 let cachedServer: Server;
 
@@ -25,6 +26,7 @@ async function bootstrap() {
       transform: true
     })
   );
+  app.use(cookieParser());
   // Logs requests
   app.use(
     morgan(":method :url OS/:req[client-os] Ver/:req[client-api-version]", {

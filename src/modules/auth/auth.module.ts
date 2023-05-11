@@ -2,7 +2,7 @@ import { PrismaModule } from "../../prisma/prisma.module";
 import { Module } from "@nestjs/common";
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
-import { JwtFromCookieStrategy } from "./strategy/jwt-fromCookie.strategy";
+import { JwtCookieStrategy } from "./strategy/jwt-cookie.strategy";
 import { UserRepository } from "../../prisma/repositories/user.repository";
 
 @Module({
@@ -12,7 +12,7 @@ import { UserRepository } from "../../prisma/repositories/user.repository";
   controllers: [AuthController],
   providers: [
     AuthService,
-    JwtFromCookieStrategy,
+    JwtCookieStrategy,
     UserRepository,
   ],
   exports: [AuthService],

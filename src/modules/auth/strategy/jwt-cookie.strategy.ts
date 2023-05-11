@@ -5,7 +5,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { UserService } from "../../user/user.service";
 
 @Injectable()
-export class JwtFromCookieStrategy extends PassportStrategy(
+export class JwtCookieStrategy extends PassportStrategy(
   Strategy,
   'jwt-cookie',
 ) {
