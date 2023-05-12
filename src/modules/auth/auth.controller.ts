@@ -12,6 +12,9 @@ import { Request, Response} from "express";
 import { Client } from "./utils/sparcs-sso";
 import settings from "../../settings";
 import { UserService } from "../user/user.service";
+import { Public } from "../../common/decorators/skip-auth.decorator";
+import { GetUser } from "../../common/decorators/get-user.decorator";
+import { session_userprofile } from "@prisma/client";
 
 @Controller('session')
 export class AuthController {
@@ -27,10 +30,12 @@ export class AuthController {
     this.ssoClient = ssoClient;
   }
 
+  @Public()
   @Get()
   @Redirect('./login/')
   home(): void {}
 
+  @Public()
   @Get('login')
   user_login(
     @Query('next') next,
@@ -46,6 +51,7 @@ export class AuthController {
     }*/
   }
 
+  @Public()
   @Get('login/callback')
   async loginCallback(@Req() request: Request, @Res() response: Response){
     const session:any = request.session
@@ -83,5 +89,29 @@ export class AuthController {
 
     const {accessToken, ...accessTokenOptions } = this.authService.getCookieWithAccessToken(user)
     const {refreshToken, ...refreshTokenOptions } = this.authService.getCookieWithRefreshToken(user)
+
+    /*
+    @Todo
+    response.cookie('accessToken', accessToken, accessTokenOptions);
+    response.cookie('refreshToken', refreshToken, refreshTokenOptions);
+    */
+
+    /*
+    @Todo
+    call import_student_lectures(studentId)
+     */
+
+    /*
+    @Todo
+    save refreshToken in session_userprofile
+     */
+  }
+
+  @Get('info')
+  async getUserProfile(@GetUser() user: session_userprofile){
+    /*
+    @Todo
+    implement userSerializer, before that, we'd like to architect the dto types
+     */
   }
 }

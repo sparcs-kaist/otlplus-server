@@ -4,6 +4,13 @@ import { AuthService } from '../auth.service';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { UserService } from "../../user/user.service";
 
+
+/*
+
+@Todo
+- reimplement JwtCookieStrategy because of the refreshToken
+ */
+
 @Injectable()
 export class JwtCookieStrategy extends PassportStrategy(
   Strategy,
