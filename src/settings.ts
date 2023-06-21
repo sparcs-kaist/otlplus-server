@@ -39,8 +39,7 @@ const getAWSConfig = () => {
 
 const getJwtConfig = () => {
   return {
-    secret: process.env.ACCESS_SECRET,
-    refreshSecret: process.env.REFRESH_SECRET,
+    secret: process.env.JWT_SECRET,
     signOptions: {
       expiresIn: process.env.EXPIRES_IN,
       refreshExpiresIn: process.env.REFRESH_EXPIRES_IN,
@@ -50,7 +49,7 @@ const getJwtConfig = () => {
 
 const getSsoConfig = (): any => {
   return {
-    ssoIsBeta: process.env.SSO_IS_BETA,
+    ssoIsBeta: process.env.SSO_IS_BETA === 'false' ? false : true,
     ssoClientId: process.env.SSO_CLIENT_ID,
     ssoSecretKey: process.env.SSO_SECRET_KEY,
   };

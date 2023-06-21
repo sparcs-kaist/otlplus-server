@@ -7,11 +7,13 @@ import { UserRepository } from "../../prisma/repositories/user.repository";
 import { JwtModule } from "@nestjs/jwt";
 import settings from "../../settings";
 import { UserService } from "../user/user.service";
+import { PassportModule } from "@nestjs/passport";
 
 @Module({
   imports: [
     PrismaModule,
-    JwtModule.registerAsync({}),
+    PassportModule.register({ defaultStrategy: 'jwt-cookie' }),
+    JwtModule.register({}),
   ],
   controllers: [AuthController],
   providers: [

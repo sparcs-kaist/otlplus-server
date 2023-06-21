@@ -1,6 +1,7 @@
 import * as crypto from 'crypto';
 import * as querystring from 'querystring';
 import axios, { AxiosResponse } from 'axios';
+import { KaistInfo, SSOUser } from "../../../common/interfaces/dto/auth/sso.dto";
 
 // CONVERT SPARCS SSO V2 Client Version 1.1 TO TYPESCRIPT
 // VALID ONLY AFTER ----(NOT VALID) ----
@@ -43,6 +44,8 @@ export class Client {
     :param secret_key: your secret key
     :param is_beta: true iff you want to use SPARCS SSO beta server
     :param server_addr: SPARCS SSO server addr (only for testing)*/
+    console.log(is_beta)
+    console.log(is_beta ? true : false);
     this.DOMAIN = is_beta ? this.BETA_DOMAIN : this.SERVER_DOMAIN;
     this.DOMAIN = server_addr || this.DOMAIN;
 
@@ -93,7 +96,7 @@ export class Client {
     return true;
   }
 
-  private async _post_data(url: any, data: any): Promise<any> {
+  private async _post_data(url: any, data: any): Promise<SSOUser> {
     /**
      *@SSO
      *querystring.stringify(data)인지 .toString('utf8')붙여야 하는지 확인 필요
@@ -102,7 +105,6 @@ export class Client {
       const r: AxiosResponse = await axios.post(
         url,
         querystring.stringify(data),
-        { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },
       );
       if (r.status === 400) {
         throw new Error('INVALID_REQUEST');
@@ -111,13 +113,18 @@ export class Client {
       } else if (r.status !== 200) {
         throw new Error('UNKNOWN_ERROR');
       }
-      return await r.data();
+
+      const result =  r.data
+      console.log(result)
+      result.kaist_info = result.kaist_info ? JSON.parse(result.kaist_info) : {}
+      return result as SSOUser;
     } catch (e) {
+      console.error(e);
       throw new Error('INVALID_OBJECT');
     }
   }
 
-  public get_login_params(): [string, string] {
+  public get_login_params(): {url: string, state: string} {
     /*
     Get login parameters for SPARCS SSO login
     :returns: [url, state] where url is a url to redirect user,
@@ -129,14 +136,17 @@ export class Client {
      */
     const state: string = crypto.randomBytes(10).toString('hex');
     const params: Params = { client_id: this.client_id, state: state };
-
+    console.log(this.client_id)
+    console.log(state);
+    console.log(this.URLS['token_require'])
     const url: string = `${this.URLS['token_require']}?${querystring.stringify(
       params,
     )}`;
-    return [url, state];
+    console.log('url',url)
+    return {url, state}
   }
 
-  public async get_user_info(code: string): Promise<any> {
+  public async get_user_info(code: string): Promise<SSOUser> {
     /*
     Exchange a code to user information
     :param code: the code that given by SPARCS SSO server
@@ -149,11 +159,7 @@ export class Client {
       timestamp: timestamp,
       sign: sign,
     };
-    /**
-     * @SSO
-     * await 필요 없나...?
-     */
-    return await this._post_data(this.URLS['token_info'], params);
+    return await this._post_data(this.URLS.token_info, params);
   }
 
   public get_logout_url(sid: string, redirect_uri: string): string {
@@ -177,52 +183,6 @@ export class Client {
     return `${this.URLS['logout']}?${querystring.stringify(params)}`;
   }
 
-  public async get_point(sid: string): Promise<any> {
-    /*
-    Get a user's point
-    :param sid: the user's service id
-    :returns: the user's point
-    */
-    const r = await this.modify_point(sid, 0, '');
-    return r.point;
-  }
-
-  private async modify_point(
-    sid: string,
-    delta: number,
-    message: string,
-    lower_bound: number = 0,
-  ): Promise<any> {
-    /*
-    Modify a user's point
-    :param sid: the user's service id
-    :param delta: an increment / decrement point value
-    :param message: a message that displayed to the user
-    :param lower_bound: a minimum point value that required
-    :returns: a server response; check the full docs
-    */
-    const [sign, timestamp]: [string, number] = this._sign_payload([
-      sid,
-      delta,
-      message,
-      lower_bound,
-    ]);
-
-    const params: any = {
-      client_id: this.client_id,
-      sid: sid,
-      delta: delta,
-      message: message,
-      lower_bound: lower_bound,
-      timestamp: timestamp,
-      sign: sign,
-    };
-    /**
-     * @SSO
-     * await 필요 없나...?
-     */
-    return await this._post_data(this.URLS['point'], params);
-  }
 
   public async get_notice(
     offset: number = 0,

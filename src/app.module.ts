@@ -1,16 +1,25 @@
-import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { Module } from "@nestjs/common";
+import { AppController } from "./app.controller";
+import { AppService } from "./app.service";
 import { PrismaModule } from "./prisma/prisma.module";
 import { APP_GUARD } from "@nestjs/core";
-import { JwtCookieStrategy } from "./modules/auth/strategy/jwt-cookie.strategy";
+import { JwtCookieGuard } from "./modules/auth/guard/jwt-cookie.guard";
+import { AuthModule } from "./modules/auth/auth.module";
+import { MockAuthGuard } from "./modules/auth/guard/mock-auth-guard";
+import { JwtService } from "@nestjs/jwt";
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, AuthModule],
   controllers: [AppController],
-  providers: [    {
-    provide: APP_GUARD,
-    useExisting: JwtCookieStrategy,
-  },AppService],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: process.env.NODE_ENV === 'production' ? JwtCookieGuard : MockAuthGuard,
+    },
+    JwtCookieGuard,
+    MockAuthGuard,
+    AppService,
+    JwtService,
+  ]
 })
 export class AppModule {}

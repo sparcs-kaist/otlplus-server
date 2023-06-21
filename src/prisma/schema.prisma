@@ -261,8 +261,9 @@ model session_userprofile {
 //  portal_check                          Int?                                    @default(0)
   department_id                         Int?
   email                                 String?                                 @db.VarChar(255)
-  first_name                            String                       @db.VarChar(30)
-  last_name                             String                       @db.VarChar(150)
+  first_name                            String                                  @db.VarChar(30)
+  last_name                             String                                  @db.VarChar(150)
+  refresh_token                         String?                                 @db.VarChar(255)
   date_joined                DateTime                     @db.DateTime(0)
   main_ratedailyuserfeed                main_ratedailyuserfeed[]
   main_relatedcoursedailyuserfeed       main_relatedcoursedailyuserfeed[]

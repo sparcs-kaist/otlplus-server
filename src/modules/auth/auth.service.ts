@@ -5,6 +5,8 @@ import { Prisma, session_userprofile } from "@prisma/client";
 import { JwtService } from "@nestjs/jwt";
 import settings from "../../settings";
 import session from "express-session";
+import { SSOUser } from "../../common/interfaces/dto/auth/sso.dto";
+import { import_student_lectures } from "../../common/scholarDB/scripts";
 
 @Injectable()
 export class AuthService{
@@ -17,8 +19,45 @@ export class AuthService{
         return this.userRepository.findBySid(sid);
     }
 
-    public async ssoLogin(){
-        //@Todo: Implement SSO Login
+    public async ssoLogin(ssoProfile: SSOUser){
+        const sid = ssoProfile.sid;
+        let user = await this.findBySid(sid);
+
+        const kaistInfo = ssoProfile.kaist_info;
+        const studentId = kaistInfo.ku_std_no ?? '';
+
+        if (!user) {
+            user = await this.createUser(
+              sid,
+              ssoProfile['email'],
+              studentId,
+              ssoProfile['first_name'],
+              ssoProfile['last_name'],
+            );
+        } else {
+            if (user.student_id != studentId) {
+                await import_student_lectures(studentId);
+            }
+
+            const updateData = {
+                first_name: ssoProfile['first_name'],
+                last_name: ssoProfile['last_name'],
+                student_id: studentId,
+            };
+            user = await this.updateUser(user.id, updateData);
+        }
+
+        const { accessToken, ...accessTokenOptions } =
+          this.getCookieWithAccessToken(user);
+        const { refreshToken, ...refreshTokenOptions } =
+          this.getCookieWithRefreshToken(user);
+
+        return {
+            accessToken,
+            accessTokenOptions,
+            refreshToken,
+            refreshTokenOptions,
+        }
 
     }
 

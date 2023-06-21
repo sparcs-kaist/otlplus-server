@@ -12,12 +12,4 @@ export class UserService {
       throw new NotFoundException(`Can't find user with sid: ${sid}`);
     }
   }
-
-  public async import_student_lectures(studentId: string): Promise<void> {
-    /*
-    @Todo
-    implement this function.
-    this function uses sort of python script. I don't know what it is -larry
-     */
-  }
 }

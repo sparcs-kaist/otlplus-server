@@ -9,12 +9,15 @@ import morgan = require("morgan");
 import { PrismaService } from "../prisma/prisma.service";
 import cookieParser from "cookie-parser";
 import session from "express-session";
+import { MockAuthGuard } from "../modules/auth/guard/mock-auth-guard";
+import { JwtCookieGuard } from "../modules/auth/guard/jwt-cookie.guard";
 
 let cachedServer: Server;
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const {NODE_ENV} = process.env;
 
+  const app = await NestFactory.create(AppModule);
 
   app.enableVersioning({
     type: VersioningType.URI
@@ -30,7 +33,7 @@ async function bootstrap() {
 
   app.use(
     session({
-      secret: 'sessionid',
+      secret: 'p@ssw0rd',
       resave: false,
       saveUninitialized: false,
     })
@@ -60,23 +63,6 @@ async function bootstrap() {
     })
   );
 
-
-  // if (NODE_ENV === "local" || NODE_ENV === "sandbox") {
-  //   app.useGlobalGuards(new MockAuthGuard(new Reflector()));
-  // } else {
-  //   app.useGlobalGuards(new AuthGuard(new Reflector()));
-  // }
-
-  // if (!IS_PRODUCTION) {
-  //   const options = new DocumentBuilder()
-  //     .setTitle('CLASSUM API V3')
-  //     .setDescription('classum 서비스를 위한 api 문서입니다.')
-  //     .setVersion('3.0')
-  //     .addBasicAuth()
-  //     .build()
-  //   const document = SwaggerModule.createDocument(app, options)
-  //   SwaggerModule.setup('docs', app, document)
-  // }
   const prismaService = app.get(PrismaService);
   await prismaService.enableShutdownHooks(app)
   return app.listen(3000);

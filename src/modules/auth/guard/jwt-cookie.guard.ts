@@ -22,21 +22,6 @@ export class JwtCookieGuard extends AuthGuard("jwt-cookie") {
       return true;
     }
 
-    if(process.env.NODE_ENV!=='production'){
-      return this.mockAuth(context);
-    }
-
     return super.canActivate(context);
-  }
-
-  private mockAuth(context: ExecutionContext){
-    const request = context.switchToHttp().getRequest<Request>();
-    const sid = request.cookies["auth-cookie"];
-
-    if (sid) {
-      const payload = this.authService.findBySid(sid);
-      request["user"] = payload;
-      return true;
-    }
   }
 }

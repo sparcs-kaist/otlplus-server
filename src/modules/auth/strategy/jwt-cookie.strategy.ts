@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { AuthService } from '../auth.service';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { UserService } from "../../user/user.service";
+import settings from "../../../settings";
 
 
 /*
@@ -20,17 +21,18 @@ export class JwtCookieStrategy extends PassportStrategy(
     private readonly authService: AuthService,
   ) {
     super({
-      secretOrKey: process.env.ACCESS_SECRET,
+      secretOrKey: settings().getJwtConfig().secret,
       ignoreExpiration: false,
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request) => {
-          return request?.cookies?.Authentication;
+          return request?.cookies?.accessToken;
         },
       ]),
     });
   }
 
   async validate(payload) {
+    console.log(payload);
     return this.authService.findBySid(payload.sid);
   }
 }
