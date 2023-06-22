@@ -25,8 +25,8 @@ services:
     container_name: otlplus-server
     platform: linux/amd64
     build:
-      context: .
-      dockerfile: ./Dockerfile
+      context: ..
+      dockerfile: ./docker/Dockerfile.server
     restart: always
     tty: true
     ports:
