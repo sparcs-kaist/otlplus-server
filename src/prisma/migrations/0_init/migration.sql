@@ -3,8 +3,8 @@ CREATE TABLE `auth_group` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(150) NOT NULL,
 
-    UNIQUE INDEX `name`(`name`),
-    PRIMARY KEY (`id`)
+    UNIQUE INDEX `name`(`name` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -13,9 +13,9 @@ CREATE TABLE `auth_group_permissions` (
     `group_id` INTEGER NOT NULL,
     `permission_id` INTEGER NOT NULL,
 
-    INDEX `auth_group__permission_id_1f49ccbbdc69d2fc_fk_auth_permission_id`(`permission_id`),
-    UNIQUE INDEX `group_id`(`group_id`, `permission_id`),
-    PRIMARY KEY (`id`)
+    INDEX `auth_group__permission_id_1f49ccbbdc69d2fc_fk_auth_permission_id`(`permission_id` ASC),
+    UNIQUE INDEX `group_id`(`group_id` ASC, `permission_id` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -25,8 +25,8 @@ CREATE TABLE `auth_permission` (
     `content_type_id` INTEGER NOT NULL,
     `codename` VARCHAR(100) NOT NULL,
 
-    UNIQUE INDEX `content_type_id`(`content_type_id`, `codename`),
-    PRIMARY KEY (`id`)
+    UNIQUE INDEX `content_type_id`(`content_type_id` ASC, `codename` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -43,8 +43,8 @@ CREATE TABLE `auth_user` (
     `is_active` BOOLEAN NOT NULL,
     `date_joined` DATETIME(0) NOT NULL,
 
-    UNIQUE INDEX `username`(`username`),
-    PRIMARY KEY (`id`)
+    UNIQUE INDEX `username`(`username` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -53,9 +53,9 @@ CREATE TABLE `auth_user_groups` (
     `user_id` INTEGER NOT NULL,
     `group_id` INTEGER NOT NULL,
 
-    INDEX `auth_user_groups_group_id_33ac548dcf5f8e37_fk_auth_group_id`(`group_id`),
-    UNIQUE INDEX `user_id`(`user_id`, `group_id`),
-    PRIMARY KEY (`id`)
+    INDEX `auth_user_groups_group_id_33ac548dcf5f8e37_fk_auth_group_id`(`group_id` ASC),
+    UNIQUE INDEX `user_id`(`user_id` ASC, `group_id` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -64,9 +64,9 @@ CREATE TABLE `auth_user_user_permissions` (
     `user_id` INTEGER NOT NULL,
     `permission_id` INTEGER NOT NULL,
 
-    INDEX `auth_user_u_permission_id_384b62483d7071f0_fk_auth_permission_id`(`permission_id`),
-    UNIQUE INDEX `user_id`(`user_id`, `permission_id`),
-    PRIMARY KEY (`id`)
+    INDEX `auth_user_u_permission_id_384b62483d7071f0_fk_auth_permission_id`(`permission_id` ASC),
+    UNIQUE INDEX `user_id`(`user_id` ASC, `permission_id` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -80,9 +80,9 @@ CREATE TABLE `django_admin_log` (
     `content_type_id` INTEGER NULL,
     `user_id` INTEGER NOT NULL,
 
-    INDEX `djang_content_type_id_697914295151027a_fk_django_content_type_id`(`content_type_id`),
-    INDEX `django_admin_log_user_id_52fdd58701c5f563_fk_auth_user_id`(`user_id`),
-    PRIMARY KEY (`id`)
+    INDEX `djang_content_type_id_697914295151027a_fk_django_content_type_id`(`content_type_id` ASC),
+    INDEX `django_admin_log_user_id_52fdd58701c5f563_fk_auth_user_id`(`user_id` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -91,8 +91,8 @@ CREATE TABLE `django_content_type` (
     `app_label` VARCHAR(100) NOT NULL,
     `model` VARCHAR(100) NOT NULL,
 
-    UNIQUE INDEX `django_content_type_app_label_45f3b1d93ec8c61c_uniq`(`app_label`, `model`),
-    PRIMARY KEY (`id`)
+    UNIQUE INDEX `django_content_type_app_label_45f3b1d93ec8c61c_uniq`(`app_label` ASC, `model` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -102,7 +102,7 @@ CREATE TABLE `django_migrations` (
     `name` VARCHAR(255) NOT NULL,
     `applied` DATETIME(0) NOT NULL,
 
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -111,8 +111,70 @@ CREATE TABLE `django_session` (
     `session_data` LONGTEXT NOT NULL,
     `expire_date` DATETIME(0) NOT NULL,
 
-    INDEX `django_session_de54fa62`(`expire_date`),
-    PRIMARY KEY (`session_key`)
+    INDEX `django_session_de54fa62`(`expire_date` ASC),
+    PRIMARY KEY (`session_key` ASC)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `graduation_additionaltrack` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `start_year` INTEGER NOT NULL,
+    `end_year` INTEGER NOT NULL,
+    `type` VARCHAR(32) NOT NULL,
+    `major_required` INTEGER NOT NULL,
+    `major_elective` INTEGER NOT NULL,
+    `department_id` INTEGER NULL,
+
+    INDEX `graduation_additiona_department_id_788c5289_fk_subject_d`(`department_id` ASC),
+    UNIQUE INDEX `graduation_additionaltra_end_year_type_department_9d873c1b_uniq`(`end_year` ASC, `type` ASC, `department_id` ASC),
+    UNIQUE INDEX `graduation_additionaltra_start_year_type_departme_763552eb_uniq`(`start_year` ASC, `type` ASC, `department_id` ASC),
+    INDEX `graduation_additionaltrack_end_year_6af1030b`(`end_year` ASC),
+    INDEX `graduation_additionaltrack_start_year_7a87318d`(`start_year` ASC),
+    INDEX `graduation_additionaltrack_type_0fa38fc5`(`type` ASC),
+    PRIMARY KEY (`id` ASC)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `graduation_generaltrack` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `start_year` INTEGER NOT NULL,
+    `end_year` INTEGER NOT NULL,
+    `is_foreign` BOOLEAN NOT NULL,
+    `total_credit` INTEGER NOT NULL,
+    `total_au` INTEGER NOT NULL,
+    `basic_required` INTEGER NOT NULL,
+    `basic_elective` INTEGER NOT NULL,
+    `thesis_study` INTEGER NOT NULL,
+    `thesis_study_doublemajor` INTEGER NOT NULL,
+    `general_required_credit` INTEGER NOT NULL,
+    `general_required_au` INTEGER NOT NULL,
+    `humanities` INTEGER NOT NULL,
+    `humanities_doublemajor` INTEGER NOT NULL,
+
+    INDEX `graduation_generaltrack_end_year_3bba699e`(`end_year` ASC),
+    UNIQUE INDEX `graduation_generaltrack_end_year_is_foreign_1f062f8b_uniq`(`end_year` ASC, `is_foreign` ASC),
+    INDEX `graduation_generaltrack_is_foreign_d38919a2`(`is_foreign` ASC),
+    INDEX `graduation_generaltrack_start_year_00aee782`(`start_year` ASC),
+    UNIQUE INDEX `graduation_generaltrack_start_year_is_foreign_c1eb425f_uniq`(`start_year` ASC, `is_foreign` ASC),
+    PRIMARY KEY (`id` ASC)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `graduation_majortrack` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `start_year` INTEGER NOT NULL,
+    `end_year` INTEGER NOT NULL,
+    `basic_elective_doublemajor` INTEGER NOT NULL,
+    `major_required` INTEGER NOT NULL,
+    `major_elective` INTEGER NOT NULL,
+    `department_id` INTEGER NOT NULL,
+
+    INDEX `graduation_majortrac_department_id_81bfc8fa_fk_subject_d`(`department_id` ASC),
+    INDEX `graduation_majortrack_end_year_57017559`(`end_year` ASC),
+    UNIQUE INDEX `graduation_majortrack_end_year_department_id_b3ef1bc8_uniq`(`end_year` ASC, `department_id` ASC),
+    INDEX `graduation_majortrack_start_year_6281dc28`(`start_year` ASC),
+    UNIQUE INDEX `graduation_majortrack_start_year_department_id_59122c6d_uniq`(`start_year` ASC, `department_id` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -122,8 +184,8 @@ CREATE TABLE `main_famoushumanityreviewdailyfeed` (
     `priority` DOUBLE NOT NULL,
     `visible` BOOLEAN NOT NULL,
 
-    UNIQUE INDEX `main_famoushumanityreviewdailyfeed_date_0fbb607a_uniq`(`date`),
-    PRIMARY KEY (`id`)
+    UNIQUE INDEX `main_famoushumanityreviewdailyfeed_date_0fbb607a_uniq`(`date` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -132,9 +194,9 @@ CREATE TABLE `main_famoushumanityreviewdailyfeed_reviews` (
     `famoushumanityreviewdailyfeed_id` INTEGER NOT NULL,
     `review_id` INTEGER NOT NULL,
 
-    INDEX `main_famoushumanityreview_review_id_f305d8aa_fk_review_review_id`(`review_id`),
-    UNIQUE INDEX `main_famoushumani_famoushumanityreviewdailyfeed_id_97def4df_uniq`(`famoushumanityreviewdailyfeed_id`, `review_id`),
-    PRIMARY KEY (`id`)
+    UNIQUE INDEX `main_famoushumani_famoushumanityreviewdailyfeed_id_97def4df_uniq`(`famoushumanityreviewdailyfeed_id` ASC, `review_id` ASC),
+    INDEX `main_famoushumanityreview_review_id_f305d8aa_fk_review_review_id`(`review_id` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -145,9 +207,9 @@ CREATE TABLE `main_famousmajorreviewdailyfeed` (
     `department_id` INTEGER NOT NULL,
     `visible` BOOLEAN NOT NULL,
 
-    INDEX `main_famousmajorrevi_department_id_a0a5a3a5_fk_subject_d`(`department_id`),
-    UNIQUE INDEX `main_famousreviewdailyfeed_date_94cf00dd_uniq`(`date`, `department_id`),
-    PRIMARY KEY (`id`)
+    INDEX `main_famousmajorrevi_department_id_a0a5a3a5_fk_subject_d`(`department_id` ASC),
+    UNIQUE INDEX `main_famousreviewdailyfeed_date_94cf00dd_uniq`(`date` ASC, `department_id` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -156,9 +218,9 @@ CREATE TABLE `main_famousmajorreviewdailyfeed_reviews` (
     `famousmajorreviewdailyfeed_id` INTEGER NOT NULL,
     `review_id` INTEGER NOT NULL,
 
-    INDEX `main_famousmajorreviewdai_review_id_c0d3bbec_fk_review_review_id`(`review_id`),
-    UNIQUE INDEX `main_famousreviewdailyfee_famousreviewdailyfeed_id_12d71d0b_uniq`(`famousmajorreviewdailyfeed_id`, `review_id`),
-    PRIMARY KEY (`id`)
+    INDEX `main_famousmajorreviewdai_review_id_c0d3bbec_fk_review_review_id`(`review_id` ASC),
+    UNIQUE INDEX `main_famousreviewdailyfee_famousreviewdailyfeed_id_12d71d0b_uniq`(`famousmajorreviewdailyfeed_id` ASC, `review_id` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -169,9 +231,9 @@ CREATE TABLE `main_rankedreviewdailyfeed` (
     `visible` BOOLEAN NOT NULL,
     `semester_id` INTEGER NULL,
 
-    UNIQUE INDEX `main_rankedreviewdailyfeed_date_635bca2a_uniq`(`date`),
-    INDEX `main_rankedreviewdai_semester_id_f71e3a66_fk_subject_s`(`semester_id`),
-    PRIMARY KEY (`id`)
+    INDEX `main_rankedreviewdai_semester_id_f71e3a66_fk_subject_s`(`semester_id` ASC),
+    UNIQUE INDEX `main_rankedreviewdailyfeed_date_635bca2a_uniq`(`date` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -182,9 +244,9 @@ CREATE TABLE `main_ratedailyuserfeed` (
     `visible` BOOLEAN NOT NULL,
     `user_id` INTEGER NOT NULL,
 
-    INDEX `main_ratedailyuserfe_user_id_31a534d5_fk_session_u`(`user_id`),
-    UNIQUE INDEX `main_ratedailyuserfeed_date_user_id_4142794f_uniq`(`date`, `user_id`),
-    PRIMARY KEY (`id`)
+    INDEX `main_ratedailyuserfe_user_id_31a534d5_fk_session_u`(`user_id` ASC),
+    UNIQUE INDEX `main_ratedailyuserfeed_date_user_id_4142794f_uniq`(`date` ASC, `user_id` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -196,10 +258,10 @@ CREATE TABLE `main_relatedcoursedailyuserfeed` (
     `user_id` INTEGER NOT NULL,
     `visible` BOOLEAN NOT NULL,
 
-    INDEX `main_relatedcourseda_course_id_129fc5e2_fk_subject_c`(`course_id`),
-    INDEX `main_relatedcoursedai_user_id_a1be2390_fk_session_userprofile_id`(`user_id`),
-    UNIQUE INDEX `main_relatedcoursedailyuserfeed_date_6043d8bb_uniq`(`date`, `user_id`),
-    PRIMARY KEY (`id`)
+    INDEX `main_relatedcourseda_course_id_129fc5e2_fk_subject_c`(`course_id` ASC),
+    INDEX `main_relatedcoursedai_user_id_a1be2390_fk_session_userprofile_id`(`user_id` ASC),
+    UNIQUE INDEX `main_relatedcoursedailyuserfeed_date_6043d8bb_uniq`(`date` ASC, `user_id` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -211,24 +273,102 @@ CREATE TABLE `main_reviewwritedailyuserfeed` (
     `user_id` INTEGER NOT NULL,
     `visible` BOOLEAN NOT NULL,
 
-    INDEX `main_reviewwritedail_lecture_id_75ed0f87_fk_subject_l`(`lecture_id`),
-    INDEX `main_reviewwritedaily_user_id_9ffd0881_fk_session_userprofile_id`(`user_id`),
-    UNIQUE INDEX `main_reviewwritedailyuserfeed_date_1e7bc6d7_uniq`(`date`, `user_id`),
-    PRIMARY KEY (`id`)
+    INDEX `main_reviewwritedail_lecture_id_75ed0f87_fk_subject_l`(`lecture_id` ASC),
+    INDEX `main_reviewwritedaily_user_id_9ffd0881_fk_session_userprofile_id`(`user_id` ASC),
+    UNIQUE INDEX `main_reviewwritedailyuserfeed_date_1e7bc6d7_uniq`(`date` ASC, `user_id` ASC),
+    PRIMARY KEY (`id` ASC)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `planner_arbitraryplanneritem` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `is_excluded` BOOLEAN NOT NULL,
+    `year` INTEGER NOT NULL,
+    `semester` INTEGER NOT NULL,
+    `type` VARCHAR(12) NOT NULL,
+    `type_en` VARCHAR(36) NOT NULL,
+    `credit` INTEGER NOT NULL,
+    `credit_au` INTEGER NOT NULL,
+    `department_id` INTEGER NULL,
+    `planner_id` INTEGER NOT NULL,
+
+    INDEX `planner_arbitrarypla_department_id_0dc7ce25_fk_subject_d`(`department_id` ASC),
+    INDEX `planner_arbitrarypla_planner_id_d6069d2c_fk_planner_p`(`planner_id` ASC),
+    INDEX `planner_arbitraryplanneritem_semester_7508baa5`(`semester` ASC),
+    INDEX `planner_arbitraryplanneritem_year_5a0c7252`(`year` ASC),
+    PRIMARY KEY (`id` ASC)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `planner_futureplanneritem` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `is_excluded` BOOLEAN NOT NULL,
+    `year` INTEGER NOT NULL,
+    `semester` INTEGER NOT NULL,
+    `course_id` INTEGER NOT NULL,
+    `planner_id` INTEGER NOT NULL,
+
+    INDEX `planner_futureplanne_course_id_b1a06444_fk_subject_c`(`course_id` ASC),
+    INDEX `planner_futureplanne_planner_id_dfd70193_fk_planner_p`(`planner_id` ASC),
+    INDEX `planner_futureplanneritem_semester_cda6512e`(`semester` ASC),
+    INDEX `planner_futureplanneritem_year_5e3a2d4e`(`year` ASC),
+    PRIMARY KEY (`id` ASC)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `planner_planner` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `start_year` INTEGER NOT NULL,
+    `end_year` INTEGER NOT NULL,
+    `arrange_order` SMALLINT NOT NULL,
+    `general_track_id` INTEGER NOT NULL,
+    `major_track_id` INTEGER NOT NULL,
+    `user_id` INTEGER NOT NULL,
+
+    INDEX `planner_planner_arrange_order_e50a3044`(`arrange_order` ASC),
+    INDEX `planner_planner_end_year_e5fab7f3`(`end_year` ASC),
+    INDEX `planner_planner_general_track_id_6d607973_fk_graduatio`(`general_track_id` ASC),
+    INDEX `planner_planner_major_track_id_9f7204bd_fk_graduatio`(`major_track_id` ASC),
+    INDEX `planner_planner_start_year_463173f3`(`start_year` ASC),
+    INDEX `planner_planner_user_id_17740247_fk_session_userprofile_id`(`user_id` ASC),
+    PRIMARY KEY (`id` ASC)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `planner_planner_additional_tracks` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `planner_id` INTEGER NOT NULL,
+    `additionaltrack_id` INTEGER NOT NULL,
+
+    INDEX `planner_planner_addi_additionaltrack_id_c46b8c4e_fk_graduatio`(`additionaltrack_id` ASC),
+    UNIQUE INDEX `planner_planner_addition_planner_id_additionaltra_2298c5cd_uniq`(`planner_id` ASC, `additionaltrack_id` ASC),
+    PRIMARY KEY (`id` ASC)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `planner_takenplanneritem` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `is_excluded` BOOLEAN NOT NULL,
+    `lecture_id` INTEGER NOT NULL,
+    `planner_id` INTEGER NOT NULL,
+
+    INDEX `planner_takenplanner_lecture_id_9b2d30d8_fk_subject_l`(`lecture_id` ASC),
+    UNIQUE INDEX `planner_takenplanneritem_planner_id_lecture_id_4b39b432_uniq`(`planner_id` ASC, `lecture_id` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `review_humanitybestreview` (
     `review_id` INTEGER NOT NULL,
 
-    PRIMARY KEY (`review_id`)
+    PRIMARY KEY (`review_id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `review_majorbestreview` (
     `review_id` INTEGER NOT NULL,
 
-    PRIMARY KEY (`review_id`)
+    PRIMARY KEY (`review_id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -247,9 +387,9 @@ CREATE TABLE `review_review` (
     `is_deleted` INTEGER NOT NULL,
     `written_datetime` DATETIME(0) NULL,
 
-    INDEX `review_comment_e5e30a4a`(`written_datetime`),
-    UNIQUE INDEX `review_comment_writer_id_af700a5d_uniq`(`writer_id`, `lecture_id`),
-    PRIMARY KEY (`id`)
+    INDEX `review_comment_e5e30a4a`(`written_datetime` ASC),
+    UNIQUE INDEX `review_comment_writer_id_af700a5d_uniq`(`writer_id` ASC, `lecture_id` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -259,9 +399,9 @@ CREATE TABLE `review_reviewvote` (
     `userprofile_id` INTEGER NULL,
     `created_datetime` DATETIME(6) NULL,
 
-    INDEX `review_reviewvote_created_datetime_450f85e2`(`created_datetime`),
-    UNIQUE INDEX `review_commentvote_comment_id_e4594aea_uniq`(`review_id`, `userprofile_id`),
-    PRIMARY KEY (`id`)
+    UNIQUE INDEX `review_commentvote_comment_id_e4594aea_uniq`(`review_id` ASC, `userprofile_id` ASC),
+    INDEX `review_reviewvote_created_datetime_450f85e2`(`created_datetime` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -275,8 +415,8 @@ CREATE TABLE `session_userprofile` (
     `department_id` INTEGER NULL,
     `email` VARCHAR(255) NULL,
 
-    UNIQUE INDEX `session_userprofile_user_id_09dd6af1_uniq`(`user_id`),
-    PRIMARY KEY (`id`)
+    UNIQUE INDEX `session_userprofile_user_id_09dd6af1_uniq`(`user_id` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -285,8 +425,8 @@ CREATE TABLE `session_userprofile_favorite_departments` (
     `userprofile_id` INTEGER NOT NULL,
     `department_id` INTEGER NOT NULL,
 
-    UNIQUE INDEX `userprofile_id`(`userprofile_id`, `department_id`),
-    PRIMARY KEY (`id`)
+    UNIQUE INDEX `userprofile_id`(`userprofile_id` ASC, `department_id` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -295,9 +435,9 @@ CREATE TABLE `session_userprofile_majors` (
     `userprofile_id` INTEGER NOT NULL,
     `department_id` INTEGER NOT NULL,
 
-    INDEX `session_userprof_department_id_db568678_fk_subject_department_id`(`department_id`),
-    UNIQUE INDEX `session_userprofile_majors_userprofile_id_12b76c49_uniq`(`userprofile_id`, `department_id`),
-    PRIMARY KEY (`id`)
+    INDEX `session_userprof_department_id_db568678_fk_subject_department_id`(`department_id` ASC),
+    UNIQUE INDEX `session_userprofile_majors_userprofile_id_12b76c49_uniq`(`userprofile_id` ASC, `department_id` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -306,9 +446,9 @@ CREATE TABLE `session_userprofile_minors` (
     `userprofile_id` INTEGER NOT NULL,
     `department_id` INTEGER NOT NULL,
 
-    INDEX `session_userprof_department_id_7a7ea3ed_fk_subject_department_id`(`department_id`),
-    UNIQUE INDEX `session_userprofile_minors_userprofile_id_d01e3e38_uniq`(`userprofile_id`, `department_id`),
-    PRIMARY KEY (`id`)
+    INDEX `session_userprof_department_id_7a7ea3ed_fk_subject_department_id`(`department_id` ASC),
+    UNIQUE INDEX `session_userprofile_minors_userprofile_id_d01e3e38_uniq`(`userprofile_id` ASC, `department_id` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -317,9 +457,9 @@ CREATE TABLE `session_userprofile_specialized_major` (
     `userprofile_id` INTEGER NOT NULL,
     `department_id` INTEGER NOT NULL,
 
-    INDEX `session_userprof_department_id_919e11be_fk_subject_department_id`(`department_id`),
-    UNIQUE INDEX `session_userprofile_specialized_maj_userprofile_id_3951a553_uniq`(`userprofile_id`, `department_id`),
-    PRIMARY KEY (`id`)
+    INDEX `session_userprof_department_id_919e11be_fk_subject_department_id`(`department_id` ASC),
+    UNIQUE INDEX `session_userprofile_specialized_maj_userprofile_id_3951a553_uniq`(`userprofile_id` ASC, `department_id` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -328,8 +468,8 @@ CREATE TABLE `session_userprofile_taken_lectures` (
     `userprofile_id` INTEGER NOT NULL,
     `lecture_id` INTEGER NOT NULL,
 
-    UNIQUE INDEX `userprofile_id`(`userprofile_id`, `lecture_id`),
-    PRIMARY KEY (`id`)
+    UNIQUE INDEX `userprofile_id`(`userprofile_id` ASC, `lecture_id` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -346,8 +486,8 @@ CREATE TABLE `subject_classtime` (
     `unit_time` SMALLINT NULL,
     `lecture_id` INTEGER NULL,
 
-    INDEX `subject_classtime_72a11f01`(`lecture_id`),
-    PRIMARY KEY (`id`)
+    INDEX `subject_classtime_72a11f01`(`lecture_id` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -369,7 +509,7 @@ CREATE TABLE `subject_course` (
     `speech` DOUBLE NOT NULL,
     `latest_written_datetime` DATETIME(0) NULL,
 
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -378,8 +518,8 @@ CREATE TABLE `subject_course_professors` (
     `course_id` INTEGER NOT NULL,
     `professor_id` INTEGER NOT NULL,
 
-    UNIQUE INDEX `course_id`(`course_id`, `professor_id`),
-    PRIMARY KEY (`id`)
+    UNIQUE INDEX `course_id`(`course_id` ASC, `professor_id` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -388,9 +528,9 @@ CREATE TABLE `subject_course_related_courses_posterior` (
     `from_course_id` INTEGER NOT NULL,
     `to_course_id` INTEGER NOT NULL,
 
-    INDEX `subject_course_relat_to_course_id_5fbd4d28_fk_subject_c`(`to_course_id`),
-    UNIQUE INDEX `subject_course_related_c_from_course_id_to_course_eaec2f22_uniq`(`from_course_id`, `to_course_id`),
-    PRIMARY KEY (`id`)
+    INDEX `subject_course_relat_to_course_id_5fbd4d28_fk_subject_c`(`to_course_id` ASC),
+    UNIQUE INDEX `subject_course_related_c_from_course_id_to_course_eaec2f22_uniq`(`from_course_id` ASC, `to_course_id` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -399,9 +539,9 @@ CREATE TABLE `subject_course_related_courses_prior` (
     `from_course_id` INTEGER NOT NULL,
     `to_course_id` INTEGER NOT NULL,
 
-    INDEX `subject_course_relat_to_course_id_52f44705_fk_subject_c`(`to_course_id`),
-    UNIQUE INDEX `subject_course_related_c_from_course_id_to_course_74e1ae5f_uniq`(`from_course_id`, `to_course_id`),
-    PRIMARY KEY (`id`)
+    INDEX `subject_course_relat_to_course_id_52f44705_fk_subject_c`(`to_course_id` ASC),
+    UNIQUE INDEX `subject_course_related_c_from_course_id_to_course_74e1ae5f_uniq`(`from_course_id` ASC, `to_course_id` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -411,9 +551,9 @@ CREATE TABLE `subject_courseuser` (
     `course_id` INTEGER NOT NULL,
     `user_profile_id` INTEGER NOT NULL,
 
-    INDEX `subject_courseuser_user_profile_id_4d15ef1b_fk_session_u`(`user_profile_id`),
-    UNIQUE INDEX `subject_courseuser_course_id_a26ac0b3_uniq`(`course_id`, `user_profile_id`),
-    PRIMARY KEY (`id`)
+    UNIQUE INDEX `subject_courseuser_course_id_a26ac0b3_uniq`(`course_id` ASC, `user_profile_id` ASC),
+    INDEX `subject_courseuser_user_profile_id_4d15ef1b_fk_session_u`(`user_profile_id` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -425,7 +565,7 @@ CREATE TABLE `subject_department` (
     `name_en` VARCHAR(60) NULL,
     `visible` BOOLEAN NOT NULL,
 
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -436,8 +576,8 @@ CREATE TABLE `subject_examtime` (
     `end` TIME(0) NOT NULL,
     `lecture_id` INTEGER NOT NULL,
 
-    INDEX `subject_examtime_72a11f01`(`lecture_id`),
-    PRIMARY KEY (`id`)
+    INDEX `subject_examtime_72a11f01`(`lecture_id` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -475,9 +615,9 @@ CREATE TABLE `subject_lecture` (
     `common_title` VARCHAR(100) NULL,
     `common_title_en` VARCHAR(100) NULL,
 
-    INDEX `subject_lecture_deleted_bedc6156_uniq`(`deleted`),
-    INDEX `subject_lecture_type_en_45ee2d3a_uniq`(`type_en`),
-    PRIMARY KEY (`id`)
+    INDEX `subject_lecture_deleted_bedc6156_uniq`(`deleted` ASC),
+    INDEX `subject_lecture_type_en_45ee2d3a_uniq`(`type_en` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -486,8 +626,8 @@ CREATE TABLE `subject_lecture_professors` (
     `lecture_id` INTEGER NOT NULL,
     `professor_id` INTEGER NOT NULL,
 
-    UNIQUE INDEX `lecture_id`(`lecture_id`, `professor_id`),
-    PRIMARY KEY (`id`)
+    UNIQUE INDEX `lecture_id`(`lecture_id` ASC, `professor_id` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -505,7 +645,7 @@ CREATE TABLE `subject_professor` (
     `load` DOUBLE NOT NULL,
     `speech` DOUBLE NOT NULL,
 
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -514,8 +654,8 @@ CREATE TABLE `subject_professor_course_list` (
     `professor_id` INTEGER NOT NULL,
     `course_id` INTEGER NOT NULL,
 
-    UNIQUE INDEX `professor_id`(`professor_id`, `course_id`),
-    PRIMARY KEY (`id`)
+    UNIQUE INDEX `professor_id`(`professor_id` ASC, `course_id` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -533,10 +673,10 @@ CREATE TABLE `subject_semester` (
     `gradePosting` DATETIME(0) NULL,
     `courseDesciptionSubmission` DATETIME(0) NULL,
 
-    INDEX `subject_semester_1b3810e0`(`semester`),
-    INDEX `subject_semester_84cdc76c`(`year`),
-    UNIQUE INDEX `subject_semester_year_680c861f_uniq`(`year`, `semester`),
-    PRIMARY KEY (`id`)
+    INDEX `subject_semester_1b3810e0`(`semester` ASC),
+    INDEX `subject_semester_84cdc76c`(`year` ASC),
+    UNIQUE INDEX `subject_semester_year_680c861f_uniq`(`year` ASC, `semester` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -547,7 +687,7 @@ CREATE TABLE `support_notice` (
     `title` VARCHAR(100) NOT NULL,
     `content` LONGTEXT NOT NULL,
 
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -559,9 +699,9 @@ CREATE TABLE `support_rate` (
     `user_id` INTEGER NOT NULL,
     `version` VARCHAR(20) NOT NULL,
 
-    INDEX `support_rate_created_datetime_d38a29eb`(`created_datetime`),
-    UNIQUE INDEX `support_rate_user_id_year_a62fc7f7_uniq`(`user_id`, `year`),
-    PRIMARY KEY (`id`)
+    INDEX `support_rate_created_datetime_d38a29eb`(`created_datetime` ASC),
+    UNIQUE INDEX `support_rate_user_id_year_a62fc7f7_uniq`(`user_id` ASC, `year` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -572,7 +712,7 @@ CREATE TABLE `timetable_oldtimetable` (
     `semester` SMALLINT NULL,
     `table_no` SMALLINT NULL,
 
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -581,9 +721,9 @@ CREATE TABLE `timetable_oldtimetable_lectures` (
     `oldtimetable_id` INTEGER NOT NULL,
     `lecture_id` INTEGER NOT NULL,
 
-    INDEX `timetable_oldtimetable_lecture_id_b19d5300_fk_subject_lecture_id`(`lecture_id`),
-    UNIQUE INDEX `timetable_oldtimetable_lecture_oldtimetable_id_27bf3d09_uniq`(`oldtimetable_id`, `lecture_id`),
-    PRIMARY KEY (`id`)
+    INDEX `timetable_oldtimetable_lecture_id_b19d5300_fk_subject_lecture_id`(`lecture_id` ASC),
+    UNIQUE INDEX `timetable_oldtimetable_lecture_oldtimetable_id_27bf3d09_uniq`(`oldtimetable_id` ASC, `lecture_id` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -594,11 +734,11 @@ CREATE TABLE `timetable_timetable` (
     `user_id` INTEGER NOT NULL,
     `arrange_order` SMALLINT NOT NULL,
 
-    INDEX `timetable_timetable_arrange_order_84c8935c`(`arrange_order`),
-    INDEX `timetable_timetable_semester_d8ce5d37_uniq`(`semester`),
-    INDEX `timetable_timetable_user_id_0d214170_fk_session_userprofile_id`(`user_id`),
-    INDEX `timetable_timetable_year_907cf59a_uniq`(`year`),
-    PRIMARY KEY (`id`)
+    INDEX `timetable_timetable_arrange_order_84c8935c`(`arrange_order` ASC),
+    INDEX `timetable_timetable_semester_d8ce5d37_uniq`(`semester` ASC),
+    INDEX `timetable_timetable_user_id_0d214170_fk_session_userprofile_id`(`user_id` ASC),
+    INDEX `timetable_timetable_year_907cf59a_uniq`(`year` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -607,9 +747,9 @@ CREATE TABLE `timetable_timetable_lectures` (
     `timetable_id` INTEGER NOT NULL,
     `lecture_id` INTEGER NOT NULL,
 
-    INDEX `timetable_timetable_le_lecture_id_79aa5f2e_fk_subject_lecture_id`(`lecture_id`),
-    UNIQUE INDEX `timetable_timetable_lecture_timetable_id_57195f56_uniq`(`timetable_id`, `lecture_id`),
-    PRIMARY KEY (`id`)
+    INDEX `timetable_timetable_le_lecture_id_79aa5f2e_fk_subject_lecture_id`(`lecture_id` ASC),
+    UNIQUE INDEX `timetable_timetable_lecture_timetable_id_57195f56_uniq`(`timetable_id` ASC, `lecture_id` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -617,8 +757,8 @@ CREATE TABLE `timetable_wishlist` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `user_id` INTEGER NOT NULL,
 
-    UNIQUE INDEX `user_id`(`user_id`),
-    PRIMARY KEY (`id`)
+    UNIQUE INDEX `user_id`(`user_id` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -627,9 +767,9 @@ CREATE TABLE `timetable_wishlist_lectures` (
     `wishlist_id` INTEGER NOT NULL,
     `lecture_id` INTEGER NOT NULL,
 
-    INDEX `timetable_wishlist_lec_lecture_id_1ab5d523_fk_subject_lecture_id`(`lecture_id`),
-    UNIQUE INDEX `timetable_wishlist_lectures_wishlist_id_e4c47efe_uniq`(`wishlist_id`, `lecture_id`),
-    PRIMARY KEY (`id`)
+    INDEX `timetable_wishlist_lec_lecture_id_1ab5d523_fk_subject_lecture_id`(`lecture_id` ASC),
+    UNIQUE INDEX `timetable_wishlist_lectures_wishlist_id_e4c47efe_uniq`(`wishlist_id` ASC, `lecture_id` ASC),
+    PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
@@ -658,6 +798,12 @@ ALTER TABLE `django_admin_log` ADD CONSTRAINT `djang_content_type_id_69791429515
 
 -- AddForeignKey
 ALTER TABLE `django_admin_log` ADD CONSTRAINT `django_admin_log_user_id_52fdd58701c5f563_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `graduation_additionaltrack` ADD CONSTRAINT `graduation_additiona_department_id_788c5289_fk_subject_d` FOREIGN KEY (`department_id`) REFERENCES `subject_department`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `graduation_majortrack` ADD CONSTRAINT `graduation_majortrac_department_id_81bfc8fa_fk_subject_d` FOREIGN KEY (`department_id`) REFERENCES `subject_department`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
 ALTER TABLE `main_famoushumanityreviewdailyfeed_reviews` ADD CONSTRAINT `e567529fdfd543a96610b342fea2bb84` FOREIGN KEY (`famoushumanityreviewdailyfeed_id`) REFERENCES `main_famoushumanityreviewdailyfeed`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
@@ -691,6 +837,39 @@ ALTER TABLE `main_reviewwritedailyuserfeed` ADD CONSTRAINT `main_reviewwritedail
 
 -- AddForeignKey
 ALTER TABLE `main_reviewwritedailyuserfeed` ADD CONSTRAINT `main_reviewwritedaily_user_id_9ffd0881_fk_session_userprofile_id` FOREIGN KEY (`user_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `planner_arbitraryplanneritem` ADD CONSTRAINT `planner_arbitrarypla_department_id_0dc7ce25_fk_subject_d` FOREIGN KEY (`department_id`) REFERENCES `subject_department`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `planner_arbitraryplanneritem` ADD CONSTRAINT `planner_arbitrarypla_planner_id_d6069d2c_fk_planner_p` FOREIGN KEY (`planner_id`) REFERENCES `planner_planner`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `planner_futureplanneritem` ADD CONSTRAINT `planner_futureplanne_course_id_b1a06444_fk_subject_c` FOREIGN KEY (`course_id`) REFERENCES `subject_course`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `planner_futureplanneritem` ADD CONSTRAINT `planner_futureplanne_planner_id_dfd70193_fk_planner_p` FOREIGN KEY (`planner_id`) REFERENCES `planner_planner`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `planner_planner` ADD CONSTRAINT `planner_planner_general_track_id_6d607973_fk_graduatio` FOREIGN KEY (`general_track_id`) REFERENCES `graduation_generaltrack`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `planner_planner` ADD CONSTRAINT `planner_planner_major_track_id_9f7204bd_fk_graduatio` FOREIGN KEY (`major_track_id`) REFERENCES `graduation_majortrack`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `planner_planner` ADD CONSTRAINT `planner_planner_user_id_17740247_fk_session_userprofile_id` FOREIGN KEY (`user_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `planner_planner_additional_tracks` ADD CONSTRAINT `planner_planner_addi_additionaltrack_id_c46b8c4e_fk_graduatio` FOREIGN KEY (`additionaltrack_id`) REFERENCES `graduation_additionaltrack`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `planner_planner_additional_tracks` ADD CONSTRAINT `planner_planner_addi_planner_id_e439a309_fk_planner_p` FOREIGN KEY (`planner_id`) REFERENCES `planner_planner`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `planner_takenplanneritem` ADD CONSTRAINT `planner_takenplanner_lecture_id_9b2d30d8_fk_subject_l` FOREIGN KEY (`lecture_id`) REFERENCES `subject_lecture`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE `planner_takenplanneritem` ADD CONSTRAINT `planner_takenplanner_planner_id_b725ff83_fk_planner_p` FOREIGN KEY (`planner_id`) REFERENCES `planner_planner`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
 ALTER TABLE `session_userprofile_majors` ADD CONSTRAINT `session_userpr_userprofile_id_20f3742a_fk_session_userprofile_id` FOREIGN KEY (`userprofile_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;

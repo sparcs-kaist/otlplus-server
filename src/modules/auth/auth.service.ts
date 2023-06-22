@@ -4,6 +4,7 @@ import { UserRepository } from "../../prisma/repositories/user.repository";
 import { Prisma, session_userprofile } from "@prisma/client";
 import { JwtService } from "@nestjs/jwt";
 import settings from "../../settings";
+import * as bcrypt from "bcrypt";
 import session from "express-session";
 import { SSOUser } from "../../common/interfaces/dto/auth/sso.dto";
 import { import_student_lectures } from "../../common/scholarDB/scripts";
@@ -26,6 +27,15 @@ export class AuthService{
         const kaistInfo = ssoProfile.kaist_info;
         const studentId = kaistInfo.ku_std_no ?? '';
 
+
+        const { accessToken, ...accessTokenOptions } =
+          this.getCookieWithAccessToken(sid);
+        const { refreshToken, ...refreshTokenOptions } =
+          this.getCookieWithRefreshToken(sid);
+
+        const salt = await bcrypt.genSalt(Number(process.env.saltRounds));
+        const encryptedRefreshToken = await bcrypt.hash(refreshToken, salt);
+
         if (!user) {
             user = await this.createUser(
               sid,
@@ -33,6 +43,7 @@ export class AuthService{
               studentId,
               ssoProfile['first_name'],
               ssoProfile['last_name'],
+              encryptedRefreshToken,
             );
         } else {
             if (user.student_id != studentId) {
@@ -43,14 +54,11 @@ export class AuthService{
                 first_name: ssoProfile['first_name'],
                 last_name: ssoProfile['last_name'],
                 student_id: studentId,
+                refresh_token: encryptedRefreshToken
             };
             user = await this.updateUser(user.id, updateData);
         }
 
-        const { accessToken, ...accessTokenOptions } =
-          this.getCookieWithAccessToken(user);
-        const { refreshToken, ...refreshTokenOptions } =
-          this.getCookieWithRefreshToken(user);
 
         return {
             accessToken,
@@ -61,9 +69,13 @@ export class AuthService{
 
     }
 
-    public getCookieWithAccessToken(user: session_userprofile) {
+    public getCookieWithToken<T extends "refreshToken" | "accessToken">(sid: string){
+
+    }
+
+    public getCookieWithAccessToken(sid: string) {
         const payload = {
-            sid: user.sid
+            sid: sid
         };
 
         const jwtConfig = settings().getJwtConfig();
@@ -79,15 +91,15 @@ export class AuthService{
         };
     }
 
-    public getCookieWithRefreshToken(user: session_userprofile) {
+    public getCookieWithRefreshToken(sid: string) {
         const payload = {
-            sid: user.sid
+            sid: sid
         };
 
         const jwtConfig = settings().getJwtConfig();
         const refreshToken = this.jwtService.sign(payload, {
             secret: jwtConfig.secret,
-            expiresIn: jwtConfig.signOptions.expiresIn + 's',
+            expiresIn: jwtConfig.signOptions.refreshExpiresIn + 's',
         });
         return {
             refreshToken: refreshToken,
@@ -97,7 +109,10 @@ export class AuthService{
         };
     }
 
-    async createUser(sid:string, email:string, studentId: string, firstName: string, lastName: string): Promise<session_userprofile> {
+
+
+
+    async createUser(sid:string, email:string, studentId: string, firstName: string, lastName: string, refreshToken: string): Promise<session_userprofile> {
         const user = {
             sid: sid,
             email: email,
@@ -105,6 +120,7 @@ export class AuthService{
             last_name: lastName,
             date_joined: new Date(),
             student_id: studentId,
+            refreshToken: refreshToken
         }
         return await this.userRepository.createUser(user)
     }

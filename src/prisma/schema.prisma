@@ -254,20 +254,18 @@ model review_reviewvote {
 
 model session_userprofile {
   id                                    Int                                     @id @default(autoincrement())
-//  user_id                               Int                                     @unique(map: "session_userprofile_user_id_09dd6af1_uniq")
   student_id                            String                                  @db.VarChar(10)
   sid                                   String                                  @db.VarChar(30)
-//  language                              String                                  @db.VarChar(15)
-//  portal_check                          Int?                                    @default(0)
   department_id                         Int?
   email                                 String?                                 @db.VarChar(255)
+  date_joined                           DateTime                                @db.DateTime(0)
   first_name                            String                                  @db.VarChar(30)
   last_name                             String                                  @db.VarChar(150)
   refresh_token                         String?                                 @db.VarChar(255)
-  date_joined                DateTime                     @db.DateTime(0)
   main_ratedailyuserfeed                main_ratedailyuserfeed[]
   main_relatedcoursedailyuserfeed       main_relatedcoursedailyuserfeed[]
   main_reviewwritedailyuserfeed         main_reviewwritedailyuserfeed[]
+  planner_planner                       planner_planner[]
   session_userprofile_majors            session_userprofile_majors[]
   session_userprofile_minors            session_userprofile_minors[]
   session_userprofile_specialized_major session_userprofile_specialized_major[]
@@ -361,6 +359,7 @@ model subject_course {
   speech                                                                                                           Float
   latest_written_datetime                                                                                          DateTime?                                  @db.DateTime(0)
   main_relatedcoursedailyuserfeed                                                                                  main_relatedcoursedailyuserfeed[]
+  planner_futureplanneritem                                                                                        planner_futureplanneritem[]
   subject_course_related_courses_posterior_subject_course_related_courses_posterior_from_course_idTosubject_course subject_course_related_courses_posterior[] @relation("subject_course_related_courses_posterior_from_course_idTosubject_course")
   subject_course_related_courses_posterior_subject_course_related_courses_posterior_to_course_idTosubject_course   subject_course_related_courses_posterior[] @relation("subject_course_related_courses_posterior_to_course_idTosubject_course")
   subject_course_related_courses_prior_subject_course_related_courses_prior_from_course_idTosubject_course         subject_course_related_courses_prior[]     @relation("subject_course_related_courses_prior_from_course_idTosubject_course")
@@ -417,7 +416,10 @@ model subject_department {
   name                                  String                                  @db.VarChar(60)
   name_en                               String?                                 @db.VarChar(60)
   visible                               Boolean
+  graduation_additionaltrack            graduation_additionaltrack[]
+  graduation_majortrack                 graduation_majortrack[]
   main_famousmajorreviewdailyfeed       main_famousmajorreviewdailyfeed[]
+  planner_arbitraryplanneritem          planner_arbitraryplanneritem[]
   session_userprofile_majors            session_userprofile_majors[]
   session_userprofile_minors            session_userprofile_minors[]
   session_userprofile_specialized_major session_userprofile_specialized_major[]
@@ -468,6 +470,7 @@ model subject_lecture {
   common_title                    String?                           @db.VarChar(100)
   common_title_en                 String?                           @db.VarChar(100)
   main_reviewwritedailyuserfeed   main_reviewwritedailyuserfeed[]
+  planner_takenplanneritem        planner_takenplanneritem[]
   subject_classtime               subject_classtime[]
   subject_examtime                subject_examtime[]
   timetable_oldtimetable_lectures timetable_oldtimetable_lectures[]
@@ -612,4 +615,148 @@ model timetable_wishlist_lectures {
 
   @@unique([wishlist_id, lecture_id], map: "timetable_wishlist_lectures_wishlist_id_e4c47efe_uniq")
   @@index([lecture_id], map: "timetable_wishlist_lec_lecture_id_1ab5d523_fk_subject_lecture_id")
+}
+
+model graduation_additionaltrack {
+  id                                Int                                 @id @default(autoincrement())
+  start_year                        Int
+  end_year                          Int
+  type                              String                              @db.VarChar(32)
+  major_required                    Int
+  major_elective                    Int
+  department_id                     Int?
+  subject_department                subject_department?                 @relation(fields: [department_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "graduation_additiona_department_id_788c5289_fk_subject_d")
+  planner_planner_additional_tracks planner_planner_additional_tracks[]
+
+  @@unique([end_year, type, department_id], map: "graduation_additionaltra_end_year_type_department_9d873c1b_uniq")
+  @@unique([start_year, type, department_id], map: "graduation_additionaltra_start_year_type_departme_763552eb_uniq")
+  @@index([department_id], map: "graduation_additiona_department_id_788c5289_fk_subject_d")
+  @@index([end_year], map: "graduation_additionaltrack_end_year_6af1030b")
+  @@index([start_year], map: "graduation_additionaltrack_start_year_7a87318d")
+  @@index([type], map: "graduation_additionaltrack_type_0fa38fc5")
+}
+
+model graduation_generaltrack {
+  id                       Int               @id @default(autoincrement())
+  start_year               Int
+  end_year                 Int
+  is_foreign               Boolean
+  total_credit             Int
+  total_au                 Int
+  basic_required           Int
+  basic_elective           Int
+  thesis_study             Int
+  thesis_study_doublemajor Int
+  general_required_credit  Int
+  general_required_au      Int
+  humanities               Int
+  humanities_doublemajor   Int
+  planner_planner          planner_planner[]
+
+  @@unique([end_year, is_foreign], map: "graduation_generaltrack_end_year_is_foreign_1f062f8b_uniq")
+  @@unique([start_year, is_foreign], map: "graduation_generaltrack_start_year_is_foreign_c1eb425f_uniq")
+  @@index([end_year], map: "graduation_generaltrack_end_year_3bba699e")
+  @@index([is_foreign], map: "graduation_generaltrack_is_foreign_d38919a2")
+  @@index([start_year], map: "graduation_generaltrack_start_year_00aee782")
+}
+
+model graduation_majortrack {
+  id                         Int                @id @default(autoincrement())
+  start_year                 Int
+  end_year                   Int
+  basic_elective_doublemajor Int
+  major_required             Int
+  major_elective             Int
+  department_id              Int
+  subject_department         subject_department @relation(fields: [department_id], references: [id], onUpdate: Restrict, map: "graduation_majortrac_department_id_81bfc8fa_fk_subject_d")
+  planner_planner            planner_planner[]
+
+  @@unique([end_year, department_id], map: "graduation_majortrack_end_year_department_id_b3ef1bc8_uniq")
+  @@unique([start_year, department_id], map: "graduation_majortrack_start_year_department_id_59122c6d_uniq")
+  @@index([department_id], map: "graduation_majortrac_department_id_81bfc8fa_fk_subject_d")
+  @@index([end_year], map: "graduation_majortrack_end_year_57017559")
+  @@index([start_year], map: "graduation_majortrack_start_year_6281dc28")
+}
+
+model planner_arbitraryplanneritem {
+  id                 Int                 @id @default(autoincrement())
+  is_excluded        Boolean
+  year               Int
+  semester           Int
+  type               String              @db.VarChar(12)
+  type_en            String              @db.VarChar(36)
+  credit             Int
+  credit_au          Int
+  department_id      Int?
+  planner_id         Int
+  subject_department subject_department? @relation(fields: [department_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "planner_arbitrarypla_department_id_0dc7ce25_fk_subject_d")
+  planner_planner    planner_planner     @relation(fields: [planner_id], references: [id], onUpdate: Restrict, map: "planner_arbitrarypla_planner_id_d6069d2c_fk_planner_p")
+
+  @@index([department_id], map: "planner_arbitrarypla_department_id_0dc7ce25_fk_subject_d")
+  @@index([planner_id], map: "planner_arbitrarypla_planner_id_d6069d2c_fk_planner_p")
+  @@index([semester], map: "planner_arbitraryplanneritem_semester_7508baa5")
+  @@index([year], map: "planner_arbitraryplanneritem_year_5a0c7252")
+}
+
+model planner_futureplanneritem {
+  id              Int             @id @default(autoincrement())
+  is_excluded     Boolean
+  year            Int
+  semester        Int
+  course_id       Int
+  planner_id      Int
+  subject_course  subject_course  @relation(fields: [course_id], references: [id], onUpdate: Restrict, map: "planner_futureplanne_course_id_b1a06444_fk_subject_c")
+  planner_planner planner_planner @relation(fields: [planner_id], references: [id], onUpdate: Restrict, map: "planner_futureplanne_planner_id_dfd70193_fk_planner_p")
+
+  @@index([course_id], map: "planner_futureplanne_course_id_b1a06444_fk_subject_c")
+  @@index([planner_id], map: "planner_futureplanne_planner_id_dfd70193_fk_planner_p")
+  @@index([semester], map: "planner_futureplanneritem_semester_cda6512e")
+  @@index([year], map: "planner_futureplanneritem_year_5e3a2d4e")
+}
+
+model planner_planner {
+  id                                Int                                 @id @default(autoincrement())
+  start_year                        Int
+  end_year                          Int
+  arrange_order                     Int                                 @db.SmallInt
+  general_track_id                  Int
+  major_track_id                    Int
+  user_id                           Int
+  planner_arbitraryplanneritem      planner_arbitraryplanneritem[]
+  planner_futureplanneritem         planner_futureplanneritem[]
+  graduation_generaltrack           graduation_generaltrack             @relation(fields: [general_track_id], references: [id], onUpdate: Restrict, map: "planner_planner_general_track_id_6d607973_fk_graduatio")
+  graduation_majortrack             graduation_majortrack               @relation(fields: [major_track_id], references: [id], onUpdate: Restrict, map: "planner_planner_major_track_id_9f7204bd_fk_graduatio")
+  session_userprofile               session_userprofile                 @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "planner_planner_user_id_17740247_fk_session_userprofile_id")
+  planner_planner_additional_tracks planner_planner_additional_tracks[]
+  planner_takenplanneritem          planner_takenplanneritem[]
+
+  @@index([arrange_order], map: "planner_planner_arrange_order_e50a3044")
+  @@index([end_year], map: "planner_planner_end_year_e5fab7f3")
+  @@index([general_track_id], map: "planner_planner_general_track_id_6d607973_fk_graduatio")
+  @@index([major_track_id], map: "planner_planner_major_track_id_9f7204bd_fk_graduatio")
+  @@index([start_year], map: "planner_planner_start_year_463173f3")
+  @@index([user_id], map: "planner_planner_user_id_17740247_fk_session_userprofile_id")
+}
+
+model planner_planner_additional_tracks {
+  id                         Int                        @id @default(autoincrement())
+  planner_id                 Int
+  additionaltrack_id         Int
+  graduation_additionaltrack graduation_additionaltrack @relation(fields: [additionaltrack_id], references: [id], onUpdate: Restrict, map: "planner_planner_addi_additionaltrack_id_c46b8c4e_fk_graduatio")
+  planner_planner            planner_planner            @relation(fields: [planner_id], references: [id], onUpdate: Restrict, map: "planner_planner_addi_planner_id_e439a309_fk_planner_p")
+
+  @@unique([planner_id, additionaltrack_id], map: "planner_planner_addition_planner_id_additionaltra_2298c5cd_uniq")
+  @@index([additionaltrack_id], map: "planner_planner_addi_additionaltrack_id_c46b8c4e_fk_graduatio")
+}
+
+model planner_takenplanneritem {
+  id              Int             @id @default(autoincrement())
+  is_excluded     Boolean
+  lecture_id      Int
+  planner_id      Int
+  subject_lecture subject_lecture @relation(fields: [lecture_id], references: [id], onUpdate: Restrict, map: "planner_takenplanner_lecture_id_9b2d30d8_fk_subject_l")
+  planner_planner planner_planner @relation(fields: [planner_id], references: [id], onUpdate: Restrict, map: "planner_takenplanner_planner_id_b725ff83_fk_planner_p")
+
+  @@unique([planner_id, lecture_id], map: "planner_takenplanneritem_planner_id_lecture_id_4b39b432_uniq")
+  @@index([lecture_id], map: "planner_takenplanner_lecture_id_9b2d30d8_fk_subject_l")
 }

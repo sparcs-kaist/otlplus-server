@@ -25,7 +25,7 @@ const getPrismaConfig = (): PrismaClientOptions => {
       },
     },
     errorFormat: 'pretty',
-    log: [`query`, `error`],
+    log: [`error`],
   };
 };
 
