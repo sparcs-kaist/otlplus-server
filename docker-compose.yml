@@ -7,7 +7,7 @@ services:
     image: mysql:5.7
     restart: on-failure
     ports:
-      - "53306:3306"
+      - "73306:3306"
     environment:
       - MYSQL_ROOT_HOSTS=%
       - MYSQL_ROOT_PASSWORD=${OTLPLUS_DB_PASSWORD:-password}
@@ -30,7 +30,7 @@ services:
     restart: always
     tty: true
     ports:
-      - "53000:3000"
+      - "73000:3000"
     volumes:
       - "/etc/timezone:/etc/timezone:ro"
     working_dir: /var/www/otlplus-server
