@@ -1,0 +1,36 @@
+version: '3.4'
+
+services:
+  db:
+    container_name: otlplus-server-db
+    platform: linux/amd64
+    image: mysql:5.7
+    restart: on-failure
+    ports:
+      - "53306:3306"
+    environment:
+      - MYSQL_ROOT_HOSTS=%
+      - MYSQL_ROOT_PASSWORD=${OTLPLUS_DB_PASSWORD:-password}
+      - MYSQL_DATABASE=otlplus
+      - TZ=Asia/Seoul
+    volumes:
+      - ../volumes/db:/var/lib/mysql
+      - ../volumes/dump:/dump
+    command: |
+      --sql_mode=NO_ENGINE_SUBSTITUTION --default_storage_engine=InnoDB 
+      --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+  back:
+    depends_on:
+      - db
+    container_name: otlplus-server
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    restart: always
+    tty: true
+    ports:
+      - "53000:3000"
+    volumes:
+      - "/etc/timezone:/etc/timezone:ro"
+    working_dir: /var/www/otlplus-server

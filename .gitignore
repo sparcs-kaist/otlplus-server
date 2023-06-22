@@ -38,5 +38,3 @@ lerna-debug.log*
 !.vscode/extensions.json
 
 volumes
-
-docker-compose.yml
