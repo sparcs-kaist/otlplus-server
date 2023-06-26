@@ -120,7 +120,7 @@ export class AuthService{
             last_name: lastName,
             date_joined: new Date(),
             student_id: studentId,
-            refreshToken: refreshToken
+            refresh_token: refreshToken
         }
         return await this.userRepository.createUser(user)
     }
