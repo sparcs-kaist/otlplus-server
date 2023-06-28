@@ -1,7 +1,11 @@
 import { Prisma, session_userprofile } from "@prisma/client";
 import { PrismaService } from "../../../prisma/prisma.service";
+import { type } from "os";
+import { Union } from "../../utils/method.utils";
+import { userSelectResultType } from "../../schemaTypes/types";
 
-export async function loadUser(user: session_userprofile, userLoadOptions: Prisma.session_userprofileInclude, prismaService: PrismaService) {
+export async function loadUser(user:session_userprofile | userSelectResultType,  userLoadOptions: Prisma.session_userprofileInclude, prismaService: PrismaService): Promise<userSelectResultType> {
+
   const loadOptions = Object.entries(userLoadOptions).forEach(([key, value]) => {
     if(user[key] && value) {
       value = false;
@@ -14,7 +18,8 @@ export async function loadUser(user: session_userprofile, userLoadOptions: Prism
       value = false
     }
   })
-  const result =  await prismaService.session_userprofile.findFirst({
+
+  const result: userSelectResultType = await prismaService.session_userprofile.findFirst({
     where: { sid: user.sid },
     include: userLoadOptions,
   })
