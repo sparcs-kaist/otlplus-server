@@ -257,6 +257,7 @@ model session_userprofile {
   student_id                            String                                  @db.VarChar(10)
   sid                                   String                                  @db.VarChar(30)
   department_id                         Int?
+  department                            subject_department?                     @relation(fields: [department_id], references: [id], onUpdate: Restrict)
   email                                 String?                                 @db.VarChar(255)
   date_joined                           DateTime                                @db.DateTime(0)
   first_name                            String                                  @db.VarChar(30)
@@ -420,6 +421,7 @@ model subject_department {
   graduation_majortrack                 graduation_majortrack[]
   main_famousmajorreviewdailyfeed       main_famousmajorreviewdailyfeed[]
   planner_arbitraryplanneritem          planner_arbitraryplanneritem[]
+  session_userprofile                   session_userprofile[]
   session_userprofile_majors            session_userprofile_majors[]
   session_userprofile_minors            session_userprofile_minors[]
   session_userprofile_specialized_major session_userprofile_specialized_major[]

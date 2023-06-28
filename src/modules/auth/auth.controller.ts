@@ -8,6 +8,7 @@ import { Public } from '../../common/decorators/skip-auth.decorator';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { session_userprofile } from '@prisma/client';
 import { SSOUser } from '../../common/interfaces/dto/auth/sso.dto';
+import { ProfileDto } from "../../common/interfaces/dto/user/user.response.dto";
 
 @Controller('session')
 export class AuthController {
@@ -75,20 +76,17 @@ export class AuthController {
     call import_student_lectures(studentId)
      */
 
-    /*
-    @Todo
-    save refreshToken in session_userprofile
-     */
     const next_url = session['next'] ?? '/';
     response.redirect(next_url);
   }
 
   @Get('info')
-  async getUserProfile(@GetUser() user: session_userprofile) {
+  async getUserProfile(@GetUser() user: session_userprofile): ProfileDto {
     /*
     @Todo
     implement userSerializer, before that, we'd like to architect the dto types
      */
-    return user;
+
+    const user;
   }
 }
