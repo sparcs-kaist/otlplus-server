@@ -22,4 +22,4 @@ jobs:
       - name: Copy env file
         run: cp ./env/.env.example ./env/.env.local
       - name: Build
-        run: npm build
+        run: npm run build
