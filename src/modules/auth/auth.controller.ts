@@ -81,12 +81,12 @@ export class AuthController {
   }
 
   @Get('info')
-  async getUserProfile(@GetUser() user: session_userprofile): ProfileDto {
+  async getUserProfile(@GetUser() user: session_userprofile): Promise<ProfileDto> {
     /*
     @Todo
     implement userSerializer, before that, we'd like to architect the dto types
      */
-
-    const user;
+    const profile = await this.userService.getProfile(user);
+    return profile;
   }
 }

@@ -7,3 +7,7 @@ export type userSelectResultType = Prisma.session_userprofileGetPayload<{
 export type courseSelectResultType = Prisma.subject_courseGetPayload<{
   include: Prisma.subject_courseInclude
 }>
+
+export type lectureSelectResultType = Prisma.subject_lectureGetPayload<{
+  include: Prisma.subject_lectureInclude
+}>

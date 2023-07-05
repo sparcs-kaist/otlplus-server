@@ -3,7 +3,7 @@ import {
   session_userprofile_taken_lectures, subject_department, subject_lecture } from "@prisma/client";
 
 export interface ProfileDto {
-  id: string;
+  id: number;
   email: string;
   student_id: string;
   firstName: string;
