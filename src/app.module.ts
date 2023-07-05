@@ -7,9 +7,10 @@ import { JwtCookieGuard } from './modules/auth/guard/jwt-cookie.guard';
 import { AuthModule } from './modules/auth/auth.module';
 import { MockAuthGuard } from './modules/auth/guard/mock-auth-guard';
 import { JwtService } from '@nestjs/jwt';
+import { LecturesModule } from './modules/lectures/lectures.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule],
+  imports: [PrismaModule, AuthModule, LecturesModule],
   controllers: [AppController],
   providers: [
     {
