@@ -236,6 +236,7 @@ model review_review {
   load                                       Int                                          @db.SmallInt
   speech                                     Int                                          @db.SmallInt
   writer_id                                  Int?
+  writer                                     session_userprofile?                         @relation(fields: [writer_id], references: [id], onUpdate: Restrict)
   writer_label                               String                                       @db.VarChar(200)
   updated_datetime                           DateTime                                     @db.DateTime(0)
   like                                       Int
@@ -276,16 +277,21 @@ model session_userprofile {
   session_userprofile_majors            session_userprofile_majors[]
   session_userprofile_minors            session_userprofile_minors[]
   session_userprofile_specialized_major session_userprofile_specialized_major[]
+  favorite_departments                  session_userprofile_favorite_departments[]
   subject_courseuser                    subject_courseuser[]
+  taken_lectures                        session_userprofile_taken_lectures[]
   support_rate                          support_rate[]
   timetable_timetable                   timetable_timetable[]
   timetable_wishlist                    timetable_wishlist?
+  reviews                               review_review[]
 }
 
 model session_userprofile_favorite_departments {
   id             Int @id @default(autoincrement())
   userprofile_id Int
+  userprofile    session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
   department_id  Int
+  department     subject_department  @relation(fields: [department_id], references: [id], onUpdate: Restrict)
 
   @@unique([userprofile_id, department_id], map: "userprofile_id")
 }
@@ -326,7 +332,9 @@ model session_userprofile_specialized_major {
 model session_userprofile_taken_lectures {
   id             Int @id @default(autoincrement())
   userprofile_id Int
+  userprofile    session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
   lecture_id     Int
+  lecture        subject_lecture     @relation(fields: [lecture_id], references: [id], onUpdate: Restrict)
 
   @@unique([userprofile_id, lecture_id], map: "userprofile_id")
 }
@@ -428,6 +436,7 @@ model subject_department {
   main_famousmajorreviewdailyfeed       main_famousmajorreviewdailyfeed[]
   planner_arbitraryplanneritem          planner_arbitraryplanneritem[]
   session_userprofile                   session_userprofile[]
+  session_userprofile_favorite_departments         session_userprofile_favorite_departments[]
   session_userprofile_majors            session_userprofile_majors[]
   session_userprofile_minors            session_userprofile_minors[]
   session_userprofile_specialized_major session_userprofile_specialized_major[]
@@ -481,6 +490,7 @@ model subject_lecture {
   planner_takenplanneritem        planner_takenplanneritem[]
   subject_classtime               subject_classtime[]
   subject_examtime                subject_examtime[]
+  students                        session_userprofile_taken_lectures[]
   timetable_oldtimetable_lectures timetable_oldtimetable_lectures[]
   timetable_timetable_lectures    timetable_timetable_lectures[]
   timetable_wishlist_lectures     timetable_wishlist_lectures[]
