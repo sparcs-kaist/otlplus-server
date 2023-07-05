@@ -27,7 +27,7 @@ export async function loadUser(user:session_userprofile | userSelectResultType, 
 export async function toProfileDto(user: userSelectResultType, prisma: PrismaService) {
 
 
-  const majors: subject_department[] = await prisma.session_userprofile.findMany({
+  const majors = await prisma.session_userprofile.findMany({
     include: {
       session_userprofile_majors: {
         include: {
@@ -38,7 +38,7 @@ export async function toProfileDto(user: userSelectResultType, prisma: PrismaSer
         include:{
           department: true
         }
-      }
+      },
     }
   });
 
