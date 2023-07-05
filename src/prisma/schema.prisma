@@ -364,6 +364,8 @@ model subject_course {
   type_en                                                                                                          String                                     @db.VarChar(36)
   title                                                                                                            String                                     @db.VarChar(100)
   title_en                                                                                                         String                                     @db.VarChar(200)
+  title_no_space                                                                                                   String                                     @db.VarChar(100)
+  title_en_no_space                                                                                                String                                     @db.VarChar(200)
   summury                                                                                                          String                                     @db.VarChar(400)
   grade_sum                                                                                                        Float
   load_sum                                                                                                         Float

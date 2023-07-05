@@ -1,6 +1,8 @@
+import { subject_department } from './../../../node_modules/.prisma/client/index.d';
 import { CourseRepository } from './../../prisma/repositories/course.repository';
 import { Injectable } from '@nestjs/common';
 import { review_review, subject_course } from '@prisma/client';
+import { courseSelectResultType } from 'src/common/schemaTypes/types';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -26,10 +28,6 @@ export class CoursesService {
       limit,
     } = query;
 
-    const query_result = await this.prisma.subject_course.findMany({
-      include: {
-        subject_department: true,
-      }
-    });
+    const query_result = CourseRepository.filterByRequest(query);
   }
 }
