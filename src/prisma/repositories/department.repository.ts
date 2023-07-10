@@ -1,8 +1,9 @@
 import { PrismaService } from "../prisma.service";
 import { session_userprofile, subject_department } from "@prisma/client";
 import session from "express-session";
+import { Injectable } from "@nestjs/common";
 
-
+@Injectable()
 export class DepartmentRepository{
   constructor(private readonly prisma: PrismaService) {
   }

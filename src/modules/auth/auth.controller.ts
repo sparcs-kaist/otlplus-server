@@ -85,6 +85,7 @@ export class AuthController {
     @Todo
     implement userSerializer, before that, we'd like to architect the dto types
      */
+    console.log(user);
     const profile = await this.userService.getProfile(user);
     return profile;
   }
