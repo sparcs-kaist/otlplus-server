@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma.service";
 import { Prisma, session_userprofile, subject_lecture } from "@prisma/client";
 import { lectureSelectResultType } from "../../common/schemaTypes/types";
+import { groupBy } from "../../common/utils/method.utils";
 
 @Injectable()
 export class LectureRepository {
@@ -9,7 +10,7 @@ export class LectureRepository {
   }
 
 
-  async findReviewWritableLectures(date?: Date): Promise<subject_lecture[]> {
+  async findReviewWritableLectures(user: session_userprofile, date?: Date): Promise<subject_lecture[]> {
     let currDate;
     if (!date) {
       currDate = Date.now();
@@ -32,21 +33,33 @@ export class LectureRepository {
         ]
       }
     });
-
-    const notWritableYearAndSemester = notWritableSemesters.map((semester) => {
+    console.log(notWritableSemesters);
+    const notWritableYearAndSemester = groupBy(notWritableSemesters.map((semester) => {
       return {
         semester: semester.semester,
         year: semester.year
       }
+    }),(subject_semester) => subject_semester.year)
+
+    const notWritableYearAndSemesterMap: Record<number, Record<number, {semester: number, year: number} >> = null;
+    for (const key in notWritableYearAndSemester) {
+      const objects = notWritableYearAndSemester[key];
+      const mapObjects = groupBy(objects);
+      notWritableYearAndSemesterMap[key] = mapObjects;
+    }
+
+    const takenLectures = await this.getTakenLectures(user);
+    const reviewWritableLectures = takenLectures.filter((lecture) => {
+      return notWritableYearAndSemesterMap[lecture.year][lecture.semester] ? true: false
     })
 
-    const lectures = await this.prisma.subject_lecture.findMany({
-      where: {
-        AND: notWritableYearAndSemester
-      }
-    })
+    // const lectures = await this.prisma.subject_lecture.findMany({
+    //   where: {
+    //     AND: notWritableYearAndSemester
+    //   }
+    // })
 
-    return lectures;
+    return reviewWritableLectures;
   }
 
   getResearchLectureQuery(): Prisma.subject_lectureWhereInput {
