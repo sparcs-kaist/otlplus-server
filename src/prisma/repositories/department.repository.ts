@@ -9,7 +9,8 @@ export class DepartmentRepository{
   }
 
   async getDepartmentOfUser(user: session_userprofile): Promise<subject_department> {
-    const departmentId = user.department_id;
+    const departmentId = user.department_id
+    if(!departmentId) return null;
     const department = await this.prisma.subject_department.findUnique({
       where: { id: departmentId }
     });
