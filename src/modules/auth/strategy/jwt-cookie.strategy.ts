@@ -32,7 +32,6 @@ export class JwtCookieStrategy extends PassportStrategy(
   }
 
   async validate(payload) {
-    console.log(payload);
     return this.authService.findBySid(payload.sid);
   }
 }

@@ -40,7 +40,6 @@ export class AuthController {
     }
     req.session['next'] = next ?? '/';
     const { url, state } = this.ssoClient.get_login_params();
-    console.log(url, state);
     req.session['sso_state'] = state;
     if (social_login === '0') {
       return res.redirect(url + '&social_enabled=0&show_disabled_button=0');
