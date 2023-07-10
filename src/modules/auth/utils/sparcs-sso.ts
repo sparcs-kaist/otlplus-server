@@ -44,8 +44,6 @@ export class Client {
     :param secret_key: your secret key
     :param is_beta: true iff you want to use SPARCS SSO beta server
     :param server_addr: SPARCS SSO server addr (only for testing)*/
-    console.log(is_beta)
-    console.log(is_beta ? true : false);
     this.DOMAIN = is_beta ? this.BETA_DOMAIN : this.SERVER_DOMAIN;
     this.DOMAIN = server_addr || this.DOMAIN;
 
