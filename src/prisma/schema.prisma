@@ -236,7 +236,6 @@ model review_review {
   load                                       Int                                          @db.SmallInt
   speech                                     Int                                          @db.SmallInt
   writer_id                                  Int?
-  writer                                     session_userprofile?                         @relation(fields: [writer_id], references: [id], onUpdate: Restrict)
   writer_label                               String                                       @db.VarChar(200)
   updated_datetime                           DateTime                                     @db.DateTime(0)
   like                                       Int
@@ -244,6 +243,7 @@ model review_review {
   written_datetime                           DateTime?                                    @db.DateTime(0)
   main_famoushumanityreviewdailyfeed_reviews main_famoushumanityreviewdailyfeed_reviews[]
   main_famousmajorreviewdailyfeed_reviews    main_famousmajorreviewdailyfeed_reviews[]
+  writer                                     session_userprofile?                         @relation(fields: [writer_id], references: [id], onUpdate: Restrict)
 
   @@unique([writer_id, lecture_id], map: "review_comment_writer_id_af700a5d_uniq")
   @@index([written_datetime], map: "review_comment_e5e30a4a")
@@ -260,40 +260,43 @@ model review_reviewvote {
 }
 
 model session_userprofile {
-  id                                    Int                                     @id @default(autoincrement())
-  student_id                            String                                  @db.VarChar(10)
-  sid                                   String                                  @db.VarChar(30)
+  id                                    Int                                        @id @default(autoincrement())
+  student_id                            String                                     @db.VarChar(10)
+  sid                                   String                                     @db.VarChar(30)
   department_id                         Int?
-  department                            subject_department?                     @relation(fields: [department_id], references: [id], onUpdate: Restrict)
-  email                                 String?                                 @db.VarChar(255)
-  date_joined                           DateTime                                @db.DateTime(0)
-  first_name                            String                                  @db.VarChar(30)
-  last_name                             String                                  @db.VarChar(150)
-  refresh_token                         String?                                 @db.VarChar(255)
+  email                                 String?                                    @db.VarChar(255)
+  date_joined                           DateTime                                   @db.DateTime(0)
+  first_name                            String                                     @db.VarChar(30)
+  last_name                             String                                     @db.VarChar(150)
+  refresh_token                         String?                                    @db.VarChar(255)
   main_ratedailyuserfeed                main_ratedailyuserfeed[]
   main_relatedcoursedailyuserfeed       main_relatedcoursedailyuserfeed[]
   main_reviewwritedailyuserfeed         main_reviewwritedailyuserfeed[]
   planner_planner                       planner_planner[]
+  reviews                               review_review[]
+  department                            subject_department?                        @relation(fields: [department_id], references: [id], onUpdate: Restrict)
+  favorite_departments                  session_userprofile_favorite_departments[]
   session_userprofile_majors            session_userprofile_majors[]
   session_userprofile_minors            session_userprofile_minors[]
   session_userprofile_specialized_major session_userprofile_specialized_major[]
-  favorite_departments                  session_userprofile_favorite_departments[]
-  subject_courseuser                    subject_courseuser[]
   taken_lectures                        session_userprofile_taken_lectures[]
+  subject_courseuser                    subject_courseuser[]
   support_rate                          support_rate[]
   timetable_timetable                   timetable_timetable[]
   timetable_wishlist                    timetable_wishlist?
-  reviews                               review_review[]
+
+  @@index([department_id], map: "session_userprofile_department_id_fkey")
 }
 
 model session_userprofile_favorite_departments {
-  id             Int @id @default(autoincrement())
+  id             Int                 @id @default(autoincrement())
   userprofile_id Int
-  userprofile    session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
   department_id  Int
   department     subject_department  @relation(fields: [department_id], references: [id], onUpdate: Restrict)
+  userprofile    session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
 
   @@unique([userprofile_id, department_id], map: "userprofile_id")
+  @@index([department_id], map: "session_userprofile_favorite_departments_department_id_fkey")
 }
 
 model session_userprofile_majors {
@@ -330,13 +333,14 @@ model session_userprofile_specialized_major {
 }
 
 model session_userprofile_taken_lectures {
-  id             Int @id @default(autoincrement())
+  id             Int                 @id @default(autoincrement())
   userprofile_id Int
-  userprofile    session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
   lecture_id     Int
   lecture        subject_lecture     @relation(fields: [lecture_id], references: [id], onUpdate: Restrict)
+  userprofile    session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
 
   @@unique([userprofile_id, lecture_id], map: "userprofile_id")
+  @@index([lecture_id], map: "session_userprofile_taken_lectures_lecture_id_fkey")
 }
 
 model subject_classtime {
@@ -364,8 +368,6 @@ model subject_course {
   type_en                                                                                                          String                                     @db.VarChar(36)
   title                                                                                                            String                                     @db.VarChar(100)
   title_en                                                                                                         String                                     @db.VarChar(200)
-  title_no_space                                                                                                   String                                     @db.VarChar(100)
-  title_en_no_space                                                                                                String                                     @db.VarChar(200)
   summury                                                                                                          String                                     @db.VarChar(400)
   grade_sum                                                                                                        Float
   load_sum                                                                                                         Float
@@ -375,13 +377,18 @@ model subject_course {
   load                                                                                                             Float
   speech                                                                                                           Float
   latest_written_datetime                                                                                          DateTime?                                  @db.DateTime(0)
+  title_en_no_space                                                                                                String                                     @db.VarChar(200)
+  title_no_space                                                                                                   String                                     @db.VarChar(100)
   main_relatedcoursedailyuserfeed                                                                                  main_relatedcoursedailyuserfeed[]
   planner_futureplanneritem                                                                                        planner_futureplanneritem[]
+  subject_department                                                                                               subject_department                         @relation(fields: [department_id], references: [id], onUpdate: Restrict)
   subject_course_related_courses_posterior_subject_course_related_courses_posterior_from_course_idTosubject_course subject_course_related_courses_posterior[] @relation("subject_course_related_courses_posterior_from_course_idTosubject_course")
   subject_course_related_courses_posterior_subject_course_related_courses_posterior_to_course_idTosubject_course   subject_course_related_courses_posterior[] @relation("subject_course_related_courses_posterior_to_course_idTosubject_course")
   subject_course_related_courses_prior_subject_course_related_courses_prior_from_course_idTosubject_course         subject_course_related_courses_prior[]     @relation("subject_course_related_courses_prior_from_course_idTosubject_course")
   subject_course_related_courses_prior_subject_course_related_courses_prior_to_course_idTosubject_course           subject_course_related_courses_prior[]     @relation("subject_course_related_courses_prior_to_course_idTosubject_course")
   subject_courseuser                                                                                               subject_courseuser[]
+
+  @@index([department_id], map: "subject_course_department_id_fkey")
 }
 
 model subject_course_professors {
@@ -427,21 +434,22 @@ model subject_courseuser {
 }
 
 model subject_department {
-  id                                    Int                                     @id
-  num_id                                String                                  @db.VarChar(4)
-  code                                  String                                  @db.VarChar(5)
-  name                                  String                                  @db.VarChar(60)
-  name_en                               String?                                 @db.VarChar(60)
-  visible                               Boolean
-  graduation_additionaltrack            graduation_additionaltrack[]
-  graduation_majortrack                 graduation_majortrack[]
-  main_famousmajorreviewdailyfeed       main_famousmajorreviewdailyfeed[]
-  planner_arbitraryplanneritem          planner_arbitraryplanneritem[]
-  session_userprofile                   session_userprofile[]
-  session_userprofile_favorite_departments         session_userprofile_favorite_departments[]
-  session_userprofile_majors            session_userprofile_majors[]
-  session_userprofile_minors            session_userprofile_minors[]
-  session_userprofile_specialized_major session_userprofile_specialized_major[]
+  id                                       Int                                        @id
+  num_id                                   String                                     @db.VarChar(4)
+  code                                     String                                     @db.VarChar(5)
+  name                                     String                                     @db.VarChar(60)
+  name_en                                  String?                                    @db.VarChar(60)
+  visible                                  Boolean
+  graduation_additionaltrack               graduation_additionaltrack[]
+  graduation_majortrack                    graduation_majortrack[]
+  main_famousmajorreviewdailyfeed          main_famousmajorreviewdailyfeed[]
+  planner_arbitraryplanneritem             planner_arbitraryplanneritem[]
+  session_userprofile                      session_userprofile[]
+  session_userprofile_favorite_departments session_userprofile_favorite_departments[]
+  session_userprofile_majors               session_userprofile_majors[]
+  session_userprofile_minors               session_userprofile_minors[]
+  session_userprofile_specialized_major    session_userprofile_specialized_major[]
+  subject_course                           subject_course[]
 }
 
 model subject_examtime {
@@ -456,17 +464,17 @@ model subject_examtime {
 }
 
 model subject_lecture {
-  id                              Int                               @id @default(autoincrement())
-  code                            String                            @db.VarChar(10)
-  old_code                        String                            @db.VarChar(10)
+  id                              Int                                  @id @default(autoincrement())
+  code                            String                               @db.VarChar(10)
+  old_code                        String                               @db.VarChar(10)
   year                            Int
-  semester                        Int                               @db.SmallInt
+  semester                        Int                                  @db.SmallInt
   department_id                   Int
-  class_no                        String                            @db.VarChar(4)
-  title                           String                            @db.VarChar(100)
-  title_en                        String                            @db.VarChar(200)
-  type                            String                            @db.VarChar(12)
-  type_en                         String                            @db.VarChar(36)
+  class_no                        String                               @db.VarChar(4)
+  title                           String                               @db.VarChar(100)
+  title_en                        String                               @db.VarChar(200)
+  type                            String                               @db.VarChar(12)
+  type_en                         String                               @db.VarChar(36)
   audience                        Int
   credit                          Int
   num_classes                     Int
@@ -484,15 +492,15 @@ model subject_lecture {
   load                            Float
   speech                          Float
   review_total_weight             Float
-  class_title                     String?                           @db.VarChar(100)
-  class_title_en                  String?                           @db.VarChar(100)
-  common_title                    String?                           @db.VarChar(100)
-  common_title_en                 String?                           @db.VarChar(100)
+  class_title                     String?                              @db.VarChar(100)
+  class_title_en                  String?                              @db.VarChar(100)
+  common_title                    String?                              @db.VarChar(100)
+  common_title_en                 String?                              @db.VarChar(100)
   main_reviewwritedailyuserfeed   main_reviewwritedailyuserfeed[]
   planner_takenplanneritem        planner_takenplanneritem[]
+  students                        session_userprofile_taken_lectures[]
   subject_classtime               subject_classtime[]
   subject_examtime                subject_examtime[]
-  students                        session_userprofile_taken_lectures[]
   timetable_oldtimetable_lectures timetable_oldtimetable_lectures[]
   timetable_timetable_lectures    timetable_timetable_lectures[]
   timetable_wishlist_lectures     timetable_wishlist_lectures[]
