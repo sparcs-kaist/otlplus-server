@@ -532,14 +532,6 @@ model subject_professor {
   speech              Float
 }
 
-model subject_professor_course_list {
-  id           Int @id @default(autoincrement())
-  professor_id Int
-  course_id    Int
-
-  @@unique([professor_id, course_id], map: "professor_id")
-}
-
 model subject_semester {
   id                            Int                          @id @default(autoincrement())
   year                          Int
