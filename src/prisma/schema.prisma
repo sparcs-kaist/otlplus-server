@@ -387,14 +387,17 @@ model subject_course {
   subject_course_related_courses_prior_subject_course_related_courses_prior_from_course_idTosubject_course         subject_course_related_courses_prior[]     @relation("subject_course_related_courses_prior_from_course_idTosubject_course")
   subject_course_related_courses_prior_subject_course_related_courses_prior_to_course_idTosubject_course           subject_course_related_courses_prior[]     @relation("subject_course_related_courses_prior_to_course_idTosubject_course")
   subject_courseuser                                                                                               subject_courseuser[]
+  subject_course_professors                                                                                        subject_course_professors[]
 
   @@index([department_id], map: "subject_course_department_id_fkey")
 }
 
 model subject_course_professors {
-  id           Int @id @default(autoincrement())
+  id           Int               @id @default(autoincrement())
   course_id    Int
   professor_id Int
+  course       subject_course    @relation(fields: [course_id], references: [id], onUpdate: Restrict)
+  professor    subject_professor @relation(fields: [professor_id], references: [id], onUpdate: Restrict)
 
   @@unique([course_id, professor_id], map: "course_id")
 }
@@ -518,18 +521,19 @@ model subject_lecture_professors {
 }
 
 model subject_professor {
-  id                  Int     @id @default(autoincrement())
-  professor_name      String  @db.VarChar(100)
-  professor_name_en   String? @db.VarChar(100)
-  professor_id        Int
-  major               String  @db.VarChar(30)
-  grade_sum           Float
-  load_sum            Float
-  speech_sum          Float
-  review_total_weight Float
-  grade               Float
-  load                Float
-  speech              Float
+  id                        Int                         @id @default(autoincrement())
+  professor_name            String                      @db.VarChar(100)
+  professor_name_en         String?                     @db.VarChar(100)
+  professor_id              Int
+  major                     String                      @db.VarChar(30)
+  grade_sum                 Float
+  load_sum                  Float
+  speech_sum                Float
+  review_total_weight       Float
+  grade                     Float
+  load                      Float
+  speech                    Float
+  subject_course_professors subject_course_professors[]
 }
 
 model subject_semester {
