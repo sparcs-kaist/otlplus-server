@@ -12,22 +12,10 @@ export class CoursesService {
     private prisma: PrismaService
   ) {}
 
-  public async getAllCourses(query: any) {
+  public async getCourseByFilter(query: any) {
     const MAX_LIMIT = 150;
     const DEFAULT_ORDER = ['old_code'];
 
-    const {
-      department,
-      type,
-      level,
-      group,
-      keyword,
-      term,
-      order,
-      offset,
-      limit,
-    } = query;
-
-    const query_result = CourseRepository.filterByRequest(query);
+    return await this.CourseRepository.filterByRequest(query);
   }
 }

@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma.service";
+import { courseSelectResultType } from "src/common/schemaTypes/types";
 
 @Injectable()
 export class CourseRepository{
@@ -36,9 +37,7 @@ export class CourseRepository{
       "CH",
       "TS",
   ]
- //할일
- // Foreign key subject_course_professor 새로 걸어주기
- // subject_professor_course_list drop 하기
+
   public async filterByRequest (query: any) {
     const {
       department,
@@ -61,8 +60,8 @@ export class CourseRepository{
     filter_list = filter_list.filter((filter) => filter !== null)
     return await this.prisma.subject_course.findMany({
       include: {
-        department: true,
-        professor_course_list: true
+        subject_department: true,
+        subject_course_professors: { include: { professor: true }}
       },
       where: {
         AND: filter_list
