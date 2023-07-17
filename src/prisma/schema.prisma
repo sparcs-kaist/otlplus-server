@@ -388,6 +388,7 @@ model subject_course {
   subject_course_related_courses_prior_subject_course_related_courses_prior_to_course_idTosubject_course           subject_course_related_courses_prior[]     @relation("subject_course_related_courses_prior_to_course_idTosubject_course")
   subject_courseuser                                                                                               subject_courseuser[]
   subject_course_professors                                                                                        subject_course_professors[]
+  lecture                                                                                                          subject_lecture[]
 
   @@index([department_id], map: "subject_course_department_id_fkey")
 }
@@ -488,6 +489,7 @@ model subject_lecture {
   is_english                      Boolean
   deleted                         Boolean
   course_id                       Int
+  course                          subject_course                       @relation(fields: [course_id], references: [id], onUpdate: Restrict)
   grade_sum                       Float
   load_sum                        Float
   speech_sum                      Float
