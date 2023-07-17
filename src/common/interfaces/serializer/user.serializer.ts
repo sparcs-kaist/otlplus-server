@@ -27,20 +27,20 @@ export async function loadUser(user:session_userprofile | userSelectResultType, 
 export async function toProfileDto(user: userSelectResultType, prisma: PrismaService) {
 
 
-  const majors: subject_department[] = await prisma.session_userprofile.findMany({
-    include: {
-      session_userprofile_majors: {
-        include: {
-          subject_department: true
-        }
-      },
-      favorite_departments: {
-        include:{
-          department: true
-        }
-      }
-    }
-  });
+  // const majors: subject_department[] = await prisma.session_userprofile.findMany({
+  //   include: {
+  //     session_userprofile_majors: {
+  //       include: {
+  //         subject_department: true
+  //       }
+  //     },
+  //     favorite_departments: {
+  //       include:{
+  //         department: true
+  //       }
+  //     }
+  //   }
+  // });
 
   const reviewList: review_review[] = await prisma.review_review.findMany({
 

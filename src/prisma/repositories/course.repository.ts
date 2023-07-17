@@ -1,10 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma.service";
 import { courseSelectResultType } from "src/common/schemaTypes/types";
+import { apply_order, apply_offset } from "src/common/utils/search.utils";
 
 @Injectable()
-export class CourseRepository{
-  constructor(private readonly prisma: PrismaService){}
+export class CourseRepository {
+  constructor(
+    private readonly prisma: PrismaService
+  ){}
   
   private TYPE_ACRONYMS = {
     "GR": "General Required",
@@ -38,7 +41,10 @@ export class CourseRepository{
       "TS",
   ]
 
-  public async filterByRequest (query: any) {
+  public async filterByRequest (query: any): Promise<courseSelectResultType[]> {
+    const DEFAULT_LIMIT = 150;
+    const DEFAULT_ORDER = ['old_code']
+
     const {
       department,
       type,
@@ -58,36 +64,41 @@ export class CourseRepository{
     const term_filter = this.term_filter(term);
     let filter_list = [department_filter, type_filter, level_filter, group_filter, keyword_filter, term_filter]
     filter_list = filter_list.filter((filter) => filter !== null)
-    return await this.prisma.subject_course.findMany({
+    const query_result = await this.prisma.subject_course.findMany({
       include: {
         subject_department: true,
-        subject_course_professors: { include: { professor: true }}
+        subject_course_professors: { include: { professor: true } }
       },
       where: {
         AND: filter_list
-      }
-    })
+      },
+      take: limit ?? DEFAULT_LIMIT,
+    });
+
+    // Apply Ordering and Offset
+    const ordered_result = await apply_order<courseSelectResultType>(query_result, order ?? DEFAULT_ORDER);
+    return await apply_offset<courseSelectResultType>(ordered_result, offset ?? 0);
   }
 
   private department_filter(department_names: [string]): object {
     if (!(department_names)) {
       return null
     }
-    if ("ALL" in department_names) {
+    if (department_names.includes("ALL")) {
       return null
-    } else if ("ETC" in department_names) {
+    } else if (department_names.includes("ETC")) {
       return {
-        department: {
+        subject_department: {
           code: {
-            notIn: { department_names }
+            notIn: this.MAJOR_ACRONYMS.filter((x) => department_names.includes(x))
           }
         }
       }
     } else {
       return {
-        department: {
+        subject_department: {
           code: {
-            in: { department_names }
+            in: this.MAJOR_ACRONYMS.filter((x) => department_names.includes(x))
           }
         }
       }
@@ -99,19 +110,19 @@ export class CourseRepository{
       return null
     }
 
-    if ("ALL" in types) {
+    if (types.includes("ALL")) {
       return null
-    } else if ("ETC" in types) {
+    } else if (types.includes("ETC")) {
       const unselected_types = Object.values(this.TYPE_ACRONYMS).filter((type) => !(type in types))
       return {
         type_en: {
-          in: { unselected_types }
+          in: unselected_types
         }
       }
     } else {
       return {
         type_en: {
-          in: { types }
+          in: types
         }
       }
     }
@@ -123,24 +134,20 @@ export class CourseRepository{
     }
 
     const acronym_dic = ["1", "2", "3", "4"];
-    if ("ALL" in levels) {
+    if (levels.includes("ALL")) {
       return null;
-    } else if ("ETC" in levels) {
+    } else if (levels.includes("ETC")) {
       const numbers = acronym_dic.filter((level) => !(level in levels));
       return {
         old_code: {
-          contains: {
-            numbers
-          }
+          contains: numbers
         }
       };
     } else {
       const numbers = acronym_dic.filter((level) => level in levels);
       return {
         old_code: {
-          contains: {
-            numbers
-          }
+          contains: numbers
         }
       };
     }
@@ -151,7 +158,7 @@ export class CourseRepository{
       return null;
     }
 
-    if ("ALL" in term) {
+    if (term.includes("ALL")) {
       return null;
     } else {
       const current_year = new Date().getFullYear().toString();
@@ -163,47 +170,51 @@ export class CourseRepository{
     }
   }
 
-  private keyword_filter(keyword?: [string]): object {
+  private keyword_filter(keyword?: string): object {
     if (!(keyword)) {
       return null;
     }
 
-    const keyword_trimed = keyword.map((word) => word.trim());
-    const keyword_space_removed = keyword_trimed.map((word) => word.replace(/\s/g, ""));
+    const keyword_trimed = keyword.trim()
+    const keyword_space_removed = keyword_trimed.replace(/\s/g, "");
     const title_filter = {
       title_no_space: {
-        contains: { keyword_space_removed }
+        contains: keyword_space_removed
       }
     };
     const en_title_filter = {
-      en_title_np_space: {
-        contains: { keyword_space_removed }
+      title_en_no_space: {
+        contains: keyword_space_removed
       }
     };
     const department_name_filter = {
-      department: {
+      subject_department: {
         name: keyword_trimed 
       }
     };
     const department_name_en_filter = {
-      department: {
+      subject_department: {
         name_en: keyword_trimed 
       }
     };
     const professors_professor_name_filter = {
-      subject_professor_course_list: {
-        subject_professor: {
-          professor_name: {
-            contains: { keyword_trimed }
+      subject_course_professors: {
+        some: {
+          professor: {
+            professor_name: {
+              contains: keyword_trimed
+            }
           }
         }
       }
     };
     const professors_professor_name_en_filter = {
-      subject_professor_course_list: {
-        subject_professor: {
-          professor_name_en: {
-            contains: { keyword_trimed }
+      subject_course_professors: {
+        some: {
+          professor: {
+            professor_name_en: {
+              contains: keyword_trimed
+            }
           }
         }
       }

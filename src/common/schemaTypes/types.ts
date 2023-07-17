@@ -11,3 +11,7 @@ export type courseSelectResultType = Prisma.subject_courseGetPayload<{
 export type lectureSelectResultType = Prisma.subject_lectureGetPayload<{
   include: Prisma.subject_lectureInclude
 }>
+
+export type departmentSelectResultType = Prisma.subject_departmentGetPayload<{
+  include: Prisma.subject_departmentInclude
+}>

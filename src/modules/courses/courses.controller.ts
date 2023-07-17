@@ -1,4 +1,3 @@
-import { CourseRepository } from './../../prisma/repositories/course.repository';
 import { Controller, Get, Post, Param, Query, UseGuards } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 
