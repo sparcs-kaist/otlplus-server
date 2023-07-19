@@ -1,6 +1,6 @@
 import { CourseRepository } from './../../prisma/repositories/course.repository';
 import { Injectable } from '@nestjs/common';
-import { apply_order } from 'src/common/utils/search.utils';
+import { applyOrder } from 'src/common/utils/search.utils';
 import { CourseProfessorDto } from 'src/common/interfaces/dto/course/course.professor.dto';
 import { session_userprofile, subject_professor } from '@prisma/client';
 import { subject_course } from 'src/prisma/generated/prisma-class/subject_course';
@@ -15,31 +15,31 @@ export class CoursesService {
   ) {}
 
   public async getCourseByFilter(query: any, user: session_userprofile) {
-    const query_result = await this.CourseRepository.filterByRequest(query);
-    return await this.to_json(query_result, user);
+    const queryResult = await this.CourseRepository.filterByRequest(query);
+    return await this.toJson(queryResult, user);
   }
 
-  private async to_json(query_res: subject_course[], user: session_userprofile, nested=false) {
+  private async toJson(query_res: subject_course[], user: session_userprofile, nested=false) {
     return Promise.all(query_res.map(async (course) => {
-      const representative_lecture = await this.get_representative_lecture(course.lecture);
-      const professor_raw = await Promise.all(course.subject_course_professors.map(async (x) => x.professor as subject_professor));
-      const professor_json: CourseProfessorDto[] = await this.to_json_professor(professor_raw, true);
-      const professor_sorted = await apply_order<CourseProfessorDto>(professor_json, ["name"]);
+      const representativeLecture = await this.getRepresentativeLecture(course.lecture);
+      const professorRaw = await Promise.all(course.subject_course_professors.map(async (x) => x.professor as subject_professor));
+      const professorJson: CourseProfessorDto[] = await this.toJsonProfessor(professorRaw, true);
+      const professorSorted = await applyOrder<CourseProfessorDto>(professorJson, ["name"]);
 
       let result = {
         "id": course.id,
         "old_code": course.old_code,
-        "department": this.to_json_department(course.subject_department, true),
+        "department": this.toJsonDepartment(course.subject_department, true),
         "type": course.type,
         "type_en": course.type_en,
         "title": course.title,
         "title_en": course.title_en,
         "summary": course.summury, // Todo: fix summury typo in db.
         "review_total_weight": course.review_total_weight,
-        "credit": representative_lecture.credit ?? null,
-        "credit_au": representative_lecture.credit_au ?? null,
-        "num_classes": representative_lecture.num_classes ?? null,
-        "num_labs": representative_lecture.num_labs ?? null,
+        "credit": representativeLecture.credit ?? null,
+        "credit_au": representativeLecture.credit_au ?? null,
+        "num_classes": representativeLecture.num_classes ?? null,
+        "num_labs": representativeLecture.num_labs ?? null,
       };
 
       if (nested) {
@@ -49,17 +49,17 @@ export class CoursesService {
       result = Object.assign(result, {
         "related_courses_prior": [],
         "related_courses_posterior": [],
-        "professors": professor_sorted,
+        "professors": professorSorted,
         "grade": course.grade,
         "load": course.load,
         "speech": course.speech,
       })
 
       if (user) {
-        const latest_read_datetime = course.subject_courseuser.find(x => x.user_profile_id = user.id)?.latest_read_datetime;
-        const latest_written_datetime = course.latest_written_datetime;
+        const latestReadDatetime = course.subject_courseuser.find(x => x.user_profile_id = user.id)?.latest_read_datetime;
+        const latestWrittenDatetime = course.latest_written_datetime;
         return Object.assign(result, {
-          "userspecific_is_read": latest_written_datetime < latest_read_datetime,
+          "userspecific_is_read": latestWrittenDatetime < latestReadDatetime,
         })
       } else {
         return Object.assign(result, {
@@ -69,12 +69,12 @@ export class CoursesService {
     }));
   }
 
-  private async get_representative_lecture(lectures: subject_lecture[]): Promise<subject_lecture> {
-    const ordered_lectures = await apply_order<subject_lecture>(lectures, ["year", "semester"])
-    return ordered_lectures[0];
+  private async getRepresentativeLecture(lectures: subject_lecture[]): Promise<subject_lecture> {
+    const orderedLectures = await applyOrder<subject_lecture>(lectures, ["year", "semester"])
+    return orderedLectures[0];
   }
 
-  private async to_json_professor(professors: subject_professor[], nested=false) {
+  private async toJsonProfessor(professors: subject_professor[], nested=false) {
     const result = professors.map((professor) => {
       return {
         "name": professor.professor_name,
@@ -92,7 +92,7 @@ export class CoursesService {
       return professor; //todo: add necessary infos
     });
   }
-  private to_json_department(department: subject_department, nested=false) {
+  private toJsonDepartment(department: subject_department, nested=false) {
     return {
       "id": department.id,
       "name": department.name,

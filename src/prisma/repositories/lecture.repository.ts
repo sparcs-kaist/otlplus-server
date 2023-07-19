@@ -1,7 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma.service";
 import { Prisma, session_userprofile, subject_lecture } from "@prisma/client";
-import { lectureSelectResultType } from "../../common/schemaTypes/types";
 import { groupBy } from "../../common/utils/method.utils";
 
 @Injectable()

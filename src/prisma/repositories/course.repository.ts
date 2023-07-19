@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma.service";
-import { apply_order, apply_offset } from "src/common/utils/search.utils";
+import { applyOrder, applyOffset } from "src/common/utils/search.utils";
 import { subject_course } from "../generated/prisma-class/subject_course";
 
 @Injectable()
@@ -56,14 +56,14 @@ export class CourseRepository {
       offset,
       limit,
     } = query;
-    const department_filter = this.department_filter(department);
-    const type_filter = this.type_filter(type);
-    const level_filter = this.level_filter(level);
-    const group_filter = this.group_filter(group);
-    const keyword_filter = this.keyword_filter(keyword);
-    const term_filter = this.term_filter(term);
-    let filter_list = [department_filter, type_filter, level_filter, group_filter, keyword_filter, term_filter]
-    filter_list = filter_list.filter((filter) => filter !== null)
+    const departmentFilter = this.departmentFilter(department);
+    const typeFilter = this.typeFilter(type);
+    const levelFilter = this.levelFilter(level);
+    const groupFilter = this.groupFilter(group);
+    const keywordFilter = this.keywordFilter(keyword);
+    const term_filter = this.termFilter(term);
+    let filterList = [departmentFilter, typeFilter, levelFilter, groupFilter, keywordFilter, term_filter]
+    filterList = filterList.filter((filter) => filter !== null)
     const query_result = await this.prisma.subject_course.findMany({
       include: {
         subject_department: true,
@@ -72,17 +72,17 @@ export class CourseRepository {
         subject_courseuser: true,
       },
       where: {
-        AND: filter_list
+        AND: filterList
       },
       take: limit ?? DEFAULT_LIMIT,
     }) as subject_course[];
 
     // Apply Ordering and Offset
-    const ordered_result = await apply_order<subject_course>(query_result, order ?? DEFAULT_ORDER);
-    return await apply_offset<subject_course>(ordered_result, offset ?? 0);
+    const ordered_result = await applyOrder<subject_course>(query_result, order ?? DEFAULT_ORDER);
+    return await applyOffset<subject_course>(ordered_result, offset ?? 0);
   }
 
-  private department_filter(department_names: [string]): object {
+  private departmentFilter(department_names: [string]): object {
     if (!(department_names)) {
       return null
     }
@@ -107,7 +107,7 @@ export class CourseRepository {
     }
   }
 
-  private type_filter(types: [string]): object {
+  private typeFilter(types: [string]): object {
     if (!(types)) {
       return null
     }
@@ -130,7 +130,7 @@ export class CourseRepository {
     }
   }
 
-  private level_filter(levels?: [string]): object {
+  private levelFilter(levels?: [string]): object {
     if (!(levels)) {
       return null;
     }
@@ -155,7 +155,7 @@ export class CourseRepository {
     }
   }
 
-  private term_filter(term?: [string]): object {
+  private termFilter(term?: [string]): object {
     if (!(term)) {
       return null;
     }
@@ -172,7 +172,7 @@ export class CourseRepository {
     }
   }
 
-  private keyword_filter(keyword?: string): object {
+  private keywordFilter(keyword?: string): object {
     if (!(keyword)) {
       return null;
     }
@@ -233,7 +233,7 @@ export class CourseRepository {
     };
   }
 
-  private group_filter(group?: [string]): object {
+  private groupFilter(group?: [string]): object {
     if (!(group)) {
       return null;
     }
