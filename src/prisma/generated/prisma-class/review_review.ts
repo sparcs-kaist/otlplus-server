@@ -1,5 +1,6 @@
 import { main_famoushumanityreviewdailyfeed_reviews } from './main_famoushumanityreviewdailyfeed_reviews';
 import { main_famousmajorreviewdailyfeed_reviews } from './main_famousmajorreviewdailyfeed_reviews';
+import { session_userprofile } from './session_userprofile';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class review_review {
@@ -53,4 +54,7 @@ export class review_review {
     type: () => main_famousmajorreviewdailyfeed_reviews,
   })
   main_famousmajorreviewdailyfeed_reviews: main_famousmajorreviewdailyfeed_reviews[];
+
+  @ApiPropertyOptional({ type: () => session_userprofile })
+  writer?: session_userprofile;
 }

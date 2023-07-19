@@ -1,5 +1,7 @@
+import { subject_course } from './subject_course';
 import { main_reviewwritedailyuserfeed } from './main_reviewwritedailyuserfeed';
 import { planner_takenplanneritem } from './planner_takenplanneritem';
+import { session_userprofile_taken_lectures } from './session_userprofile_taken_lectures';
 import { subject_classtime } from './subject_classtime';
 import { subject_examtime } from './subject_examtime';
 import { timetable_oldtimetable_lectures } from './timetable_oldtimetable_lectures';
@@ -71,6 +73,9 @@ export class subject_lecture {
   @ApiProperty({ type: Number })
   course_id: number;
 
+  @ApiProperty({ type: () => subject_course })
+  course: subject_course;
+
   @ApiProperty({ type: Number })
   grade_sum: number;
 
@@ -109,6 +114,12 @@ export class subject_lecture {
 
   @ApiProperty({ isArray: true, type: () => planner_takenplanneritem })
   planner_takenplanneritem: planner_takenplanneritem[];
+
+  @ApiProperty({
+    isArray: true,
+    type: () => session_userprofile_taken_lectures,
+  })
+  students: session_userprofile_taken_lectures[];
 
   @ApiProperty({ isArray: true, type: () => subject_classtime })
   subject_classtime: subject_classtime[];

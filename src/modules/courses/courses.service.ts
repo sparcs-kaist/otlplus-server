@@ -5,7 +5,7 @@ import { apply_order } from 'src/common/utils/search.utils';
 import { courseSelectResultType, departmentSelectResultType, lectureSelectResultType, professorSelectResultType } from 'src/common/schemaTypes/types';
 import { CourseProfessorDto } from 'src/common/interfaces/dto/course/course.professor.dto';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
-import { session_userprofile } from '@prisma/client';
+import { session_userprofile, subject_course } from '@prisma/client';
 
 
 @Injectable()
@@ -20,7 +20,7 @@ export class CoursesService {
     return await this.to_json(query_result, user);
   }
 
-  private async to_json(query_res: courseSelectResultType[], user: session_userprofile, nested=false) {
+  private async to_json(query_res: subject_course[], user: session_userprofile, nested=false) {
     return Promise.all(query_res.map(async (course) => {
       const representative_lecture = await this.get_representative_lecture(course.lecture);
       const professor_raw = await Promise.all(course.subject_course_professors.map(async (x) => {

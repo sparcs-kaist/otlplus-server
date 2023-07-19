@@ -2,9 +2,13 @@ import { main_ratedailyuserfeed } from './main_ratedailyuserfeed';
 import { main_relatedcoursedailyuserfeed } from './main_relatedcoursedailyuserfeed';
 import { main_reviewwritedailyuserfeed } from './main_reviewwritedailyuserfeed';
 import { planner_planner } from './planner_planner';
+import { review_review } from './review_review';
+import { subject_department } from './subject_department';
+import { session_userprofile_favorite_departments } from './session_userprofile_favorite_departments';
 import { session_userprofile_majors } from './session_userprofile_majors';
 import { session_userprofile_minors } from './session_userprofile_minors';
 import { session_userprofile_specialized_major } from './session_userprofile_specialized_major';
+import { session_userprofile_taken_lectures } from './session_userprofile_taken_lectures';
 import { subject_courseuser } from './subject_courseuser';
 import { support_rate } from './support_rate';
 import { timetable_timetable } from './timetable_timetable';
@@ -51,6 +55,18 @@ export class session_userprofile {
   @ApiProperty({ isArray: true, type: () => planner_planner })
   planner_planner: planner_planner[];
 
+  @ApiProperty({ isArray: true, type: () => review_review })
+  reviews: review_review[];
+
+  @ApiPropertyOptional({ type: () => subject_department })
+  department?: subject_department;
+
+  @ApiProperty({
+    isArray: true,
+    type: () => session_userprofile_favorite_departments,
+  })
+  favorite_departments: session_userprofile_favorite_departments[];
+
   @ApiProperty({ isArray: true, type: () => session_userprofile_majors })
   session_userprofile_majors: session_userprofile_majors[];
 
@@ -62,6 +78,12 @@ export class session_userprofile {
     type: () => session_userprofile_specialized_major,
   })
   session_userprofile_specialized_major: session_userprofile_specialized_major[];
+
+  @ApiProperty({
+    isArray: true,
+    type: () => session_userprofile_taken_lectures,
+  })
+  taken_lectures: session_userprofile_taken_lectures[];
 
   @ApiProperty({ isArray: true, type: () => subject_courseuser })
   subject_courseuser: subject_courseuser[];
