@@ -33,7 +33,6 @@ export class LectureRepository {
         ]
       }
     });
-    console.log(notWritableSemesters);
     const notWritableYearAndSemester = groupBy(notWritableSemesters.map((semester) => {
       return {
         semester: semester.semester,
@@ -41,7 +40,7 @@ export class LectureRepository {
       }
     }),(subject_semester) => subject_semester.year)
 
-    const notWritableYearAndSemesterMap: Record<number, Record<number, {semester: number, year: number} >> = null;
+    const notWritableYearAndSemesterMap: Record<number, Record<number, {semester: number, year: number} >> = { } ;
     for (const key in notWritableYearAndSemester) {
       const objects = notWritableYearAndSemester[key];
       const mapObjects = groupBy(objects);
@@ -50,7 +49,7 @@ export class LectureRepository {
 
     const takenLectures = await this.getTakenLectures(user);
     const reviewWritableLectures = takenLectures.filter((lecture) => {
-      return notWritableYearAndSemesterMap[lecture.year][lecture.semester] ? true: false
+      return notWritableYearAndSemesterMap[lecture.year]??[lecture.semester] ? true: false
     })
 
     // const lectures = await this.prisma.subject_lecture.findMany({

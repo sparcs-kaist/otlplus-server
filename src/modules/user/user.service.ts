@@ -26,51 +26,16 @@ export class UserService {
 
   public async getProfile(user: session_userprofile){
     const promises = [];
-    console.time('querying')
-    const startTime = new Date();
-    const departmentPromise = this.departmentRepository.getDepartmentOfUser(user).then((department) => {
-      const endTime = new Date();
-      console.log('querying department took: ', endTime.getTime() - startTime.getTime());
-      return department;
-    })
-    const favoriteDepartmentsPromise = this.departmentRepository.getFavoriteDepartments(user).then((department) => {
-      const endTime = new Date();
-      console.log('querying favorite department took: ', endTime.getTime() - startTime.getTime());
-      return department;
-    })
-    const majorsPromise = this.departmentRepository.getMajors(user).then((department) => {
-      const endTime = new Date();
-      console.log('querying majors took: ', endTime.getTime() - startTime.getTime());
-      return department;
-    })
-    const minorsPromise = this.departmentRepository.getMinors(user).then((department) => {
-      const endTime = new Date();
-      console.log('querying minors took: ', endTime.getTime() - startTime.getTime());
-      return department;
-    })
-    const specializedMajorsPromise = this.departmentRepository.getSpecializedMajors(user).then((department) => {
-      const endTime = new Date();
-      console.log('querying specializedMajors took: ', endTime.getTime() - startTime.getTime());
-      return department;
-    })
-    const reviewWritableLecturesPromise = this.lectureRepository.findReviewWritableLectures(user, new Date()).then((department) => {
-      const endTime = new Date();
-      console.log('querying reviewWritableLectures took: ', endTime.getTime() - startTime.getTime());
-      return department;
-    })
-    const takenLecturesPromise = this.lectureRepository.getTakenLectures(user).then((department) => {
-      const endTime = new Date();
-      console.log('querying takenLectures took: ', endTime.getTime() - startTime.getTime());
-      return department;
-    })
-    const writtenReviewsPromise = this.reviewRepository.findReviewByUser(user).then((department) => {
-      const endTime = new Date();
-      console.log('querying writtenReview took: ', endTime.getTime() - startTime.getTime());
-      return department;
-    })
+    const departmentPromise = this.departmentRepository.getDepartmentOfUser(user)
+    const favoriteDepartmentsPromise = this.departmentRepository.getFavoriteDepartments(user)
+    const majorsPromise = this.departmentRepository.getMajors(user)
+    const minorsPromise = this.departmentRepository.getMinors(user)
+    const specializedMajorsPromise = this.departmentRepository.getSpecializedMajors(user)
+    const reviewWritableLecturesPromise = this.lectureRepository.findReviewWritableLectures(user, new Date())
+    const takenLecturesPromise = this.lectureRepository.getTakenLectures(user)
+    const writtenReviewsPromise = this.reviewRepository.findReviewByUser(user)
     promises.push(departmentPromise, favoriteDepartmentsPromise, majorsPromise, minorsPromise, specializedMajorsPromise,reviewWritableLecturesPromise,takenLecturesPromise,writtenReviewsPromise);
     const [department, favoriteDepartments, majors, minors, specializedMajors, reviewWritableLectures, takenLectures, writtenReviews] = await Promise.all(promises);
-    console.timeEnd('querying')
     const departments =  Object.entries<subject_department>(normalizeArray([...majors, ...minors, ...specializedMajors, ...favoriteDepartments])) ?? [department];
     const researchLectures = Object.values(ResearchLecture);
     const timeTableLectures = takenLectures.filter((lecture) => researchLectures.includes(lecture.type_en));
