@@ -67,7 +67,9 @@ export class CourseRepository {
     const query_result = await this.prisma.subject_course.findMany({
       include: {
         subject_department: true,
-        subject_course_professors: { include: { professor: true } }
+        subject_course_professors: { include: { professor: true } },
+        lecture: true,
+        subject_courseuser: true,
       },
       where: {
         AND: filter_list

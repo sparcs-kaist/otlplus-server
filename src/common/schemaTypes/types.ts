@@ -15,3 +15,7 @@ export type lectureSelectResultType = Prisma.subject_lectureGetPayload<{
 export type departmentSelectResultType = Prisma.subject_departmentGetPayload<{
   include: Prisma.subject_departmentInclude
 }>
+
+export type professorSelectResultType = Prisma.subject_professorGetPayload<{
+  include: Prisma.subject_professorInclude
+}>

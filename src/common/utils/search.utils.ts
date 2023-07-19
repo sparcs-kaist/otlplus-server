@@ -2,7 +2,7 @@ export async function apply_order<T>(query: T[], order_opt: string[]) {
   if (order_opt.length == 0) {
     return query;
   } else {
-    query.sort((a: T, b: T) => {
+    return query.sort((a: T, b: T) => {
       for(let i=0; i < order_opt.length; i++) {
         const order = order_opt[i];
         if (a[order] > b[order]) {
