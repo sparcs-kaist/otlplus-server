@@ -1,18 +1,17 @@
 import { CourseRepository } from './../../prisma/repositories/course.repository';
-import { ProfessorRepository } from 'src/prisma/repositories/professor.repository';
 import { Injectable } from '@nestjs/common';
 import { apply_order } from 'src/common/utils/search.utils';
-import { courseSelectResultType, departmentSelectResultType, lectureSelectResultType, professorSelectResultType } from 'src/common/schemaTypes/types';
 import { CourseProfessorDto } from 'src/common/interfaces/dto/course/course.professor.dto';
-import { GetUser } from 'src/common/decorators/get-user.decorator';
-import { session_userprofile, subject_course } from '@prisma/client';
+import { session_userprofile, subject_professor } from '@prisma/client';
+import { subject_course } from 'src/prisma/generated/prisma-class/subject_course';
+import { subject_lecture } from 'src/prisma/generated/prisma-class/subject_lecture';
+import { subject_department } from 'src/prisma/generated/prisma-class/subject_department';
 
 
 @Injectable()
 export class CoursesService {
   constructor(
     private readonly CourseRepository: CourseRepository,
-    private readonly ProfessorRepository: ProfessorRepository,
   ) {}
 
   public async getCourseByFilter(query: any, user: session_userprofile) {
@@ -23,10 +22,7 @@ export class CoursesService {
   private async to_json(query_res: subject_course[], user: session_userprofile, nested=false) {
     return Promise.all(query_res.map(async (course) => {
       const representative_lecture = await this.get_representative_lecture(course.lecture);
-      const professor_raw = await Promise.all(course.subject_course_professors.map(async (x) => {
-        const professor_id = x.professor_id;
-        return await this.ProfessorRepository.getProfessorById(professor_id);
-      }));
+      const professor_raw = await Promise.all(course.subject_course_professors.map(async (x) => x.professor as subject_professor));
       const professor_json: CourseProfessorDto[] = await this.to_json_professor(professor_raw, true);
       const professor_sorted = await apply_order<CourseProfessorDto>(professor_json, ["name"]);
 
@@ -73,12 +69,12 @@ export class CoursesService {
     }));
   }
 
-  private async get_representative_lecture(lectures: lectureSelectResultType[]): Promise<lectureSelectResultType> {
-    const ordered_lectures = await apply_order<lectureSelectResultType>(lectures, ["year", "semester"])
+  private async get_representative_lecture(lectures: subject_lecture[]): Promise<subject_lecture> {
+    const ordered_lectures = await apply_order<subject_lecture>(lectures, ["year", "semester"])
     return ordered_lectures[0];
   }
 
-  private async to_json_professor(professors: professorSelectResultType[], nested=false) {
+  private async to_json_professor(professors: subject_professor[], nested=false) {
     const result = professors.map((professor) => {
       return {
         "name": professor.professor_name,
@@ -96,7 +92,7 @@ export class CoursesService {
       return professor; //todo: add necessary infos
     });
   }
-  private to_json_department(department: departmentSelectResultType, nested=false) {
+  private to_json_department(department: subject_department, nested=false) {
     return {
       "id": department.id,
       "name": department.name,

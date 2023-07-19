@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma.service";
-import { courseSelectResultType } from "src/common/schemaTypes/types";
 import { apply_order, apply_offset } from "src/common/utils/search.utils";
+import { subject_course } from "../generated/prisma-class/subject_course";
 
 @Injectable()
 export class CourseRepository {
@@ -41,7 +41,7 @@ export class CourseRepository {
       "TS",
   ]
 
-  public async filterByRequest (query: any): Promise<courseSelectResultType[]> {
+  public async filterByRequest (query: any): Promise<subject_course[]> {
     const DEFAULT_LIMIT = 150;
     const DEFAULT_ORDER = ['old_code']
 
@@ -75,11 +75,11 @@ export class CourseRepository {
         AND: filter_list
       },
       take: limit ?? DEFAULT_LIMIT,
-    });
+    }) as subject_course[];
 
     // Apply Ordering and Offset
-    const ordered_result = await apply_order<courseSelectResultType>(query_result, order ?? DEFAULT_ORDER);
-    return await apply_offset<courseSelectResultType>(ordered_result, offset ?? 0);
+    const ordered_result = await apply_order<subject_course>(query_result, order ?? DEFAULT_ORDER);
+    return await apply_offset<subject_course>(ordered_result, offset ?? 0);
   }
 
   private department_filter(department_names: [string]): object {

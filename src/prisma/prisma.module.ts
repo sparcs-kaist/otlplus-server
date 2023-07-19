@@ -5,7 +5,6 @@ import { LectureRepository } from "./repositories/lecture.repository";
 import { ReviewRepository } from "./repositories/review.repository";
 import { DepartmentRepository } from "./repositories/department.repository";
 import { CourseRepository } from "./repositories/course.repository";
-import { ProfessorRepository } from "./repositories/professor.repository";
 
 @Module({
   providers: [PrismaService,
@@ -14,7 +13,6 @@ import { ProfessorRepository } from "./repositories/professor.repository";
     ReviewRepository,
     DepartmentRepository,
     CourseRepository,
-    ProfessorRepository,
   ],
   exports: [PrismaService,
     UserRepository,
@@ -22,7 +20,6 @@ import { ProfessorRepository } from "./repositories/professor.repository";
     ReviewRepository,
     DepartmentRepository,
     CourseRepository,
-    ProfessorRepository,
   ]
 })
 export class PrismaModule {}
