@@ -70,7 +70,9 @@ export class CourseRepository{
         id: id,
       }
     }) as subject_course;
-    return course.lecture.filter((lecture) => !lecture.deleted)
+    const filterdLecture = course.lecture.filter((lecture) => !lecture.deleted);
+    const order = query.order ? query.order : ['year', 'semester', 'class_no'];
+    return applyOrder<subject_lecture>(filterdLecture, order);
   }
 
   public async filterByRequest (query: any): Promise<subject_course[]> {
