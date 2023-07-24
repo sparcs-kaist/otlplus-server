@@ -12,10 +12,10 @@ export interface CourseResponseDto {
   title_en: string;
   summary: string;
   review_total_weight: number;
-  credit: number | null;
-  credit_au: number | null;
-  num_classes: number | null;
-  num_labs: number | null;
+  credit: number;
+  credit_au: number;
+  num_classes: number;
+  num_labs: number;
 }
 
 export interface CourseResponseDtoNested extends CourseResponseDto {

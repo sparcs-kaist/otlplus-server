@@ -21,10 +21,10 @@ export const toJsonCourse = (course: subject_course, lecture: subject_lecture, p
     "title_en": course.title_en,
     "summary": course.summury, // Todo: fix summury typo in db.
     "review_total_weight": course.review_total_weight,
-    "credit": lecture.credit ?? null,
-    "credit_au": lecture.credit_au ?? null,
-    "num_classes": lecture.num_classes ?? null,
-    "num_labs": lecture.num_labs ?? null
+    "credit": lecture.credit ?? 0,
+    "credit_au": lecture.credit_au ?? 0,
+    "num_classes": lecture.num_classes ?? 0,
+    "num_labs": lecture.num_labs ?? 0
   };
 
   if (nested) {
