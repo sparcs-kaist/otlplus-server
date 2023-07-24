@@ -511,6 +511,7 @@ model subject_lecture {
   timetable_oldtimetable_lectures timetable_oldtimetable_lectures[]
   timetable_timetable_lectures    timetable_timetable_lectures[]
   timetable_wishlist_lectures     timetable_wishlist_lectures[]
+  subject_lecture_professors      subject_lecture_professors[]
 
   @@index([deleted], map: "subject_lecture_deleted_bedc6156_uniq")
   @@index([type_en], map: "subject_lecture_type_en_45ee2d3a_uniq")
@@ -521,23 +522,27 @@ model subject_lecture_professors {
   lecture_id   Int
   professor_id Int
 
+  lecture   subject_lecture   @relation(fields: [lecture_id], references: [id], onUpdate: Restrict)
+  professor subject_professor @relation(fields: [professor_id], references: [id], onUpdate: Restrict)
+
   @@unique([lecture_id, professor_id], map: "lecture_id")
 }
 
 model subject_professor {
-  id                        Int                         @id @default(autoincrement())
-  professor_name            String                      @db.VarChar(100)
-  professor_name_en         String?                     @db.VarChar(100)
-  professor_id              Int
-  major                     String                      @db.VarChar(30)
-  grade_sum                 Float
-  load_sum                  Float
-  speech_sum                Float
-  review_total_weight       Float
-  grade                     Float
-  load                      Float
-  speech                    Float
-  subject_course_professors subject_course_professors[]
+  id                         Int                          @id @default(autoincrement())
+  professor_name             String                       @db.VarChar(100)
+  professor_name_en          String?                      @db.VarChar(100)
+  professor_id               Int
+  major                      String                       @db.VarChar(30)
+  grade_sum                  Float
+  load_sum                   Float
+  speech_sum                 Float
+  review_total_weight        Float
+  grade                      Float
+  load                       Float
+  speech                     Float
+  subject_course_professors  subject_course_professors[]
+  subject_lecture_professors subject_lecture_professors[]
 }
 
 model subject_semester {
