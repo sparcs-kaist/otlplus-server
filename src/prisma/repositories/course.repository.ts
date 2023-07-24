@@ -4,10 +4,8 @@ import { applyOrder, applyOffset } from "src/common/utils/search.utils";
 import { subject_course } from "../generated/prisma-class/subject_course";
 
 @Injectable()
-export class CourseRepository {
-  constructor(
-    private readonly prisma: PrismaService
-  ){}
+export class CourseRepository{
+  constructor(private readonly prisma: PrismaService){}
   
   private TYPE_ACRONYMS = {
     "GR": "General Required",

@@ -454,6 +454,7 @@ model subject_department {
   session_userprofile_minors               session_userprofile_minors[]
   session_userprofile_specialized_major    session_userprofile_specialized_major[]
   subject_course                           subject_course[]
+  subject_lecture                          subject_lecture[]
 }
 
 model subject_examtime {
@@ -474,6 +475,7 @@ model subject_lecture {
   year                            Int
   semester                        Int                                  @db.SmallInt
   department_id                   Int
+  department                      subject_department                   @relation(fields: [department_id], references: [id], onUpdate: Restrict)
   class_no                        String                               @db.VarChar(4)
   title                           String                               @db.VarChar(100)
   title_en                        String                               @db.VarChar(200)
