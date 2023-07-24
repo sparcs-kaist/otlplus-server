@@ -1,13 +1,6 @@
-import { CourseRepository } from './../../prisma/repositories/course.repository';
-import { Injectable } from '@nestjs/common';
-import { ProfessorResponseDto } from 'src/common/interfaces/dto/professor/professor.response.dto';
-import { applyOrder } from 'src/common/utils/search.utils';
-import { session_userprofile } from '@prisma/client';
-import { subject_course } from 'src/prisma/generated/prisma-class/subject_course';
-import { subject_lecture } from 'src/prisma/generated/prisma-class/subject_lecture';
-import { subject_department } from 'src/prisma/generated/prisma-class/subject_department';
-import { toJsonDepartment } from "../../common/interfaces/serializer/department.serializer";
-import { toJsonProfessor } from "../../common/interfaces/serializer/professor.serializer";
+import { CourseRepository } from "./../../prisma/repositories/course.repository";
+import { Injectable } from "@nestjs/common";
+import { session_userprofile } from "@prisma/client";
 import { toJsonCourse } from "../../common/interfaces/serializer/course.serializer";
 import { subject_professor } from "../../prisma/generated/prisma-class/subject_professor";
 import { getRepresentativeLecture } from "../../common/utils/lecture.utils";
@@ -17,7 +10,7 @@ import { CourseResponseDtoNested } from "../../common/interfaces/dto/course/cour
 @Injectable()
 export class CoursesService {
   constructor(
-    private readonly CourseRepository: CourseRepository,
+    private readonly CourseRepository: CourseRepository
   ) {}
 
   public async getCourseByFilter(query: any, user: session_userprofile):  Promise<(CourseResponseDtoNested & { userspecific_is_read: boolean })[]> {

@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma.service";
-import { Prisma, session_userprofile, subject_lecture } from "@prisma/client";
 import { groupBy } from "../../common/utils/method.utils";
+import { Prisma, session_userprofile, subject_lecture } from "@prisma/client";
 
 @Injectable()
 export class LectureRepository {
