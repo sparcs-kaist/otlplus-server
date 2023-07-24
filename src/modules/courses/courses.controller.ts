@@ -18,4 +18,9 @@ export class CourseController {
   async getCourseById(@Param('id') id: number, @GetUser() user: session_userprofile) {
     return await this.CoursesService.getCourseById(id, user);
   }
+
+  @Get(':id/lectures')
+  async getLecturesByCourseId(@Param('id') id: number, @GetUser() user: session_userprofile) {
+    return await this.CoursesService.getLecturesByCourseId(id, user);
+  }
 }
