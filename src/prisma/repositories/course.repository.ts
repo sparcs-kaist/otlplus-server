@@ -54,10 +54,17 @@ export class CourseRepository{
     }) as subject_course;
   }
 
-  public async getLecturesByCourseId (query: {order: string}, id: number): Promise<subject_lecture[]> {
+  public async getLecturesByCourseId (query: {order: string[]}, id: number): Promise<subject_lecture[]> {
     const course = await this.prisma.subject_course.findUnique({
       include: {
-        lecture: true,
+        lecture: {
+          include: {
+            department: true,
+            subject_lecture_professors: { include: { professor: true } },
+            subject_classtime: true,
+            subject_examtime: true,
+          }
+        },
       },
       where: {
         id: id,

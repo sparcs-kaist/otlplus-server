@@ -1,6 +1,10 @@
+import { applyOrder } from "src/common/utils/search.utils";
 import { subject_lecture } from "src/prisma/generated/prisma-class/subject_lecture"
+import { toJsonClasstime } from "./classtime.serializer";
+import { toJsonExamtime } from "./examtime.serializer";
+import { LectureResponseDto } from "../dto/lecture/lecture.response.dto";
 
-export const toJsonLecture = (lecture: subject_lecture, nested = false) => {
+export const toJsonLecture = (lecture: subject_lecture, nested = false): LectureResponseDto => {
   let result = {
     "id": lecture.id,
     "title": lecture.title,
@@ -11,7 +15,7 @@ export const toJsonLecture = (lecture: subject_lecture, nested = false) => {
     "year": lecture.year,
     "semester": lecture.semester,
     "code": lecture.code,
-    "department": lecture.department.id,
+    "department": lecture.department_id,
     "department_code": lecture.department.code,
     "department_name": lecture.department.name,
     "department_name_en": lecture.department.name_en,
@@ -29,5 +33,23 @@ export const toJsonLecture = (lecture: subject_lecture, nested = false) => {
     "class_title": lecture.class_title,
     "class_title_en": lecture.class_title_en,
     "review_total_weight": lecture.review_total_weight,
+  };
+
+  const professors = lecture.subject_lecture_professors.map((x) => x.professor);
+  const ordered_professors = applyOrder(professors, ["professor_name"]);
+  result = Object.assign(result, { "professors": ordered_professors });
+
+  if (nested) {
+    return result;
   }
+
+  result = Object.assign(result, {
+    "grade": lecture.grade,
+    "load": lecture.load,
+    "speech": lecture.speech,
+    "classtimes": lecture.subject_classtime.map((classtime) => toJsonClasstime(classtime)),
+    "examtimes": lecture.subject_examtime.map((examtime) => toJsonExamtime(examtime)),
+  });
+
+  return result;
 }

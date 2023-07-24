@@ -65,7 +65,7 @@ export class CoursesService {
     }
   }
 
-  public async getLecturesByCourseId(query: {order: string}, id: number, user: session_userprofile) {
+  public async getLecturesByCourseId(query: {order: string[]}, id: number) {
     const lectures = await this.CourseRepository.getLecturesByCourseId(query, id);
     if (!lectures) {
       throw new NotFoundException();

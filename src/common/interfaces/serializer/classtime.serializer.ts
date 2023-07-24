@@ -1,7 +1,7 @@
 import { getTimeNumeric } from "src/common/utils/time.utils";
 import { subject_classtime } from "src/prisma/generated/prisma-class/subject_classtime";
 
-export const toJsonClassTime = (classtime: subject_classtime) => {
+export const toJsonClasstime = (classtime: subject_classtime) => {
   const classroomInfo = getClassroomStrs(classtime);
   return Object.assign(classroomInfo, {
     "day": classtime.day,
