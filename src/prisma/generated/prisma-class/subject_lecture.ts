@@ -1,3 +1,4 @@
+import { subject_department } from './subject_department';
 import { subject_course } from './subject_course';
 import { main_reviewwritedailyuserfeed } from './main_reviewwritedailyuserfeed';
 import { planner_takenplanneritem } from './planner_takenplanneritem';
@@ -7,6 +8,7 @@ import { subject_examtime } from './subject_examtime';
 import { timetable_oldtimetable_lectures } from './timetable_oldtimetable_lectures';
 import { timetable_timetable_lectures } from './timetable_timetable_lectures';
 import { timetable_wishlist_lectures } from './timetable_wishlist_lectures';
+import { subject_lecture_professors } from './subject_lecture_professors';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class subject_lecture {
@@ -27,6 +29,9 @@ export class subject_lecture {
 
   @ApiProperty({ type: Number })
   department_id: number;
+
+  @ApiProperty({ type: () => subject_department })
+  department: subject_department;
 
   @ApiProperty({ type: String })
   class_no: string;
@@ -135,4 +140,7 @@ export class subject_lecture {
 
   @ApiProperty({ isArray: true, type: () => timetable_wishlist_lectures })
   timetable_wishlist_lectures: timetable_wishlist_lectures[];
+
+  @ApiProperty({ isArray: true, type: () => subject_lecture_professors })
+  subject_lecture_professors: subject_lecture_professors[];
 }
