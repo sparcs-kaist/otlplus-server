@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma.service";
 import { applyOrder, applyOffset } from "src/common/utils/search.utils";
 import { subject_course } from "../generated/prisma-class/subject_course";
+import { subject_lecture } from "../generated/prisma-class/subject_lecture";
 
 @Injectable()
 export class CourseRepository{
@@ -51,6 +52,18 @@ export class CourseRepository{
         id: id
       }
     }) as subject_course;
+  }
+
+  public async getLecturesByCourseId (query: {order: string}, id: number): Promise<subject_lecture[]> {
+    const course = await this.prisma.subject_course.findUnique({
+      include: {
+        lecture: true,
+      },
+      where: {
+        id: id,
+      }
+    }) as subject_course;
+    return course.lecture.filter((lecture) => !lecture.deleted)
   }
 
   public async filterByRequest (query: any): Promise<subject_course[]> {

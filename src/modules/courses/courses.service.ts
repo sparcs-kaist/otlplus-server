@@ -13,6 +13,7 @@ import { toJsonCourse } from "../../common/interfaces/serializer/course.serializ
 import { subject_professor } from "../../prisma/generated/prisma-class/subject_professor";
 import { getRepresentativeLecture } from "../../common/utils/lecture.utils";
 import { CourseResponseDtoNested } from "../../common/interfaces/dto/course/course.response.dto";
+import { toJsonLecture } from 'src/common/interfaces/serializer/lecture.serializer';
 
 
 @Injectable()
@@ -62,5 +63,14 @@ export class CoursesService {
         "userspecific_is_read": false,
       })
     }
+  }
+
+  public async getLecturesByCourseId(query: {order: string}, id: number, user: session_userprofile) {
+    const lectures = await this.CourseRepository.getLecturesByCourseId(query, id);
+    if (!lectures) {
+      throw new NotFoundException();
+    }
+
+    return lectures.map((lecture) => toJsonLecture(lecture));
   }
 }
