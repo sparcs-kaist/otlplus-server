@@ -3,9 +3,9 @@ generator client {
 }
 
 generator prismaClassGenerator {
-    provider = "prisma-class-generator"
-    dryRun = true
-    output = "./generated/prisma-class"
+  provider = "prisma-class-generator"
+  dryRun   = true
+  output   = "./generated/prisma-class"
 }
 
 datasource db {
