@@ -41,6 +41,20 @@ export class CourseRepository {
       "TS",
   ]
 
+  public async getCourseById (id: number): Promise<subject_course> {
+    return await this.prisma.subject_course.findUnique({
+      include: {
+        subject_department: true,
+        subject_course_professors: { include: { professor: true } },
+        lecture: true,
+        subject_courseuser: true,
+      },
+      where: {
+        id: id
+      }
+    }) as subject_course;
+  }
+
   public async filterByRequest (query: any): Promise<subject_course[]> {
     const DEFAULT_LIMIT = 150;
     const DEFAULT_ORDER = ['old_code']

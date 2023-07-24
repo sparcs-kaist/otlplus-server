@@ -1,5 +1,6 @@
+import { DepartmentRepository } from './../../prisma/repositories/department.repository';
 import { CourseRepository } from './../../prisma/repositories/course.repository';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { applyOrder } from 'src/common/utils/search.utils';
 import { CourseProfessorDto } from 'src/common/interfaces/dto/course/course.professor.dto';
 import { session_userprofile, subject_professor } from '@prisma/client';
@@ -17,6 +18,15 @@ export class CoursesService {
   public async getCourseByFilter(query: any, user: session_userprofile) {
     const queryResult = await this.CourseRepository.filterByRequest(query);
     return await this.toJson(queryResult, user);
+  }
+
+  public async getCourseById(id: number, user: session_userprofile) {
+    const queryResult = await this.CourseRepository.getCourseById(id);
+    if (!queryResult) {
+      throw new NotFoundException();
+    }
+
+    return (await this.toJson([queryResult], user, false)).at(0);
   }
 
   private async toJson(query_res: subject_course[], user: session_userprofile, nested=false) {
