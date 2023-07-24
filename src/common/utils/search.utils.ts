@@ -1,4 +1,4 @@
-export async function applyOrder<T>(query: T[], order_opt: string[]) {
+export function applyOrder<T>(query: T[], order_opt: string[]) {
   if (order_opt.length == 0) {
     return query;
   } else {
