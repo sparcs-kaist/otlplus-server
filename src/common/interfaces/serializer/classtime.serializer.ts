@@ -1,3 +1,4 @@
+import { getTimeNumeric } from "src/common/utils/time.utils";
 import { subject_classtime } from "src/prisma/generated/prisma-class/subject_classtime";
 
 export const toJsonClassTime = (classtime: subject_classtime) => {
@@ -57,14 +58,5 @@ const getClassroomStrs = (classtime: subject_classtime) => {
       "classroom_short": classroomShort,
       "classroom_short_en": classroomShortEn,
     }
-  }
-}
-
-const getTimeNumeric = (time: Date) => {
-  const beginNumeric = time.getHours() * 60 + time.getMinutes();
-  if (beginNumeric % 30) {
-    return beginNumeric + (30 - beginNumeric % 30);
-  } else {
-    return beginNumeric;
   }
 }
