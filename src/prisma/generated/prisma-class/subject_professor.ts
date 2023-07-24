@@ -1,3 +1,5 @@
+import { subject_course_professors } from './subject_course_professors';
+import { subject_lecture_professors } from './subject_lecture_professors';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class subject_professor {
@@ -36,4 +38,10 @@ export class subject_professor {
 
   @ApiProperty({ type: Number })
   speech: number;
+
+  @ApiProperty({ isArray: true, type: () => subject_course_professors })
+  subject_course_professors: subject_course_professors[];
+
+  @ApiProperty({ isArray: true, type: () => subject_lecture_professors })
+  subject_lecture_professors: subject_lecture_professors[];
 }

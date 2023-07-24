@@ -1,8 +1,11 @@
 import { main_relatedcoursedailyuserfeed } from './main_relatedcoursedailyuserfeed';
 import { planner_futureplanneritem } from './planner_futureplanneritem';
+import { subject_department } from './subject_department';
 import { subject_course_related_courses_posterior } from './subject_course_related_courses_posterior';
 import { subject_course_related_courses_prior } from './subject_course_related_courses_prior';
 import { subject_courseuser } from './subject_courseuser';
+import { subject_course_professors } from './subject_course_professors';
+import { subject_lecture } from './subject_lecture';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class subject_course {
@@ -54,11 +57,20 @@ export class subject_course {
   @ApiPropertyOptional({ type: Date })
   latest_written_datetime?: Date;
 
+  @ApiProperty({ type: String })
+  title_en_no_space: string;
+
+  @ApiProperty({ type: String })
+  title_no_space: string;
+
   @ApiProperty({ isArray: true, type: () => main_relatedcoursedailyuserfeed })
   main_relatedcoursedailyuserfeed: main_relatedcoursedailyuserfeed[];
 
   @ApiProperty({ isArray: true, type: () => planner_futureplanneritem })
   planner_futureplanneritem: planner_futureplanneritem[];
+
+  @ApiProperty({ type: () => subject_department })
+  subject_department: subject_department;
 
   @ApiProperty({
     isArray: true,
@@ -86,4 +98,10 @@ export class subject_course {
 
   @ApiProperty({ isArray: true, type: () => subject_courseuser })
   subject_courseuser: subject_courseuser[];
+
+  @ApiProperty({ isArray: true, type: () => subject_course_professors })
+  subject_course_professors: subject_course_professors[];
+
+  @ApiProperty({ isArray: true, type: () => subject_lecture })
+  lecture: subject_lecture[];
 }

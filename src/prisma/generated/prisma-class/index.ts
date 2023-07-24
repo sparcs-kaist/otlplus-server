@@ -37,7 +37,6 @@ import { subject_examtime as _subject_examtime } from './subject_examtime';
 import { subject_lecture as _subject_lecture } from './subject_lecture';
 import { subject_lecture_professors as _subject_lecture_professors } from './subject_lecture_professors';
 import { subject_professor as _subject_professor } from './subject_professor';
-import { subject_professor_course_list as _subject_professor_course_list } from './subject_professor_course_list';
 import { subject_semester as _subject_semester } from './subject_semester';
 import { support_notice as _support_notice } from './support_notice';
 import { support_rate as _support_rate } from './support_rate';
@@ -96,7 +95,6 @@ export namespace PrismaModel {
   export class subject_lecture extends _subject_lecture {}
   export class subject_lecture_professors extends _subject_lecture_professors {}
   export class subject_professor extends _subject_professor {}
-  export class subject_professor_course_list extends _subject_professor_course_list {}
   export class subject_semester extends _subject_semester {}
   export class support_notice extends _support_notice {}
   export class support_rate extends _support_rate {}
@@ -155,7 +153,6 @@ export namespace PrismaModel {
     subject_lecture,
     subject_lecture_professors,
     subject_professor,
-    subject_professor_course_list,
     subject_semester,
     support_notice,
     support_rate,

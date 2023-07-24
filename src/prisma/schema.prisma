@@ -231,6 +231,7 @@ model review_review {
   id                                         Int                                          @id @default(autoincrement())
   course_id                                  Int
   lecture_id                                 Int
+  lecture                                    subject_lecture                              @relation(fields: [lecture_id], references: [id], onDelete: Restrict)
   content                                    String                                       @db.MediumText
   grade                                      Int                                          @db.SmallInt
   load                                       Int                                          @db.SmallInt
@@ -512,6 +513,7 @@ model subject_lecture {
   timetable_timetable_lectures    timetable_timetable_lectures[]
   timetable_wishlist_lectures     timetable_wishlist_lectures[]
   subject_lecture_professors      subject_lecture_professors[]
+  review                          review_review[]
 
   @@index([deleted], map: "subject_lecture_deleted_bedc6156_uniq")
   @@index([type_en], map: "subject_lecture_type_en_45ee2d3a_uniq")
