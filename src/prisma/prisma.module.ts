@@ -1,17 +1,21 @@
-import { Module } from "@nestjs/common";
-import { PrismaService } from "./prisma.service";
-import { UserRepository } from "./repositories/user.repository";
-import { LectureRepository } from "./repositories/lecture.repository";
-import { ReviewRepository } from "./repositories/review.repository";
+import { Module } from '@nestjs/common';
+import { PrismaService } from './prisma.service';
+import { UserRepository } from './repositories/user.repository';
+import { LectureRepository } from './repositories/lecture.repository';
+import { ReviewsRepository } from './repositories/review.repository';
 
 @Module({
-  providers: [PrismaService,
+  providers: [
+    PrismaService,
     UserRepository,
     LectureRepository,
-    ReviewRepository],
-  exports: [PrismaService,
+    ReviewsRepository,
+  ],
+  exports: [
+    PrismaService,
     UserRepository,
     LectureRepository,
-    ReviewRepository]
+    ReviewsRepository,
+  ],
 })
 export class PrismaModule {}
