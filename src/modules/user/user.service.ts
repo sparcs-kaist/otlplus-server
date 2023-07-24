@@ -48,7 +48,7 @@ export class UserService {
       firstName: user.first_name,
       lastName: user.last_name,
       department: toJsonDepartment(department) ?? null,
-      majors: toJsonDepartment(majors),
+      majors: majors.map((major) => toJsonDepartment(major)),
       departments: departments.map((department) => toJsonDepartment(department)),
       favorite_departments: favoriteDepartments.map((department) => toJsonDepartment(department)),
       review_writeable_lectures: reviewWritableLectures,

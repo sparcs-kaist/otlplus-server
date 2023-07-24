@@ -1,22 +1,22 @@
-import { Controller, Get, Query, Req, Res, Session } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { Response } from 'express';
-import { Client } from './utils/sparcs-sso';
-import settings from '../../settings';
-import { UserService } from '../user/user.service';
-import { Public } from '../../common/decorators/skip-auth.decorator';
-import { GetUser } from '../../common/decorators/get-user.decorator';
-import { session_userprofile } from '@prisma/client';
-import { SSOUser } from '../../common/interfaces/dto/auth/sso.dto';
+import { Controller, Get, Query, Req, Res, Session } from "@nestjs/common";
+import { AuthService } from "./auth.service";
+import { Request, Response } from "express";
+import { Client } from "./utils/sparcs-sso";
+import settings from "../../settings";
+import { UserService } from "../user/user.service";
+import { Public } from "../../common/decorators/skip-auth.decorator";
+import { GetUser } from "../../common/decorators/get-user.decorator";
+import { session_userprofile } from "@prisma/client";
+import { SSOUser } from "../../common/interfaces/dto/auth/sso.dto";
 import { ProfileDto } from "../../common/interfaces/dto/user/user.response.dto";
 
-@Controller('session')
+@Controller("session")
 export class AuthController {
   private readonly ssoClient;
 
   constructor(
     private readonly authService: AuthService,
-    private readonly userService: UserService,
+    private readonly userService: UserService
   ) {
     const ssoConfig = settings().getSsoConfig();
     const ssoClient = new Client(
@@ -79,7 +79,7 @@ export class AuthController {
     response.redirect(next_url);
   }
 
-  @Get('info')
+  @Get("info")
   async getUserProfile(@GetUser() user: session_userprofile): Promise<ProfileDto> {
     /*
     @Todo
@@ -87,5 +87,36 @@ export class AuthController {
      */
     const profile = await this.userService.getProfile(user);
     return profile;
+  }
+
+  @Public()
+  @Get("/")
+  async home(@Req() req,
+             @Res() res) {
+    return res.redirect("/session/login");
+  }
+
+  @Public()
+  @Get("logout")
+  async logout(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Query('next') next,
+    @GetUser() user: session_userprofile
+  ) {
+    if (user) {
+      const sid = user.sid;
+      const protocol = req.protocol;
+      const host = req.get('host');
+      const originalUrl = req.originalUrl;
+      const absoluteUrl = `${protocol}://${host}${originalUrl}`;
+      const logoutUrl = this.ssoClient.get_logout_url(sid,absoluteUrl);
+
+      res.clearCookie('accessToken');
+      res.clearCookie('refreshToken');
+
+      return res.redirect(logoutUrl);
+    }
+    return res.redirect("/");
   }
 }

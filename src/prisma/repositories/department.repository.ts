@@ -1,8 +1,7 @@
 import { PrismaService } from "../prisma.service";
-import { session_userprofile } from "@prisma/client";
+import { session_userprofile, subject_department } from "@prisma/client";
 import session from "express-session";
 import { Injectable } from "@nestjs/common";
-import { subject_department } from "../generated/prisma-class/subject_department";
 
 @Injectable()
 export class DepartmentRepository{
