@@ -16,7 +16,7 @@ export function applyOrder<T>(query: T[], order_opt: string[]) {
   }
 }
 
-export async function applyOffset<T>(query: T[], offset: number) {
+export function applyOffset<T>(query: T[], offset: number) {
   if (!(offset)) {
     return query;
   } else {

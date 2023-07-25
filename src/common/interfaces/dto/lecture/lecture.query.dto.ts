@@ -6,7 +6,7 @@ export interface LectureQueryDTO {
   "end"?: number[];
   "department"?: string[];
   "type"?: string[];
-  "level"?: "1"|"2"|"3"|"4"[]
+  "level"?: string[];
   "group"?: string[]
   "keyword"?: string;
   "order"?: string[];

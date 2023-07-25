@@ -112,11 +112,11 @@ export class CourseRepository{
     }) as subject_course[];
 
     // Apply Ordering and Offset
-    const ordered_result = await applyOrder<subject_course>(query_result, order ?? DEFAULT_ORDER);
+    const ordered_result = applyOrder<subject_course>(query_result, order ?? DEFAULT_ORDER);
     return await applyOffset<subject_course>(ordered_result, offset ?? 0);
   }
 
-  private departmentFilter(department_names: [string]): object {
+  public departmentFilter(department_names: string[]): object {
     if (!(department_names)) {
       return null
     }
@@ -141,7 +141,7 @@ export class CourseRepository{
     }
   }
 
-  private typeFilter(types: [string]): object {
+  public typeFilter(types: string[]): object {
     if (!(types)) {
       return null
     }
@@ -164,7 +164,7 @@ export class CourseRepository{
     }
   }
 
-  private levelFilter(levels?: [string]): object {
+  public levelFilter(levels?: string[]): object {
     if (!(levels)) {
       return null;
     }
@@ -189,7 +189,7 @@ export class CourseRepository{
     }
   }
 
-  private termFilter(term?: [string]): object {
+  public termFilter(term?: string[]): object {
     if (!(term)) {
       return null;
     }
@@ -206,7 +206,7 @@ export class CourseRepository{
     }
   }
 
-  private keywordFilter(keyword?: string): object {
+  public keywordFilter(keyword?: string): object {
     if (!(keyword)) {
       return null;
     }
@@ -267,7 +267,7 @@ export class CourseRepository{
     };
   }
 
-  private groupFilter(group?: [string]): object {
+  public groupFilter(group?: string[]): object {
     if (!(group)) {
       return null;
     }
