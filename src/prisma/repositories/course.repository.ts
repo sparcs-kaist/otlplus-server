@@ -92,11 +92,10 @@ export class CourseRepository{
     } = query;
     const departmentFilter = this.departmentFilter(department);
     const typeFilter = this.typeFilter(type);
-    const levelFilter = this.levelFilter(level);
     const groupFilter = this.groupFilter(group);
     const keywordFilter = this.keywordFilter(keyword);
     const term_filter = this.termFilter(term);
-    let filterList = [departmentFilter, typeFilter, levelFilter, groupFilter, keywordFilter, term_filter]
+    let filterList = [departmentFilter, typeFilter, groupFilter, keywordFilter, term_filter]
     filterList = filterList.filter((filter) => filter !== null)
     const query_result = await this.prisma.subject_course.findMany({
       include: {
@@ -161,31 +160,6 @@ export class CourseRepository{
           in: types
         }
       }
-    }
-  }
-
-  public levelFilter(levels?: string[]): object {
-    if (!(levels)) {
-      return null;
-    }
-
-    const acronym_dic = ["1", "2", "3", "4"];
-    if (levels.includes("ALL")) {
-      return null;
-    } else if (levels.includes("ETC")) {
-      const numbers = acronym_dic.filter((level) => !(level in levels));
-      return {
-        old_code: {
-          contains: numbers
-        }
-      };
-    } else {
-      const numbers = acronym_dic.filter((level) => level in levels);
-      return {
-        old_code: {
-          contains: numbers
-        }
-      };
     }
   }
 
