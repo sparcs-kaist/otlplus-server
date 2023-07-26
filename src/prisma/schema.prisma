@@ -478,7 +478,7 @@ model subject_lecture {
   year                            Int
   semester                        Int                                  @db.SmallInt
   department_id                   Int
-  department                      subject_department                   @relation(fields: [department_id], references: [id], onUpdate: Restrict)
+  subject_department              subject_department                   @relation(fields: [department_id], references: [id], onUpdate: Restrict)
   class_no                        String                               @db.VarChar(4)
   title                           String                               @db.VarChar(100)
   title_en                        String                               @db.VarChar(200)
@@ -486,6 +486,8 @@ model subject_lecture {
   type_en                         String                               @db.VarChar(36)
   audience                        Int
   credit                          Int
+  title_en_no_space               String                               @db.VarChar(200)
+  title_no_space                  String                               @db.VarChar(100)
   num_classes                     Int
   num_labs                        Int
   credit_au                       Int
