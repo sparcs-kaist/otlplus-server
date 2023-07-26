@@ -31,7 +31,7 @@ export class subject_lecture {
   department_id: number;
 
   @ApiProperty({ type: () => subject_department })
-  department: subject_department;
+  subject_department: subject_department;
 
   @ApiProperty({ type: String })
   class_no: string;
@@ -53,6 +53,12 @@ export class subject_lecture {
 
   @ApiProperty({ type: Number })
   credit: number;
+
+  @ApiProperty({ type: String })
+  title_en_no_space: string;
+
+  @ApiProperty({ type: String })
+  title_no_space: string;
 
   @ApiProperty({ type: Number })
   num_classes: number;
