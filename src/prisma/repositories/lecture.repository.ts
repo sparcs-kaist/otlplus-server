@@ -14,6 +14,20 @@ export class LectureRepository {
     private readonly courseRepository: CourseRepository
   ) {}
 
+  async getLectureById(id: number): Promise<subject_lecture> {
+    return await this.prisma.subject_lecture.findUnique({
+      include: {
+        subject_department: true,
+        subject_lecture_professors: { include: { professor: true } },
+        subject_classtime: true,
+        subject_examtime: true,
+      },
+      where: {
+        id: id
+      }
+    }) as subject_lecture;
+  }
+
   async filterByRequest(query: LectureQueryDTO): Promise<subject_lecture[]> {
     const DEFAULT_LIMIT = 300;
     const DEFAULT_ORDER = ['year', 'semester', 'old_code', 'class_no'];
