@@ -230,6 +230,7 @@ model review_majorbestreview {
 model review_review {
   id                                         Int                                          @id @default(autoincrement())
   course_id                                  Int
+  course                                     subject_course                               @relation(fields: [course_id], references: [id], onDelete: Restrict)
   lecture_id                                 Int
   lecture                                    subject_lecture                              @relation(fields: [lecture_id], references: [id], onDelete: Restrict)
   content                                    String                                       @db.MediumText
@@ -390,6 +391,7 @@ model subject_course {
   subject_courseuser                                                                                               subject_courseuser[]
   subject_course_professors                                                                                        subject_course_professors[]
   lecture                                                                                                          subject_lecture[]
+  review                                                                                                           review_review[]
 
   @@index([department_id], map: "subject_course_department_id_fkey")
 }
