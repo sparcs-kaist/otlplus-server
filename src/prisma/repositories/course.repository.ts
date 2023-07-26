@@ -97,7 +97,7 @@ export class CourseRepository{
     const term_filter = this.termFilter(term);
     let filterList = [departmentFilter, typeFilter, groupFilter, keywordFilter, term_filter]
     filterList = filterList.filter((filter) => filter !== null)
-    const query_result = await this.prisma.subject_course.findMany({
+    const queryResult = await this.prisma.subject_course.findMany({
       include: {
         subject_department: true,
         subject_course_professors: { include: { professor: true } },
@@ -109,10 +109,11 @@ export class CourseRepository{
       },
       take: limit ?? DEFAULT_LIMIT,
     }) as subject_course[];
+    const levelFilteredResult = this.levelFilter(queryResult, level) as subject_course[];
 
     // Apply Ordering and Offset
-    const ordered_result = applyOrder<subject_course>(query_result, order ?? DEFAULT_ORDER);
-    return await applyOffset<subject_course>(ordered_result, offset ?? 0);
+    const orderedResult = applyOrder<subject_course>(levelFilteredResult, order ?? DEFAULT_ORDER);
+    return await applyOffset<subject_course>(orderedResult, offset ?? 0);
   }
 
   public departmentFilter(department_names: string[]): object {
@@ -283,5 +284,26 @@ export class CourseRepository{
         in: { filter }
       }
     };
+  }
+
+  public levelFilter (queryResult: (subject_course|subject_lecture)[], levels: string[]) {
+    if (!levels) {
+      return queryResult
+    }
+
+    const levelFilters = levels.map((level) => level[0]);
+    if (levels.includes("ALL")) {
+      return queryResult
+    } else if (levels.includes("ETC")) {
+      return queryResult.filter((item) => {
+        const level = item.old_code.replace(/[^0-9]/g, '')[0];
+        return !levelFilters.includes(level);
+      })
+    } else {
+      return queryResult.filter((item) => {
+        const level = item.old_code.replace(/[^0-9]/g, '')[0];
+        return levelFilters.includes(level);
+      })
+    }
   }
 }

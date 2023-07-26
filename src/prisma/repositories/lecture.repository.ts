@@ -53,8 +53,9 @@ export class LectureRepository {
       },
       take: query.limit ?? DEFAULT_LIMIT,
     }) as subject_lecture[];
+    const levelFilteredResult = this.courseRepository.levelFilter(queryResult, query?.level) as subject_lecture[];
 
-    const orderedQuery = applyOrder<subject_lecture>(queryResult, query.order ?? DEFAULT_ORDER);
+    const orderedQuery = applyOrder<subject_lecture>(levelFilteredResult, query.order ?? DEFAULT_ORDER);
     return applyOffset<subject_lecture>(orderedQuery, query.offset ?? 0);
   }
 
