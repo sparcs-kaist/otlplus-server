@@ -59,7 +59,7 @@ export class CourseRepository{
       include: {
         lecture: {
           include: {
-            department: true,
+            subject_department: true,
             subject_lecture_professors: { include: { professor: true } },
             subject_classtime: true,
             subject_examtime: true,
@@ -180,7 +180,7 @@ export class CourseRepository{
     }
   }
 
-  public keywordFilter(keyword?: string): object {
+  public keywordFilter(keyword?: string, isCourse = true): object {
     if (!(keyword)) {
       return null;
     }
@@ -207,7 +207,7 @@ export class CourseRepository{
         name_en: keyword_trimed 
       }
     };
-    const professors_professor_name_filter = {
+    const professors_professor_name_filter = isCourse ? {
       subject_course_professors: {
         some: {
           professor: {
@@ -217,8 +217,18 @@ export class CourseRepository{
           }
         }
       }
+    } : {
+      subject_lecture_professors: {
+        some: {
+          professor: {
+            professor_name: {
+              contains: keyword_trimed
+            }
+          }
+        }
+      }
     };
-    const professors_professor_name_en_filter = {
+    const professors_professor_name_en_filter = isCourse ? {
       subject_course_professors: {
         some: {
           professor: {
@@ -228,7 +238,17 @@ export class CourseRepository{
           }
         }
       }
-    }
+    } : {
+      subject_lecture_professors: {
+        some: {
+          professor: {
+            professor_name_en: {
+              contains: keyword_trimed
+            }
+          }
+        }
+      }
+    };
     return {
       OR: [
         title_filter,

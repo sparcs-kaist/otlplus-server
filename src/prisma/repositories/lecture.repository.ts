@@ -1,12 +1,11 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma.service";
-import { Prisma } from "@prisma/client";
+import { Prisma, session_userprofile } from "@prisma/client";
 import { groupBy } from "../../common/utils/method.utils";
 import { LectureQueryDTO } from "src/common/interfaces/dto/lecture/lecture.query.dto";
 import { CourseRepository } from "./course.repository";
 import { applyOrder, applyOffset } from "src/common/utils/search.utils";
 import { subject_lecture } from "../generated/prisma-class/subject_lecture";
-import { session_userprofile } from "../generated/prisma-class/session_userprofile";
 
 @Injectable()
 export class LectureRepository {
@@ -18,20 +17,33 @@ export class LectureRepository {
   async filterByRequest(query: LectureQueryDTO): Promise<subject_lecture[]> {
     const DEFAULT_LIMIT = 300;
     const DEFAULT_ORDER = ['year', 'semester', 'old_code', 'class_no'];
+    const researchTypes = ["Individual Study", "Thesis Study(Undergraduate)",
+    "Thesis Research(MA/phD)"];
     
     const semesterFilter = this.semesterFilter(query?.year, query?.semester);
     const timeFilter = this.timeFilter(query?.day, query?.begin, query?.end);
     const departmentFilter = this.courseRepository.departmentFilter(query?.department);
     const typeFilter = this.courseRepository.typeFilter(query?.type);
-    const levelFilter = this.courseRepository.levelFilter(query?.level);
     const groupFilter = this.courseRepository.groupFilter(query?.group);
-    const keywordFilter = this.courseRepository.keywordFilter(query?.keyword);
+    const keywordFilter = this.courseRepository.keywordFilter(query?.keyword, false);
+    const defaultFilter = {
+      AND: [
+        {
+          deleted: false,
+        },
+        {
+          type_en: {
+            notIn: researchTypes
+          }
+        }
+      ]
+    }
 
     const filters = [semesterFilter, timeFilter,
-      departmentFilter, typeFilter, levelFilter, groupFilter, keywordFilter];
+      departmentFilter, typeFilter, groupFilter, keywordFilter, defaultFilter];
     const queryResult = await this.prisma.subject_lecture.findMany({
       include: {
-        department: true,
+        subject_department: true,
         subject_lecture_professors: { include: { professor: true } },
         subject_classtime: true,
         subject_examtime: true,
@@ -153,8 +165,8 @@ export class LectureRepository {
   }
 
   public timeFilter(day: number[], begin: number[], end: number[]): object {
-    const datetimeBegin = begin.map((time) => this.datetimeConverter(time));
-    const datetimeEnd = end.map((time) => this.datetimeConverter(time));
+    const datetimeBegin = begin?.map((time) => this.datetimeConverter(time));
+    const datetimeEnd = end?.map((time) => this.datetimeConverter(time));
 
     const dayFilter = day ? { day: {In: day} } : null;
     const beginFilter = begin ? { begin: {In: datetimeBegin} } : null;
