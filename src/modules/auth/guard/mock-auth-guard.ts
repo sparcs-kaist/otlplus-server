@@ -17,14 +17,6 @@ export class MockAuthGuard implements CanActivate{
   }
 
   async canActivate(context: ExecutionContext) {
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
-      context.getHandler(),
-      context.getClass()
-    ]);
-
-    if (isPublic) {
-      return true;
-    }
 
     const request = context.switchToHttp().getRequest<Request>();
     const response = context.switchToHttp().getResponse<Response>();
@@ -32,8 +24,9 @@ export class MockAuthGuard implements CanActivate{
     if (sid) {
       const user = await this.authService.findBySid(sid);
       request["user"] = user;
-      return true;
+      return this.determineAuth(context, true);
     }else{
+      console.log("YYYY");
       const accessToken = this.extractTokenFromCookie(request, "accessToken");
       try {
         if (!accessToken) throw new Error("jwt expired");
@@ -45,12 +38,12 @@ export class MockAuthGuard implements CanActivate{
         );
         const user = this.authService.findBySid(payload.sid);
         request["user"] = user;
-        return true;
+        return this.determineAuth(context, true);
       } catch (e) {
         if (e.message === "jwt expired") {
-          const refreshToken = this.extractTokenFromCookie(request, "refreshToken");
-          if (!refreshToken) throw new UnauthorizedException();
           try {
+            const refreshToken = this.extractTokenFromCookie(request, "refreshToken");
+            if (!refreshToken) throw new UnauthorizedException();
             const payload = await this.jwtService.verify(
               refreshToken,
               {
@@ -62,16 +55,37 @@ export class MockAuthGuard implements CanActivate{
               const { accessToken, ...accessTokenOptions } = this.authService.getCookieWithAccessToken(payload.sid);
               request.res.cookie("accessToken", accessToken, accessTokenOptions);
               request["user"] = user;
-              return true;
+              return this.determineAuth(context, true);
             }
-            return false;
+            return this.determineAuth(context, false);
           } catch (e) {
+            console.log("XXXX");
+            const result = this.determineAuth(context, false);
+            if (result) {
+              return result;
+            }
             throw new UnauthorizedException();
           }
+        }
+        const result = this.determineAuth(context, false);
+        if (result) {
+          return result;
         }
         throw new UnauthorizedException();
       }
     }
+  }
+
+  private determineAuth(context: ExecutionContext, result: boolean): boolean {
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass()
+    ]);
+
+    if (isPublic) {
+      return true;
+    }
+    return result;
   }
 
   private extractTokenFromCookie(request: Request, type: "accessToken" | "refreshToken"): string | undefined {

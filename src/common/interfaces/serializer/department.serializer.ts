@@ -2,10 +2,12 @@ import { subject_department } from "../../../prisma/generated/prisma-class/subje
 import { DepartmentResponseDto } from "../dto/department/department.response.dto";
 
 export const toJsonDepartment = (department: subject_department, nested=false): DepartmentResponseDto => {
-  return {
+
+
+  return department ? {
     "id": department.id,
     "name": department.name,
     "name_en": department.name_en,
     "code": department.code,
-  }
+  } : null;
 }

@@ -104,6 +104,7 @@ export class AuthController {
     @Query('next') next,
     @GetUser() user: session_userprofile
   ) {
+    const webURL = process.env.WEB_URL;
     if (user) {
       const sid = user.sid;
       const protocol = req.protocol;
@@ -112,11 +113,13 @@ export class AuthController {
       const absoluteUrl = `${protocol}://${host}${originalUrl}`;
       const logoutUrl = this.ssoClient.get_logout_url(sid,absoluteUrl);
 
-      res.clearCookie('accessToken');
-      res.clearCookie('refreshToken');
+      res.clearCookie('accessToken',{ path: '/' ,maxAge: 0, httpOnly: true });
+      res.clearCookie('refreshToken',{ path: '/' ,maxAge: 0, httpOnly: true });
 
+      console.log(logoutUrl);
       return res.redirect(logoutUrl);
     }
-    return res.redirect("/");
+
+    return res.redirect(webURL + "/");
   }
 }
