@@ -246,6 +246,7 @@ model review_review {
   main_famoushumanityreviewdailyfeed_reviews main_famoushumanityreviewdailyfeed_reviews[]
   main_famousmajorreviewdailyfeed_reviews    main_famousmajorreviewdailyfeed_reviews[]
   writer                                     session_userprofile?                         @relation(fields: [writer_id], references: [id], onUpdate: Restrict)
+  review_reviewvote                          review_reviewvote[]
 
   @@unique([writer_id, lecture_id], map: "review_comment_writer_id_af700a5d_uniq")
   @@index([written_datetime], map: "review_comment_e5e30a4a")
@@ -254,7 +255,9 @@ model review_review {
 model review_reviewvote {
   id               Int       @id @default(autoincrement())
   review_id        Int
+  review           review_review                @relation(fields: [review_id], references: [id], onDelete: Cascade)
   userprofile_id   Int?
+  userprofile      session_userprofile?         @relation(fields: [userprofile_id], references: [id], onDelete:SetNull) 
   created_datetime DateTime? @db.DateTime(6)
 
   @@unique([review_id, userprofile_id], map: "review_commentvote_comment_id_e4594aea_uniq")
@@ -286,6 +289,7 @@ model session_userprofile {
   support_rate                          support_rate[]
   timetable_timetable                   timetable_timetable[]
   timetable_wishlist                    timetable_wishlist?
+  reviewvote                            review_reviewvote[]
 
   @@index([department_id], map: "session_userprofile_department_id_fkey")
 }
