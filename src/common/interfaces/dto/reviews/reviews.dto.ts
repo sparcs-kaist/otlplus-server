@@ -6,6 +6,7 @@ import {
   IsString,
   Validate,
 } from 'class-validator';
+import { CourseResponseDto } from '../course/course.response.dto';
 import { OrderDefaultValidator } from './validators';
 
 export class getReviewDto {

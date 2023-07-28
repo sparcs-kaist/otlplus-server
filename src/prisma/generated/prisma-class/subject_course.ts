@@ -6,6 +6,7 @@ import { subject_course_related_courses_prior } from './subject_course_related_c
 import { subject_courseuser } from './subject_courseuser';
 import { subject_course_professors } from './subject_course_professors';
 import { subject_lecture } from './subject_lecture';
+import { review_review } from './review_review';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class subject_course {
@@ -104,4 +105,7 @@ export class subject_course {
 
   @ApiProperty({ isArray: true, type: () => subject_lecture })
   lecture: subject_lecture[];
+
+  @ApiProperty({ isArray: true, type: () => review_review })
+  review: review_review[];
 }
