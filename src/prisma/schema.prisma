@@ -230,7 +230,9 @@ model review_majorbestreview {
 model review_review {
   id                                         Int                                          @id @default(autoincrement())
   course_id                                  Int
+  course                                     subject_course                               @relation(fields: [course_id], references: [id], onDelete: Restrict)
   lecture_id                                 Int
+  lecture                                    subject_lecture                              @relation(fields: [lecture_id], references: [id], onDelete: Restrict)
   content                                    String                                       @db.MediumText
   grade                                      Int                                          @db.SmallInt
   load                                       Int                                          @db.SmallInt
@@ -244,6 +246,7 @@ model review_review {
   main_famoushumanityreviewdailyfeed_reviews main_famoushumanityreviewdailyfeed_reviews[]
   main_famousmajorreviewdailyfeed_reviews    main_famousmajorreviewdailyfeed_reviews[]
   writer                                     session_userprofile?                         @relation(fields: [writer_id], references: [id], onUpdate: Restrict)
+  review_reviewvote                          review_reviewvote[]
 
   @@unique([writer_id, lecture_id], map: "review_comment_writer_id_af700a5d_uniq")
   @@index([written_datetime], map: "review_comment_e5e30a4a")
@@ -252,7 +255,9 @@ model review_review {
 model review_reviewvote {
   id               Int       @id @default(autoincrement())
   review_id        Int
+  review           review_review                @relation(fields: [review_id], references: [id], onDelete: Cascade)
   userprofile_id   Int?
+  userprofile      session_userprofile?         @relation(fields: [userprofile_id], references: [id], onDelete:SetNull) 
   created_datetime DateTime? @db.DateTime(6)
 
   @@unique([review_id, userprofile_id], map: "review_commentvote_comment_id_e4594aea_uniq")
@@ -284,6 +289,7 @@ model session_userprofile {
   support_rate                          support_rate[]
   timetable_timetable                   timetable_timetable[]
   timetable_wishlist                    timetable_wishlist?
+  reviewvote                            review_reviewvote[]
 
   @@index([department_id], map: "session_userprofile_department_id_fkey")
 }
@@ -389,6 +395,7 @@ model subject_course {
   subject_courseuser                                                                                               subject_courseuser[]
   subject_course_professors                                                                                        subject_course_professors[]
   lecture                                                                                                          subject_lecture[]
+  review                                                                                                           review_review[]
 
   @@index([department_id], map: "subject_course_department_id_fkey")
 }
@@ -475,7 +482,7 @@ model subject_lecture {
   year                            Int
   semester                        Int                                  @db.SmallInt
   department_id                   Int
-  department                      subject_department                   @relation(fields: [department_id], references: [id], onUpdate: Restrict)
+  subject_department              subject_department                   @relation(fields: [department_id], references: [id], onUpdate: Restrict)
   class_no                        String                               @db.VarChar(4)
   title                           String                               @db.VarChar(100)
   title_en                        String                               @db.VarChar(200)
@@ -483,6 +490,8 @@ model subject_lecture {
   type_en                         String                               @db.VarChar(36)
   audience                        Int
   credit                          Int
+  title_en_no_space               String                               @db.VarChar(200)
+  title_no_space                  String                               @db.VarChar(100)
   num_classes                     Int
   num_labs                        Int
   credit_au                       Int
@@ -511,6 +520,8 @@ model subject_lecture {
   timetable_oldtimetable_lectures timetable_oldtimetable_lectures[]
   timetable_timetable_lectures    timetable_timetable_lectures[]
   timetable_wishlist_lectures     timetable_wishlist_lectures[]
+  subject_lecture_professors      subject_lecture_professors[]
+  review                          review_review[]
 
   @@index([deleted], map: "subject_lecture_deleted_bedc6156_uniq")
   @@index([type_en], map: "subject_lecture_type_en_45ee2d3a_uniq")
@@ -521,23 +532,27 @@ model subject_lecture_professors {
   lecture_id   Int
   professor_id Int
 
+  lecture   subject_lecture   @relation(fields: [lecture_id], references: [id], onUpdate: Restrict)
+  professor subject_professor @relation(fields: [professor_id], references: [id], onUpdate: Restrict)
+
   @@unique([lecture_id, professor_id], map: "lecture_id")
 }
 
 model subject_professor {
-  id                        Int                         @id @default(autoincrement())
-  professor_name            String                      @db.VarChar(100)
-  professor_name_en         String?                     @db.VarChar(100)
-  professor_id              Int
-  major                     String                      @db.VarChar(30)
-  grade_sum                 Float
-  load_sum                  Float
-  speech_sum                Float
-  review_total_weight       Float
-  grade                     Float
-  load                      Float
-  speech                    Float
-  subject_course_professors subject_course_professors[]
+  id                         Int                          @id @default(autoincrement())
+  professor_name             String                       @db.VarChar(100)
+  professor_name_en          String?                      @db.VarChar(100)
+  professor_id               Int
+  major                      String                       @db.VarChar(30)
+  grade_sum                  Float
+  load_sum                   Float
+  speech_sum                 Float
+  review_total_weight        Float
+  grade                      Float
+  load                       Float
+  speech                     Float
+  subject_course_professors  subject_course_professors[]
+  subject_lecture_professors subject_lecture_professors[]
 }
 
 model subject_semester {

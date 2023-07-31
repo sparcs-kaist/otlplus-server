@@ -8,6 +8,7 @@ import { session_userprofile_majors } from './session_userprofile_majors';
 import { session_userprofile_minors } from './session_userprofile_minors';
 import { session_userprofile_specialized_major } from './session_userprofile_specialized_major';
 import { subject_course } from './subject_course';
+import { subject_lecture } from './subject_lecture';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class subject_department {
@@ -64,4 +65,7 @@ export class subject_department {
 
   @ApiProperty({ isArray: true, type: () => subject_course })
   subject_course: subject_course[];
+
+  @ApiProperty({ isArray: true, type: () => subject_lecture })
+  subject_lecture: subject_lecture[];
 }

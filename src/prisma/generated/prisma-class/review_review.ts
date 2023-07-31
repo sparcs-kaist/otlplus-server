@@ -1,3 +1,4 @@
+import { subject_lecture } from './subject_lecture';
 import { main_famoushumanityreviewdailyfeed_reviews } from './main_famoushumanityreviewdailyfeed_reviews';
 import { main_famousmajorreviewdailyfeed_reviews } from './main_famousmajorreviewdailyfeed_reviews';
 import { session_userprofile } from './session_userprofile';
@@ -12,6 +13,9 @@ export class review_review {
 
   @ApiProperty({ type: Number })
   lecture_id: number;
+
+  @ApiProperty({ type: () => subject_lecture })
+  lecture: subject_lecture;
 
   @ApiProperty({ type: String })
   content: string;
