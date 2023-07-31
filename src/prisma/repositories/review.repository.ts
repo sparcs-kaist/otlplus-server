@@ -2,7 +2,7 @@ import { applyOffset } from 'src/common/utils/search.utils';
 import { Injectable } from '@nestjs/common';
 import { applyOrder } from 'src/common/utils/search.utils';
 import { review_review } from 'src/prisma/generated/prisma-class/review_review';
-import { session_userprofile } from 'src/prisma/generated/prisma-class/session_userprofile';
+import { session_userprofile } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 
 @Injectable()
@@ -23,7 +23,7 @@ export class ReviewsRepository {
     limit: number
   ): Promise<review_review[]> {
     let lectureFilter: object = {};
-    const orderFilter: {[key:string]:string} = {};
+    const orderFilter: { [key: string]: string }[] = [];
     if (lecture_year) {
       lectureFilter = { ...lectureFilter, year: lecture_year };
     }
@@ -31,17 +31,28 @@ export class ReviewsRepository {
       lectureFilter = { ...lectureFilter, semester: lecture_semester };
     }
     order.forEach((orderList) => {
+      const orderDict: {[key:string]:string} = {};
       let order = 'asc';
       const orderBy = orderList.split('-');
-      console.log(orderBy);
       if (orderBy[0] == '') {
         order = 'desc';
       }
-      orderFilter[orderBy[orderBy.length - 1]] = order;
+      orderDict[orderBy[orderBy.length - 1]] = order;
+      orderFilter.push(orderDict);
     });
-    const reviews = await this.prisma.review_review.findMany({
+    const reviews = (await this.prisma.review_review.findMany({
       where: {
         lecture: lectureFilter,
+      },
+      include: {
+        course: {
+          include: {
+            subject_department: true,
+            subject_course_professors: { include: { professor: true } },
+            lecture: true,
+            subject_courseuser: true,
+          },
+        },
       },
       skip: offset,
       take: limit,
@@ -61,8 +72,7 @@ export class ReviewsRepository {
         'is_deleted',
         'written_datetime',
       ],
-
-    }) as review_review[];
+    })) as review_review[];
 
     return reviews;
   }

@@ -12,9 +12,7 @@ export class ReviewsController {
     private readonly reviewsService: ReviewsService,
     private readonly reviewsRepository: ReviewsRepository,
   ) {}
-
   @Get()
-  @Header('Content-type', 'application/json')
   async getReviews(
     @Query() reviewsParam: getReviewDto,
     @GetUser() user: session_userprofile,

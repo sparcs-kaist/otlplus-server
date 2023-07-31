@@ -21,7 +21,7 @@ export const toJsonReview= (review: review_review): ReviewResponseDto=>{
     const result = {
       id: review.id,
       course: courseResult,
-      lecture: toJsonLecture(review.lecture, true),
+      lecture: "toJsonLecture(review.lecture, true)",
       content: review.is_deleted
         ? '관리자에 의해 삭제된 코멘트입니다.'
         : review.content,
