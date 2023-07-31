@@ -10,7 +10,6 @@ export class CourseController {
   @Get()
   async getCourses(@Query() query: any, @GetUser() user: session_userprofile) {
     const courses = await this.CoursesService.getCourseByFilter(query, user);
-
     return courses
   }
 

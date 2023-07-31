@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { LecturesService } from './lectures.service';
 import { LectureQueryDTO } from 'src/common/interfaces/dto/lecture/lecture.query.dto';
 
@@ -9,5 +9,10 @@ export class LecturesController {
   @Get()
   async getLectures(@Query() query: LectureQueryDTO) {
     return await this.LectureService.getLectureByFilter(query);
+  }
+
+  @Get(':id')
+  async getLectureById(@Param('id') id: number) {
+    return await this.LectureService.getLectureById(id);
   }
 }
