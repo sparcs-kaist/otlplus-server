@@ -59,7 +59,7 @@ export class CourseRepository{
       include: {
         lecture: {
           include: {
-            department: true,
+            subject_department: true,
             subject_lecture_professors: { include: { professor: true } },
             subject_classtime: true,
             subject_examtime: true,
@@ -92,13 +92,12 @@ export class CourseRepository{
     } = query;
     const departmentFilter = this.departmentFilter(department);
     const typeFilter = this.typeFilter(type);
-    const levelFilter = this.levelFilter(level);
     const groupFilter = this.groupFilter(group);
     const keywordFilter = this.keywordFilter(keyword);
     const term_filter = this.termFilter(term);
-    let filterList = [departmentFilter, typeFilter, levelFilter, groupFilter, keywordFilter, term_filter]
+    let filterList = [departmentFilter, typeFilter, groupFilter, keywordFilter, term_filter]
     filterList = filterList.filter((filter) => filter !== null)
-    const query_result = await this.prisma.subject_course.findMany({
+    const queryResult = await this.prisma.subject_course.findMany({
       include: {
         subject_department: true,
         subject_course_professors: { include: { professor: true } },
@@ -110,13 +109,14 @@ export class CourseRepository{
       },
       take: limit ?? DEFAULT_LIMIT,
     }) as subject_course[];
+    const levelFilteredResult = this.levelFilter(queryResult, level) as subject_course[];
 
     // Apply Ordering and Offset
-    const ordered_result = await applyOrder<subject_course>(query_result, order ?? DEFAULT_ORDER);
-    return await applyOffset<subject_course>(ordered_result, offset ?? 0);
+    const orderedResult = applyOrder<subject_course>(levelFilteredResult, order ?? DEFAULT_ORDER);
+    return await applyOffset<subject_course>(orderedResult, offset ?? 0);
   }
 
-  private departmentFilter(department_names: [string]): object {
+  public departmentFilter(department_names: string[]): object {
     if (!(department_names)) {
       return null
     }
@@ -141,7 +141,7 @@ export class CourseRepository{
     }
   }
 
-  private typeFilter(types: [string]): object {
+  public typeFilter(types: string[]): object {
     if (!(types)) {
       return null
     }
@@ -164,32 +164,7 @@ export class CourseRepository{
     }
   }
 
-  private levelFilter(levels?: [string]): object {
-    if (!(levels)) {
-      return null;
-    }
-
-    const acronym_dic = ["1", "2", "3", "4"];
-    if (levels.includes("ALL")) {
-      return null;
-    } else if (levels.includes("ETC")) {
-      const numbers = acronym_dic.filter((level) => !(level in levels));
-      return {
-        old_code: {
-          contains: numbers
-        }
-      };
-    } else {
-      const numbers = acronym_dic.filter((level) => level in levels);
-      return {
-        old_code: {
-          contains: numbers
-        }
-      };
-    }
-  }
-
-  private termFilter(term?: [string]): object {
+  public termFilter(term?: string[]): object {
     if (!(term)) {
       return null;
     }
@@ -206,7 +181,7 @@ export class CourseRepository{
     }
   }
 
-  private keywordFilter(keyword?: string): object {
+  public keywordFilter(keyword?: string, isCourse = true): object {
     if (!(keyword)) {
       return null;
     }
@@ -233,7 +208,7 @@ export class CourseRepository{
         name_en: keyword_trimed 
       }
     };
-    const professors_professor_name_filter = {
+    const professors_professor_name_filter = isCourse ? {
       subject_course_professors: {
         some: {
           professor: {
@@ -243,8 +218,18 @@ export class CourseRepository{
           }
         }
       }
+    } : {
+      subject_lecture_professors: {
+        some: {
+          professor: {
+            professor_name: {
+              contains: keyword_trimed
+            }
+          }
+        }
+      }
     };
-    const professors_professor_name_en_filter = {
+    const professors_professor_name_en_filter = isCourse ? {
       subject_course_professors: {
         some: {
           professor: {
@@ -254,7 +239,17 @@ export class CourseRepository{
           }
         }
       }
-    }
+    } : {
+      subject_lecture_professors: {
+        some: {
+          professor: {
+            professor_name_en: {
+              contains: keyword_trimed
+            }
+          }
+        }
+      }
+    };
     return {
       OR: [
         title_filter,
@@ -267,7 +262,7 @@ export class CourseRepository{
     };
   }
 
-  private groupFilter(group?: [string]): object {
+  public groupFilter(group?: string[]): object {
     if (!(group)) {
       return null;
     }
@@ -289,5 +284,26 @@ export class CourseRepository{
         in: { filter }
       }
     };
+  }
+
+  public levelFilter (queryResult: (subject_course|subject_lecture)[], levels: string[]) {
+    if (!levels) {
+      return queryResult
+    }
+
+    const levelFilters = levels.map((level) => level[0]);
+    if (levels.includes("ALL")) {
+      return queryResult
+    } else if (levels.includes("ETC")) {
+      return queryResult.filter((item) => {
+        const level = item.old_code.replace(/[^0-9]/g, '')[0];
+        return !levelFilters.includes(level);
+      })
+    } else {
+      return queryResult.filter((item) => {
+        const level = item.old_code.replace(/[^0-9]/g, '')[0];
+        return levelFilters.includes(level);
+      })
+    }
   }
 }
