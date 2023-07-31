@@ -9,6 +9,7 @@ import { timetable_oldtimetable_lectures } from './timetable_oldtimetable_lectur
 import { timetable_timetable_lectures } from './timetable_timetable_lectures';
 import { timetable_wishlist_lectures } from './timetable_wishlist_lectures';
 import { subject_lecture_professors } from './subject_lecture_professors';
+import { review_review } from './review_review';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class subject_lecture {
@@ -31,7 +32,7 @@ export class subject_lecture {
   department_id: number;
 
   @ApiProperty({ type: () => subject_department })
-  department: subject_department;
+  subject_department: subject_department;
 
   @ApiProperty({ type: String })
   class_no: string;
@@ -53,6 +54,12 @@ export class subject_lecture {
 
   @ApiProperty({ type: Number })
   credit: number;
+
+  @ApiProperty({ type: String })
+  title_en_no_space: string;
+
+  @ApiProperty({ type: String })
+  title_no_space: string;
 
   @ApiProperty({ type: Number })
   num_classes: number;
@@ -143,4 +150,7 @@ export class subject_lecture {
 
   @ApiProperty({ isArray: true, type: () => subject_lecture_professors })
   subject_lecture_professors: subject_lecture_professors[];
+
+  @ApiProperty({ isArray: true, type: () => review_review })
+  review: review_review[];
 }
