@@ -4,10 +4,8 @@ import { applyOrder, applyOffset } from "src/common/utils/search.utils";
 import { subject_course } from "../generated/prisma-class/subject_course";
 
 @Injectable()
-export class CourseRepository {
-  constructor(
-    private readonly prisma: PrismaService
-  ){}
+export class CourseRepository{
+  constructor(private readonly prisma: PrismaService){}
   
   private TYPE_ACRONYMS = {
     "GR": "General Required",
@@ -40,6 +38,20 @@ export class CourseRepository {
       "CH",
       "TS",
   ]
+
+  public async getCourseById (id: number): Promise<subject_course> {
+    return await this.prisma.subject_course.findUnique({
+      include: {
+        subject_department: true,
+        subject_course_professors: { include: { professor: true } },
+        lecture: true,
+        subject_courseuser: true,
+      },
+      where: {
+        id: id
+      }
+    }) as subject_course;
+  }
 
   public async filterByRequest (query: any): Promise<subject_course[]> {
     const DEFAULT_LIMIT = 150;
