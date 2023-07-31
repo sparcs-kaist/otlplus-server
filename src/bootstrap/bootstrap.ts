@@ -11,6 +11,7 @@ import cookieParser from "cookie-parser";
 import session from "express-session";
 import { MockAuthGuard } from "../modules/auth/guard/mock-auth-guard";
 import { JwtCookieGuard } from "../modules/auth/guard/jwt-cookie.guard";
+import settings from "../settings";
 
 let cachedServer: Server;
 
@@ -22,7 +23,7 @@ async function bootstrap() {
   app.enableVersioning({
     type: VersioningType.URI
   });
-  app.enableCors();
+  app.enableCors(settings().getCorsConfig());
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -65,7 +66,7 @@ async function bootstrap() {
 
   const prismaService = app.get(PrismaService);
   await prismaService.enableShutdownHooks(app)
-  return app.listen(3000);
+  return app.listen(8000);
 }
 
 bootstrap()

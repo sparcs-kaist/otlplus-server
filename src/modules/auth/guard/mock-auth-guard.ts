@@ -43,7 +43,6 @@ export class MockAuthGuard implements CanActivate{
             secret: settings().getJwtConfig().secret
           }
         );
-        console.log("payload", payload);
         const user = this.authService.findBySid(payload.sid);
         request["user"] = user;
         return true;

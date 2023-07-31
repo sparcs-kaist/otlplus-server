@@ -14,8 +14,22 @@ export default () => {
     awsconfig: () => getAWSConfig(),
     getJwtConfig: () => getJwtConfig(),
     getSsoConfig: () => getSsoConfig(),
+    getCorsConfig: () => getCorsConfig(),
   };
 };
+
+const getCorsConfig = () => {
+  const { NODE_ENV } = process.env;
+  if(NODE_ENV === 'local'){
+    return {
+      origin: "http://localhost:3000",
+      methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+      credentials: true,
+      preflightContinue: false,
+      optionsSuccessStatus: 204
+    }
+  }
+}
 
 const getPrismaConfig = (): PrismaClientOptions => {
   return {
