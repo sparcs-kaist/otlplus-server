@@ -1,4 +1,4 @@
-import { subject_department } from "../../../prisma/generated/prisma-class/subject_department";
+import { subject_department } from "@prisma/client";
 import { DepartmentResponseDto } from "../dto/department/department.response.dto";
 
 export const toJsonDepartment = (department: subject_department, nested=false): DepartmentResponseDto => {

@@ -2,10 +2,10 @@ import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma.service";
 import { Prisma, session_userprofile } from "@prisma/client";
 import { groupBy } from "../../common/utils/method.utils";
-import { LectureQueryDTO } from "src/common/interfaces/dto/lecture/lecture.query.dto";
+import { LectureQueryDto } from "src/common/interfaces/dto/lecture/lecture.request.dto";
 import { CourseRepository } from "./course.repository";
 import { applyOrder, applyOffset } from "src/common/utils/search.utils";
-import { subject_lecture } from "../generated/prisma-class/subject_lecture";
+import { LectureDetails } from "../../common/schemaTypes/types";
 
 @Injectable()
 export class LectureRepository {
@@ -14,7 +14,7 @@ export class LectureRepository {
     private readonly courseRepository: CourseRepository
   ) {}
 
-  async getLectureById(id: number): Promise<subject_lecture> {
+  async getLectureById(id: number): Promise<LectureDetails> {
     return await this.prisma.subject_lecture.findUnique({
       include: {
         subject_department: true,
@@ -25,10 +25,10 @@ export class LectureRepository {
       where: {
         id: id
       }
-    }) as subject_lecture;
+    });
   }
 
-  async filterByRequest(query: LectureQueryDTO): Promise<subject_lecture[]> {
+  async filterByRequest(query: LectureQueryDto): Promise<LectureDetails[]> {
     const DEFAULT_LIMIT = 300;
     const DEFAULT_ORDER = ['year', 'semester', 'old_code', 'class_no'];
     const researchTypes = ["Individual Study", "Thesis Study(Undergraduate)",
@@ -66,14 +66,14 @@ export class LectureRepository {
         AND: filters.filter((filter) => filter !== null)
       },
       take: query.limit ?? DEFAULT_LIMIT,
-    }) as subject_lecture[];
-    const levelFilteredResult = this.courseRepository.levelFilter(queryResult, query?.level) as subject_lecture[];
+    });
+    const levelFilteredResult = this.courseRepository.levelFilter<LectureDetails>(queryResult, query?.level);
 
-    const orderedQuery = applyOrder<subject_lecture>(levelFilteredResult, query.order ?? DEFAULT_ORDER);
-    return applyOffset<subject_lecture>(orderedQuery, query.offset ?? 0);
+    const orderedQuery = applyOrder<LectureDetails>(levelFilteredResult, query.order ?? DEFAULT_ORDER);
+    return applyOffset<LectureDetails>(orderedQuery, query.offset ?? 0);
   }
 
-  async findReviewWritableLectures(user: session_userprofile, date?: Date): Promise<subject_lecture[]> {
+  async findReviewWritableLectures(user: session_userprofile, date?: Date): Promise<LectureDetails[]> {
     let currDate;
     if (!date) {
       currDate = Date.now();
@@ -133,7 +133,7 @@ export class LectureRepository {
     }
   }
 
-  async getTakenLectures(user: session_userprofile): Promise<subject_lecture[]> {
+  async getTakenLectures(user: session_userprofile): Promise<LectureDetails[]> {
     const lectures = (await this.prisma.session_userprofile_taken_lectures.findMany({
       where: {
         userprofile_id: user.id
@@ -152,7 +152,7 @@ export class LectureRepository {
           }
         }
       }
-    })).map((takenLecture) => takenLecture.lecture as subject_lecture);
+    })).map((takenLecture) => takenLecture.lecture);
 
     return lectures;
   }

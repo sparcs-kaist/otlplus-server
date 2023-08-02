@@ -1,4 +1,4 @@
-import { subject_lecture } from "../../prisma/generated/prisma-class/subject_lecture";
+import { subject_lecture } from "@prisma/client";
 import { applyOrder } from "./search.utils";
 
 export const getRepresentativeLecture = (lectures: subject_lecture[]): subject_lecture => {

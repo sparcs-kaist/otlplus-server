@@ -1,11 +1,13 @@
 import { applyOrder } from "src/common/utils/search.utils";
-import { subject_lecture } from "src/prisma/generated/prisma-class/subject_lecture"
 import { toJsonClasstime } from "./classtime.serializer";
 import { toJsonExamtime } from "./examtime.serializer";
 import { LectureResponseDto } from "../dto/lecture/lecture.response.dto";
 import { toJsonProfessor } from "./professor.serializer";
+import { LectureDetails, NESTED } from "../../schemaTypes/types";
+import { subject_professor } from "@prisma/client";
 
-export const toJsonLecture = (lecture: subject_lecture, nested = false): LectureResponseDto => {
+
+export function toJsonLecture<T> (lecture:T extends NESTED ? Omit<LectureDetails, "subject_classtime" & "subject_examtime"> : LectureDetails, nested: T extends NESTED? true : false): LectureResponseDto {
   let result = {
     "id": lecture.id,
     "title": lecture.title,

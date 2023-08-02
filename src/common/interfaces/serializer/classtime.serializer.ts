@@ -1,5 +1,5 @@
 import { getTimeNumeric } from "src/common/utils/time.utils";
-import { subject_classtime } from "src/prisma/generated/prisma-class/subject_classtime";
+import { subject_classtime } from "@prisma/client";
 
 export const toJsonClasstime = (classtime: subject_classtime) => {
   const classroomInfo = getClassroomStrs(classtime);

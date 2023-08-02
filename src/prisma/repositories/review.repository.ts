@@ -1,15 +1,15 @@
 import { applyOffset } from 'src/common/utils/search.utils';
 import { Injectable } from '@nestjs/common';
 import { applyOrder } from 'src/common/utils/search.utils';
-import { review_review } from 'src/prisma/generated/prisma-class/review_review';
-import { session_userprofile } from '@prisma/client';
+import { Prisma, session_userprofile } from "@prisma/client";
 import { PrismaService } from '../prisma.service';
+import { ReviewDetails } from "../../common/schemaTypes/types";
 
 @Injectable()
 export class ReviewsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findReviewByUser(user: session_userprofile): Promise<review_review[]>{
+  async findReviewByUser(user: session_userprofile): Promise<ReviewDetails[]>{
     const reviews = await this.prisma.review_review.findMany({
       where: { writer_id: user.id },
       include: {
@@ -31,15 +31,17 @@ export class ReviewsRepository {
         },
       }
     })
-    return reviews as review_review[];
+    return reviews;
   }
+
+
   public async getReviews(
     lecture_year: number,
     lecture_semester: number,
     order: string[],
     offset: number,
     limit: number
-  ): Promise<review_review[]> {
+  ): Promise<ReviewDetails[]> {
     let lectureFilter: object = {};
     const orderFilter: { [key: string]: string }[] = [];
     if (lecture_year) {
@@ -98,7 +100,7 @@ export class ReviewsRepository {
         'is_deleted',
         'written_datetime',
       ],
-    })) as review_review[];
+    }));
 
     return reviews;
   }

@@ -1,15 +1,16 @@
-import { subject_course } from "../../../prisma/generated/prisma-class/subject_course";
-import { subject_lecture } from "../../../prisma/generated/prisma-class/subject_lecture";
+import { subject_course, subject_lecture} from "@prisma/client";
 import { toJsonDepartment } from "./department.serializer";
 import { ProfessorResponseDto } from "../dto/professor/professor.response.dto";
 import { toJsonProfessor } from "./professor.serializer";
 import { applyOrder } from "../../utils/search.utils";
-import { subject_professor } from "../../../prisma/generated/prisma-class/subject_professor";
+import { subject_professor } from "@prisma/client";
 import { CourseResponseDtoNested } from "../dto/course/course.response.dto";
+import { CourseDetails, NESTED } from "../../schemaTypes/types";
+import { OmitType } from "@nestjs/swagger";
 
-export const toJsonCourse = (course: subject_course, lecture: subject_lecture, professor: subject_professor[], nested = false): CourseResponseDtoNested => {
-  const professorJson: ProfessorResponseDto[] = toJsonProfessor(professor, true);
-  const professorSorted = applyOrder<ProfessorResponseDto>(professorJson, ["name"]);
+
+
+export function toJsonCourse<T>(course: T extends NESTED ? Omit<CourseDetails,'subject_course_professors'> : CourseDetails, lecture: subject_lecture, professor: subject_professor[], nested : T extends NESTED ? true : false): CourseResponseDtoNested  {
 
   let result = {
     "id": course.id,
@@ -31,6 +32,8 @@ export const toJsonCourse = (course: subject_course, lecture: subject_lecture, p
     return result;
   }
 
+  const professorJson: ProfessorResponseDto[] = toJsonProfessor(professor, true);
+  const professorSorted = applyOrder<ProfessorResponseDto>(professorJson, ["name"]);
   result = Object.assign(result, {
     "related_courses_prior": [],
     "related_courses_posterior": [],
@@ -40,4 +43,4 @@ export const toJsonCourse = (course: subject_course, lecture: subject_lecture, p
     "speech": course.speech
   });
   return result;
-};
+}

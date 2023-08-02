@@ -3,14 +3,13 @@ import { getReviewDto } from 'src/common/interfaces/dto/reviews/reviews.request.
 import { Injectable } from '@nestjs/common';
 import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
 import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
-import { session_userprofile } from 'src/prisma/generated/prisma-class/session_userprofile';
 
 @Injectable()
 export class ReviewsService {
   constructor(private readonly reviewsRepository: ReviewsRepository) {}
   async getReviews(
     reviewsParam: getReviewDto,
-    user: session_userprofile,
+    user,
   ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })[]> {
     const MAX_LIMIT = 50;
     const DEFAULT_ORDER = ['-written_datetime', '-id'];

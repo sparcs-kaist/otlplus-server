@@ -9,6 +9,7 @@ import { ReviewsRepository } from "../../prisma/repositories/review.repository";
 import { toJsonDepartment } from "../../common/interfaces/serializer/department.serializer";
 import { toJsonReview } from "../../common/interfaces/serializer/review.serializer";
 import { toJsonLecture } from "../../common/interfaces/serializer/lecture.serializer";
+import { ReviewDetails } from "../../common/schemaTypes/types";
 
 @Injectable()
 export class UserService {
@@ -36,7 +37,7 @@ export class UserService {
     const specializedMajorsPromise = this.departmentRepository.getSpecializedMajors(user)
     const reviewWritableLecturesPromise = this.lectureRepository.findReviewWritableLectures(user, new Date())
     const takenLecturesPromise = this.lectureRepository.getTakenLectures(user)
-    const writtenReviewsPromise = this.reviewRepository.findReviewByUser(user)
+    const writtenReviewsPromise: ReviewDetails[] = await this.reviewRepository.findReviewByUser(user)
     promises.push(departmentPromise, favoriteDepartmentsPromise, majorsPromise, minorsPromise, specializedMajorsPromise,reviewWritableLecturesPromise,takenLecturesPromise,writtenReviewsPromise);
     const [department, favoriteDepartments, majors, minors, specializedMajors, reviewWritableLectures, takenLectures, writtenReviews] = await Promise.all(promises);
     const departments =  Object.values<subject_department>(normalizeArray<subject_department>([...majors, ...minors, ...specializedMajors, ...favoriteDepartments])) ?? [department];
@@ -53,8 +54,8 @@ export class UserService {
       majors: majors.map((major) => toJsonDepartment(major)),
       departments: departments.map((department) => toJsonDepartment(department)),
       favorite_departments: favoriteDepartments.map((department) => toJsonDepartment(department)),
-      review_writeable_lectures: reviewWritableLectures.map((lecture) => toJsonLecture(lecture)),
-      my_timetable_lectures: timeTableLectures.map((lecture) => toJsonLecture(lecture)),
+      review_writeable_lectures: reviewWritableLectures.map((lecture) => toJsonLecture<false>(lecture,false)),
+      my_timetable_lectures: timeTableLectures.map((lecture) => toJsonLecture<false>(lecture,false)),
       reviews: writtenReviews.map((review) => toJsonReview(review)),
     }
   }

@@ -1,17 +1,16 @@
 import { toJsonCourse } from "./course.serializer";
-import { review_review } from "src/prisma/generated/prisma-class/review_review";
 import { ReviewResponseDto } from "./../dto/reviews/review.response.dto";
 import { getRepresentativeLecture } from "src/common/utils/lecture.utils";
-import { subject_professor } from "src/prisma/generated/prisma-class/subject_professor";
 import { toJsonLecture } from "./lecture.serializer";
+import { ReviewDetails } from "../../schemaTypes/types";
 
 
-export const toJsonReview = (review: review_review): ReviewResponseDto => {
+export const toJsonReview = (review: ReviewDetails): ReviewResponseDto => {
   const representativeLecture = getRepresentativeLecture(review.course.lecture);
   const professorRaw = review.course.subject_course_professors.map(
-    (x) => x.professor as subject_professor
+    (x) => x.professor
   );
-  const courseResult = toJsonCourse(
+  const courseResult = toJsonCourse<true>(
     review.course,
     representativeLecture,
     professorRaw,
@@ -24,7 +23,7 @@ export const toJsonReview = (review: review_review): ReviewResponseDto => {
     const result = {
       id: review.id,
       course: courseResult,
-      lecture: toJsonLecture(review.lecture, true),
+      lecture: toJsonLecture<true>(review.lecture, true),
       content: review.is_deleted
         ? '관리자에 의해 삭제된 코멘트입니다.'
         : review.content,

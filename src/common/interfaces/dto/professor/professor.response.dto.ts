@@ -1,4 +1,3 @@
-import { subject_course } from "../../../../prisma/generated/prisma-class/subject_course";
 
 export interface ProfessorResponseDto {
   name: string;

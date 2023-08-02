@@ -4,13 +4,9 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { ProfessorResponseDto } from 'src/common/interfaces/dto/professor/professor.response.dto';
 import { applyOrder } from 'src/common/utils/search.utils';
 import { session_userprofile } from '@prisma/client';
-import { subject_course } from 'src/prisma/generated/prisma-class/subject_course';
-import { subject_lecture } from 'src/prisma/generated/prisma-class/subject_lecture';
-import { subject_department } from 'src/prisma/generated/prisma-class/subject_department';
 import { toJsonDepartment } from "../../common/interfaces/serializer/department.serializer";
 import { toJsonProfessor } from "../../common/interfaces/serializer/professor.serializer";
 import { toJsonCourse } from "../../common/interfaces/serializer/course.serializer";
-import { subject_professor } from "../../prisma/generated/prisma-class/subject_professor";
 import { getRepresentativeLecture } from "../../common/utils/lecture.utils";
 import { CourseResponseDtoNested } from "../../common/interfaces/dto/course/course.response.dto";
 import { toJsonLecture } from 'src/common/interfaces/serializer/lecture.serializer';
@@ -23,13 +19,11 @@ export class CoursesService {
   ) {}
 
   public async getCourseByFilter(query: any, user: session_userprofile):  Promise<(CourseResponseDtoNested & { userspecific_is_read: boolean })[]> {
-    console.time("getCourseByFilter")
     const queryResult = await this.CourseRepository.filterByRequest(query);
-    console.timeEnd("getCourseByFilter")
     return queryResult.map((course) => {
       const representativeLecture = getRepresentativeLecture(course.lecture);
-      const professorRaw = course.subject_course_professors.map((x) => x.professor as subject_professor);
-      const result = toJsonCourse(course, representativeLecture, professorRaw, false);
+      const professorRaw = course.subject_course_professors.map((x) => x.professor);
+      const result = toJsonCourse<false>(course, representativeLecture, professorRaw, false);
 
       if (user) {
         const latestReadDatetime = course.subject_courseuser.find(x => x.user_profile_id = user.id)?.latest_read_datetime;
@@ -51,7 +45,7 @@ export class CoursesService {
       throw new NotFoundException();
     }
     const representativeLecture = getRepresentativeLecture(course.lecture);
-    const professorRaw = course.subject_course_professors.map((x) => x.professor as subject_professor);
+    const professorRaw = course.subject_course_professors.map((x) => x.professor);
     const result = toJsonCourse(course, representativeLecture, professorRaw, false);
 
     if (user) {
@@ -73,6 +67,6 @@ export class CoursesService {
       throw new NotFoundException();
     }
 
-    return lectures.map((lecture) => toJsonLecture(lecture));
+    return lectures.map((lecture) => toJsonLecture<false>(lecture,false));
   }
 }

@@ -4,8 +4,7 @@ import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
 import { ReviewsService } from './reviews.service';
 import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
-import { session_userprofile } from 'src/prisma/generated/prisma-class/session_userprofile';
- 
+
 @Controller('api/reviews')
 export class ReviewsController {
   constructor(
@@ -15,7 +14,7 @@ export class ReviewsController {
   @Get()
   async getReviews(
     @Query() reviewsParam: getReviewDto,
-    @GetUser() user: session_userprofile,
+    @GetUser() user,
   ): Promise<
     (ReviewResponseDto & { userspecific_is_liked: boolean })[] | number
   > {

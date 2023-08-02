@@ -1,8 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma.service";
 import { applyOrder, applyOffset } from "src/common/utils/search.utils";
-import { subject_course } from "../generated/prisma-class/subject_course";
-import { subject_lecture } from "../generated/prisma-class/subject_lecture";
+import { CourseDetails, LectureDetails } from "../../common/schemaTypes/types";
 
 @Injectable()
 export class CourseRepository {
@@ -42,7 +41,7 @@ export class CourseRepository {
       "TS",
   ]
 
-  public async getCourseById (id: number): Promise<subject_course> {
+  public async getCourseById (id: number): Promise<CourseDetails> {
     return await this.prisma.subject_course.findUnique({
       include: {
         subject_department: true,
@@ -53,10 +52,10 @@ export class CourseRepository {
       where: {
         id: id
       }
-    }) as subject_course;
+    });
   }
 
-  public async getLecturesByCourseId (query: {order: string[]}, id: number): Promise<subject_lecture[]> {
+  public async getLecturesByCourseId (query: {order: string[]}, id: number): Promise<LectureDetails[]> {
     const course = await this.prisma.subject_course.findUnique({
       include: {
         lecture: {
@@ -71,14 +70,14 @@ export class CourseRepository {
       where: {
         id: id,
       }
-    }) as subject_course;
-    const filterdLecture = course.lecture.filter((lecture) => !lecture.deleted);
+    });
+    const filteredLecture = course.lecture.filter((lecture) => !lecture.deleted);
     const order = query.order ? query.order : ['year', 'semester', 'class_no'];
-    return applyOrder<subject_lecture>(filterdLecture, order);
+    return applyOrder<LectureDetails>(filteredLecture, order);
   }
 
   //@todo: optimize goal: 1.5s -> 0.5s, recommended: using cache
-  public async filterByRequest (query: any): Promise<subject_course[]> {
+  public async filterByRequest (query: any): Promise<CourseDetails[]> {
     const DEFAULT_LIMIT = 150;
     const DEFAULT_ORDER = ['old_code']
 
@@ -111,12 +110,12 @@ export class CourseRepository {
         AND: filterList
       },
       take: limit ?? DEFAULT_LIMIT,
-    }) as subject_course[];
-    const levelFilteredResult = this.levelFilter(queryResult, level) as subject_course[];
+    });
+    const levelFilteredResult = this.levelFilter<CourseDetails>(queryResult, level);
 
     // Apply Ordering and Offset
-    const orderedResult = applyOrder<subject_course>(levelFilteredResult, order ?? DEFAULT_ORDER);
-    return await applyOffset<subject_course>(orderedResult, offset ?? 0);
+    const orderedResult = applyOrder<CourseDetails>(levelFilteredResult, order ?? DEFAULT_ORDER);
+    return applyOffset<CourseDetails>(orderedResult, offset ?? 0);
   }
 
   public departmentFilter(department_names: string[]): object {
@@ -289,7 +288,7 @@ export class CourseRepository {
     };
   }
 
-  public levelFilter (queryResult: (subject_course|subject_lecture)[], levels: string[]) {
+  public levelFilter<T extends CourseDetails | LectureDetails> (queryResult: T[], levels: string[]): (T)[]  {
     if (!levels) {
       return queryResult
     }

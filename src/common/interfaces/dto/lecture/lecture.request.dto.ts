@@ -2,7 +2,7 @@ import { IsArray, IsNumber, IsNumberString, IsOptional, IsString } from "class-v
 import { Transform } from "class-transformer";
 import { CourseQueryDto } from "../course/course.request.dto";
 
-export class LectureQueryDTO extends CourseQueryDto{
+export class LectureQueryDto extends CourseQueryDto{
 
   @IsOptional()
   @Transform(({value}) => typeof value === 'string' ? [value] : value)
