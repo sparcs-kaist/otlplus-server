@@ -1,5 +1,5 @@
 import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
-import { getReviewDto } from 'src/common/interfaces/dto/reviews/reviews.dto';
+import { getReviewDto } from 'src/common/interfaces/dto/reviews/reviews.request.dto';
 import { Injectable } from '@nestjs/common';
 import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
 import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';

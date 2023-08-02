@@ -61,6 +61,14 @@ export class ReviewsRepository {
             subject_courseuser: true,
           },
         },
+        lecture: {
+          include: {
+            subject_department: true,
+            subject_lecture_professors: { include: { professor: true } },
+            subject_classtime: true,
+            subject_examtime: true,
+          },
+        },
       },
       skip: offset,
       take: limit,

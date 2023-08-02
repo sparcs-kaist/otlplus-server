@@ -1,5 +1,5 @@
-import { Controller, Get, Header, Query } from '@nestjs/common';
-import { getReviewDto } from 'src/common/interfaces/dto/reviews/reviews.dto';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { getReviewDto } from 'src/common/interfaces/dto/reviews/reviews.request.dto';
 import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
 import { ReviewsService } from './reviews.service';
 import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
@@ -29,4 +29,11 @@ export class ReviewsController {
     const result = await this.reviewsService.getReviews(reviewsParam, user);
     return result;
   }
+
+  /*@Post()
+  async postReviews(@Body() reviewsBody: postReviewDto,@GetUser() user: session_userprofile): Promise<any> {
+    if(user){
+      const lecture = user.
+    }
+  }*/
 }
