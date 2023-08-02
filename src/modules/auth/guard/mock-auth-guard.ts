@@ -26,7 +26,6 @@ export class MockAuthGuard implements CanActivate{
       request["user"] = user;
       return this.determineAuth(context, true);
     }else{
-      console.log("YYYY");
       const accessToken = this.extractTokenFromCookie(request, "accessToken");
       try {
         if (!accessToken) throw new Error("jwt expired");
@@ -59,7 +58,6 @@ export class MockAuthGuard implements CanActivate{
             }
             return this.determineAuth(context, false);
           } catch (e) {
-            console.log("XXXX");
             const result = this.determineAuth(context, false);
             if (result) {
               return result;

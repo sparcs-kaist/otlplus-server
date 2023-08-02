@@ -145,7 +145,10 @@ export class LectureRepository {
               include:{
                 professor: true
               }
-            }
+            },
+            subject_department: true,
+            subject_examtime: true,
+            subject_classtime: true,
           }
         }
       }

@@ -14,5 +14,5 @@ export const toJsonExamtime = (examtime: subject_examtime) => {
 }
 
 const timeFormatter = (time: Date) => {
-  return `${time.getUTCHours()}:${time.getUTCMinutes().toString().padStart(2, '0')}`;
+  return `${time.getUTCHours().toString().padStart(2,'0')}:${time.getUTCMinutes().toString().padStart(2, '0')}`;
 }
