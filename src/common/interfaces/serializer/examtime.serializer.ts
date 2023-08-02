@@ -8,11 +8,11 @@ export const toJsonExamtime = (examtime: subject_examtime) => {
     "day": examtime.day,
     "str": `${DAY_STR[examtime.day]} ${timeFormatter(examtime.begin)} ~ ${timeFormatter(examtime.end)}`,
     "str_en": `${DAY_STR_EN[examtime.day]} ${timeFormatter(examtime.begin)} ~ ${timeFormatter(examtime.end)}`,
-    "begin": getTimeNumeric(examtime.begin),
-    "end": getTimeNumeric(examtime.begin),
+    "begin": getTimeNumeric(examtime.begin, false),
+    "end": getTimeNumeric(examtime.end, false),
   }
 }
 
 const timeFormatter = (time: Date) => {
-  return `${time.getHours()}:${time.getMinutes()}`;
+  return `${time.getUTCHours()}:${time.getUTCMinutes().toString().padStart(2, '0')}`;
 }
