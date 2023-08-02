@@ -8,9 +8,11 @@ import { AuthModule } from './modules/auth/auth.module';
 import { MockAuthGuard } from './modules/auth/guard/mock-auth-guard';
 import { JwtService } from '@nestjs/jwt';
 import { CoursesModule } from './modules/courses/courses.module';
+import { LecturesModule } from './modules/lectures/lectures.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, CoursesModule],
+  imports: [PrismaModule, AuthModule, CoursesModule, LecturesModule,ReviewsModule],
   controllers: [AppController],
   providers: [
     {

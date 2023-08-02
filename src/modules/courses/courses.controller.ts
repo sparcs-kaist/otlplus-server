@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { session_userprofile } from '@prisma/client';
@@ -10,7 +10,16 @@ export class CourseController {
   @Get()
   async getCourses(@Query() query: any, @GetUser() user: session_userprofile) {
     const courses = await this.CoursesService.getCourseByFilter(query, user);
-
     return courses
+  }
+
+  @Get(':id')
+  async getCourseById(@Param('id') id: number, @GetUser() user: session_userprofile) {
+    return await this.CoursesService.getCourseById(id, user);
+  }
+
+  @Get(':id/lectures')
+  async getLecturesByCourseId(@Query() query: {order: string[]}, @Param('id') id: number) {
+    return await this.CoursesService.getLecturesByCourseId(query, id);
   }
 }
