@@ -5,7 +5,7 @@ import { session_userprofile, subject_department } from "@prisma/client";
 import { DepartmentRepository } from "../../prisma/repositories/department.repository";
 import { normalizeArray } from "../../common/utils/method.utils";
 import { ResearchLecture } from "../../common/interfaces/constants/lecture";
-import { ReviewRepository } from "../../prisma/repositories/review.repository";
+import { ReviewsRepository } from "../../prisma/repositories/review.repository";
 
 @Injectable()
 export class UserService {
@@ -13,7 +13,7 @@ export class UserService {
     private readonly userRepository: UserRepository,
     private readonly lectureRepository: LectureRepository,
     private readonly departmentRepository: DepartmentRepository,
-    private readonly reviewRepository: ReviewRepository,
+    private readonly reviewRepository: ReviewsRepository,
   ) {
   }
 

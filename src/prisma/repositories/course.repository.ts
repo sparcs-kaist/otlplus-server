@@ -5,8 +5,10 @@ import { subject_course } from "../generated/prisma-class/subject_course";
 import { subject_lecture } from "../generated/prisma-class/subject_lecture";
 
 @Injectable()
-export class CourseRepository{
-  constructor(private readonly prisma: PrismaService){}
+export class CourseRepository {
+  constructor(
+    private readonly prisma: PrismaService
+  ){}
   
   private TYPE_ACRONYMS = {
     "GR": "General Required",

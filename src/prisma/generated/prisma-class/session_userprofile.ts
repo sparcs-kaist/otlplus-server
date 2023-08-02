@@ -13,6 +13,7 @@ import { subject_courseuser } from './subject_courseuser';
 import { support_rate } from './support_rate';
 import { timetable_timetable } from './timetable_timetable';
 import { timetable_wishlist } from './timetable_wishlist';
+import { review_reviewvote } from './review_reviewvote';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class session_userprofile {
@@ -96,4 +97,7 @@ export class session_userprofile {
 
   @ApiPropertyOptional({ type: () => timetable_wishlist })
   timetable_wishlist?: timetable_wishlist;
+
+  @ApiProperty({ isArray: true, type: () => review_reviewvote })
+  reviewvote: review_reviewvote[];
 }

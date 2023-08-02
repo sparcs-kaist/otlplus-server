@@ -1,7 +1,9 @@
+import { subject_course } from './subject_course';
 import { subject_lecture } from './subject_lecture';
 import { main_famoushumanityreviewdailyfeed_reviews } from './main_famoushumanityreviewdailyfeed_reviews';
 import { main_famousmajorreviewdailyfeed_reviews } from './main_famousmajorreviewdailyfeed_reviews';
 import { session_userprofile } from './session_userprofile';
+import { review_reviewvote } from './review_reviewvote';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class review_review {
@@ -10,6 +12,9 @@ export class review_review {
 
   @ApiProperty({ type: Number })
   course_id: number;
+
+  @ApiProperty({ type: () => subject_course })
+  course: subject_course;
 
   @ApiProperty({ type: Number })
   lecture_id: number;
@@ -61,4 +66,7 @@ export class review_review {
 
   @ApiPropertyOptional({ type: () => session_userprofile })
   writer?: session_userprofile;
+
+  @ApiProperty({ isArray: true, type: () => review_reviewvote })
+  review_reviewvote: review_reviewvote[];
 }
