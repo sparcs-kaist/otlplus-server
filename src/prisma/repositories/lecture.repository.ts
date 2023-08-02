@@ -139,7 +139,15 @@ export class LectureRepository {
         userprofile_id: user.id
       },
       include: {
-        lecture: true
+        lecture: {
+          include:{
+            subject_lecture_professors: {
+              include:{
+                professor: true
+              }
+            }
+          }
+        }
       }
     })).map((takenLecture) => takenLecture.lecture as subject_lecture);
 

@@ -7,6 +7,8 @@ import { normalizeArray } from "../../common/utils/method.utils";
 import { ResearchLecture } from "../../common/interfaces/constants/lecture";
 import { ReviewsRepository } from "../../prisma/repositories/review.repository";
 import { toJsonDepartment } from "../../common/interfaces/serializer/department.serializer";
+import { toJsonReview } from "../../common/interfaces/serializer/review.serializer";
+import { toJsonLecture } from "../../common/interfaces/serializer/lecture.serializer";
 
 @Injectable()
 export class UserService {
@@ -39,7 +41,7 @@ export class UserService {
     const [department, favoriteDepartments, majors, minors, specializedMajors, reviewWritableLectures, takenLectures, writtenReviews] = await Promise.all(promises);
     const departments =  Object.values<subject_department>(normalizeArray<subject_department>([...majors, ...minors, ...specializedMajors, ...favoriteDepartments])) ?? [department];
     const researchLectures = Object.values(ResearchLecture);
-    const timeTableLectures = takenLectures.filter((lecture) => researchLectures.includes(lecture.type_en));
+    const timeTableLectures = takenLectures.filter((lecture) => !researchLectures.includes(lecture.type_en));
 
     return {
       id: user.id,
@@ -51,9 +53,9 @@ export class UserService {
       majors: majors.map((major) => toJsonDepartment(major)),
       departments: departments.map((department) => toJsonDepartment(department)),
       favorite_departments: favoriteDepartments.map((department) => toJsonDepartment(department)),
-      review_writeable_lectures: reviewWritableLectures,
-      my_timetable_lectures: timeTableLectures,
-      reviews: writtenReviews
+      review_writeable_lectures: reviewWritableLectures.map((lecture) => toJsonLecture(lecture)),
+      my_timetable_lectures: timeTableLectures.map((lecture) => toJsonLecture(lecture)),
+      reviews: writtenReviews.map((review) => toJsonReview(review)),
     }
   }
 }

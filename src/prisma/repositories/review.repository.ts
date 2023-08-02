@@ -12,6 +12,14 @@ export class ReviewsRepository {
   async findReviewByUser(user: session_userprofile): Promise<review_review[]>{
     const reviews = await this.prisma.review_review.findMany({
       where: { writer_id: user.id },
+      include:{
+        course: {
+          include:{
+            lecture: true,
+          }
+        },
+        lecture: true,
+      }
     })
     return reviews as review_review[];
   }
