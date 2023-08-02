@@ -77,6 +77,7 @@ export class CourseRepository {
     return applyOrder<subject_lecture>(filterdLecture, order);
   }
 
+  //@todo: optimize goal: 1.5s -> 0.5s, recommended: using cache
   public async filterByRequest (query: any): Promise<subject_course[]> {
     const DEFAULT_LIMIT = 150;
     const DEFAULT_ORDER = ['old_code']
@@ -151,7 +152,7 @@ export class CourseRepository {
     if (types.includes("ALL")) {
       return null
     } else if (types.includes("ETC")) {
-      const unselected_types = Object.values(this.TYPE_ACRONYMS).filter((type) => !(type in types))
+      const unselected_types = Object.keys(this.TYPE_ACRONYMS).filter((type) => !(type in types)).map((type) => this.TYPE_ACRONYMS[type])
       return {
         type_en: {
           in: unselected_types
@@ -160,7 +161,7 @@ export class CourseRepository {
     } else {
       return {
         type_en: {
-          in: types
+          in: types.map((type) => this.TYPE_ACRONYMS[type])
         }
       }
     }

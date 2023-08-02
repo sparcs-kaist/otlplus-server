@@ -2,13 +2,14 @@ import { Controller, Get, Param, Query } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { session_userprofile } from '@prisma/client';
+import { CourseQueryDto } from "../../common/interfaces/dto/course/course.request.dto";
 
 @Controller('api/courses')
 export class CourseController {
   constructor(private readonly CoursesService: CoursesService) {}
 
   @Get()
-  async getCourses(@Query() query: any, @GetUser() user: session_userprofile) {
+  async getCourses(@Query() query: CourseQueryDto, @GetUser() user: session_userprofile) {
     const courses = await this.CoursesService.getCourseByFilter(query, user);
     return courses
   }

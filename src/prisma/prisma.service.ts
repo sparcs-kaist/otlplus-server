@@ -11,6 +11,11 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
 
   async onModuleInit() {
     await this.$connect();
+    // @ts-ignore
+    this.$on('query', async (e) => {
+      // @ts-ignore
+      console.log(`Query: ${e.query} ${e.params}`);
+    })
   }
 
   async enableShutdownHooks(app: INestApplication) {

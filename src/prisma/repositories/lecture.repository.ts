@@ -160,13 +160,13 @@ export class LectureRepository {
     } else if (!years) {
       return {
         semester: {
-          In: semesters
+          in: semesters
         }
       }
     } else if (!semesters) {
       return {
         years: {
-          In: semesters
+          in: semesters
         }
       }
     } else {
@@ -174,12 +174,12 @@ export class LectureRepository {
         AND: [
           {
             year: {
-              In: years
+              in: years
             }
           },
           {
             semester: {
-              In: semesters
+              in: semesters
             }
           }
         ]
@@ -191,9 +191,9 @@ export class LectureRepository {
     const datetimeBegin = begin?.map((time) => this.datetimeConverter(time));
     const datetimeEnd = end?.map((time) => this.datetimeConverter(time));
 
-    const dayFilter = day ? { day: {In: day} } : null;
-    const beginFilter = begin ? { begin: {In: datetimeBegin} } : null;
-    const endFilter = end ? { end: {In: datetimeEnd} } : null;
+    const dayFilter = day ? { day: {in: day} } : null;
+    const beginFilter = begin ? { begin: {in: datetimeBegin} } : null;
+    const endFilter = end ? { end: {in: datetimeEnd} } : null;
     return {
       AND: [
         dayFilter,

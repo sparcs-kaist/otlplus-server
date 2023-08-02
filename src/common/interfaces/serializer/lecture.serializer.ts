@@ -3,6 +3,7 @@ import { subject_lecture } from "src/prisma/generated/prisma-class/subject_lectu
 import { toJsonClasstime } from "./classtime.serializer";
 import { toJsonExamtime } from "./examtime.serializer";
 import { LectureResponseDto } from "../dto/lecture/lecture.response.dto";
+import { toJsonProfessor } from "./professor.serializer";
 
 export const toJsonLecture = (lecture: subject_lecture, nested = false): LectureResponseDto => {
   let result = {
@@ -37,7 +38,7 @@ export const toJsonLecture = (lecture: subject_lecture, nested = false): Lecture
 
   const professors = lecture.subject_lecture_professors.map((x) => x.professor);
   const ordered_professors = applyOrder(professors, ["professor_name"]);
-  result = Object.assign(result, { "professors": ordered_professors });
+  result = Object.assign(result, { "professors": toJsonProfessor(ordered_professors) });
 
   if (nested) {
     return result;

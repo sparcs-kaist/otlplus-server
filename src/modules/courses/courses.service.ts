@@ -23,7 +23,9 @@ export class CoursesService {
   ) {}
 
   public async getCourseByFilter(query: any, user: session_userprofile):  Promise<(CourseResponseDtoNested & { userspecific_is_read: boolean })[]> {
+    console.time("getCourseByFilter")
     const queryResult = await this.CourseRepository.filterByRequest(query);
+    console.timeEnd("getCourseByFilter")
     return queryResult.map((course) => {
       const representativeLecture = getRepresentativeLecture(course.lecture);
       const professorRaw = course.subject_course_professors.map((x) => x.professor as subject_professor);
