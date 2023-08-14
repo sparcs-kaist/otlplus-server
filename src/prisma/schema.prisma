@@ -234,18 +234,18 @@ model review_review {
   lecture_id                                 Int
   lecture                                    subject_lecture                              @relation(fields: [lecture_id], references: [id], onDelete: Restrict)
   content                                    String                                       @db.MediumText
-  grade                                      Int                                          @db.SmallInt
-  load                                       Int                                          @db.SmallInt
-  speech                                     Int                                          @db.SmallInt
+  grade                                      Int                                          @db.SmallInt @default(0)
+  load                                       Int                                          @db.SmallInt @default(0)
+  speech                                     Int                                          @db.SmallInt @default(0)
   writer_id                                  Int?
   writer_label                               String                                       @db.VarChar(200)
   updated_datetime                           DateTime                                     @db.DateTime(0)
-  like                                       Int
-  is_deleted                                 Int
+  like                                       Int                                          @default(0)
+  is_deleted                                 Int                                          @default(0)
   written_datetime                           DateTime?                                    @db.DateTime(0)
   main_famoushumanityreviewdailyfeed_reviews main_famoushumanityreviewdailyfeed_reviews[]
   main_famousmajorreviewdailyfeed_reviews    main_famousmajorreviewdailyfeed_reviews[]
-  writer                                     session_userprofile?                         @relation(fields: [writer_id], references: [id], onUpdate: Restrict)
+  writer                                     session_userprofile?                         @relation(fields: [writer_id], references: [id], onDelete: SetNull)
   review_reviewvote                          review_reviewvote[]
 
   @@unique([writer_id, lecture_id], map: "review_comment_writer_id_af700a5d_uniq")
