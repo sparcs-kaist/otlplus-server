@@ -1,13 +1,16 @@
 import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
+  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
+  Max,
+  Min,
   Validate,
 } from 'class-validator';
 import { CourseResponseDto } from '../course/course.response.dto';
-import { OrderDefaultValidator } from './validators';
+import { OrderDefaultValidator, StringStripLength } from './validators';
 
 export class getReviewDto {
   @IsOptional()
@@ -38,4 +41,37 @@ export class getReviewDto {
   @IsNumber()
   @Type(() => Number)
   limit?: number;
+}
+
+export class postReviewDto {
+  @IsString()
+  @IsNotEmpty()
+  @Validate(StringStripLength)
+  content: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  @Type(() => Number)
+  lecture: number;
+
+  @IsNumber()
+  @IsNotEmpty()
+  @Min(1)
+  @Max(5)
+  @Type(() => Number)
+  grade: number;
+
+  @IsNumber()
+  @IsNotEmpty()
+  @Min(1)
+  @Max(5)
+  @Type(() => Number)
+  load: number;
+
+  @IsNumber()
+  @IsNotEmpty()
+  @Min(1)
+  @Max(5)
+  @Type(() => Number)
+  speech: number;
 }

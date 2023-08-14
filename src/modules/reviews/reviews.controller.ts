@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import { getReviewDto } from 'src/common/interfaces/dto/reviews/reviews.request.dto';
+import { Body, Controller, Get, HttpException, Post, Query } from '@nestjs/common';
+import { getReviewDto, postReviewDto } from 'src/common/interfaces/dto/reviews/reviews.request.dto';
 import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
 import { ReviewsService } from './reviews.service';
 import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { session_userprofile } from '@prisma/client';
 
 @Controller('api/reviews')
 export class ReviewsController {
@@ -29,10 +30,16 @@ export class ReviewsController {
     return result;
   }
 
-  /*@Post()
-  async postReviews(@Body() reviewsBody: postReviewDto,@GetUser() user: session_userprofile): Promise<any> {
-    if(user){
-      const lecture = user.
+  @Post()
+  async postReviews(
+    @Body() reviewsBody: postReviewDto,
+    @GetUser() user: session_userprofile,
+  ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })> {
+    if (user) {
+      const result = await this.reviewsService.postReviews(reviewsBody, user);
+      return result;
+    } else {
+      throw new HttpException("Can't find user", 401);
     }
-  }*/
+  }
 }
