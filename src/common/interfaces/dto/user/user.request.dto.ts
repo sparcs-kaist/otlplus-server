@@ -1,0 +1,9 @@
+import { IsArray, IsOptional, Validate } from "class-validator";
+import { OrderDefaultValidator } from "../reviews/validators";
+
+export class getUserTakenCoursesDto {
+  @IsOptional()
+  @IsArray()
+  @Validate(OrderDefaultValidator)
+  order?: string[];
+}

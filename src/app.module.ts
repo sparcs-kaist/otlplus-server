@@ -10,9 +10,10 @@ import { JwtService } from '@nestjs/jwt';
 import { CoursesModule } from './modules/courses/courses.module';
 import { LecturesModule } from './modules/lectures/lectures.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
+import { UserModule } from './modules/user/user.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, CoursesModule, LecturesModule,ReviewsModule],
+  imports: [PrismaModule, AuthModule, CoursesModule, LecturesModule,ReviewsModule,UserModule],
   controllers: [AppController],
   providers: [
     {
