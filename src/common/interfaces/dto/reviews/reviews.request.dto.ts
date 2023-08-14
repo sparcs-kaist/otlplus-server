@@ -75,3 +75,31 @@ export class postReviewDto {
   @Type(() => Number)
   speech: number;
 }
+
+export class patchReviewDto {
+  @IsOptional()
+  @IsString()
+  @Validate(StringStripLength)
+  content?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(5)
+  @Type(() => Number)
+  grade?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(5)
+  @Type(() => Number)
+  load?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(5)
+  @Type(() => Number)
+  speech?: number;
+}
