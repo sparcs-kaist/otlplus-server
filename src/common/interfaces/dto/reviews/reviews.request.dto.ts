@@ -13,7 +13,7 @@ import { CourseResponseDto } from '../course/course.response.dto';
 import { OrderDefaultValidator, StringStripLength } from './validators';
 import { OmitType, PartialType } from "@nestjs/swagger";
 
-export class GetReviewDto {
+export class ReviewQueryDto {
   @IsOptional()
   @IsNumber()
   @Type(() => Number)
@@ -44,7 +44,7 @@ export class GetReviewDto {
   limit?: number;
 }
 
-export class PostReviewDto {
+export class ReviewCreateDto {
   @IsString()
   @IsNotEmpty()
   @Validate(StringStripLength)
@@ -82,7 +82,7 @@ export class PostReviewDto {
 // }
 
 // nestjs-swagger
-export class PatchReviewDto {
+export class ReviewUpdateDto {
   @IsOptional()
   @IsString()
   @Validate(StringStripLength)

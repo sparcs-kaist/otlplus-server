@@ -1,5 +1,5 @@
 import { Body, Controller, Get, HttpException, Post, Query, Param, Patch} from '@nestjs/common';
-import { GetReviewDto, PatchReviewDto, PostReviewDto } from "src/common/interfaces/dto/reviews/reviews.request.dto";
+import { ReviewQueryDto, ReviewUpdateDto, ReviewCreateDto } from "src/common/interfaces/dto/reviews/reviews.request.dto";
 import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
 import { ReviewsService } from './reviews.service';
 import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
@@ -11,7 +11,7 @@ export class ReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}
   @Get()
   async getReviews(
-    @Query() reviewsParam: GetReviewDto,
+    @Query() reviewsParam: ReviewQueryDto,
     @GetUser() user,
   ): Promise<
     (ReviewResponseDto & { userspecific_is_liked: boolean })[] | number
@@ -29,7 +29,7 @@ export class ReviewsController {
 
   @Post()
   async postReviews(
-    @Body() reviewsBody: PostReviewDto,
+    @Body() reviewsBody: ReviewCreateDto,
     @GetUser() user: session_userprofile,
   ): Promise<ReviewResponseDto & { userspecific_is_liked: boolean }> {
     if (user) {
@@ -50,7 +50,7 @@ export class ReviewsController {
 
   @Patch(':reviewId')
   async patchReviewInstance(
-    @Body() reviewsBody: PatchReviewDto,
+    @Body() reviewsBody: ReviewUpdateDto,
     @Param('reviewId') reviewId: number,
     @GetUser() user: session_userprofile,
   ): Promise<ReviewResponseDto & { userspecific_is_liked: boolean }> {

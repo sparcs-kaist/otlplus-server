@@ -1,5 +1,5 @@
 import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
-import { GetReviewDto, PatchReviewDto, PostReviewDto } from "src/common/interfaces/dto/reviews/reviews.request.dto";
+import { ReviewQueryDto, ReviewUpdateDto, ReviewCreateDto } from "src/common/interfaces/dto/reviews/reviews.request.dto";
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
 import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
@@ -35,7 +35,7 @@ export class ReviewsService {
     }
   }
   async getReviews(
-    reviewsParam: GetReviewDto,
+    reviewsParam: ReviewQueryDto,
     user: session_userprofile,
   ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })[]> {
     const MAX_LIMIT = 50;
@@ -78,7 +78,7 @@ export class ReviewsService {
   }
 
   async postReviews(
-    reviewsBody: PostReviewDto,
+    reviewsBody: ReviewCreateDto,
     user: session_userprofile,
   ): Promise<ReviewResponseDto & { userspecific_is_liked: boolean }> {
     const reviewWritableLectures =
@@ -116,7 +116,7 @@ export class ReviewsService {
   async patchReviewById(
     reviewId: number,
     user: session_userprofile,
-    reviewBody: PatchReviewDto,
+    reviewBody: ReviewUpdateDto,
   ): Promise<ReviewResponseDto & { userspecific_is_liked: boolean }> {
     const review = await this.reviewsRepository.getReviewById(reviewId);
     if (review == undefined) throw new HttpException("Can't find review", 404);
