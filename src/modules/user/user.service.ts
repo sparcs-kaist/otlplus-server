@@ -1,4 +1,4 @@
-import { CourseRepository } from './../../prisma/repositories/course.repository';
+import { CourseRepository } from "./../../prisma/repositories/course.repository";
 import { UserRepository } from "../../prisma/repositories/user.repository";
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { LectureRepository } from "../../prisma/repositories/lecture.repository";
@@ -11,10 +11,10 @@ import { toJsonDepartment } from "../../common/interfaces/serializer/department.
 import { toJsonReview } from "../../common/interfaces/serializer/review.serializer";
 import { toJsonLecture } from "../../common/interfaces/serializer/lecture.serializer";
 import { ReviewDetails } from "../../common/schemaTypes/types";
-import { getUserTakenCoursesDto } from "src/common/interfaces/dto/user/user.request.dto";
-import { toJsonCourse } from 'src/common/interfaces/serializer/course.serializer';
-import { getRepresentativeLecture } from '../../common/utils/lecture.utils';
-import { CourseResponseDtoNested } from 'src/common/interfaces/dto/course/course.response.dto';
+import { UserTakenCoursesQueryDto } from "src/common/interfaces/dto/user/user.request.dto";
+import { toJsonCourse } from "src/common/interfaces/serializer/course.serializer";
+import { getRepresentativeLecture } from "../../common/utils/lecture.utils";
+import { CourseResponseDtoNested } from "src/common/interfaces/dto/course/course.response.dto";
 
 @Injectable()
 export class UserService {
@@ -23,8 +23,9 @@ export class UserService {
     private readonly lectureRepository: LectureRepository,
     private readonly departmentRepository: DepartmentRepository,
     private readonly reviewRepository: ReviewsRepository,
-    private readonly courseRepository: CourseRepository,
-  ) {}
+    private readonly courseRepository: CourseRepository
+  ) {
+  }
 
   public async findBySid(sid: string) {
     const user = this.userRepository.findBySid(sid);
@@ -106,18 +107,17 @@ export class UserService {
   }
 
   async getUserTakenCourses(
-    getUserTakenCoursesParam: getUserTakenCoursesDto,
-    user: session_userprofile,
+    query: UserTakenCoursesQueryDto,
+    user: session_userprofile
   ): Promise<(CourseResponseDtoNested & { userspecific_is_read: boolean })[]> {
     const DEFAULT_ORDER = ['old_code'];
     const takenLectures = await this.lectureRepository.getTakenLectures(user);
     const takenLecturesId = takenLectures.map((lecture) => lecture.id);
     const courses = await this.courseRepository.getUserTakenCourses(
       takenLecturesId,
-      getUserTakenCoursesParam.order ?? DEFAULT_ORDER,
+      query.order ?? DEFAULT_ORDER
     );
-    return await Promise.all(
-      courses.map((course) => {
+    return courses.map((course) => {
         const representativeLecture = getRepresentativeLecture(course.lecture);
         const professorRaw = course.subject_course_professors.map(
           (x) => x.professor,
@@ -142,7 +142,6 @@ export class UserService {
             userspecific_is_read: false,
           });
         }
-      }),
-    );
+      })
   }
 }
