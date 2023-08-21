@@ -13,6 +13,7 @@ const PROHIBITED_FIELD_PATTERN: RegExp[] = [
   /__.*__/,
 ];
 
+//todo: make more general
 @ValidatorConstraint({ name: 'ORDER_DEFAULT_VALIDATOR', async: false })
 export class OrderDefaultValidator implements ValidatorConstraintInterface {
   validate(order: string[]): boolean {

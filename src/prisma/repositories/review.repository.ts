@@ -146,7 +146,8 @@ export class ReviewsRepository {
     return reviewsCount;
   }
 
-  async newReview(
+  // todo: patch도 동일한 함수 쓰게끔
+  async upsertReview(
     courseId: number,
     lectureId: number,
     content: string,

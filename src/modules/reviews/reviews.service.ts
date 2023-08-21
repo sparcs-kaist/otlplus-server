@@ -64,8 +64,8 @@ export class ReviewsService {
     const reviewLecture = reviewWritableLectures.find((lecture) => {
       return lecture.id == reviewsBody.lecture;
     });
-    if(reviewLecture==undefined) throw new HttpException("Can't find lecture", 401);
-    const review = await this.reviewsRepository.newReview(
+    if(reviewLecture==undefined) throw new HttpException("Can't find lecture", 404);
+    const review = await this.reviewsRepository.upsertReview(
       reviewLecture.course_id,
       reviewLecture.id,
       reviewsBody.content,
