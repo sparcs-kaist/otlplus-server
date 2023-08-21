@@ -32,6 +32,29 @@ export class ReviewsRepository {
     return reviews;
   }
 
+  async getReviewById(reviewId: number): Promise<ReviewDetails> {
+    return await this.prisma.review_review.findUnique({
+      where: { id: reviewId },
+      include: {
+        course: {
+          include: {
+            subject_department: true,
+            subject_course_professors: { include: { professor: true } },
+            lecture: true,
+            subject_courseuser: true,
+          },
+        },
+        lecture: {
+          include: {
+            subject_department: true,
+            subject_lecture_professors: { include: { professor: true } },
+            subject_classtime: true,
+            subject_examtime: true,
+          },
+        },
+      },
+    });
+  }
   public async getReviews(
     lecture_year: number,
     lecture_semester: number,
@@ -158,7 +181,7 @@ export class ReviewsRepository {
   ): Promise<ReviewDetails> {
     return await this.prisma.review_review.upsert({
       where: {
-        writer_id_lecture_id: {writer_id:writerId, lecture_id:lectureId}
+        writer_id_lecture_id: { writer_id: writerId, lecture_id: lectureId },
       },
       update: {},
       create: {
@@ -172,6 +195,44 @@ export class ReviewsRepository {
         writer_label: '무학과 넙죽이',
         written_datetime: new Date(),
         updated_datetime: new Date(),
+      },
+      include: {
+        course: {
+          include: {
+            subject_department: true,
+            subject_course_professors: { include: { professor: true } },
+            lecture: true,
+            subject_courseuser: true,
+          },
+        },
+        lecture: {
+          include: {
+            subject_department: true,
+            subject_lecture_professors: { include: { professor: true } },
+            subject_classtime: true,
+            subject_examtime: true,
+          },
+        },
+      },
+    });
+  }
+
+  async patchReview(
+    reviewId: number,
+    content:string,
+    grade: number,
+    load: number,
+    speech: number,
+  ):Promise<ReviewDetails>{
+    return await this.prisma.review_review.update({
+      where: {
+        id: reviewId,
+      },
+      data: {
+        content: content,
+        grade: grade,
+        load: load,
+        speech: speech
       },
       include: {
         course: {

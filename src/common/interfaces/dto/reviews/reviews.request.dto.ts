@@ -11,6 +11,7 @@ import {
 } from 'class-validator';
 import { CourseResponseDto } from '../course/course.response.dto';
 import { OrderDefaultValidator, StringStripLength } from './validators';
+import { OmitType, PartialType } from "@nestjs/swagger";
 
 export class GetReviewDto {
   @IsOptional()
@@ -74,4 +75,37 @@ export class PostReviewDto {
   @Max(5)
   @Type(() => Number)
   speech: number;
+}
+
+// export class patchReviewDto extends PartialType(OmitType(PostReviewDto, ['lecture'])){
+//
+// }
+
+// nestjs-swagger
+export class PatchReviewDto {
+  @IsOptional()
+  @IsString()
+  @Validate(StringStripLength)
+  content?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(5)
+  @Type(() => Number)
+  grade?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(5)
+  @Type(() => Number)
+  load?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(5)
+  @Type(() => Number)
+  speech?: number;
 }
