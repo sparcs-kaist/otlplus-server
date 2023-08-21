@@ -12,7 +12,7 @@ import {
 import { CourseResponseDto } from '../course/course.response.dto';
 import { OrderDefaultValidator, StringStripLength } from './validators';
 
-export class getReviewDto {
+export class GetReviewDto {
   @IsOptional()
   @IsNumber()
   @Type(() => Number)
@@ -43,7 +43,7 @@ export class getReviewDto {
   limit?: number;
 }
 
-export class postReviewDto {
+export class PostReviewDto {
   @IsString()
   @IsNotEmpty()
   @Validate(StringStripLength)

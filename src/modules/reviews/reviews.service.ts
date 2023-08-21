@@ -1,5 +1,5 @@
 import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
-import { getReviewDto, postReviewDto } from 'src/common/interfaces/dto/reviews/reviews.request.dto';
+import { GetReviewDto, PostReviewDto } from 'src/common/interfaces/dto/reviews/reviews.request.dto';
 import { HttpException, Injectable } from '@nestjs/common';
 import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
 import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
@@ -13,7 +13,7 @@ export class ReviewsService {
     private readonly lectureRepository: LectureRepository,
   ) {}
   async getReviews(
-    reviewsParam: getReviewDto,
+    reviewsParam: GetReviewDto,
     user: session_userprofile,
   ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })[]> {
     const MAX_LIMIT = 50;
@@ -56,7 +56,7 @@ export class ReviewsService {
   }
 
   async postReviews(
-    reviewsBody: postReviewDto,
+    reviewsBody: PostReviewDto,
     user: session_userprofile,
   ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })> {
     const reviewWritableLectures =

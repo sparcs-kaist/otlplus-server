@@ -1,5 +1,5 @@
 import { Body, Controller, Get, HttpException, Post, Query } from '@nestjs/common';
-import { getReviewDto, postReviewDto } from 'src/common/interfaces/dto/reviews/reviews.request.dto';
+import { GetReviewDto, PostReviewDto } from 'src/common/interfaces/dto/reviews/reviews.request.dto';
 import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
 import { ReviewsService } from './reviews.service';
 import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
@@ -14,7 +14,7 @@ export class ReviewsController {
   ) {}
   @Get()
   async getReviews(
-    @Query() reviewsParam: getReviewDto,
+    @Query() reviewsParam: GetReviewDto,
     @GetUser() user,
   ): Promise<
     (ReviewResponseDto & { userspecific_is_liked: boolean })[] | number
@@ -32,7 +32,7 @@ export class ReviewsController {
 
   @Post()
   async postReviews(
-    @Body() reviewsBody: postReviewDto,
+    @Body() reviewsBody: PostReviewDto,
     @GetUser() user: session_userprofile,
   ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })> {
     if (user) {
