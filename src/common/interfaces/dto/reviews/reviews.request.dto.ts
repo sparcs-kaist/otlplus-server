@@ -10,9 +10,9 @@ import {
   Validate,
 } from 'class-validator';
 import { CourseResponseDto } from '../course/course.response.dto';
-import { OrderDefaultValidator, StringStripLength } from './validators';
+import { StringStripLength } from '../../../decorators/reviews.request.validators';
 import { OmitType, PartialType } from "@nestjs/swagger";
-
+import { _PROHIBITED_FIELD_PATTERN, OrderDefaultValidator } from 'src/common/decorators/request-ordervalidator.decorator';
 export class ReviewQueryDto {
   @IsOptional()
   @IsNumber()
@@ -30,7 +30,7 @@ export class ReviewQueryDto {
 
   @IsOptional()
   @IsArray()
-  @Validate(OrderDefaultValidator)
+  @OrderDefaultValidator(_PROHIBITED_FIELD_PATTERN)
   order?: string[];
 
   @IsOptional()
@@ -77,35 +77,6 @@ export class ReviewCreateDto {
   speech: number;
 }
 
-// export class patchReviewDto extends PartialType(OmitType(PostReviewDto, ['lecture'])){
-//
-// }
-
-// nestjs-swagger
-export class ReviewUpdateDto {
-  @IsOptional()
-  @IsString()
-  @Validate(StringStripLength)
-  content?: string;
-
-  @IsOptional()
-  @IsNumber()
-  @Min(1)
-  @Max(5)
-  @Type(() => Number)
-  grade?: number;
-
-  @IsOptional()
-  @IsNumber()
-  @Min(1)
-  @Max(5)
-  @Type(() => Number)
-  load?: number;
-
-  @IsOptional()
-  @IsNumber()
-  @Min(1)
-  @Max(5)
-  @Type(() => Number)
-  speech?: number;
-}
+export class ReviewUpdateDto extends PartialType(
+  OmitType(ReviewCreateDto, ['lecture']),
+) {}
