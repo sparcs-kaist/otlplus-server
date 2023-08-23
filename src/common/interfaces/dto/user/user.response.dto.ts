@@ -14,7 +14,7 @@ export interface ProfileDto {
   majors: DepartmentResponseDto[]
   departments: DepartmentResponseDto[]
   favorite_departments: DepartmentResponseDto[]
-  review_writeable_lectures: session_userprofile_taken_lectures[]
+  review_writable_lectures: session_userprofile_taken_lectures[]
   my_timetable_lectures: session_userprofile_taken_lectures[]
   reviews: ReviewResponseDto[]
 }

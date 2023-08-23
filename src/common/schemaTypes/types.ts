@@ -48,6 +48,8 @@ const reviewDetails = Prisma.validator<Prisma.review_reviewArgs>()({
 
 export type ReviewDetails = Prisma.review_reviewGetPayload<typeof reviewDetails>
 export type LectureDetails = Prisma.subject_lectureGetPayload<typeof lectureDetails>
+export type LectureBasic = Prisma.subject_lectureGetPayload<null>
 export type CourseDetails = Prisma.subject_courseGetPayload<typeof courseDetails>
 export type TimeTableDetails = Prisma.timetable_timetableGetPayload<typeof timeTableDetails>
 export type TimeTableBasic = Prisma.timetable_timetableGetPayload<null>
+export type SemesterBasic = Prisma.subject_semesterGetPayload<null>

@@ -1,7 +1,11 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { TimetableRepository } from "../../prisma/repositories/timetable.repository";
 import { session_userprofile } from "@prisma/client";
-import { TimetableCreateDto, TimetableQueryDto } from "../../common/interfaces/dto/timetable/timetable.request.dto";
+import {
+  AddLectureDto,
+  TimetableCreateDto,
+  TimetableQueryDto
+} from "../../common/interfaces/dto/timetable/timetable.request.dto";
 import { orderFilter, validateYearAndSemester } from "../../common/utils/search.utils";
 import { SemesterRepository } from "../../prisma/repositories/semester.repository";
 import { LectureRepository } from "../../prisma/repositories/lecture.repository";
@@ -54,5 +58,19 @@ export class TimetablesService {
       lecture.semester === timeTableBody.semester && lecture.year === timeTableBody.year
     );
     return await this.timetableRepository.createTimetable(user, year, semester, arrangeOrder, filteredLectures);
+  }
+
+  async addLectureToTimetable(timeTableId: number, body: AddLectureDto) {
+    const lectureId = body.lecture;
+    const lecture = await this.lectureRepository.getLectureBasicById(lectureId);
+    const timetable = await this.timetableRepository.getTimeTableBasicById(timeTableId);
+    if(!lecture){
+      throw new BadRequestException("Wrong field \\'lecture\\' in request data")
+    }
+    if( !(lecture.year == timetable.year && lecture.semester == timetable.semester)){
+      throw new BadRequestException("Wrong field \\'lecture\\' in request data")
+    }
+    await this.timetableRepository.addLectureToTimetable(timeTableId, lectureId);
+    return await this.timetableRepository.getTimeTableById(timeTableId)
   }
 }

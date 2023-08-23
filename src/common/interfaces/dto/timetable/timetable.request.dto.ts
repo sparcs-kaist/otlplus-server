@@ -49,3 +49,10 @@ export class TimetableCreateDto {
   @IsNumber({},{each: true})
   lectures: number[]
 }
+
+export class AddLectureDto{
+
+  @IsNumber()
+  @Type(() => Number)
+  lecture: number;
+}

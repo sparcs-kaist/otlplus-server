@@ -1,7 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma.service";
 import { Prisma, session_userprofile } from "@prisma/client";
-import { LectureDetails, TimeTableBasic, timeTableDetails, TimeTableDetails } from "../../common/schemaTypes/types";
+import {
+  lectureDetails,
+  LectureDetails,
+  TimeTableBasic,
+  timeTableDetails,
+  TimeTableDetails
+} from "../../common/schemaTypes/types";
 import session from "express-session";
 
 @Injectable()
@@ -63,5 +69,31 @@ export class TimetableRepository{
       },
       include:timeTableDetails.include,
     })
+  }
+
+  async getTimeTableBasicById(timeTableId: number) {
+    return await this.prisma.timetable_timetable.findUnique({
+      where: {
+        id: timeTableId
+      }
+    });
+  }
+
+  async addLectureToTimetable(timeTableId: number, lectureId: number) {
+    return await this.prisma.timetable_timetable_lectures.create({
+      data:{
+        timetable_id: timeTableId,
+        lecture_id: lectureId,
+      }
+    })
+  }
+
+  async getTimeTableById(timeTableId: number):Promise<TimeTableDetails>{
+    return await this.prisma.timetable_timetable.findUnique({
+      include: timeTableDetails.include,
+      where: {
+        id: timeTableId
+      }
+    });
   }
 }
