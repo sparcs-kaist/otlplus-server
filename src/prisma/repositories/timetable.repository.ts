@@ -8,7 +8,7 @@ import session from "express-session";
 export class TimetableRepository{
   constructor(private readonly prisma: PrismaService){}
 
-  async getTimetables( user: session_userprofile, year?: number, semester?: number, paginationAndSorting?: {orderBy: Prisma.timetable_timetableOrderByWithRelationInput, skip?: number, take?: number}): Promise<TimeTableDetails[]> {
+  async getTimetables( user: session_userprofile, year?: number, semester?: number, paginationAndSorting?: {orderBy?: Prisma.timetable_timetableOrderByWithRelationInput[], skip?: number, take?: number}): Promise<TimeTableDetails[]> {
 
     const skip = paginationAndSorting.skip;
     const take = paginationAndSorting.take;

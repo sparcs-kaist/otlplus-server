@@ -1,5 +1,6 @@
 import { PrismaService } from "../prisma.service";
 import { Injectable } from "@nestjs/common";
+import { Prisma } from "@prisma/client";
 
 @Injectable()
 export class SemesterRepository{
@@ -15,5 +16,17 @@ export class SemesterRepository{
     }).catch((e) => false)
       .then((s)=> true);
     return existsSemester;
+  }
+
+  async getSemesters(paginationAndSoring?: { orderBy?: Prisma.subject_semesterOrderByWithRelationInput[],skip?: number, take?: number }) {
+    const orderBy = paginationAndSoring.orderBy;
+    const skip = paginationAndSoring.skip;
+    const take = paginationAndSoring.take;
+
+    return await this.prisma.subject_semester.findMany({
+      orderBy: orderBy,
+      skip: skip,
+      take: take,
+    })
   }
 }

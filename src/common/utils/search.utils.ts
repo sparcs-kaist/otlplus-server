@@ -39,16 +39,16 @@ export function semesterFilter(year: number, semester: number): { year?: number,
 }
 
 export function orderFilter(order: string[]) {
-  const orderFilter = {};
+  const orderFilter: { [key: string]: string }[] = [];
   order.forEach((orderList) => {
     const orderDict: { [key: string]: string } = {};
-    let order = "asc";
-    const orderBy = orderList.split("-");
-    if (orderBy[0] == "") {
-      order = "desc";
+    let order = 'asc';
+    const orderBy = orderList.split('-');
+    if (orderBy[0] == '') {
+      order = 'desc';
     }
     orderDict[orderBy[orderBy.length - 1]] = order;
-    Object.assign(orderFilter, orderDict);
+    orderFilter.push(orderDict);
   });
   return orderFilter;
 }

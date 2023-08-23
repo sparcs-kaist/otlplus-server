@@ -6,7 +6,7 @@ import { TimetableCreateDto, TimetableQueryDto } from "../../common/interfaces/d
 import { toJsonTimetable } from "../../common/interfaces/serializer/timetable.serializer";
 import { LecturesService } from "../lectures/lectures.service";
 
-@Controller("users/:userId/timetables")
+@Controller("/api/users/:userId/timetables")
 export class TimetablesController {
 
   constructor(

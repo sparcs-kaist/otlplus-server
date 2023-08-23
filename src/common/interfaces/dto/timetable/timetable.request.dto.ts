@@ -1,4 +1,4 @@
-import { Transform } from "class-transformer";
+import { Transform, Type } from "class-transformer";
 import { IsArray, IsNumber, IsOptional, IsString, Min, ValidateBy } from "class-validator";
 import {
   _PROHIBITED_FIELD_PATTERN,
@@ -10,12 +10,14 @@ export const TIMETABLE_MAX_LIMIT = 50;
 
 export class TimetableQueryDto {
 
-  @IsNumber()
   @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
   year?: number
 
-  @IsNumber()
   @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
   semester?: number
 
   @InverseRegexValidator(_PROHIBITED_FIELD_PATTERN)
