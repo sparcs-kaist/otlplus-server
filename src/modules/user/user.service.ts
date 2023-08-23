@@ -37,7 +37,7 @@ export class UserService {
     const specializedMajorsPromise = this.departmentRepository.getSpecializedMajors(user)
     const reviewWritableLecturesPromise = this.lectureRepository.findReviewWritableLectures(user, new Date())
     const takenLecturesPromise = this.lectureRepository.getTakenLectures(user)
-    const writtenReviewsPromise: ReviewDetails[] = await this.reviewRepository.findReviewByUser(user)
+    const writtenReviewsPromise = this.reviewRepository.findReviewByUser(user)
     promises.push(departmentPromise, favoriteDepartmentsPromise, majorsPromise, minorsPromise, specializedMajorsPromise,reviewWritableLecturesPromise,takenLecturesPromise,writtenReviewsPromise);
     const [department, favoriteDepartments, majors, minors, specializedMajors, reviewWritableLectures, takenLectures, writtenReviews] = await Promise.all(promises);
     const departments =  Object.values<subject_department>(normalizeArray<subject_department>([...majors, ...minors, ...specializedMajors, ...favoriteDepartments])) ?? [department];

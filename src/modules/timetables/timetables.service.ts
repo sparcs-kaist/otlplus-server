@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { TimetableRepository } from "../../prisma/repositories/timetable.repository";
 import { session_userprofile } from "@prisma/client";
 import {
@@ -9,10 +9,12 @@ import {
 import { orderFilter, validateYearAndSemester } from "../../common/utils/search.utils";
 import { SemesterRepository } from "../../prisma/repositories/semester.repository";
 import { LectureRepository } from "../../prisma/repositories/lecture.repository";
+import { PrismaService } from "../../prisma/prisma.service";
 
 @Injectable()
 export class TimetablesService {
   constructor(
+    private readonly prismaService: PrismaService,
     private readonly timetableRepository: TimetableRepository,
     private readonly lectureRepository: LectureRepository,
     private readonly semesterRepository: SemesterRepository
@@ -31,6 +33,11 @@ export class TimetablesService {
 
     const timetables = await this.timetableRepository.getTimetables(user, year, semester, paginationAndSorting);
     return timetables;
+  }
+
+  async getTimetable(timetableId: number) {
+    const timeTable = await this.timetableRepository.getTimeTableById(timetableId);
+    return timeTable;
   }
 
   async createTimetable(timeTableBody: TimetableCreateDto, user: session_userprofile) {
@@ -78,13 +85,37 @@ export class TimetablesService {
     const lectureId = body.lecture;
     const lecture = await this.lectureRepository.getLectureBasicById(lectureId);
     const timetable = await this.timetableRepository.getTimeTableBasicById(timeTableId);
-    if(!lecture){
-      throw new BadRequestException("Wrong field \\'lecture\\' in request data")
+    if (!lecture) {
+      throw new BadRequestException("Wrong field \\'lecture\\' in request data");
     }
-    if( !(lecture.year == timetable.year && lecture.semester == timetable.semester)){
-      throw new BadRequestException("Wrong field \\'lecture\\' in request data")
+    if (!(lecture.year == timetable.year && lecture.semester == timetable.semester)) {
+      throw new BadRequestException("Wrong field \\'lecture\\' in request data");
     }
     await this.timetableRepository.removeLectureFromTimetable(timeTableId, lectureId);
-    return await this.timetableRepository.getTimeTableById(timeTableId)
+    return await this.timetableRepository.getTimeTableById(timeTableId);
   }
+
+
+  async deleteTimetable(user, timetableId: number) {
+    return await this.prismaService.$transaction(async (tx) => {
+      const timeTable = await this.getTimetable(timetableId);
+      const semester = timeTable.semester;
+      const year = timeTable.year;
+      const arrangeOrder = timeTable.arrange_order;
+      if (!timeTable) {
+        return new NotFoundException();
+      }
+      await this.timetableRepository.deleteById(timetableId);
+      const relatedTimeTables = await this.timetableRepository.getTimetables(user, year, semester);
+      const timeTablesToBeUpdated = relatedTimeTables.filter((timeTable) => timeTable.arrange_order > arrangeOrder)
+        .map((timeTable) => {
+          return { id: timeTable.id, arrange_order: timeTable.arrange_order - 1 };
+        });
+      await Promise.all(timeTablesToBeUpdated.map(async (updateElem) => {
+          return this.timetableRepository.updateOrder(updateElem.id, updateElem.arrange_order);
+        })
+      );
+    })
+  }
+
 }

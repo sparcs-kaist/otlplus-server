@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma.service";
-import { Prisma, session_userprofile } from "@prisma/client";
+import { Prisma, PrismaClient, session_userprofile } from "@prisma/client";
 import {
   lectureDetails,
   LectureDetails,
@@ -16,9 +16,9 @@ export class TimetableRepository{
 
   async getTimetables( user: session_userprofile, year?: number, semester?: number, paginationAndSorting?: {orderBy?: Prisma.timetable_timetableOrderByWithRelationInput[], skip?: number, take?: number}): Promise<TimeTableDetails[]> {
 
-    const skip = paginationAndSorting.skip;
-    const take = paginationAndSorting.take;
-    const orderBy = paginationAndSorting.orderBy;
+    const skip = paginationAndSorting?.skip;
+    const take = paginationAndSorting?.take;
+    const orderBy = paginationAndSorting?.orderBy;
 
     return await this.prisma.timetable_timetable.findMany({
       include: timeTableDetails.include,
@@ -104,6 +104,34 @@ export class TimetableRepository{
           timetable_id: timeTableId,
           lecture_id: lectureId,
         }
+      }
+    })
+  }
+
+  async deleteById(timetableId: number, tx?: PrismaClient ) {
+    let prismaClient: PrismaClient = this.prisma;
+    if(tx){
+      prismaClient = tx;
+    }
+    await prismaClient.timetable_timetable_lectures.deleteMany({
+      where:{
+        timetable_id: timetableId
+      }
+    })
+    return await prismaClient.timetable_timetable.delete({
+      where:{
+        id: timetableId
+      }
+    })
+  }
+
+  async updateOrder(id: number, arrange_order: number) {
+    return await this.prisma.timetable_timetable.update({
+      where:{
+        id: id
+      },
+      data:{
+        arrange_order: arrange_order
       }
     })
   }
