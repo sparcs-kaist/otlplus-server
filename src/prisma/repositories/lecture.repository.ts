@@ -5,7 +5,7 @@ import { groupBy } from "../../common/utils/method.utils";
 import { LectureQueryDto } from "src/common/interfaces/dto/lecture/lecture.request.dto";
 import { CourseRepository } from "./course.repository";
 import { applyOrder, applyOffset } from "src/common/utils/search.utils";
-import { LectureDetails } from "../../common/schemaTypes/types";
+import { lectureDetails, LectureDetails } from "../../common/schemaTypes/types";
 
 @Injectable()
 export class LectureRepository {
@@ -16,14 +16,20 @@ export class LectureRepository {
 
   async getLectureById(id: number): Promise<LectureDetails> {
     return await this.prisma.subject_lecture.findUnique({
-      include: {
-        subject_department: true,
-        subject_lecture_professors: { include: { professor: true } },
-        subject_classtime: true,
-        subject_examtime: true,
-      },
+      include: lectureDetails.include,
       where: {
         id: id
+      }
+    });
+  }
+
+  async getLectureByIds(ids: number[]): Promise<LectureDetails[]>{
+    return await this.prisma.subject_lecture.findMany({
+      include: lectureDetails.include,
+      where: {
+        id: {
+          in: ids
+        }
       }
     });
   }

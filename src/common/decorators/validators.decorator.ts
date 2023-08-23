@@ -10,6 +10,7 @@ export function RegexValidator(
   regexExps: RegExp[],
   validationOptions?: { message?: string }
 ) {
+  // eslint-disable-next-line @typescript-eslint/ban-types
   return function(object: Object, propertyName: string) {
     registerDecorator({
       name: "regexValidator",
@@ -18,16 +19,10 @@ export function RegexValidator(
       options: validationOptions,
       constraints: regexExps,
       validator: {
-        validate(value: string[], args: ValidationArguments) {
-          const results = value.map((v) => {
-            if (typeof value !== "string") return false;
-            const regexExps = args.constraints;
-            for (const regexExp of regexExps) {
-              if (!regexExp.test(value)) return false;
-            }
-            return true;
+        validate(order: string[], args: ValidationArguments): boolean {
+          return order.every((o) => {
+            return regexExps.every((p) => p.test(o));
           });
-          return results.every((v) => v === true);
         },
 
         defaultMessage(validationArguments?: ValidationArguments): string {
@@ -42,6 +37,7 @@ export function InverseRegexValidator(
   regexExps: RegExp[],
   validationOptions?: { message?: string }
 ) {
+  // eslint-disable-next-line @typescript-eslint/ban-types
   return function(object: Object, propertyName: string) {
     registerDecorator({
       name: "regexValidator",
@@ -50,16 +46,10 @@ export function InverseRegexValidator(
       constraints: regexExps,
       options: validationOptions,
       validator: {
-        validate(value: string[], args: ValidationArguments) {
-          const results = value.map((v) => {
-            if (typeof v !== "string") return false;
-            const regexExps: RegExp[] = args.constraints;
-            for (const regexExp of regexExps) {
-              if (regexExp.test(v)) return false;
-            }
-            return true;
+        validate(order: string[], args: ValidationArguments): boolean {
+          return order.every((o) => {
+            return regexExps.every((p) => !p.test(o));
           });
-          return !results.some((v) => v === false);
         },
 
         defaultMessage(validationArguments?: ValidationArguments): string {

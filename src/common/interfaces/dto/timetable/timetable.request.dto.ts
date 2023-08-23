@@ -1,5 +1,5 @@
 import { Transform } from "class-transformer";
-import { IsNumber, IsOptional, IsString, Min, ValidateBy } from "class-validator";
+import { IsArray, IsNumber, IsOptional, IsString, Min, ValidateBy } from "class-validator";
 import {
   _PROHIBITED_FIELD_PATTERN,
   InverseRegexValidator,
@@ -8,7 +8,7 @@ import {
 
 export const TIMETABLE_MAX_LIMIT = 50;
 
-export class TimeTableQueryDto {
+export class TimetableQueryDto {
 
   @IsNumber()
   @IsOptional()
@@ -19,8 +19,10 @@ export class TimeTableQueryDto {
   semester?: number
 
   @InverseRegexValidator(_PROHIBITED_FIELD_PATTERN)
-  @IsString()
   @IsOptional()
+  @Transform(({value}) => typeof value === 'string' ? [value] : value)
+  @IsArray()
+  @IsString({each: true})
   order?: string[]
 
   @IsOptional()
@@ -32,4 +34,16 @@ export class TimeTableQueryDto {
   @Transform(({ value }) => value ?? TIMETABLE_MAX_LIMIT)
   @IsNumber()
   limit?: number
+}
+
+export class TimetableCreateDto {
+  @IsNumber()
+  year: number;
+
+  @IsNumber()
+  semester: number;
+
+  @IsArray()
+  @IsNumber({},{each: true})
+  lectures: number[]
 }
