@@ -11,7 +11,7 @@ import {
 } from 'class-validator';
 import { CourseResponseDto } from '../course/course.response.dto';
 import { StringStripLength } from '../../../decorators/reviews.request.validators';
-import { OmitType, PartialType } from "@nestjs/swagger";
+import { ApiProperty, OmitType, PartialType } from "@nestjs/swagger";
 import { _PROHIBITED_FIELD_PATTERN, OrderDefaultValidator } from 'src/common/decorators/request-ordervalidator.decorator';
 export class ReviewQueryDto {
   @IsOptional()
@@ -45,16 +45,19 @@ export class ReviewQueryDto {
 }
 
 export class ReviewCreateDto {
+  @ApiProperty()
   @IsString()
   @IsNotEmpty()
   @Validate(StringStripLength)
   content: string;
 
+  @ApiProperty()
   @IsNumber()
   @IsNotEmpty()
   @Type(() => Number)
   lecture: number;
 
+  @ApiProperty()
   @IsNumber()
   @IsNotEmpty()
   @Min(1)
@@ -62,6 +65,7 @@ export class ReviewCreateDto {
   @Type(() => Number)
   grade: number;
 
+  @ApiProperty()
   @IsNumber()
   @IsNotEmpty()
   @Min(1)
@@ -69,6 +73,7 @@ export class ReviewCreateDto {
   @Type(() => Number)
   load: number;
 
+  @ApiProperty()
   @IsNumber()
   @IsNotEmpty()
   @Min(1)

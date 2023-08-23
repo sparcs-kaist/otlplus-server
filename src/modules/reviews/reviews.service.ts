@@ -68,16 +68,16 @@ export class ReviewsService {
   }
 
   async getReviewsCount(
-    lecture_year: number,
-    lecture_semester: number,
+    lectureYear: number,
+    lectureSemester: number,
   ): Promise<number> {
     return await this.reviewsRepository.getReviewsCount(
-      lecture_year,
-      lecture_semester,
+      lectureYear,
+      lectureSemester,
     );
   }
 
-  async postReviews(
+  async createReviews(
     reviewsBody: ReviewCreateDto,
     user: session_userprofile,
   ): Promise<ReviewResponseDto & { userspecific_is_liked: boolean }> {
@@ -113,7 +113,7 @@ export class ReviewsService {
     }
   }
 
-  async patchReviewById(
+  async updateReviewById(
     reviewId: number,
     user: session_userprofile,
     reviewBody: ReviewUpdateDto,
@@ -124,14 +124,14 @@ export class ReviewsService {
       throw new HttpException("Can't find user", 401);
     if (review.is_deleted)
       throw new HttpException('Target review deleted by admin',HttpStatus.BAD_REQUEST);
-    const patchReview = await this.reviewsRepository.patchReview(
+    const updateReview = await this.reviewsRepository.updateReview(
       review.id,
       reviewBody.content,
       reviewBody.grade,
       reviewBody.load,
-      reviewBody.speech
+      reviewBody.speech,
     );
-    const result = toJsonReview(patchReview);
+    const result = toJsonReview(updateReview);
     if (user) {
       const isLiked: boolean = await this.reviewsRepository.isLiked(
         review.id,

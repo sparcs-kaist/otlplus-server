@@ -1,6 +1,5 @@
 import { Body, Controller, Get, HttpException, Post, Query, Param, Patch} from '@nestjs/common';
 import { ReviewQueryDto, ReviewUpdateDto, ReviewCreateDto } from "src/common/interfaces/dto/reviews/reviews.request.dto";
-import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
 import { ReviewsService } from './reviews.service';
 import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
@@ -28,12 +27,12 @@ export class ReviewsController {
   }
 
   @Post()
-  async postReviews(
+  async createReviews(
     @Body() reviewsBody: ReviewCreateDto,
     @GetUser() user: session_userprofile,
   ): Promise<ReviewResponseDto & { userspecific_is_liked: boolean }> {
     if (user) {
-      const result = await this.reviewsService.postReviews(reviewsBody, user);
+      const result = await this.reviewsService.createReviews(reviewsBody, user);
       return result;
     } else {
       throw new HttpException("Can't find user", 401);
@@ -49,13 +48,13 @@ export class ReviewsController {
   }
 
   @Patch(':reviewId')
-  async patchReviewInstance(
+  async updateReviewInstance(
     @Body() reviewsBody: ReviewUpdateDto,
     @Param('reviewId') reviewId: number,
     @GetUser() user: session_userprofile,
   ): Promise<ReviewResponseDto & { userspecific_is_liked: boolean }> {
     if (user) {
-      return await this.reviewsService.patchReviewById(reviewId, user, reviewsBody);
+      return await this.reviewsService.updateReviewById(reviewId, user, reviewsBody);
     } else {
       throw new HttpException("Can't find user", 401);
     }

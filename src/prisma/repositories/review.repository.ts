@@ -136,19 +136,19 @@ export class ReviewsRepository {
     }));
   }
   public async getReviewsCount(
-    lecture_year: number,
-    lecture_semester: number,
+    lectureYear: number,
+    lectureSemester: number,
   ): Promise<number> {
-    let lecture_filter: object = {};
-    if (lecture_year) {
-      lecture_filter = { ...lecture_filter, year: lecture_year };
+    let lectureFilter: object = {};
+    if (lectureYear) {
+      lectureFilter = { ...lectureFilter, year: lectureYear };
     }
-    if (lecture_semester) {
-      lecture_filter = { ...lecture_filter, semester: lecture_semester };
+    if (lectureSemester) {
+      lectureFilter = { ...lectureFilter, semester: lectureSemester };
     }
     const reviewsCount = await this.prisma.review_review.count({
       where: {
-        lecture: lecture_filter,
+        lecture: lectureFilter,
       },
       distinct: [
         'id',
@@ -169,7 +169,6 @@ export class ReviewsRepository {
     return reviewsCount;
   }
 
-  // todo: patch도 동일한 함수 쓰게끔
   async upsertReview(
     courseId: number,
     lectureId: number,
@@ -217,13 +216,13 @@ export class ReviewsRepository {
     });
   }
 
-  async patchReview(
+  async updateReview(
     reviewId: number,
-    content:string,
+    content: string,
     grade: number,
     load: number,
     speech: number,
-  ):Promise<ReviewDetails>{
+  ): Promise<ReviewDetails> {
     return await this.prisma.review_review.update({
       where: {
         id: reviewId,
@@ -232,7 +231,7 @@ export class ReviewsRepository {
         content: content,
         grade: grade,
         load: load,
-        speech: speech
+        speech: speech,
       },
       include: {
         course: {
