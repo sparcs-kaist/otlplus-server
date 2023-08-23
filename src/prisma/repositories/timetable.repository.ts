@@ -96,4 +96,15 @@ export class TimetableRepository{
       }
     });
   }
+
+  async removeLectureFromTimetable(timeTableId: number, lectureId: number) {
+    return await this.prisma.timetable_timetable_lectures.delete({
+      where:{
+        timetable_id_lecture_id: {
+          timetable_id: timeTableId,
+          lecture_id: lectureId,
+        }
+      }
+    })
+  }
 }

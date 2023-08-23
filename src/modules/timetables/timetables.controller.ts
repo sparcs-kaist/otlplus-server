@@ -45,4 +45,13 @@ export class TimetablesController {
     return toJsonTimetable(timeTable);
   }
 
+  @Post('/:timetableId/remove-lecture')
+  async removeLectureFromTimetable(
+    @Param('timetableId') timetableId: number,
+    @Body() body: AddLectureDto,
+  ){
+    const timeTable = await this.timetablesService.removeLectureFromTimetable(timetableId, body);
+    return toJsonTimetable(timeTable);
+  }
+
 }

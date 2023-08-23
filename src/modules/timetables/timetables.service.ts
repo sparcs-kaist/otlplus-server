@@ -73,4 +73,18 @@ export class TimetablesService {
     await this.timetableRepository.addLectureToTimetable(timeTableId, lectureId);
     return await this.timetableRepository.getTimeTableById(timeTableId)
   }
+
+  async removeLectureFromTimetable(timeTableId: number, body: AddLectureDto) {
+    const lectureId = body.lecture;
+    const lecture = await this.lectureRepository.getLectureBasicById(lectureId);
+    const timetable = await this.timetableRepository.getTimeTableBasicById(timeTableId);
+    if(!lecture){
+      throw new BadRequestException("Wrong field \\'lecture\\' in request data")
+    }
+    if( !(lecture.year == timetable.year && lecture.semester == timetable.semester)){
+      throw new BadRequestException("Wrong field \\'lecture\\' in request data")
+    }
+    await this.timetableRepository.removeLectureFromTimetable(timeTableId, lectureId);
+    return await this.timetableRepository.getTimeTableById(timeTableId)
+  }
 }
