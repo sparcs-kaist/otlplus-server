@@ -90,18 +90,10 @@ export class UserService {
       lastName: user.last_name,
       department: toJsonDepartment(department) ?? null,
       majors: majors.map((major) => toJsonDepartment(major)),
-      departments: departments.map((department) =>
-        toJsonDepartment(department),
-      ),
-      favorite_departments: favoriteDepartments.map((department) =>
-        toJsonDepartment(department),
-      ),
-      review_writeable_lectures: reviewWritableLectures.map((lecture) =>
-        toJsonLecture<false>(lecture, false),
-      ),
-      my_timetable_lectures: timeTableLectures.map((lecture) =>
-        toJsonLecture<false>(lecture, false),
-      ),
+      departments: departments.map((department) => toJsonDepartment(department)),
+      favorite_departments: favoriteDepartments.map((department) => toJsonDepartment(department)),
+      review_writable_lectures: reviewWritableLectures.map((lecture) => toJsonLecture<false>(lecture,false)),
+      my_timetable_lectures: timeTableLectures.map((lecture) => toJsonLecture<false>(lecture,false)),
       reviews: writtenReviews.map((review) => toJsonReview(review)),
     };
   }
