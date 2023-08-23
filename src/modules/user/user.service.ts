@@ -54,7 +54,7 @@ export class UserService {
       majors: majors.map((major) => toJsonDepartment(major)),
       departments: departments.map((department) => toJsonDepartment(department)),
       favorite_departments: favoriteDepartments.map((department) => toJsonDepartment(department)),
-      review_writeable_lectures: reviewWritableLectures.map((lecture) => toJsonLecture<false>(lecture,false)),
+      review_writable_lectures: reviewWritableLectures.map((lecture) => toJsonLecture<false>(lecture,false)),
       my_timetable_lectures: timeTableLectures.map((lecture) => toJsonLecture<false>(lecture,false)),
       reviews: writtenReviews.map((review) => toJsonReview(review)),
     }
