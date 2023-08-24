@@ -1,6 +1,7 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { LecturesService } from './lectures.service';
-import { LectureQueryDto } from 'src/common/interfaces/dto/lecture/lecture.request.dto';
+import { LectureQueryDto, LectureReviewsQueryDto } from 'src/common/interfaces/dto/lecture/lecture.request.dto';
+import { GetUser } from 'src/common/decorators/get-user.decorator';
 
 @Controller('api/lectures')
 export class LecturesController {
@@ -14,5 +15,10 @@ export class LecturesController {
   @Get(':id')
   async getLectureById(@Param('id') id: number) {
     return await this.LectureService.getLectureById(id);
+  }
+
+  @Get(':lectureId/reviews')
+  async getLectureReviews(@Query() query: LectureReviewsQueryDto, @Param('lectureId') lectureId:number, @GetUser() user):Promise<any>{
+    return await this.LectureService.getLectureReviews(user, lectureId, query);
   }
 }

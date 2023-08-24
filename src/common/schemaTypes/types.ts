@@ -36,6 +36,18 @@ const reviewDetails = Prisma.validator<Prisma.review_reviewArgs>()({
   }
 });
 
+const lectureReviews = Prisma.validator<Prisma.subject_lectureArgs>()({
+  include: {
+    review: {
+      include: {
+        course: courseDetails,
+        lecture: lectureDetails,
+      },
+    },
+  },
+});
+
+export type LectureReview = Prisma.subject_lectureGetPayload<typeof lectureReviews>
 export type ReviewDetails = Prisma.review_reviewGetPayload<typeof reviewDetails>
 export type LectureDetails = Prisma.subject_lectureGetPayload<typeof lectureDetails>
 export type CourseDetails = Prisma.subject_courseGetPayload<typeof courseDetails>
