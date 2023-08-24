@@ -10,10 +10,12 @@ import { JwtService } from '@nestjs/jwt';
 import { CoursesModule } from './modules/courses/courses.module';
 import { LecturesModule } from './modules/lectures/lectures.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
+import { SemestersModule } from "./modules/semesters/semesters.module";
+import { TimetablesModule } from "./modules/timetables/timetables.module";
 import { UserModule } from './modules/user/user.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, CoursesModule, LecturesModule,ReviewsModule,UserModule],
+  imports: [PrismaModule, AuthModule, CoursesModule, LecturesModule,ReviewsModule,UserModule, SemestersModule,TimetablesModule],
   controllers: [AppController],
   providers: [
     {

@@ -10,9 +10,12 @@ import {
   Validate,
 } from 'class-validator';
 import { CourseResponseDto } from '../course/course.response.dto';
-import { StringStripLength } from '../../../decorators/reviews.request.validators';
 import { ApiProperty, OmitType, PartialType } from "@nestjs/swagger";
-import { _PROHIBITED_FIELD_PATTERN, OrderDefaultValidator } from 'src/common/decorators/request-ordervalidator.decorator';
+import {
+  _PROHIBITED_FIELD_PATTERN,
+  OrderDefaultValidator,
+  StringStripLength
+} from "../../../decorators/validators.decorator";
 export class ReviewQueryDto {
   @IsOptional()
   @IsNumber()

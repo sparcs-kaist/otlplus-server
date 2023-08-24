@@ -6,6 +6,7 @@ import { LectureResponseDto } from 'src/common/interfaces/dto/lecture/lecture.re
 import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
 import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
 import { session_userprofile } from '@prisma/client';
+import { LectureDetails } from "../../common/schemaTypes/types";
 
 @Injectable()
 export class LecturesService {
@@ -58,5 +59,9 @@ export class LecturesService {
         }
       }),
     );
+    }
+  
+  public async getLecturesByIds(ids: number[]): Promise<LectureDetails[]> {
+    return await this.LectureRepository.getLectureByIds(ids);
   }
 }
