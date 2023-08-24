@@ -1,5 +1,5 @@
 import { IsArray, IsOptional, Validate } from "class-validator";
-import { OrderDefaultValidator } from "../reviews/validators";
+import { OrderDefaultValidator } from "../../../decorators/validators.decorator";
 
 export class UserTakenCoursesQueryDto {
   @IsOptional()

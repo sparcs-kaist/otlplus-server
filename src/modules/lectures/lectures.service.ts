@@ -3,6 +3,7 @@ import { LectureRepository } from './../../prisma/repositories/lecture.repositor
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { toJsonLecture } from 'src/common/interfaces/serializer/lecture.serializer';
 import { LectureResponseDto } from 'src/common/interfaces/dto/lecture/lecture.response.dto';
+import { LectureDetails } from "../../common/schemaTypes/types";
 
 @Injectable()
 export class LecturesService {
@@ -19,5 +20,9 @@ export class LecturesService {
       throw new NotFoundException();
     }
     return toJsonLecture<false>(queryResult, false);
+  }
+
+  public async getLecturesByIds(ids: number[]): Promise<LectureDetails[]> {
+    return await this.LectureRepository.getLectureByIds(ids);
   }
 }
