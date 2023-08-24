@@ -7,10 +7,14 @@ import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer
 import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
 import { session_userprofile } from '@prisma/client';
 import { LectureDetails } from "../../common/schemaTypes/types";
+import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
 
 @Injectable()
 export class LecturesService {
-  constructor(private LectureRepository: LectureRepository, private reviewsRepository: ReviewsRepository) {}
+  constructor(
+    private LectureRepository: LectureRepository,
+    private reviewsRepository: ReviewsRepository,
+  ) {}
 
   public async getLectureByFilter(
     query: LectureQueryDto,
@@ -31,7 +35,7 @@ export class LecturesService {
     user: session_userprofile,
     lectureId: number,
     query: LectureReviewsQueryDto,
-  ):Promise<any>{
+  ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })[]> {
     const MAX_LIMIT = 100;
     const DEFAULT_ORDER = ['-written_datetime', '-id'];
     const lecture = await this.LectureRepository.getLectureReviewsById(
@@ -59,8 +63,8 @@ export class LecturesService {
         }
       }),
     );
-    }
-  
+  }
+
   public async getLecturesByIds(ids: number[]): Promise<LectureDetails[]> {
     return await this.LectureRepository.getLectureByIds(ids);
   }
