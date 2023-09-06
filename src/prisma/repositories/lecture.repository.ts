@@ -5,7 +5,7 @@ import { groupBy } from "../../common/utils/method.utils";
 import { LectureQueryDto } from "src/common/interfaces/dto/lecture/lecture.request.dto";
 import { CourseRepository } from "./course.repository";
 import { applyOrder, applyOffset } from "src/common/utils/search.utils";
-import { LectureBasic, lectureDetails, LectureDetails, LectureReview } from "../../common/schemaTypes/types";
+import { LectureBasic, lectureDetails, LectureDetails, LectureReviewDetails } from "../../common/schemaTypes/types";
 
 @Injectable()
 export class LectureRepository {
@@ -25,7 +25,7 @@ export class LectureRepository {
 
   async getLectureReviewsById(id: number,order: string[],
     offset: number,
-    limit: number): Promise<LectureReview> {
+    limit: number): Promise<LectureReviewDetails> {
     const orderFilter: { [key: string]: string }[] = [];
     order.forEach((orderList) => {
       const orderDict: { [key: string]: string } = {};

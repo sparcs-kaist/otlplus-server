@@ -3,6 +3,7 @@ import { LecturesService } from './lectures.service';
 import { LectureQueryDto, LectureReviewsQueryDto } from 'src/common/interfaces/dto/lecture/lecture.request.dto';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
+import { Public } from 'src/common/decorators/skip-auth.decorator';
 
 @Controller('api/lectures')
 export class LecturesController {
@@ -18,6 +19,7 @@ export class LecturesController {
     return await this.LectureService.getLectureById(id);
   }
 
+  @Public()
   @Get(':lectureId/reviews')
   async getLectureReviews(
     @Query() query: LectureReviewsQueryDto,

@@ -4,10 +4,12 @@ import { ReviewsService } from './reviews.service';
 import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { session_userprofile } from '@prisma/client';
+import { Public } from 'src/common/decorators/skip-auth.decorator';
 
 @Controller('api/reviews')
 export class ReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}
+  @Public()
   @Get()
   async getReviews(
     @Query() reviewsParam: ReviewQueryDto,
@@ -39,6 +41,7 @@ export class ReviewsController {
     }
   }
 
+  @Public()
   @Get(':reviewId')
   async getReviewInstance(
     @Param('reviewId') reviewId: number,
@@ -54,7 +57,11 @@ export class ReviewsController {
     @GetUser() user: session_userprofile,
   ): Promise<ReviewResponseDto & { userspecific_is_liked: boolean }> {
     if (user) {
-      return await this.reviewsService.updateReviewById(reviewId, user, reviewsBody);
+      return await this.reviewsService.updateReviewById(
+        reviewId,
+        user,
+        reviewsBody,
+      );
     } else {
       throw new HttpException("Can't find user", 401);
     }

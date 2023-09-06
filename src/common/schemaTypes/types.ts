@@ -57,7 +57,7 @@ const lectureReviews = Prisma.validator<Prisma.subject_lectureArgs>()({
   },
 });
 
-export type LectureReview = Prisma.subject_lectureGetPayload<typeof lectureReviews>
+export type LectureReviewDetails = Prisma.subject_lectureGetPayload<typeof lectureReviews>
 export type ReviewDetails = Prisma.review_reviewGetPayload<typeof reviewDetails>
 export type LectureDetails = Prisma.subject_lectureGetPayload<typeof lectureDetails>
 export type LectureBasic = Prisma.subject_lectureGetPayload<null>
