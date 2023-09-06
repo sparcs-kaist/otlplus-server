@@ -1,6 +1,9 @@
 import { Transform } from "class-transformer";
 import { IsArray, IsOptional, IsString, Validate } from "class-validator";
-import { OrderDefaultValidator, _PROHIBITED_FIELD_PATTERN } from "src/common/decorators/request-ordervalidator.decorator";
+import {
+  OrderDefaultValidator,
+  _PROHIBITED_FIELD_PATTERN,
+} from 'src/common/decorators/validators.decorator';
 
 export class UserTakenCoursesQueryDto {
   @IsOptional()

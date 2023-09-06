@@ -1,7 +1,7 @@
-import { OrderDefaultValidator, _PROHIBITED_FIELD_PATTERN } from 'src/common/decorators/request-ordervalidator.decorator';
 import { IsArray, IsNumber, IsNumberString, IsOptional, IsString } from "class-validator";
 import { Transform, Type } from "class-transformer";
 import { CourseQueryDto } from "../course/course.request.dto";
+import { OrderDefaultValidator, _PROHIBITED_FIELD_PATTERN } from "src/common/decorators/validators.decorator";
 
 export class LectureQueryDto extends CourseQueryDto{
 

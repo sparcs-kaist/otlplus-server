@@ -57,6 +57,7 @@ export class LectureRepository {
                 subject_examtime: true,
               },
             },
+            review_reviewvote: true,
           },
           orderBy: orderFilter,
           skip: offset,
