@@ -1,5 +1,5 @@
-import { CourseResponseDto } from "../course/course.response.dto";
-import { LectureResponseDto } from "../lecture/lecture.response.dto";
+import { CourseResponseDto } from '../course/course.response.dto';
+import { LectureResponseDto } from '../lecture/lecture.response.dto';
 
 export class ReviewResponseDto {
   id: number;
@@ -11,4 +11,5 @@ export class ReviewResponseDto {
   grade: number;
   load: number;
   speech: number;
+  userspecific_is_liked: boolean;
 }

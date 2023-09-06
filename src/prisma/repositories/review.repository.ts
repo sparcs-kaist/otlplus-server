@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { session_userprofile } from "@prisma/client";
+import { session_userprofile } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
-import { ReviewDetails } from "../../common/schemaTypes/types";
+import { ReviewDetails } from '../../common/schemaTypes/types';
 
 @Injectable()
 export class ReviewsRepository {
@@ -27,6 +27,7 @@ export class ReviewsRepository {
             subject_examtime: true,
           },
         },
+        review_reviewvote: true,
       },
     });
     return reviews;
@@ -52,6 +53,7 @@ export class ReviewsRepository {
             subject_examtime: true,
           },
         },
+        review_reviewvote: true,
       },
     });
   }
@@ -101,6 +103,7 @@ export class ReviewsRepository {
             subject_examtime: true,
           },
         },
+        review_reviewvote: true,
       },
       skip: offset,
       take: limit,
@@ -212,6 +215,7 @@ export class ReviewsRepository {
             subject_examtime: true,
           },
         },
+        review_reviewvote: true,
       },
     });
   }
@@ -250,6 +254,7 @@ export class ReviewsRepository {
             subject_examtime: true,
           },
         },
+        review_reviewvote: true,
       },
     });
   }
