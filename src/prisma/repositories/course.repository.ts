@@ -1,8 +1,17 @@
-import { Injectable } from "@nestjs/common";
-import { PrismaService } from "../prisma.service";
-import { applyOrder, applyOffset } from "src/common/utils/search.utils";
-import { CourseDetails, LectureDetails } from "../../common/schemaTypes/types";
-import { session_userprofile } from "@prisma/client";
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma.service';
+import {
+  applyOrder,
+  applyOffset,
+  orderFilter,
+} from 'src/common/utils/search.utils';
+import {
+  CourseDetails,
+  LectureDetails,
+  ReviewDetails,
+} from '../../common/schemaTypes/types';
+import { session_userprofile } from '@prisma/client';
+import { CourseReviewQueryDto } from 'src/common/interfaces/dto/course/course.review.request.dto';
 
 @Injectable()
 export class CourseRepository {
@@ -78,6 +87,39 @@ export class CourseRepository {
     );
     const order = query.order ? query.order : ['year', 'semester', 'class_no'];
     return applyOrder<LectureDetails>(filteredLecture, order);
+  }
+
+  public async getReviewsByCourseId(
+    query: CourseReviewQueryDto,
+    id: number,
+  ): Promise<ReviewDetails[]> {
+    console.log(orderFilter(query.order));
+    const review = await this.prisma.review_review.findMany({
+      where: { course_id: id },
+      include: {
+        course: {
+          include: {
+            subject_department: true,
+            subject_course_professors: { include: { professor: true } },
+            lecture: true,
+            subject_courseuser: true,
+          },
+        },
+        lecture: {
+          include: {
+            subject_department: true,
+            subject_lecture_professors: { include: { professor: true } },
+            subject_classtime: true,
+            subject_examtime: true,
+          },
+        },
+        review_reviewvote: true,
+      },
+      take: query.limit,
+      skip: query.offset,
+      orderBy: orderFilter(query.order),
+    });
+    return review;
   }
 
   //@todo: optimize goal: 1.5s -> 0.5s, recommended: using cache
