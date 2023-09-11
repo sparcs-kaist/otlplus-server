@@ -1,39 +1,39 @@
-import { Transform, Type } from "class-transformer";
-import { IsArray, IsNumber, IsOptional, IsString, Min, ValidateBy } from "class-validator";
+import { Transform, Type } from 'class-transformer';
+import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
 import {
-  _PROHIBITED_FIELD_PATTERN, OrderDefaultValidator
-} from "../../../decorators/validators.decorator";
+  OrderDefaultValidator,
+  _PROHIBITED_FIELD_PATTERN,
+} from '../../../decorators/validators.decorator';
 
 export const TIMETABLE_MAX_LIMIT = 50;
 
 export class TimetableQueryDto {
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  year?: number;
 
   @IsOptional()
   @IsNumber()
   @Type(() => Number)
-  year?: number
-
-  @IsOptional()
-  @IsNumber()
-  @Type(() => Number)
-  semester?: number
+  semester?: number;
 
   @OrderDefaultValidator(_PROHIBITED_FIELD_PATTERN)
   @IsOptional()
-  @Transform(({value}) => typeof value === 'string' ? [value] : value)
+  @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
   @IsArray()
-  @IsString({each: true})
-  order?: string[]
+  @IsString({ each: true })
+  order?: string[];
 
   @IsOptional()
   @Transform(({ value }) => value ?? 0)
   @IsNumber()
-  offset?: number
+  offset?: number;
 
   @IsOptional()
   @Transform(({ value }) => value ?? TIMETABLE_MAX_LIMIT)
   @IsNumber()
-  limit?: number
+  limit?: number;
 }
 
 export class TimetableCreateDto {
@@ -44,12 +44,11 @@ export class TimetableCreateDto {
   semester: number;
 
   @IsArray()
-  @IsNumber({},{each: true})
-  lectures: number[]
+  @IsNumber({}, { each: true })
+  lectures: number[];
 }
 
-export class AddLectureDto{
-
+export class AddLectureDto {
   @IsNumber()
   @Type(() => Number)
   lecture: number;

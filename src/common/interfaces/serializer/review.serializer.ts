@@ -1,9 +1,9 @@
-import { toJsonCourse } from './course.serializer';
-import { ReviewResponseDto } from './../dto/reviews/review.response.dto';
-import { getRepresentativeLecture } from 'src/common/utils/lecture.utils';
-import { toJsonLecture } from './lecture.serializer';
-import { ReviewDetails } from '../../schemaTypes/types';
 import { session_userprofile } from '@prisma/client';
+import { getRepresentativeLecture } from 'src/common/utils/lecture.utils';
+import { ReviewDetails } from '../../schemaTypes/types';
+import { ReviewResponseDto } from './../dto/reviews/review.response.dto';
+import { toJsonCourse } from './course.serializer';
+import { toJsonLecture } from './lecture.serializer';
 
 export const toJsonReview = (
   review: ReviewDetails,

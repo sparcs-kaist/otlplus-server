@@ -1,10 +1,10 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { CoursesService } from './courses.service';
-import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { session_userprofile } from '@prisma/client';
-import { CourseQueryDto } from '../../common/interfaces/dto/course/course.request.dto';
+import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { Public } from 'src/common/decorators/skip-auth.decorator';
 import { CourseReviewQueryDto } from 'src/common/interfaces/dto/course/course.review.request.dto';
+import { CourseQueryDto } from '../../common/interfaces/dto/course/course.request.dto';
+import { CoursesService } from './courses.service';
 
 @Controller('api/courses')
 export class CourseController {

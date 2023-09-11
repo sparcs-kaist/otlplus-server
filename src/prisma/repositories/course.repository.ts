@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma.service';
+import { CourseReviewQueryDto } from 'src/common/interfaces/dto/course/course.review.request.dto';
 import {
-  applyOrder,
   applyOffset,
+  applyOrder,
   orderFilter,
 } from 'src/common/utils/search.utils';
 import {
@@ -10,8 +10,7 @@ import {
   LectureDetails,
   ReviewDetails,
 } from '../../common/schemaTypes/types';
-import { session_userprofile } from '@prisma/client';
-import { CourseReviewQueryDto } from 'src/common/interfaces/dto/course/course.review.request.dto';
+import { PrismaService } from '../prisma.service';
 
 @Injectable()
 export class CourseRepository {

@@ -1,3 +1,3 @@
-import { SemesterBasic } from "../../../schemaTypes/types";
+import { SemesterBasic } from '../../../schemaTypes/types';
 
-export type SemesterResponseDto = Omit<SemesterBasic,'id'>
+export type SemesterResponseDto = Omit<SemesterBasic, 'id'>;

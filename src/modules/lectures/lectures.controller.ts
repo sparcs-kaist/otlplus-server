@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { LecturesService } from './lectures.service';
 import { LectureQueryDto } from 'src/common/interfaces/dto/lecture/lecture.request.dto';
+import { LecturesService } from './lectures.service';
 
 @Controller('api/lectures')
 export class LecturesController {

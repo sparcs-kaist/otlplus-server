@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
-import { PrismaService } from '../prisma.service';
 import { ReviewDetails } from '../../common/schemaTypes/types';
+import { PrismaService } from '../prisma.service';
 
 @Injectable()
 export class ReviewsRepository {

@@ -1,6 +1,6 @@
-import { PrismaService } from '../../prisma.service';
-import settings from '../../../settings';
 import { normalizeArray } from '../../../common/utils/method.utils';
+import settings from '../../../settings';
+import { PrismaService } from '../../prisma.service';
 
 async function main() {
   const ormConfig = settings().ormconfig();

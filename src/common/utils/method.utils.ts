@@ -5,47 +5,42 @@ export function normalizeArray<T>(
   defaultObj?: { [key: string]: T | undefined },
 ): { [key: string | number | symbol]: T | undefined } {
   const normalizeObj: { [key: string | number | symbol]: T | undefined } =
-    defaultObj || {}
+    defaultObj || {};
 
-  arr.forEach(data => {
-    const key = selector(data)
-    if (key !== null) normalizeObj[key] = data
-  })
+  arr.forEach((data) => {
+    const key = selector(data);
+    if (key !== null) normalizeObj[key] = data;
+  });
 
-  return normalizeObj
+  return normalizeObj;
 }
 
 export function groupBy<T>(
   arr: T[],
   selector: (item: T) => string | number | null = (item: any) => item.id,
 ) {
-  const map: Record<string, T[] | undefined> = {}
+  const map: Record<string, T[] | undefined> = {};
 
-  arr.forEach(data => {
-    const key = selector(data)
+  arr.forEach((data) => {
+    const key = selector(data);
     if (key !== null) {
       if (map[key]) {
-        map[key]!.push(data)
+        map[key]!.push(data);
       } else {
-        map[key] = [data]
+        map[key] = [data];
       }
     }
-  })
+  });
 
-  return map
+  return map;
 }
 
-type ValueType = string | number | boolean
-
+type ValueType = string | number | boolean;
 
 export type Union<
   T extends { [key: string]: ValueType } | ReadonlyArray<ValueType>,
-  > = T extends ReadonlyArray<ValueType>
+> = T extends ReadonlyArray<ValueType>
   ? T[number]
   : T extends { [key: string]: infer U }
-    ? U
-    : never
-
-
-
-
+  ? U
+  : never;

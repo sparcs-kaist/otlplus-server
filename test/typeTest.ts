@@ -1,6 +1,6 @@
-import settings from "../src/settings";
-import { PrismaService } from "../src/prisma/prisma.service";
-import { Prisma, session_userprofile } from "@prisma/client";
+import { Prisma, session_userprofile } from '@prisma/client';
+import { PrismaService } from '../src/prisma/prisma.service';
+import settings from '../src/settings';
 
 const ormSettings = settings().ormconfig();
 
@@ -26,11 +26,8 @@ async function findReviewByUserTest(user: session_userprofile) {
           subject_examtime: true,
         },
       },
-    }
-  })
+    },
+  });
 }
 
-
-
-type ReviewDetails = Prisma.PromiseReturnType<typeof findReviewByUserTest>
-
+type ReviewDetails = Prisma.PromiseReturnType<typeof findReviewByUserTest>;

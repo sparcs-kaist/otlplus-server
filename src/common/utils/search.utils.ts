@@ -1,4 +1,3 @@
-import { PrismaService } from '../../prisma/prisma.service';
 import { SemesterRepository } from '../../prisma/repositories/semester.repository';
 
 export function applyOrder<T>(query: T[], order_opt: string[]) {
