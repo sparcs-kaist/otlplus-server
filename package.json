@@ -8,7 +8,7 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "format": "prettier --write .",
     "format:check": "prettier --check .",
     "start:local": "NODE_ENV=local nest start --watch --config src/bootstrap/nest-cli.json",
     "start:dev": "NODE_ENV=dev nest start --config src/bootstrap/nest-cli.json",
