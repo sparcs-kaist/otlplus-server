@@ -81,9 +81,9 @@ export class CourseRepository {
         id: id,
       },
     });
-    const filteredLecture = course.lecture.filter(
-      (lecture) => !lecture.deleted,
-    );
+    const filteredLecture = course
+      ? course.lecture.filter((lecture) => !lecture.deleted)
+      : [];
     const order = query.order ? query.order : ['year', 'semester', 'class_no'];
     return applyOrder<LectureDetails>(filteredLecture, order);
   }
