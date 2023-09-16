@@ -38,18 +38,18 @@ export class TimetableQueryDto {
 
 export class TimetableCreateDto {
   @IsNumber()
-  year: number;
+  year!: number;
 
   @IsNumber()
-  semester: number;
+  semester!: number;
 
   @IsArray()
   @IsNumber({}, { each: true })
-  lectures: number[];
+  lectures!: number[];
 }
 
 export class AddLectureDto {
   @IsNumber()
   @Type(() => Number)
-  lecture: number;
+  lecture!: number;
 }
