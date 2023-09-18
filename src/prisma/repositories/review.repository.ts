@@ -33,8 +33,8 @@ export class ReviewsRepository {
     return reviews;
   }
 
-  async getReviewById(reviewId: number): Promise<ReviewDetails> {
-    return await this.prisma.review_review.findUnique({
+  async getReviewById(reviewId: number): Promise<ReviewDetails | null> {
+    const review = await this.prisma.review_review.findUnique({
       where: { id: reviewId },
       include: {
         course: {
@@ -56,13 +56,14 @@ export class ReviewsRepository {
         review_reviewvote: true,
       },
     });
+    return review ? review : null;
   }
   public async getReviews(
-    lecture_year: number,
-    lecture_semester: number,
     order: string[],
     offset: number,
     limit: number,
+    lecture_year?: number,
+    lecture_semester?: number,
   ): Promise<ReviewDetails[]> {
     let lectureFilter: object = {};
     const orderFilter: { [key: string]: string }[] = [];
@@ -139,8 +140,8 @@ export class ReviewsRepository {
     }));
   }
   public async getReviewsCount(
-    lectureYear: number,
-    lectureSemester: number,
+    lectureYear?: number,
+    lectureSemester?: number,
   ): Promise<number> {
     let lectureFilter: object = {};
     if (lectureYear) {
@@ -222,20 +223,20 @@ export class ReviewsRepository {
 
   async updateReview(
     reviewId: number,
-    content: string,
-    grade: number,
-    load: number,
-    speech: number,
+    content?: string,
+    grade?: number,
+    load?: number,
+    speech?: number,
   ): Promise<ReviewDetails> {
     return await this.prisma.review_review.update({
       where: {
         id: reviewId,
       },
       data: {
-        content: content,
-        grade: grade,
-        load: load,
-        speech: speech,
+        content,
+        grade,
+        load,
+        speech,
       },
       include: {
         course: {

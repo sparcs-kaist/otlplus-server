@@ -45,11 +45,11 @@ export class ReviewsService {
     const MAX_LIMIT = 50;
     const DEFAULT_ORDER = ['-written_datetime', '-id'];
     const reviews = await this.reviewsRepository.getReviews(
-      reviewsParam.lecture_year,
-      reviewsParam.lecture_semester,
       reviewsParam.order ?? DEFAULT_ORDER,
       reviewsParam.offset ?? 0,
       reviewsParam.limit ?? MAX_LIMIT,
+      reviewsParam.lecture_year,
+      reviewsParam.lecture_semester,
     );
     return await Promise.all(
       reviews.map(async (review) => {
@@ -72,8 +72,8 @@ export class ReviewsService {
   }
 
   async getReviewsCount(
-    lectureYear: number,
-    lectureSemester: number,
+    lectureYear?: number,
+    lectureSemester?: number,
   ): Promise<number> {
     return await this.reviewsRepository.getReviewsCount(
       lectureYear,
@@ -122,8 +122,10 @@ export class ReviewsService {
     user: session_userprofile,
     reviewBody: ReviewUpdateDto,
   ): Promise<ReviewResponseDto & { userspecific_is_liked: boolean }> {
+    const { content, grade, load, speech } = reviewBody;
+
     const review = await this.reviewsRepository.getReviewById(reviewId);
-    if (review == undefined) throw new HttpException("Can't find review", 404);
+    if (!review) throw new HttpException("Can't find review", 404);
     if (review.writer_id !== user.id)
       throw new HttpException("Can't find user", 401);
     if (review.is_deleted)
@@ -133,10 +135,10 @@ export class ReviewsService {
       );
     const updateReview = await this.reviewsRepository.updateReview(
       review.id,
-      reviewBody.content,
-      reviewBody.grade,
-      reviewBody.load,
-      reviewBody.speech,
+      content,
+      grade,
+      load,
+      speech,
     );
     const result = toJsonReview(updateReview);
     if (user) {
