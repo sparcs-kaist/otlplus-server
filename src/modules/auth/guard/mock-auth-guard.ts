@@ -2,6 +2,7 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
@@ -26,10 +27,15 @@ export class MockAuthGuard implements CanActivate {
     const sid = request.cookies['auth-cookie'];
     if (sid) {
       const user = await this.authService.findBySid(sid);
+      if (!user) {
+        throw new NotFoundException('user is not found');
+      }
+
       request['user'] = user;
       return this.determineAuth(context, true);
     } else {
       const accessToken = this.extractTokenFromCookie(request, 'accessToken');
+
       try {
         if (!accessToken) throw new Error('jwt expired');
         const payload = await this.jwtService.verify(accessToken, {
@@ -38,7 +44,7 @@ export class MockAuthGuard implements CanActivate {
         const user = this.authService.findBySid(payload.sid);
         request['user'] = user;
         return this.determineAuth(context, true);
-      } catch (e) {
+      } catch (e: any) {
         if (e.message === 'jwt expired') {
           try {
             const refreshToken = this.extractTokenFromCookie(
@@ -50,10 +56,16 @@ export class MockAuthGuard implements CanActivate {
               secret: settings().getJwtConfig().secret,
             });
             const user = await this.authService.findBySid(payload.sid);
-            if (await bcrypt.compare(refreshToken, user.refresh_token)) {
+            if (!user) {
+              throw new NotFoundException('user is not found');
+            }
+            if (
+              user.refresh_token &&
+              (await bcrypt.compare(refreshToken, user.refresh_token))
+            ) {
               const { accessToken, ...accessTokenOptions } =
                 this.authService.getCookieWithAccessToken(payload.sid);
-              request.res.cookie(
+              request.res?.cookie(
                 'accessToken',
                 accessToken,
                 accessTokenOptions,
