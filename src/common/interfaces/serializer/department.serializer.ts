@@ -5,12 +5,10 @@ export const toJsonDepartment = (
   department: subject_department,
   nested = false,
 ): DepartmentResponseDto => {
-  return department
-    ? {
-        id: department.id,
-        name: department.name,
-        name_en: department.name_en,
-        code: department.code,
-      }
-    : null;
+  return {
+    id: department.id,
+    name: department.name,
+    name_en: department.name_en ?? '',
+    code: department.code,
+  };
 };
