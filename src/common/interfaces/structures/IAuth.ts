@@ -12,4 +12,8 @@ export namespace IAuth {
   }
 
   export interface IResponse extends Response {}
+
+  export interface IJwtPayload {
+    sid: string;
+  }
 }
