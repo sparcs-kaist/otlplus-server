@@ -117,12 +117,7 @@ export class LectureRepository {
     user: session_userprofile,
     date?: Date,
   ): Promise<LectureDetails[]> {
-    let currDate;
-    if (!date) {
-      currDate = Date.now();
-    } else {
-      currDate = date;
-    }
+    const currDate = date ?? new Date();
     const notWritableSemesters = await this.prisma.subject_semester.findMany({
       where: {
         OR: [

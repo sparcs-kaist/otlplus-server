@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { IAuth } from 'src/common/interfaces/structures';
 import settings from '../../../settings';
 import { AuthService } from '../auth.service';
 
@@ -27,7 +28,7 @@ export class JwtCookieStrategy extends PassportStrategy(
     });
   }
 
-  async validate(payload) {
+  async validate(payload: IAuth.IJwtPayload) {
     return this.authService.findBySid(payload.sid);
   }
 }
