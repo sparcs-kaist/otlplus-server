@@ -34,7 +34,7 @@ export class ReviewsRepository {
   }
 
   async getReviewById(reviewId: number): Promise<ReviewDetails | null> {
-    const review = await this.prisma.review_review.findUnique({
+    return this.prisma.review_review.findUnique({
       where: { id: reviewId },
       include: {
         course: {
@@ -56,7 +56,6 @@ export class ReviewsRepository {
         review_reviewvote: true,
       },
     });
-    return review ? review : null;
   }
   public async getReviews(
     order: string[],

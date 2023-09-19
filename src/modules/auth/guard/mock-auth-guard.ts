@@ -2,6 +2,7 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -65,7 +66,13 @@ export class MockAuthGuard implements CanActivate {
             ) {
               const { accessToken, ...accessTokenOptions } =
                 this.authService.getCookieWithAccessToken(payload.sid);
-              request.res?.cookie(
+
+              if (!request.res) {
+                throw new InternalServerErrorException(
+                  'res property is not found in request',
+                );
+              }
+              request.res.cookie(
                 'accessToken',
                 accessToken,
                 accessTokenOptions,

@@ -122,8 +122,6 @@ export class ReviewsService {
     user: session_userprofile,
     reviewBody: ReviewUpdateDto,
   ): Promise<ReviewResponseDto & { userspecific_is_liked: boolean }> {
-    const { content, grade, load, speech } = reviewBody;
-
     const review = await this.reviewsRepository.getReviewById(reviewId);
     if (!review) throw new HttpException("Can't find review", 404);
     if (review.writer_id !== user.id)
@@ -135,10 +133,10 @@ export class ReviewsService {
       );
     const updateReview = await this.reviewsRepository.updateReview(
       review.id,
-      content,
-      grade,
-      load,
-      speech,
+      reviewBody.content,
+      reviewBody.grade,
+      reviewBody.load,
+      reviewBody.speech,
     );
     const result = toJsonReview(updateReview);
     if (user) {
