@@ -21,7 +21,7 @@ export class UserRepository {
   }
 
   async updateUser(
-    userId,
+    userId: number,
     user: Prisma.session_userprofileUpdateInput,
   ): Promise<session_userprofile> {
     return await this.prisma.session_userprofile.update({
