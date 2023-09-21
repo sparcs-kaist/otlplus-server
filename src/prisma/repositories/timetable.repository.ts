@@ -29,8 +29,8 @@ export class TimetableRepository {
     return await this.prisma.timetable_timetable.findMany({
       include: timeTableDetails.include,
       where: {
-        year: year,
-        semester: semester,
+        year: year ?? undefined,
+        semester: semester ?? undefined,
         user_id: user.id,
       },
       skip: skip,
