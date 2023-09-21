@@ -85,7 +85,10 @@ export class CourseRepository {
       ? course.lecture.filter((lecture) => !lecture.deleted)
       : [];
     const order = query.order ? query.order : ['year', 'semester', 'class_no'];
-    return applyOrder<LectureDetails>(filteredLecture, order);
+    return applyOrder<LectureDetails>(
+      filteredLecture,
+      order as (keyof LectureDetails)[],
+    );
   }
 
   public async getReviewsByCourseId(
@@ -142,14 +145,13 @@ export class CourseRepository {
     const groupFilter = this.groupFilter(group);
     const keywordFilter = this.keywordFilter(keyword);
     const term_filter = this.termFilter(term);
-    let filterList = [
+    const filterList: object[] = [
       departmentFilter,
       typeFilter,
       groupFilter,
       keywordFilter,
       term_filter,
-    ];
-    filterList = filterList.filter((filter) => filter !== null);
+    ].filter((filter): filter is object => filter !== null);
     const queryResult = await this.prisma.subject_course.findMany({
       include: {
         subject_department: true,
@@ -212,7 +214,9 @@ export class CourseRepository {
     } else if (types.includes('ETC')) {
       const unselected_types = Object.keys(this.TYPE_ACRONYMS)
         .filter((type) => !(type in types))
-        .map((type) => this.TYPE_ACRONYMS[type]);
+        .map(
+          (type) => this.TYPE_ACRONYMS[type as keyof typeof this.TYPE_ACRONYMS],
+        );
       return {
         type_en: {
           in: unselected_types,
@@ -221,7 +225,10 @@ export class CourseRepository {
     } else {
       return {
         type_en: {
-          in: types.map((type) => this.TYPE_ACRONYMS[type]),
+          in: types.map(
+            (type) =>
+              this.TYPE_ACRONYMS[type as keyof typeof this.TYPE_ACRONYMS],
+          ),
         },
       };
     }

@@ -79,7 +79,7 @@ export class LectureRepository {
       ],
     };
 
-    const filters = [
+    const filters: object[] = [
       semesterFilter,
       timeFilter,
       departmentFilter,
@@ -87,7 +87,7 @@ export class LectureRepository {
       groupFilter,
       keywordFilter,
       defaultFilter,
-    ];
+    ].filter((filter): filter is object => filter !== null);
     const queryResult = await this.prisma.subject_lecture.findMany({
       include: {
         subject_department: true,
@@ -96,7 +96,7 @@ export class LectureRepository {
         subject_examtime: true,
       },
       where: {
-        AND: filters.filter((filter) => filter !== null),
+        AND: filters,
       },
       take: query.limit ?? DEFAULT_LIMIT,
     });
@@ -108,7 +108,7 @@ export class LectureRepository {
 
     const orderedQuery = applyOrder<LectureDetails>(
       levelFilteredResult,
-      query.order ?? DEFAULT_ORDER,
+      (query.order ?? DEFAULT_ORDER) as (keyof LectureDetails)[],
     );
     return applyOffset<LectureDetails>(orderedQuery, query.offset ?? 0);
   }
@@ -145,8 +145,8 @@ export class LectureRepository {
     );
 
     const notWritableYearAndSemesterMap: Record<
-      number,
-      Record<number, { semester: number; year: number }>
+      string,
+      Record<string, { semester: number; year: number }[]>
     > = {};
     for (const key in notWritableYearAndSemester) {
       const objects = notWritableYearAndSemester[key];
