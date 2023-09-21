@@ -93,7 +93,7 @@ export class TimetableRepository {
   }
 
   async getTimeTableBasicById(timeTableId: number) {
-    return await this.prisma.timetable_timetable.findUnique({
+    return await this.prisma.timetable_timetable.findUniqueOrThrow({
       where: {
         id: timeTableId,
       },
@@ -110,7 +110,7 @@ export class TimetableRepository {
   }
 
   async getTimeTableById(timeTableId: number): Promise<TimeTableDetails> {
-    return await this.prisma.timetable_timetable.findUnique({
+    return await this.prisma.timetable_timetable.findUniqueOrThrow({
       include: timeTableDetails.include,
       where: {
         id: timeTableId,

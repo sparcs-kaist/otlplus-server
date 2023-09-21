@@ -47,10 +47,7 @@ export class TimetablesService {
   }
 
   async getTimetable(timetableId: number) {
-    const timeTable = await this.timetableRepository.getTimeTableById(
-      timetableId,
-    );
-    return timeTable;
+    return await this.timetableRepository.getTimeTableById(timetableId);
   }
 
   async createTimetable(

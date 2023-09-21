@@ -19,7 +19,7 @@ export class LectureRepository {
   ) {}
 
   async getLectureById(id: number): Promise<LectureDetails> {
-    return await this.prisma.subject_lecture.findUnique({
+    return await this.prisma.subject_lecture.findUniqueOrThrow({
       include: lectureDetails.include,
       where: {
         id: id,
@@ -28,7 +28,7 @@ export class LectureRepository {
   }
 
   async getLectureBasicById(id: number): Promise<LectureBasic> {
-    return await this.prisma.subject_lecture.findUnique({
+    return await this.prisma.subject_lecture.findUniqueOrThrow({
       where: {
         id: id,
       },
