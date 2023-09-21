@@ -18,8 +18,8 @@ export function normalizeArray<T>(
 export function groupBy<T>(
   arr: T[],
   selector: (item: T) => string | number | null = (item: any) => item.id,
-) {
-  const map: Record<string, T[] | undefined> = {};
+): Record<string, T[]> {
+  const map: Record<string, T[]> = {};
 
   arr.forEach((data) => {
     const key = selector(data);
