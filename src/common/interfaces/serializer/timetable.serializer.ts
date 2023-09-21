@@ -10,27 +10,18 @@ export const toJsonTimetable = (
   timetable: TimeTableDetails | TimeTableBasic,
   lectures?: LectureDetails[],
 ): TimetableResponseDto => {
-  if ('timetable_timetable_lectures' in timetable) {
-    const id = timetable.id;
-    const lectures = timetable.timetable_timetable_lectures
-      .map((x) => x.subject_lecture)
-      .map((lecture) => toJsonLecture<false>(lecture, false));
-    const arrange_order = timetable.arrange_order;
-    return {
-      id: id,
-      lectures: lectures,
-      arrange_order: arrange_order,
-    };
-  } else {
-    const id = timetable.id;
-    const lectureLists = lectures.map((lecture) =>
-      toJsonLecture<false>(lecture, false),
-    );
-    const arrange_order = timetable.arrange_order;
-    return {
-      id: id,
-      lectures: lectureLists,
-      arrange_order: arrange_order,
-    };
+  const lecturesList =
+    'timetable_timetable_lectures' in timetable
+      ? timetable.timetable_timetable_lectures.map((x) => x.subject_lecture)
+      : lectures;
+  if (lecturesList === undefined) {
+    throw new Error('lecturesList is undefined');
   }
+  return {
+    id: timetable.id,
+    lectures: lecturesList.map((lecture) =>
+      toJsonLecture<false>(lecture, false),
+    ),
+    arrange_order: timetable.arrange_order,
+  };
 };
