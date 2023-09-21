@@ -152,7 +152,7 @@ export class TimetablesService {
     return await this.timetableRepository.getTimeTableById(timeTableId);
   }
 
-  async deleteTimetable(user, timetableId: number) {
+  async deleteTimetable(user: session_userprofile, timetableId: number) {
     return await this.prismaService.$transaction(async (tx) => {
       const timeTable = await this.getTimetable(timetableId);
       const semester = timeTable.semester;

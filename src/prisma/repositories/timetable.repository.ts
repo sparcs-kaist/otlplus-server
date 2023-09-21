@@ -14,8 +14,8 @@ export class TimetableRepository {
 
   async getTimetables(
     user: session_userprofile,
-    year?: number,
-    semester?: number,
+    year?: number | null,
+    semester?: number | null,
     paginationAndSorting?: {
       orderBy?: Prisma.timetable_timetableOrderByWithRelationInput[];
       skip?: number;
@@ -41,9 +41,9 @@ export class TimetableRepository {
 
   async getTimetableBasics(
     user: session_userprofile,
-    year?: number,
-    semester?: number,
-    paginationAndSorting?: {
+    year: number,
+    semester: number,
+    paginationAndSorting: {
       orderBy: Prisma.timetable_timetableOrderByWithRelationInput;
       skip?: number;
       take?: number;

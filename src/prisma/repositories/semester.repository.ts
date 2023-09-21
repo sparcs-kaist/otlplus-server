@@ -19,7 +19,7 @@ export class SemesterRepository {
     return existsSemester;
   }
 
-  async getSemesters(paginationAndSoring?: {
+  async getSemesters(paginationAndSoring: {
     orderBy?: Prisma.subject_semesterOrderByWithRelationInput[];
     skip?: number;
     take?: number;

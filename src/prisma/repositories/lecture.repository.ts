@@ -208,7 +208,7 @@ export class LectureRepository {
     return lectures;
   }
 
-  public semesterFilter(years: number[], semesters: number[]): object {
+  public semesterFilter(years?: number[], semesters?: number[]): object | null {
     if (!years && !semesters) {
       return null;
     } else if (!years) {
@@ -241,7 +241,7 @@ export class LectureRepository {
     }
   }
 
-  public timeFilter(day: number[], begin: number[], end: number[]): object {
+  public timeFilter(day?: number[], begin?: number[], end?: number[]): object {
     const datetimeBegin = begin?.map((time) => this.datetimeConverter(time));
     const datetimeEnd = end?.map((time) => this.datetimeConverter(time));
 

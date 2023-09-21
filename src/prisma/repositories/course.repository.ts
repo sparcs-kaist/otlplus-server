@@ -48,7 +48,7 @@ export class CourseRepository {
     'TS',
   ];
 
-  public async getCourseById(id: number): Promise<CourseDetails> {
+  public async getCourseById(id: number): Promise<CourseDetails | null> {
     return await this.prisma.subject_course.findUnique({
       include: {
         subject_department: true,
@@ -175,7 +175,7 @@ export class CourseRepository {
     return applyOffset<CourseDetails>(orderedResult, offset ?? 0);
   }
 
-  public departmentFilter(department_names: string[]): object {
+  public departmentFilter(department_names?: string[]): object | null {
     if (!department_names) {
       return null;
     }
@@ -202,7 +202,7 @@ export class CourseRepository {
     }
   }
 
-  public typeFilter(types: string[]): object {
+  public typeFilter(types?: string[]): object | null {
     if (!types) {
       return null;
     }
@@ -227,7 +227,7 @@ export class CourseRepository {
     }
   }
 
-  public termFilter(term?: string[]): object {
+  public termFilter(term?: string[]): object | null {
     if (!term) {
       return null;
     }
@@ -244,7 +244,7 @@ export class CourseRepository {
     }
   }
 
-  public keywordFilter(keyword?: string, isCourse = true): object {
+  public keywordFilter(keyword?: string, isCourse = true): object | null {
     if (!keyword) {
       return null;
     }
@@ -329,7 +329,7 @@ export class CourseRepository {
     };
   }
 
-  public groupFilter(group?: string[]): object {
+  public groupFilter(group?: string[]): object | null {
     if (!group) {
       return null;
     }
@@ -355,7 +355,7 @@ export class CourseRepository {
 
   public levelFilter<T extends CourseDetails | LectureDetails>(
     queryResult: T[],
-    levels: string[],
+    levels?: string[],
   ): T[] {
     if (!levels) {
       return queryResult;
