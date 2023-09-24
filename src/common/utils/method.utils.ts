@@ -15,24 +15,14 @@ export function normalizeArray<T>(
   return normalizeObj;
 }
 
-export function groupBy<T>(
+export function groupBy<T, K extends keyof any>(
   arr: T[],
-  selector: (item: T) => string | number | null = (item: any) => item.id,
-): Record<string, T[]> {
-  const map: Record<string, T[]> = {};
-
-  arr.forEach((data) => {
-    const key = selector(data);
-    if (key !== null) {
-      if (map[key]) {
-        map[key]!.push(data);
-      } else {
-        map[key] = [data];
-      }
-    }
-  });
-
-  return map;
+  key: (i: T) => K,
+): Record<K, T[]> {
+  return arr.reduce((groups, item) => {
+    (groups[key(item)] ||= []).push(item);
+    return groups;
+  }, {} as Record<K, T[]>);
 }
 
 type ValueType = string | number | boolean;

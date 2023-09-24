@@ -117,6 +117,7 @@ export class LectureRepository {
     user: session_userprofile,
     date?: Date,
   ): Promise<LectureDetails[]> {
+    type Semester = { semester: number; year: number };
     const currDate = date ?? new Date();
     const notWritableSemesters = await this.prisma.subject_semester.findMany({
       where: {
@@ -134,7 +135,7 @@ export class LectureRepository {
         ],
       },
     });
-    const notWritableYearAndSemester = groupBy(
+    const notWritableYearAndSemester = groupBy<Semester, number>(
       notWritableSemesters.map((semester) => {
         return {
           semester: semester.semester,
@@ -146,11 +147,14 @@ export class LectureRepository {
 
     const notWritableYearAndSemesterMap: Record<
       string,
-      Record<string, { semester: number; year: number }[]>
+      Record<string, Semester[]>
     > = {};
     for (const key in notWritableYearAndSemester) {
       const objects = notWritableYearAndSemester[key];
-      const mapObjects = groupBy(objects);
+      const mapObjects = groupBy<Semester, number>(
+        objects,
+        (object) => object.year,
+      );
       notWritableYearAndSemesterMap[key] = mapObjects;
     }
 
