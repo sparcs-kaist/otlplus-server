@@ -1,4 +1,5 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
+import { session_userprofile } from '@prisma/client';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { Public } from 'src/common/decorators/skip-auth.decorator';
 import {
@@ -27,7 +28,7 @@ export class LecturesController {
   async getLectureReviews(
     @Query() query: LectureReviewsQueryDto,
     @Param('lectureId') lectureId: number,
-    @GetUser() user,
+    @GetUser() user: session_userprofile,
   ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })[]> {
     return await this.LectureService.getLectureReviews(user, lectureId, query);
   }

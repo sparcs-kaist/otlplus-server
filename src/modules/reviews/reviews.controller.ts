@@ -26,7 +26,7 @@ export class ReviewsController {
   @Get()
   async getReviews(
     @Query() reviewsParam: ReviewQueryDto,
-    @GetUser() user,
+    @GetUser() user: session_userprofile,
   ): Promise<
     (ReviewResponseDto & { userspecific_is_liked: boolean })[] | number
   > {

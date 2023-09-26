@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import {
   LectureQueryDto,
@@ -28,9 +28,6 @@ export class LecturesService {
 
   public async getLectureById(id: number): Promise<LectureResponseDto> {
     const queryResult = await this.LectureRepository.getLectureById(id);
-    if (!queryResult) {
-      throw new NotFoundException();
-    }
     return toJsonLecture<false>(queryResult, false);
   }
 
@@ -47,7 +44,7 @@ export class LecturesService {
       query.offset ?? 0,
       query.limit ?? MAX_LIMIT,
     );
-    const reviews = lecture.review;
+    const reviews = lecture?.review ? lecture.review : [];
     return await Promise.all(
       reviews.map(async (review) => {
         const result = toJsonReview(review);

@@ -125,7 +125,7 @@ export class AuthService {
   }
 
   async updateUser(
-    userId,
+    userId: number,
     user: Prisma.session_userprofileUpdateInput,
   ): Promise<session_userprofile> {
     return await this.userRepository.updateUser(userId, user);

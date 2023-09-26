@@ -48,7 +48,7 @@ export class CourseRepository {
     'TS',
   ];
 
-  public async getCourseById(id: number): Promise<CourseDetails> {
+  public async getCourseById(id: number): Promise<CourseDetails | null> {
     return await this.prisma.subject_course.findUnique({
       include: {
         subject_department: true,
@@ -81,11 +81,14 @@ export class CourseRepository {
         id: id,
       },
     });
-    const filteredLecture = course.lecture.filter(
-      (lecture) => !lecture.deleted,
-    );
+    const filteredLecture = course
+      ? course.lecture.filter((lecture) => !lecture.deleted)
+      : [];
     const order = query.order ? query.order : ['year', 'semester', 'class_no'];
-    return applyOrder<LectureDetails>(filteredLecture, order);
+    return applyOrder<LectureDetails>(
+      filteredLecture,
+      order as (keyof LectureDetails)[],
+    );
   }
 
   public async getReviewsByCourseId(
@@ -142,14 +145,13 @@ export class CourseRepository {
     const groupFilter = this.groupFilter(group);
     const keywordFilter = this.keywordFilter(keyword);
     const term_filter = this.termFilter(term);
-    let filterList = [
+    const filterList: object[] = [
       departmentFilter,
       typeFilter,
       groupFilter,
       keywordFilter,
       term_filter,
-    ];
-    filterList = filterList.filter((filter) => filter !== null);
+    ].filter((filter): filter is object => filter !== null);
     const queryResult = await this.prisma.subject_course.findMany({
       include: {
         subject_department: true,
@@ -175,7 +177,7 @@ export class CourseRepository {
     return applyOffset<CourseDetails>(orderedResult, offset ?? 0);
   }
 
-  public departmentFilter(department_names: string[]): object {
+  public departmentFilter(department_names?: string[]): object | null {
     if (!department_names) {
       return null;
     }
@@ -202,7 +204,7 @@ export class CourseRepository {
     }
   }
 
-  public typeFilter(types: string[]): object {
+  public typeFilter(types?: string[]): object | null {
     if (!types) {
       return null;
     }
@@ -212,7 +214,9 @@ export class CourseRepository {
     } else if (types.includes('ETC')) {
       const unselected_types = Object.keys(this.TYPE_ACRONYMS)
         .filter((type) => !(type in types))
-        .map((type) => this.TYPE_ACRONYMS[type]);
+        .map(
+          (type) => this.TYPE_ACRONYMS[type as keyof typeof this.TYPE_ACRONYMS],
+        );
       return {
         type_en: {
           in: unselected_types,
@@ -221,13 +225,16 @@ export class CourseRepository {
     } else {
       return {
         type_en: {
-          in: types.map((type) => this.TYPE_ACRONYMS[type]),
+          in: types.map(
+            (type) =>
+              this.TYPE_ACRONYMS[type as keyof typeof this.TYPE_ACRONYMS],
+          ),
         },
       };
     }
   }
 
-  public termFilter(term?: string[]): object {
+  public termFilter(term?: string[]): object | null {
     if (!term) {
       return null;
     }
@@ -244,7 +251,7 @@ export class CourseRepository {
     }
   }
 
-  public keywordFilter(keyword?: string, isCourse = true): object {
+  public keywordFilter(keyword?: string, isCourse = true): object | null {
     if (!keyword) {
       return null;
     }
@@ -329,7 +336,7 @@ export class CourseRepository {
     };
   }
 
-  public groupFilter(group?: string[]): object {
+  public groupFilter(group?: string[]): object | null {
     if (!group) {
       return null;
     }
@@ -355,7 +362,7 @@ export class CourseRepository {
 
   public levelFilter<T extends CourseDetails | LectureDetails>(
     queryResult: T[],
-    levels: string[],
+    levels?: string[],
   ): T[] {
     if (!levels) {
       return queryResult;

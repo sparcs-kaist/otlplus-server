@@ -47,10 +47,7 @@ export class TimetablesService {
   }
 
   async getTimetable(timetableId: number) {
-    const timeTable = await this.timetableRepository.getTimeTableById(
-      timetableId,
-    );
-    return timeTable;
+    return await this.timetableRepository.getTimeTableById(timetableId);
   }
 
   async createTimetable(
@@ -155,15 +152,11 @@ export class TimetablesService {
     return await this.timetableRepository.getTimeTableById(timeTableId);
   }
 
-  async deleteTimetable(user, timetableId: number) {
+  async deleteTimetable(user: session_userprofile, timetableId: number) {
     return await this.prismaService.$transaction(async (tx) => {
-      const timeTable = await this.getTimetable(timetableId);
-      const semester = timeTable.semester;
-      const year = timeTable.year;
-      const arrangeOrder = timeTable.arrange_order;
-      if (!timeTable) {
-        return new NotFoundException();
-      }
+      const { semester, year, arrange_order } = await this.getTimetable(
+        timetableId,
+      );
       await this.timetableRepository.deleteById(timetableId);
       const relatedTimeTables = await this.timetableRepository.getTimetables(
         user,
@@ -171,7 +164,7 @@ export class TimetablesService {
         semester,
       );
       const timeTablesToBeUpdated = relatedTimeTables
-        .filter((timeTable) => timeTable.arrange_order > arrangeOrder)
+        .filter((timeTable) => timeTable.arrange_order > arrange_order)
         .map((timeTable) => {
           return {
             id: timeTable.id,

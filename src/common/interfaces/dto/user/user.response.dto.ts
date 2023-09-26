@@ -1,5 +1,5 @@
-import { session_userprofile_taken_lectures } from '@prisma/client';
 import { DepartmentResponseDto } from '../department/department.response.dto';
+import { LectureResponseDto } from '../lecture/lecture.response.dto';
 import { ReviewResponseDto } from '../reviews/review.response.dto';
 
 export interface ProfileDto {
@@ -8,11 +8,11 @@ export interface ProfileDto {
   student_id: string;
   firstName: string;
   lastName: string;
-  department: DepartmentResponseDto;
+  department: DepartmentResponseDto | null;
   majors: DepartmentResponseDto[];
   departments: DepartmentResponseDto[];
   favorite_departments: DepartmentResponseDto[];
-  review_writable_lectures: session_userprofile_taken_lectures[];
-  my_timetable_lectures: session_userprofile_taken_lectures[];
+  review_writable_lectures: LectureResponseDto[];
+  my_timetable_lectures: LectureResponseDto[];
   reviews: ReviewResponseDto[];
 }

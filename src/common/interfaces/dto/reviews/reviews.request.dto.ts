@@ -53,21 +53,13 @@ export class ReviewCreateDto {
   @IsString()
   @IsNotEmpty()
   @Validate(StringStripLength)
-  content: string;
+  content!: string;
 
   @ApiProperty()
   @IsNumber()
   @IsNotEmpty()
   @Type(() => Number)
-  lecture: number;
-
-  @ApiProperty()
-  @IsNumber()
-  @IsNotEmpty()
-  @Min(1)
-  @Max(5)
-  @Type(() => Number)
-  grade: number;
+  lecture!: number;
 
   @ApiProperty()
   @IsNumber()
@@ -75,7 +67,7 @@ export class ReviewCreateDto {
   @Min(1)
   @Max(5)
   @Type(() => Number)
-  load: number;
+  grade!: number;
 
   @ApiProperty()
   @IsNumber()
@@ -83,7 +75,15 @@ export class ReviewCreateDto {
   @Min(1)
   @Max(5)
   @Type(() => Number)
-  speech: number;
+  load!: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsNotEmpty()
+  @Min(1)
+  @Max(5)
+  @Type(() => Number)
+  speech!: number;
 }
 
 export class ReviewUpdateDto extends PartialType(

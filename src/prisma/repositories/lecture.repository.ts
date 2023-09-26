@@ -20,7 +20,7 @@ export class LectureRepository {
   ) {}
 
   async getLectureById(id: number): Promise<LectureDetails> {
-    return await this.prisma.subject_lecture.findUnique({
+    return await this.prisma.subject_lecture.findUniqueOrThrow({
       include: lectureDetails.include,
       where: {
         id: id,
@@ -33,7 +33,7 @@ export class LectureRepository {
     order: string[],
     offset: number,
     limit: number,
-  ): Promise<LectureReviewDetails> {
+  ): Promise<LectureReviewDetails | null> {
     const orderFilter: { [key: string]: string }[] = [];
     order.forEach((orderList) => {
       const orderDict: { [key: string]: string } = {};
@@ -45,6 +45,7 @@ export class LectureRepository {
       orderDict[orderBy[orderBy.length - 1]] = order;
       orderFilter.push(orderDict);
     });
+
     return await this.prisma.subject_lecture.findUnique({
       include: {
         review: {
@@ -79,7 +80,7 @@ export class LectureRepository {
   }
 
   async getLectureBasicById(id: number): Promise<LectureBasic> {
-    return await this.prisma.subject_lecture.findUnique({
+    return await this.prisma.subject_lecture.findUniqueOrThrow({
       where: {
         id: id,
       },
@@ -130,7 +131,7 @@ export class LectureRepository {
       ],
     };
 
-    const filters = [
+    const filters: object[] = [
       semesterFilter,
       timeFilter,
       departmentFilter,
@@ -138,7 +139,7 @@ export class LectureRepository {
       groupFilter,
       keywordFilter,
       defaultFilter,
-    ];
+    ].filter((filter): filter is object => filter !== null);
     const queryResult = await this.prisma.subject_lecture.findMany({
       include: {
         subject_department: true,
@@ -147,7 +148,7 @@ export class LectureRepository {
         subject_examtime: true,
       },
       where: {
-        AND: filters.filter((filter) => filter !== null),
+        AND: filters,
       },
       take: query.limit ?? DEFAULT_LIMIT,
     });
@@ -159,7 +160,7 @@ export class LectureRepository {
 
     const orderedQuery = applyOrder<LectureDetails>(
       levelFilteredResult,
-      query.order ?? DEFAULT_ORDER,
+      (query.order ?? DEFAULT_ORDER) as (keyof LectureDetails)[],
     );
     return applyOffset<LectureDetails>(orderedQuery, query.offset ?? 0);
   }
@@ -168,12 +169,8 @@ export class LectureRepository {
     user: session_userprofile,
     date?: Date,
   ): Promise<LectureDetails[]> {
-    let currDate;
-    if (!date) {
-      currDate = Date.now();
-    } else {
-      currDate = date;
-    }
+    type Semester = { semester: number; year: number };
+    const currDate = date ?? new Date();
     const notWritableSemesters = await this.prisma.subject_semester.findMany({
       where: {
         OR: [
@@ -190,7 +187,7 @@ export class LectureRepository {
         ],
       },
     });
-    const notWritableYearAndSemester = groupBy(
+    const notWritableYearAndSemester = groupBy<Semester, number>(
       notWritableSemesters.map((semester) => {
         return {
           semester: semester.semester,
@@ -201,13 +198,16 @@ export class LectureRepository {
     );
 
     const notWritableYearAndSemesterMap: Record<
-      number,
-      Record<number, { semester: number; year: number }>
+      string,
+      Record<string, Semester[] | undefined>
     > = {};
-    for (const key in notWritableYearAndSemester) {
-      const objects = notWritableYearAndSemester[key];
-      const mapObjects = groupBy(objects);
-      notWritableYearAndSemesterMap[key] = mapObjects;
+    for (const [key, value] of Object.entries(notWritableYearAndSemester)) {
+      if (value) {
+        notWritableYearAndSemesterMap[key] = groupBy<Semester, number>(
+          value,
+          (s) => s.year,
+        );
+      }
     }
 
     const takenLectures = await this.getTakenLectures(user);
@@ -264,7 +264,7 @@ export class LectureRepository {
     return lectures;
   }
 
-  public semesterFilter(years: number[], semesters: number[]): object {
+  public semesterFilter(years?: number[], semesters?: number[]): object | null {
     if (!years && !semesters) {
       return null;
     } else if (!years) {
@@ -297,7 +297,7 @@ export class LectureRepository {
     }
   }
 
-  public timeFilter(day: number[], begin: number[], end: number[]): object {
+  public timeFilter(day?: number[], begin?: number[], end?: number[]): object {
     const datetimeBegin = begin?.map((time) => this.datetimeConverter(time));
     const datetimeEnd = end?.map((time) => this.datetimeConverter(time));
 
