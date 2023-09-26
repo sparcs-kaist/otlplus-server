@@ -1,17 +1,12 @@
-import { DepartmentRepository } from './../../prisma/repositories/department.repository';
-import { CourseRepository } from './../../prisma/repositories/course.repository';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ProfessorResponseDto } from 'src/common/interfaces/dto/professor/professor.response.dto';
-import { applyOrder } from 'src/common/utils/search.utils';
 import { session_userprofile } from '@prisma/client';
-import { toJsonDepartment } from '../../common/interfaces/serializer/department.serializer';
-import { toJsonProfessor } from '../../common/interfaces/serializer/professor.serializer';
-import { toJsonCourse } from '../../common/interfaces/serializer/course.serializer';
-import { getRepresentativeLecture } from '../../common/utils/lecture.utils';
-import { CourseResponseDtoNested } from '../../common/interfaces/dto/course/course.response.dto';
+import { CourseReviewQueryDto } from 'src/common/interfaces/dto/course/course.review.request.dto';
 import { toJsonLecture } from 'src/common/interfaces/serializer/lecture.serializer';
 import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
-import { CourseReviewQueryDto } from 'src/common/interfaces/dto/course/course.review.request.dto';
+import { CourseResponseDtoNested } from '../../common/interfaces/dto/course/course.response.dto';
+import { toJsonCourse } from '../../common/interfaces/serializer/course.serializer';
+import { getRepresentativeLecture } from '../../common/utils/lecture.utils';
+import { CourseRepository } from './../../prisma/repositories/course.repository';
 
 @Injectable()
 export class CoursesService {

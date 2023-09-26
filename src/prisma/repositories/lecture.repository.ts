@@ -1,11 +1,16 @@
-import { Injectable } from "@nestjs/common";
-import { PrismaService } from "../prisma.service";
-import { Prisma, session_userprofile } from "@prisma/client";
-import { groupBy } from "../../common/utils/method.utils";
-import { LectureQueryDto } from "src/common/interfaces/dto/lecture/lecture.request.dto";
-import { CourseRepository } from "./course.repository";
-import { applyOrder, applyOffset } from "src/common/utils/search.utils";
-import { LectureBasic, lectureDetails, LectureDetails, LectureReviewDetails } from "../../common/schemaTypes/types";
+import { Injectable } from '@nestjs/common';
+import { Prisma, session_userprofile } from '@prisma/client';
+import { LectureQueryDto } from 'src/common/interfaces/dto/lecture/lecture.request.dto';
+import { applyOffset, applyOrder } from 'src/common/utils/search.utils';
+import {
+  LectureBasic,
+  LectureDetails,
+  LectureReviewDetails,
+  lectureDetails,
+} from '../../common/schemaTypes/types';
+import { groupBy } from '../../common/utils/method.utils';
+import { PrismaService } from '../prisma.service';
+import { CourseRepository } from './course.repository';
 
 @Injectable()
 export class LectureRepository {
@@ -23,9 +28,12 @@ export class LectureRepository {
     });
   }
 
-  async getLectureReviewsById(id: number,order: string[],
+  async getLectureReviewsById(
+    id: number,
+    order: string[],
     offset: number,
-    limit: number): Promise<LectureReviewDetails> {
+    limit: number,
+  ): Promise<LectureReviewDetails> {
     const orderFilter: { [key: string]: string }[] = [];
     order.forEach((orderList) => {
       const orderDict: { [key: string]: string } = {};
@@ -73,19 +81,19 @@ export class LectureRepository {
   async getLectureBasicById(id: number): Promise<LectureBasic> {
     return await this.prisma.subject_lecture.findUnique({
       where: {
-        id: id
-      }
+        id: id,
+      },
     });
   }
 
-  async getLectureByIds(ids: number[]): Promise<LectureDetails[]>{
+  async getLectureByIds(ids: number[]): Promise<LectureDetails[]> {
     return await this.prisma.subject_lecture.findMany({
       include: lectureDetails.include,
       where: {
         id: {
-          in: ids
-        }
-      }
+          in: ids,
+        },
+      },
     });
   }
 

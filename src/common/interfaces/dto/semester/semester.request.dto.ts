@@ -1,8 +1,10 @@
-import { IsArray, IsOptional, Validate } from "class-validator";
-import { _PROHIBITED_FIELD_PATTERN, OrderDefaultValidator } from "../../../decorators/validators.decorator";
+import { IsArray, IsOptional } from 'class-validator';
+import {
+  OrderDefaultValidator,
+  _PROHIBITED_FIELD_PATTERN,
+} from '../../../decorators/validators.decorator';
 
-
-export class SemesterQueryDto{
+export class SemesterQueryDto {
   @IsOptional()
   @IsArray()
   @OrderDefaultValidator(_PROHIBITED_FIELD_PATTERN)

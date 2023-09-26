@@ -1,10 +1,8 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { AuthService } from '../auth.service';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { UserService } from "../../user/user.service";
-import settings from "../../../settings";
-
+import settings from '../../../settings';
+import { AuthService } from '../auth.service';
 
 /*
 
@@ -17,9 +15,7 @@ export class JwtCookieStrategy extends PassportStrategy(
   Strategy,
   'jwt-cookie',
 ) {
-  constructor(
-    private readonly authService: AuthService,
-  ) {
+  constructor(private readonly authService: AuthService) {
     super({
       secretOrKey: settings().getJwtConfig().secret,
       ignoreExpiration: false,

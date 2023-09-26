@@ -1,13 +1,11 @@
-import { PrismaService } from '../../prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
-import { UserRepository } from '../../prisma/repositories/user.repository';
-import { Prisma, session_userprofile } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
-import settings from '../../settings';
+import { Prisma, session_userprofile } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
-import session from 'express-session';
 import { SSOUser } from '../../common/interfaces/dto/auth/sso.dto';
 import { import_student_lectures } from '../../common/scholarDB/scripts';
+import { UserRepository } from '../../prisma/repositories/user.repository';
+import settings from '../../settings';
 
 @Injectable()
 export class AuthService {

@@ -1,43 +1,45 @@
-import { IsArray, IsNumber, IsNumberString, IsOptional, IsString } from "class-validator";
-import { Transform, Type } from "class-transformer";
-import { CourseQueryDto } from "../course/course.request.dto";
-import { OrderDefaultValidator, _PROHIBITED_FIELD_PATTERN } from "src/common/decorators/validators.decorator";
+import { Transform, Type } from 'class-transformer';
+import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  OrderDefaultValidator,
+  _PROHIBITED_FIELD_PATTERN,
+} from 'src/common/decorators/validators.decorator';
+import { CourseQueryDto } from '../course/course.request.dto';
 
-export class LectureQueryDto extends CourseQueryDto{
-
+export class LectureQueryDto extends CourseQueryDto {
   @IsOptional()
-  @Transform(({value}) => typeof value === 'string' ? [value] : value)
-  @Transform(({value}) => value.map((v)=> parseInt(v)))
+  @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+  @Transform(({ value }) => value.map((v) => parseInt(v)))
   @IsArray()
-  @IsNumber({},{each: true})
+  @IsNumber({}, { each: true })
   year?: number[];
 
   @IsOptional()
-  @Transform(({value}) => typeof value === 'string' ? [value] : value)
-  @Transform(({value}) => value.map((v)=> parseInt(v)))
+  @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+  @Transform(({ value }) => value.map((v) => parseInt(v)))
   @IsArray()
-  @IsNumber({},{each: true})
+  @IsNumber({}, { each: true })
   semester?: number[];
 
   @IsOptional()
-  @Transform(({value}) => typeof value === 'string' ? [value] : value)
-  @Transform(({value}) => value.map((v)=> parseInt(v)))
+  @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+  @Transform(({ value }) => value.map((v) => parseInt(v)))
   @IsArray()
-  @IsNumber({},{each: true})
+  @IsNumber({}, { each: true })
   day?: number[];
 
   @IsOptional()
-  @Transform(({value}) => typeof value === 'string' ? [value] : value)
-  @Transform(({value}) => value.map((v)=> parseInt(v)))
+  @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+  @Transform(({ value }) => value.map((v) => parseInt(v)))
   @IsArray()
-  @IsNumber({},{each: true})
+  @IsNumber({}, { each: true })
   begin?: number[];
 
   @IsOptional()
-  @Transform(({value}) => typeof value === 'string' ? [value] : value)
-  @Transform(({value}) => value.map((v)=> parseInt(v)))
+  @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+  @Transform(({ value }) => value.map((v) => parseInt(v)))
   @IsArray()
-  @IsNumber({},{each: true})
+  @IsNumber({}, { each: true })
   end?: number[];
 }
 

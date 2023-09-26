@@ -2,8 +2,8 @@ import {
   registerDecorator,
   ValidationArguments,
   ValidatorConstraint,
-  ValidatorConstraintInterface
-} from "class-validator";
+  ValidatorConstraintInterface,
+} from 'class-validator';
 
 export const _PROHIBITED_FIELD_PATTERN: RegExp[] = [
   /user/,
@@ -16,12 +16,12 @@ export const _PROHIBITED_FIELD_PATTERN: RegExp[] = [
 
 export function RegexValidator(
   regexExps: RegExp[],
-  validationOptions?: { message?: string }
+  validationOptions?: { message?: string },
 ) {
   // eslint-disable-next-line @typescript-eslint/ban-types
-  return function(object: Object, propertyName: string) {
+  return function (object: Object, propertyName: string) {
     registerDecorator({
-      name: "regexValidator",
+      name: 'regexValidator',
       target: object.constructor,
       propertyName: propertyName,
       options: validationOptions,
@@ -34,21 +34,21 @@ export function RegexValidator(
         },
 
         defaultMessage(validationArguments?: ValidationArguments): string {
-          return "Only alphanumeric characters are allowed";
-        }
-      }
+          return 'Only alphanumeric characters are allowed';
+        },
+      },
     });
   };
 }
 
 export function InverseRegexValidator(
   regexExps: RegExp[],
-  validationOptions?: { message?: string }
+  validationOptions?: { message?: string },
 ) {
   // eslint-disable-next-line @typescript-eslint/ban-types
-  return function(object: Object, propertyName: string) {
+  return function (object: Object, propertyName: string) {
     registerDecorator({
-      name: "regexValidator",
+      name: 'regexValidator',
       target: object.constructor,
       propertyName: propertyName,
       constraints: regexExps,
@@ -61,20 +61,18 @@ export function InverseRegexValidator(
         },
 
         defaultMessage(validationArguments?: ValidationArguments): string {
-          return "Only alphanumeric characters are allowed";
-        }
-      }
+          return 'Only alphanumeric characters are allowed';
+        },
+      },
     });
   };
 }
-
-
 
 export function OrderDefaultValidator(
   regexExps: RegExp[],
   validationOptions?: { message?: string },
 ) {
-  return function (object:object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'OrderDefaultValidator',
       target: object.constructor,

@@ -1,10 +1,14 @@
-import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
-import { ReviewQueryDto, ReviewUpdateDto, ReviewCreateDto } from "src/common/interfaces/dto/reviews/reviews.request.dto";
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
-import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
-import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
+import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
+import {
+  ReviewCreateDto,
+  ReviewQueryDto,
+  ReviewUpdateDto,
+} from 'src/common/interfaces/dto/reviews/reviews.request.dto';
+import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
 import { LectureRepository } from 'src/prisma/repositories/lecture.repository';
+import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
 
 @Injectable()
 export class ReviewsService {
@@ -123,7 +127,10 @@ export class ReviewsService {
     if (review.writer_id !== user.id)
       throw new HttpException("Can't find user", 401);
     if (review.is_deleted)
-      throw new HttpException('Target review deleted by admin',HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Target review deleted by admin',
+        HttpStatus.BAD_REQUEST,
+      );
     const updateReview = await this.reviewsRepository.updateReview(
       review.id,
       reviewBody.content,

@@ -1,12 +1,11 @@
-import { DepartmentResponseDto } from "../dto/department/department.response.dto";
-import { SemesterBasic } from "../../schemaTypes/types";
-import { SemesterResponseDto } from "../dto/semester/semester.response.dto";
+import { SemesterBasic } from '../../schemaTypes/types';
+import { SemesterResponseDto } from '../dto/semester/semester.response.dto';
 
-export const toJsonSemester = (semester: SemesterBasic,): SemesterResponseDto => {
-
-
+export const toJsonSemester = (
+  semester: SemesterBasic,
+): SemesterResponseDto => {
   return {
-    year : semester.year,
+    year: semester.year,
     semester: semester.semester,
     beginning: semester.beginning,
     end: semester.end,
@@ -17,5 +16,5 @@ export const toJsonSemester = (semester: SemesterBasic,): SemesterResponseDto =>
     courseDropDeadline: semester.courseDropDeadline,
     courseEvaluationDeadline: semester.courseEvaluationDeadline,
     gradePosting: semester.gradePosting,
-  }
-}
+  };
+};

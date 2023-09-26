@@ -1,9 +1,12 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { LecturesService } from './lectures.service';
-import { LectureQueryDto, LectureReviewsQueryDto } from 'src/common/interfaces/dto/lecture/lecture.request.dto';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
-import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
 import { Public } from 'src/common/decorators/skip-auth.decorator';
+import {
+  LectureQueryDto,
+  LectureReviewsQueryDto,
+} from 'src/common/interfaces/dto/lecture/lecture.request.dto';
+import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
+import { LecturesService } from './lectures.service';
 
 @Controller('api/lectures')
 export class LecturesController {

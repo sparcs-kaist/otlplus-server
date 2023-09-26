@@ -1,15 +1,22 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
-import { TimetableRepository } from "../../prisma/repositories/timetable.repository";
-import { session_userprofile } from "@prisma/client";
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { session_userprofile } from '@prisma/client';
 import {
   AddLectureDto,
   TimetableCreateDto,
-  TimetableQueryDto
-} from "../../common/interfaces/dto/timetable/timetable.request.dto";
-import { orderFilter, validateYearAndSemester } from "../../common/utils/search.utils";
-import { SemesterRepository } from "../../prisma/repositories/semester.repository";
-import { LectureRepository } from "../../prisma/repositories/lecture.repository";
-import { PrismaService } from "../../prisma/prisma.service";
+  TimetableQueryDto,
+} from '../../common/interfaces/dto/timetable/timetable.request.dto';
+import {
+  orderFilter,
+  validateYearAndSemester,
+} from '../../common/utils/search.utils';
+import { PrismaService } from '../../prisma/prisma.service';
+import { LectureRepository } from '../../prisma/repositories/lecture.repository';
+import { SemesterRepository } from '../../prisma/repositories/semester.repository';
+import { TimetableRepository } from '../../prisma/repositories/timetable.repository';
 
 @Injectable()
 export class TimetablesService {
@@ -17,9 +24,8 @@ export class TimetablesService {
     private readonly prismaService: PrismaService,
     private readonly timetableRepository: TimetableRepository,
     private readonly lectureRepository: LectureRepository,
-    private readonly semesterRepository: SemesterRepository
-  ) {
-  }
+    private readonly semesterRepository: SemesterRepository,
+  ) {}
 
   async getTimetables(query: TimetableQueryDto, user: session_userprofile) {
     const { year, semester, order, offset, limit } = query;
@@ -28,28 +34,48 @@ export class TimetablesService {
     const paginationAndSorting = {
       skip: offset,
       take: limit,
-      orderBy: orderBy
+      orderBy: orderBy,
     };
 
-    const timetables = await this.timetableRepository.getTimetables(user, year, semester, paginationAndSorting);
+    const timetables = await this.timetableRepository.getTimetables(
+      user,
+      year,
+      semester,
+      paginationAndSorting,
+    );
     return timetables;
   }
 
   async getTimetable(timetableId: number) {
-    const timeTable = await this.timetableRepository.getTimeTableById(timetableId);
+    const timeTable = await this.timetableRepository.getTimeTableById(
+      timetableId,
+    );
     return timeTable;
   }
 
-  async createTimetable(timeTableBody: TimetableCreateDto, user: session_userprofile) {
+  async createTimetable(
+    timeTableBody: TimetableCreateDto,
+    user: session_userprofile,
+  ) {
     const { year, semester } = timeTableBody;
-    if (!await validateYearAndSemester(year, semester, this.semesterRepository)) {
-      throw new BadRequestException("Wrong fields 'year' and 'semester' in request data");
+    if (
+      !(await validateYearAndSemester(year, semester, this.semesterRepository))
+    ) {
+      throw new BadRequestException(
+        "Wrong fields 'year' and 'semester' in request data",
+      );
     }
 
     let arrangeOrder = 0;
-    const relatedTimeTables = await this.timetableRepository.getTimetableBasics(user, year, semester, { orderBy: { arrange_order: "asc" } });
+    const relatedTimeTables = await this.timetableRepository.getTimetableBasics(
+      user,
+      year,
+      semester,
+      { orderBy: { arrange_order: 'asc' } },
+    );
     if (relatedTimeTables.length > 0) {
-      arrangeOrder = relatedTimeTables[relatedTimeTables.length - 1].arrange_order + 1;
+      arrangeOrder =
+        relatedTimeTables[relatedTimeTables.length - 1].arrange_order + 1;
     }
 
     /*
@@ -61,40 +87,73 @@ export class TimetablesService {
     */
     const lectureIds = timeTableBody.lectures;
     const lectures = await this.lectureRepository.getLectureByIds(lectureIds);
-    const filteredLectures = lectures.filter((lecture) =>
-      lecture.semester === timeTableBody.semester && lecture.year === timeTableBody.year
+    const filteredLectures = lectures.filter(
+      (lecture) =>
+        lecture.semester === timeTableBody.semester &&
+        lecture.year === timeTableBody.year,
     );
-    return await this.timetableRepository.createTimetable(user, year, semester, arrangeOrder, filteredLectures);
+    return await this.timetableRepository.createTimetable(
+      user,
+      year,
+      semester,
+      arrangeOrder,
+      filteredLectures,
+    );
   }
 
   async addLectureToTimetable(timeTableId: number, body: AddLectureDto) {
     const lectureId = body.lecture;
     const lecture = await this.lectureRepository.getLectureBasicById(lectureId);
-    const timetable = await this.timetableRepository.getTimeTableBasicById(timeTableId);
-    if(!lecture){
-      throw new BadRequestException("Wrong field \\'lecture\\' in request data")
+    const timetable = await this.timetableRepository.getTimeTableBasicById(
+      timeTableId,
+    );
+    if (!lecture) {
+      throw new BadRequestException(
+        "Wrong field \\'lecture\\' in request data",
+      );
     }
-    if( !(lecture.year == timetable.year && lecture.semester == timetable.semester)){
-      throw new BadRequestException("Wrong field \\'lecture\\' in request data")
+    if (
+      !(
+        lecture.year == timetable.year && lecture.semester == timetable.semester
+      )
+    ) {
+      throw new BadRequestException(
+        "Wrong field \\'lecture\\' in request data",
+      );
     }
-    await this.timetableRepository.addLectureToTimetable(timeTableId, lectureId);
-    return await this.timetableRepository.getTimeTableById(timeTableId)
+    await this.timetableRepository.addLectureToTimetable(
+      timeTableId,
+      lectureId,
+    );
+    return await this.timetableRepository.getTimeTableById(timeTableId);
   }
 
   async removeLectureFromTimetable(timeTableId: number, body: AddLectureDto) {
     const lectureId = body.lecture;
     const lecture = await this.lectureRepository.getLectureBasicById(lectureId);
-    const timetable = await this.timetableRepository.getTimeTableBasicById(timeTableId);
+    const timetable = await this.timetableRepository.getTimeTableBasicById(
+      timeTableId,
+    );
     if (!lecture) {
-      throw new BadRequestException("Wrong field \\'lecture\\' in request data");
+      throw new BadRequestException(
+        "Wrong field \\'lecture\\' in request data",
+      );
     }
-    if (!(lecture.year == timetable.year && lecture.semester == timetable.semester)) {
-      throw new BadRequestException("Wrong field \\'lecture\\' in request data");
+    if (
+      !(
+        lecture.year == timetable.year && lecture.semester == timetable.semester
+      )
+    ) {
+      throw new BadRequestException(
+        "Wrong field \\'lecture\\' in request data",
+      );
     }
-    await this.timetableRepository.removeLectureFromTimetable(timeTableId, lectureId);
+    await this.timetableRepository.removeLectureFromTimetable(
+      timeTableId,
+      lectureId,
+    );
     return await this.timetableRepository.getTimeTableById(timeTableId);
   }
-
 
   async deleteTimetable(user, timetableId: number) {
     return await this.prismaService.$transaction(async (tx) => {
@@ -106,16 +165,27 @@ export class TimetablesService {
         return new NotFoundException();
       }
       await this.timetableRepository.deleteById(timetableId);
-      const relatedTimeTables = await this.timetableRepository.getTimetables(user, year, semester);
-      const timeTablesToBeUpdated = relatedTimeTables.filter((timeTable) => timeTable.arrange_order > arrangeOrder)
-        .map((timeTable) => {
-          return { id: timeTable.id, arrange_order: timeTable.arrange_order - 1 };
-        });
-      await Promise.all(timeTablesToBeUpdated.map(async (updateElem) => {
-          return this.timetableRepository.updateOrder(updateElem.id, updateElem.arrange_order);
-        })
+      const relatedTimeTables = await this.timetableRepository.getTimetables(
+        user,
+        year,
+        semester,
       );
-    })
+      const timeTablesToBeUpdated = relatedTimeTables
+        .filter((timeTable) => timeTable.arrange_order > arrangeOrder)
+        .map((timeTable) => {
+          return {
+            id: timeTable.id,
+            arrange_order: timeTable.arrange_order - 1,
+          };
+        });
+      await Promise.all(
+        timeTablesToBeUpdated.map(async (updateElem) => {
+          return this.timetableRepository.updateOrder(
+            updateElem.id,
+            updateElem.arrange_order,
+          );
+        }),
+      );
+    });
   }
-
 }

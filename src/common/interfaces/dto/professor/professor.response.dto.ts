@@ -1,4 +1,3 @@
-
 export interface ProfessorResponseDto {
   name: string;
   name_en: string;

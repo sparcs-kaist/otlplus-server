@@ -1,6 +1,6 @@
-import { INestApplication, Injectable, OnModuleInit } from "@nestjs/common";
+import { INestApplication, Injectable, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
-import settings from "../settings";
+import settings from '../settings';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
@@ -15,7 +15,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     this.$on('query', async (e) => {
       // @ts-ignore
       console.log(`Query: ${e.query} ${e.params}`);
-    })
+    });
   }
 
   async enableShutdownHooks(app: INestApplication) {

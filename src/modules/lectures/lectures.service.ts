@@ -1,13 +1,16 @@
-import { LectureQueryDto, LectureReviewsQueryDto } from 'src/common/interfaces/dto/lecture/lecture.request.dto';
-import { LectureRepository } from './../../prisma/repositories/lecture.repository';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { toJsonLecture } from 'src/common/interfaces/serializer/lecture.serializer';
+import { session_userprofile } from '@prisma/client';
+import {
+  LectureQueryDto,
+  LectureReviewsQueryDto,
+} from 'src/common/interfaces/dto/lecture/lecture.request.dto';
 import { LectureResponseDto } from 'src/common/interfaces/dto/lecture/lecture.response.dto';
+import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
+import { toJsonLecture } from 'src/common/interfaces/serializer/lecture.serializer';
 import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
 import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
-import { session_userprofile } from '@prisma/client';
-import { LectureDetails } from "../../common/schemaTypes/types";
-import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
+import { LectureDetails } from '../../common/schemaTypes/types';
+import { LectureRepository } from './../../prisma/repositories/lecture.repository';
 
 @Injectable()
 export class LecturesService {

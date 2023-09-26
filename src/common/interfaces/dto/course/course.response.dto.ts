@@ -1,6 +1,5 @@
-import { toJsonDepartment } from "../../serializer/department.serializer";
-import { DepartmentResponseDto } from "../department/department.response.dto";
-import { ProfessorResponseDto } from "../professor/professor.response.dto";
+import { DepartmentResponseDto } from '../department/department.response.dto';
+import { ProfessorResponseDto } from '../professor/professor.response.dto';
 
 export interface CourseResponseDto {
   id: number;

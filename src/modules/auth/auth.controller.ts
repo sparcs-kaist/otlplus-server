@@ -1,22 +1,22 @@
-import { Controller, Get, Query, Req, Res, Session } from "@nestjs/common";
-import { AuthService } from "./auth.service";
-import { Request, Response } from "express";
-import { Client } from "./utils/sparcs-sso";
-import settings from "../../settings";
-import { UserService } from "../user/user.service";
-import { Public } from "../../common/decorators/skip-auth.decorator";
-import { GetUser } from "../../common/decorators/get-user.decorator";
-import { session_userprofile } from "@prisma/client";
-import { SSOUser } from "../../common/interfaces/dto/auth/sso.dto";
-import { ProfileDto } from "../../common/interfaces/dto/user/user.response.dto";
+import { Controller, Get, Query, Req, Res, Session } from '@nestjs/common';
+import { session_userprofile } from '@prisma/client';
+import { Request, Response } from 'express';
+import { GetUser } from '../../common/decorators/get-user.decorator';
+import { Public } from '../../common/decorators/skip-auth.decorator';
+import { SSOUser } from '../../common/interfaces/dto/auth/sso.dto';
+import { ProfileDto } from '../../common/interfaces/dto/user/user.response.dto';
+import settings from '../../settings';
+import { UserService } from '../user/user.service';
+import { AuthService } from './auth.service';
+import { Client } from './utils/sparcs-sso';
 
-@Controller("session")
+@Controller('session')
 export class AuthController {
   private readonly ssoClient;
 
   constructor(
     private readonly authService: AuthService,
-    private readonly userService: UserService
+    private readonly userService: UserService,
   ) {
     const ssoConfig = settings().getSsoConfig();
     const ssoClient = new Client(
@@ -79,8 +79,10 @@ export class AuthController {
     response.redirect(next_url);
   }
 
-  @Get("info")
-  async getUserProfile(@GetUser() user: session_userprofile): Promise<ProfileDto> {
+  @Get('info')
+  async getUserProfile(
+    @GetUser() user: session_userprofile,
+  ): Promise<ProfileDto> {
     /*
     @Todo
     implement userSerializer, before that, we'd like to architect the dto types
@@ -90,19 +92,18 @@ export class AuthController {
   }
 
   @Public()
-  @Get("/")
-  async home(@Req() req,
-             @Res() res) {
-    return res.redirect("/session/login");
+  @Get('/')
+  async home(@Req() req, @Res() res) {
+    return res.redirect('/session/login');
   }
 
   @Public()
-  @Get("logout")
+  @Get('logout')
   async logout(
     @Req() req: Request,
     @Res() res: Response,
     @Query('next') next,
-    @GetUser() user: session_userprofile
+    @GetUser() user: session_userprofile,
   ) {
     const webURL = process.env.WEB_URL;
     if (user) {
@@ -111,15 +112,15 @@ export class AuthController {
       const host = req.get('host');
       const originalUrl = req.originalUrl;
       const absoluteUrl = `${protocol}://${host}${originalUrl}`;
-      const logoutUrl = this.ssoClient.get_logout_url(sid,absoluteUrl);
+      const logoutUrl = this.ssoClient.get_logout_url(sid, absoluteUrl);
 
-      res.clearCookie('accessToken',{ path: '/' ,maxAge: 0, httpOnly: true });
-      res.clearCookie('refreshToken',{ path: '/' ,maxAge: 0, httpOnly: true });
+      res.clearCookie('accessToken', { path: '/', maxAge: 0, httpOnly: true });
+      res.clearCookie('refreshToken', { path: '/', maxAge: 0, httpOnly: true });
 
       console.log(logoutUrl);
       return res.redirect(logoutUrl);
     }
 
-    return res.redirect(webURL + "/");
+    return res.redirect(webURL + '/');
   }
 }
