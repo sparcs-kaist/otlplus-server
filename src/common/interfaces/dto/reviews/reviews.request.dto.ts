@@ -1,5 +1,5 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsNotEmpty,
@@ -31,7 +31,9 @@ export class ReviewQueryDto {
   response_type?: string;
 
   @IsOptional()
+  @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
   @IsArray()
+  @IsString({ each: true })
   @OrderDefaultValidator(_PROHIBITED_FIELD_PATTERN)
   order?: string[];
 

@@ -1,5 +1,12 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { LectureQueryDto } from 'src/common/interfaces/dto/lecture/lecture.request.dto';
+import { session_userprofile } from '@prisma/client';
+import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { Public } from 'src/common/decorators/skip-auth.decorator';
+import {
+  LectureQueryDto,
+  LectureReviewsQueryDto,
+} from 'src/common/interfaces/dto/lecture/lecture.request.dto';
+import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
 import { LecturesService } from './lectures.service';
 
 @Controller('api/lectures')
@@ -14,5 +21,15 @@ export class LecturesController {
   @Get(':id')
   async getLectureById(@Param('id') id: number) {
     return await this.LectureService.getLectureById(id);
+  }
+
+  @Public()
+  @Get(':lectureId/reviews')
+  async getLectureReviews(
+    @Query() query: LectureReviewsQueryDto,
+    @Param('lectureId') lectureId: number,
+    @GetUser() user: session_userprofile,
+  ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })[]> {
+    return await this.LectureService.getLectureReviews(user, lectureId, query);
   }
 }
