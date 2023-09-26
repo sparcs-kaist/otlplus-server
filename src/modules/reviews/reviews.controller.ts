@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { Public } from 'src/common/decorators/skip-auth.decorator';
 import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
 import {
   ReviewCreateDto,
@@ -21,6 +22,7 @@ import { ReviewsService } from './reviews.service';
 @Controller('api/reviews')
 export class ReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}
+  @Public()
   @Get()
   async getReviews(
     @Query() reviewsParam: ReviewQueryDto,
@@ -52,6 +54,7 @@ export class ReviewsController {
     }
   }
 
+  @Public()
   @Get(':reviewId')
   async getReviewInstance(
     @Param('reviewId') reviewId: number,

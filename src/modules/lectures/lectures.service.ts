@@ -1,13 +1,23 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { LectureQueryDto } from 'src/common/interfaces/dto/lecture/lecture.request.dto';
+import { session_userprofile } from '@prisma/client';
+import {
+  LectureQueryDto,
+  LectureReviewsQueryDto,
+} from 'src/common/interfaces/dto/lecture/lecture.request.dto';
 import { LectureResponseDto } from 'src/common/interfaces/dto/lecture/lecture.response.dto';
+import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
 import { toJsonLecture } from 'src/common/interfaces/serializer/lecture.serializer';
+import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
+import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
 import { LectureDetails } from '../../common/schemaTypes/types';
 import { LectureRepository } from './../../prisma/repositories/lecture.repository';
 
 @Injectable()
 export class LecturesService {
-  constructor(private LectureRepository: LectureRepository) {}
+  constructor(
+    private LectureRepository: LectureRepository,
+    private reviewsRepository: ReviewsRepository,
+  ) {}
 
   public async getLectureByFilter(
     query: LectureQueryDto,
@@ -22,6 +32,40 @@ export class LecturesService {
       throw new NotFoundException();
     }
     return toJsonLecture<false>(queryResult, false);
+  }
+
+  public async getLectureReviews(
+    user: session_userprofile,
+    lectureId: number,
+    query: LectureReviewsQueryDto,
+  ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })[]> {
+    const MAX_LIMIT = 100;
+    const DEFAULT_ORDER = ['-written_datetime', '-id'];
+    const lecture = await this.LectureRepository.getLectureReviewsById(
+      lectureId,
+      query.order ?? DEFAULT_ORDER,
+      query.offset ?? 0,
+      query.limit ?? MAX_LIMIT,
+    );
+    const reviews = lecture.review;
+    return await Promise.all(
+      reviews.map(async (review) => {
+        const result = toJsonReview(review);
+        if (user) {
+          const isLiked: boolean = await this.reviewsRepository.isLiked(
+            review.id,
+            user.id,
+          );
+          return Object.assign(result, {
+            userspecific_is_liked: isLiked,
+          });
+        } else {
+          return Object.assign(result, {
+            userspecific_is_liked: false,
+          });
+        }
+      }),
+    );
   }
 
   public async getLecturesByIds(ids: number[]): Promise<LectureDetails[]> {
