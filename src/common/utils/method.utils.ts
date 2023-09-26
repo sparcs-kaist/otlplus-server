@@ -17,12 +17,12 @@ export function normalizeArray<T>(
 
 export function groupBy<T, K extends keyof any>(
   arr: T[],
-  key: (i: T) => K,
-): Record<K, T[]> {
-  return arr.reduce((groups, item) => {
-    (groups[key(item)] ||= []).push(item);
+  selector: (i: T) => K,
+): Record<K, T[] | undefined> {
+  return arr.reduce((groups: Record<K, T[] | undefined>, item) => {
+    (groups[selector(item)] ??= []).push(item);
     return groups;
-  }, {} as Record<K, T[]>);
+  }, {} as Record<K, T[] | undefined>);
 }
 
 type ValueType = string | number | boolean;
