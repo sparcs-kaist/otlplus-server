@@ -147,15 +147,15 @@ export class LectureRepository {
 
     const notWritableYearAndSemesterMap: Record<
       string,
-      Record<string, Semester[]>
+      Record<string, Semester[] | undefined>
     > = {};
-    for (const key in notWritableYearAndSemester) {
-      const objects = notWritableYearAndSemester[key];
-      const mapObjects = groupBy<Semester, number>(
-        objects,
-        (object) => object.year,
-      );
-      notWritableYearAndSemesterMap[key] = mapObjects;
+    for (const [key, value] of Object.entries(notWritableYearAndSemester)) {
+      if (value) {
+        notWritableYearAndSemesterMap[key] = groupBy<Semester, number>(
+          value,
+          (s) => s.year,
+        );
+      }
     }
 
     const takenLectures = await this.getTakenLectures(user);
