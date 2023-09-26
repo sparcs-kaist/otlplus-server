@@ -58,19 +58,19 @@ export class ReviewsRepository {
     });
   }
   public async getReviews(
-    lecture_year: number,
-    lecture_semester: number,
+    lectureYear: number,
+    lectureSemester: number,
     order: string[],
     offset: number,
     limit: number,
   ): Promise<ReviewDetails[]> {
     let lectureFilter: object = {};
     const orderFilter: { [key: string]: string }[] = [];
-    if (lecture_year) {
-      lectureFilter = { ...lectureFilter, year: lecture_year };
+    if (lectureYear) {
+      lectureFilter = { ...lectureFilter, year: lectureYear };
     }
-    if (lecture_semester) {
-      lectureFilter = { ...lectureFilter, semester: lecture_semester };
+    if (lectureSemester) {
+      lectureFilter = { ...lectureFilter, semester: lectureSemester };
     }
     order.forEach((orderList) => {
       const orderDict: { [key: string]: string } = {};

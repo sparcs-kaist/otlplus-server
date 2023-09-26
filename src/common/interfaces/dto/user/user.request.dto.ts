@@ -1,9 +1,15 @@
-import { IsArray, IsOptional, Validate } from "class-validator";
-import { OrderDefaultValidator } from "../../../decorators/validators.decorator";
+import { Transform } from "class-transformer";
+import { IsArray, IsOptional, IsString, Validate } from "class-validator";
+import {
+  OrderDefaultValidator,
+  _PROHIBITED_FIELD_PATTERN,
+} from 'src/common/decorators/validators.decorator';
 
 export class UserTakenCoursesQueryDto {
   @IsOptional()
+  @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
   @IsArray()
-  @Validate(OrderDefaultValidator)
+  @IsString({ each: true })
+  @OrderDefaultValidator(_PROHIBITED_FIELD_PATTERN)
   order?: string[];
 }
