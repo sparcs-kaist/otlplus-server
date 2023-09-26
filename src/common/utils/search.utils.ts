@@ -42,7 +42,7 @@ export type orderFilterType = {
 };
 
 export function orderFilter(order: string[] | undefined): orderFilterType[] {
-  if (order == undefined) {
+  if (order === undefined) {
     return [];
   }
   const orderFilter: orderFilterType[] = [];
