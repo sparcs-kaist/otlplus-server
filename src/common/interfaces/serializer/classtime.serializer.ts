@@ -27,7 +27,9 @@ const getClassroomStrs = (classtime: subject_classtime) => {
     const rightParanthesisIndex = buildingFullName.indexOf(')');
     const buildingCode = buildingFullName.slice(1, rightParanthesisIndex);
     const buildingName = buildingFullName.slice(rightParanthesisIndex + 1);
-    const buildingNameEn = buildingFullNameEn.slice(rightParanthesisIndex + 1);
+    const buildingNameEn = buildingFullNameEn
+      ? buildingFullNameEn.slice(rightParanthesisIndex + 1)
+      : buildingName;
     const roomName = classtime.room_name ?? '';
     const classroom = '(' + buildingCode + ') ' + buildingName + ' ' + roomName;
     const classroomEn =

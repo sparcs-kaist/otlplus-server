@@ -14,8 +14,8 @@ export class TimetableRepository {
 
   async getTimetables(
     user: session_userprofile,
-    year?: number,
-    semester?: number,
+    year?: number | null,
+    semester?: number | null,
     paginationAndSorting?: {
       orderBy?: Prisma.timetable_timetableOrderByWithRelationInput[];
       skip?: number;
@@ -29,8 +29,8 @@ export class TimetableRepository {
     return await this.prisma.timetable_timetable.findMany({
       include: timeTableDetails.include,
       where: {
-        year: year,
-        semester: semester,
+        year: year ?? undefined,
+        semester: semester ?? undefined,
         user_id: user.id,
       },
       skip: skip,
@@ -41,9 +41,9 @@ export class TimetableRepository {
 
   async getTimetableBasics(
     user: session_userprofile,
-    year?: number,
-    semester?: number,
-    paginationAndSorting?: {
+    year: number,
+    semester: number,
+    paginationAndSorting: {
       orderBy: Prisma.timetable_timetableOrderByWithRelationInput;
       skip?: number;
       take?: number;
@@ -93,7 +93,7 @@ export class TimetableRepository {
   }
 
   async getTimeTableBasicById(timeTableId: number) {
-    return await this.prisma.timetable_timetable.findUnique({
+    return await this.prisma.timetable_timetable.findUniqueOrThrow({
       where: {
         id: timeTableId,
       },
@@ -110,7 +110,7 @@ export class TimetableRepository {
   }
 
   async getTimeTableById(timeTableId: number): Promise<TimeTableDetails> {
-    return await this.prisma.timetable_timetable.findUnique({
+    return await this.prisma.timetable_timetable.findUniqueOrThrow({
       include: timeTableDetails.include,
       where: {
         id: timeTableId,

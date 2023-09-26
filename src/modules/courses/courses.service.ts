@@ -35,7 +35,10 @@ export class CoursesService {
         )?.latest_read_datetime;
         const latestWrittenDatetime = course.latest_written_datetime;
         return Object.assign(result, {
-          userspecific_is_read: latestWrittenDatetime < latestReadDatetime,
+          userspecific_is_read:
+            latestWrittenDatetime && latestReadDatetime
+              ? latestWrittenDatetime < latestReadDatetime
+              : false,
         });
       } else {
         return Object.assign(result, {
@@ -67,7 +70,10 @@ export class CoursesService {
       )?.latest_read_datetime;
       const latestWrittenDatetime = course.latest_written_datetime;
       return Object.assign(result, {
-        userspecific_is_read: latestWrittenDatetime < latestReadDatetime,
+        userspecific_is_read:
+          latestReadDatetime && latestWrittenDatetime
+            ? latestWrittenDatetime < latestReadDatetime
+            : false,
       });
     } else {
       return Object.assign(result, {

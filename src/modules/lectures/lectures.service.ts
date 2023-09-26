@@ -18,9 +18,6 @@ export class LecturesService {
 
   public async getLectureById(id: number): Promise<LectureResponseDto> {
     const queryResult = await this.LectureRepository.getLectureById(id);
-    if (!queryResult) {
-      throw new NotFoundException();
-    }
     return toJsonLecture<false>(queryResult, false);
   }
 
