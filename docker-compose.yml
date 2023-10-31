@@ -13,8 +13,8 @@ services:
       - MYSQL_DATABASE=otlplus
       - TZ=Asia/Seoul
     volumes:
-      - ../volumes/db:/var/lib/mysql
-      - ../volumes/dump:/dump
+      - ./volumes/db:/var/lib/mysql
+      - ./volumes/dump:/dump
     command: |
       --sql_mode=NO_ENGINE_SUBSTITUTION --default_storage_engine=InnoDB 
       --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
