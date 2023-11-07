@@ -11,6 +11,7 @@ import { session_userprofile } from '@prisma/client';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import {
   AddLectureDto,
+  ReorderTimetableDto,
   TimetableCreateDto,
   TimetableQueryDto,
 } from '../../common/interfaces/dto/timetable/timetable.request.dto';
@@ -88,6 +89,24 @@ export class TimetablesController {
     @Body() body: AddLectureDto,
   ) {
     const timeTable = await this.timetablesService.removeLectureFromTimetable(
+      timetableId,
+      body,
+    );
+    return toJsonTimetable(timeTable);
+  }
+
+  @Post('/:timetableId/reorder')
+  async reorderTimetable(
+    @Param('userId') userId: number,
+    @Param('timetableId') timetableId: number,
+    @Body() body: ReorderTimetableDto,
+    @GetUser() user: session_userprofile,
+  ) {
+    // TODO: use user by auth instead of userId by endpoint param
+    // userId should be removed from endpoint in the future
+    // since each user should only control their own timetable
+    const timeTable = await this.timetablesService.reorderTimetable(
+      user,
       timetableId,
       body,
     );
