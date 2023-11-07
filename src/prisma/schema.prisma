@@ -228,9 +228,9 @@ model review_review {
   lecture_id                                 Int
   lecture                                    subject_lecture                              @relation(fields: [lecture_id], references: [id], onDelete: Restrict)
   content                                    String                                       @db.MediumText
-  grade                                      Int                                          @db.SmallInt @default(0)
-  load                                       Int                                          @db.SmallInt @default(0)
-  speech                                     Int                                          @db.SmallInt @default(0)
+  grade                                      Int                                          @default(0) @db.SmallInt
+  load                                       Int                                          @default(0) @db.SmallInt
+  speech                                     Int                                          @default(0) @db.SmallInt
   writer_id                                  Int?
   writer                                     session_userprofile?                         @relation(fields: [writer_id], references: [id], onUpdate: Restrict)
   writer_label                               String                                       @db.VarChar(200)
@@ -240,7 +240,6 @@ model review_review {
   written_datetime                           DateTime?                                    @db.DateTime(0)
   main_famoushumanityreviewdailyfeed_reviews main_famoushumanityreviewdailyfeed_reviews[]
   main_famousmajorreviewdailyfeed_reviews    main_famousmajorreviewdailyfeed_reviews[]
-  writer                                     session_userprofile?                         @relation(fields: [writer_id], references: [id], onDelete: SetNull)
   review_reviewvote                          review_reviewvote[]
 
   @@unique([writer_id, lecture_id], map: "review_comment_writer_id_af700a5d_uniq")
@@ -248,12 +247,12 @@ model review_review {
 }
 
 model review_reviewvote {
-  id               Int       @id @default(autoincrement())
+  id               Int                  @id @default(autoincrement())
   review_id        Int
-  review           review_review                @relation(fields: [review_id], references: [id], onDelete: Cascade)
+  review           review_review        @relation(fields: [review_id], references: [id], onDelete: Cascade)
   userprofile_id   Int?
-  userprofile      session_userprofile?         @relation(fields: [userprofile_id], references: [id], onDelete:SetNull) 
-  created_datetime DateTime? @db.DateTime(6)
+  userprofile      session_userprofile? @relation(fields: [userprofile_id], references: [id], onDelete: SetNull)
+  created_datetime DateTime?            @db.DateTime(6)
 
   @@unique([review_id, userprofile_id], map: "review_commentvote_comment_id_e4594aea_uniq")
   @@index([created_datetime], map: "review_reviewvote_created_datetime_450f85e2")
@@ -281,7 +280,6 @@ model session_userprofile {
   session_userprofile_specialized_major session_userprofile_specialized_major[]
   taken_lectures                        session_userprofile_taken_lectures[]
   subject_courseuser                    subject_courseuser[]
-  taken_lectures                        session_userprofile_taken_lectures[]
   support_rate                          support_rate[]
   timetable_timetable                   timetable_timetable[]
   timetable_wishlist                    timetable_wishlist?
@@ -296,7 +294,6 @@ model session_userprofile_favorite_departments {
   userprofile    session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
   department_id  Int
   department     subject_department  @relation(fields: [department_id], references: [id], onUpdate: Restrict)
-  userprofile    session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
 
   @@unique([userprofile_id, department_id], map: "userprofile_id")
   @@index([department_id], map: "session_userprofile_favorite_departments_department_id_fkey")
@@ -341,7 +338,6 @@ model session_userprofile_taken_lectures {
   userprofile    session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
   lecture_id     Int
   lecture        subject_lecture     @relation(fields: [lecture_id], references: [id], onUpdate: Restrict)
-  userprofile    session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
 
   @@unique([userprofile_id, lecture_id], map: "userprofile_id")
   @@index([lecture_id], map: "session_userprofile_taken_lectures_lecture_id_fkey")
@@ -515,7 +511,6 @@ model subject_lecture {
   students                        session_userprofile_taken_lectures[]
   subject_classtime               subject_classtime[]
   subject_examtime                subject_examtime[]
-  students                        session_userprofile_taken_lectures[]
   timetable_oldtimetable_lectures timetable_oldtimetable_lectures[]
   timetable_timetable_lectures    timetable_timetable_lectures[]
   timetable_wishlist_lectures     timetable_wishlist_lectures[]
