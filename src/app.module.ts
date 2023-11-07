@@ -10,6 +10,7 @@ import { CoursesModule } from './modules/courses/courses.module';
 import { LecturesModule } from './modules/lectures/lectures.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { SemestersModule } from './modules/semesters/semesters.module';
+import { StatusModule } from './modules/status/status.module';
 import { TimetablesModule } from './modules/timetables/timetables.module';
 import { UserModule } from './modules/user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -24,6 +25,7 @@ import { PrismaModule } from './prisma/prisma.module';
     UserModule,
     SemestersModule,
     TimetablesModule,
+    StatusModule,
   ],
   controllers: [AppController],
   providers: [
