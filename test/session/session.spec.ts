@@ -1,9 +1,9 @@
-import { INestApplication } from "@nestjs/common";
-import { Test, TestingModule } from "@nestjs/testing";
-import { AppModule } from "../../src/app.module";
-import * as request from "supertest";
-import { PrismaService } from "../../src/prisma/prisma.service";
-import { UserService } from "../../src/modules/user/user.service";
+import { INestApplication } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
+import axios from 'axios';
+import { AppModule } from '../../src/app.module';
+import { UserService } from '../../src/modules/user/user.service';
+import { PrismaService } from '../../src/prisma/prisma.service';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -19,26 +19,39 @@ describe('AppController (e2e)', () => {
 
   it('/session/info (GET)', async () => {
     const prismaService = app.get(PrismaService);
-    const session_userprofileList = await prismaService.session_userprofile.findMany({})
-
     const userService = app.get(UserService);
-    const batchSize = 50;
-    const batchCount = Math.ceil(session_userprofileList.length / batchSize);
 
-    for(let i = 0; i < batchCount; i++){
-      const batch = session_userprofileList.slice(i * batchSize, (i + 1) * batchSize);
-      batch.forEach((user) => {
-        const profile =  userService.getProfile(user)
-          .then((profile) => {
+    const sidList = await axios.get('http://localhost:58000/session');
 
+    const BATCH_SIZE = 10;
+    const BATCH_COUNT = Math.floor(sidList.data.length / BATCH_SIZE) + 1;
+    for (let i = 0; i < BATCH_COUNT; i++) {
+      const batch = sidList.data.slice(i * BATCH_SIZE, (i + 1) * BATCH_SIZE);
+      const promises = batch.map(async (sid: string) => {
+        const r = await axios.get(
+          `http://localhost:58000/session/login?sid=${sid}`,
+        );
+        const { data } = r;
+        const user = prismaService.session_userprofile
+          .findFirst({
+            where: { sid },
           })
-      })
+          .then((user) => {
+            try {
+              return userService.getProfile(user);
+            } catch (e) {
+              console.log('error with sid: ', sid);
+              console.error(e);
+            }
+          })
+          .then((profile) => {
+            expect(profile).toEqual(data);
+            return profile;
+          });
+        return user;
+      });
+      await Promise.all(promises);
+      console.log(`batch ${i} / ${BATCH_COUNT} done`);
     }
-
-
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
-  });
+  }, 100000000);
 });

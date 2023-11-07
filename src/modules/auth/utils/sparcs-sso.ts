@@ -1,7 +1,7 @@
+import axios, { AxiosResponse } from 'axios';
 import * as crypto from 'crypto';
 import * as querystring from 'querystring';
-import axios, { AxiosResponse } from 'axios';
-import { KaistInfo, SSOUser } from "../../../common/interfaces/dto/auth/sso.dto";
+import { SSOUser } from '../../../common/interfaces/dto/auth/sso.dto';
 
 // CONVERT SPARCS SSO V2 Client Version 1.1 TO TYPESCRIPT
 // VALID ONLY AFTER ----(NOT VALID) ----
@@ -112,9 +112,11 @@ export class Client {
         throw new Error('UNKNOWN_ERROR');
       }
 
-      const result =  r.data
-      console.log(result)
-      result.kaist_info = result.kaist_info ? JSON.parse(result.kaist_info) : {}
+      const result = r.data;
+      console.log(result);
+      result.kaist_info = result.kaist_info
+        ? JSON.parse(result.kaist_info)
+        : {};
       return result as SSOUser;
     } catch (e) {
       console.error(e);
@@ -122,7 +124,7 @@ export class Client {
     }
   }
 
-  public get_login_params(): {url: string, state: string} {
+  public get_login_params(): { url: string; state: string } {
     /*
     Get login parameters for SPARCS SSO login
     :returns: [url, state] where url is a url to redirect user,
@@ -134,14 +136,14 @@ export class Client {
      */
     const state: string = crypto.randomBytes(10).toString('hex');
     const params: Params = { client_id: this.client_id, state: state };
-    console.log(this.client_id)
+    console.log(this.client_id);
     console.log(state);
-    console.log(this.URLS['token_require'])
+    console.log(this.URLS['token_require']);
     const url: string = `${this.URLS['token_require']}?${querystring.stringify(
       params,
     )}`;
-    console.log('url',url)
-    return {url, state}
+    console.log('url', url);
+    return { url, state };
   }
 
   public async get_user_info(code: string): Promise<SSOUser> {
@@ -180,7 +182,6 @@ export class Client {
     };
     return `${this.URLS['logout']}?${querystring.stringify(params)}`;
   }
-
 
   public async get_notice(
     offset: number = 0,

@@ -1,4 +1,47 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
+import { session_userprofile } from '@prisma/client';
+import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { Public } from 'src/common/decorators/skip-auth.decorator';
+import { CourseReviewQueryDto } from 'src/common/interfaces/dto/course/course.review.request.dto';
+import { CourseQueryDto } from '../../common/interfaces/dto/course/course.request.dto';
+import { CoursesService } from './courses.service';
 
-@Controller('courses')
-export class CoursesController {}
+@Controller('api/courses')
+export class CourseController {
+  constructor(private readonly CoursesService: CoursesService) {}
+
+  @Get()
+  async getCourses(
+    @Query() query: CourseQueryDto,
+    @GetUser() user: session_userprofile,
+  ) {
+    const courses = await this.CoursesService.getCourseByFilter(query, user);
+    return courses;
+  }
+
+  @Get(':id')
+  async getCourseById(
+    @Param('id') id: number,
+    @GetUser() user: session_userprofile,
+  ) {
+    return await this.CoursesService.getCourseById(id, user);
+  }
+
+  @Get(':id/lectures')
+  async getLecturesByCourseId(
+    @Query() query: { order: string[] },
+    @Param('id') id: number,
+  ) {
+    return await this.CoursesService.getLecturesByCourseId(query, id);
+  }
+
+  @Get(':id/reviews')
+  @Public()
+  async getReviewByCourseId(
+    @Query() query: CourseReviewQueryDto,
+    @Param('id') id: number,
+    @GetUser() user: session_userprofile,
+  ) {
+    return await this.CoursesService.getReviewsByCourseId(query, id, user);
+  }
+}

@@ -1,4 +1,6 @@
-import { Prisma, session_userprofile_majors} from "@prisma/client";
-
-
-export type DepartmentResponseDto  =  Partial<session_userprofile_majors>;
+export interface DepartmentResponseDto {
+  id: number;
+  name: string;
+  name_en: string;
+  code: string;
+}

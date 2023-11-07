@@ -1,7 +1,6 @@
 import dotenv from 'dotenv';
-import { dotEnvOptions } from './dotenv-options';
 import { PrismaClientOptions } from 'prisma/prisma-client/runtime';
-import { JwtModuleOptions, JwtOptionsFactory } from '@nestjs/jwt';
+import { dotEnvOptions } from './dotenv-options';
 
 dotenv.config(dotEnvOptions);
 console.log(`NODE_ENV environment: ${process.env.NODE_ENV}`);
@@ -20,16 +19,16 @@ export default () => {
 
 const getCorsConfig = () => {
   const { NODE_ENV } = process.env;
-  if(NODE_ENV === 'local'){
+  if (NODE_ENV === 'local') {
     return {
-      origin: "http://localhost:3000",
-      methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+      origin: 'http://localhost:3000',
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
       credentials: true,
       preflightContinue: false,
-      optionsSuccessStatus: 204
-    }
+      optionsSuccessStatus: 204,
+    };
   }
-}
+};
 
 const getPrismaConfig = (): PrismaClientOptions => {
   return {
@@ -39,7 +38,12 @@ const getPrismaConfig = (): PrismaClientOptions => {
       },
     },
     errorFormat: 'pretty',
-    log: [`error`,'query'],
+    log: [
+      {
+        emit: 'event',
+        level: 'query',
+      },
+    ],
   };
 };
 
@@ -58,7 +62,7 @@ const getJwtConfig = () => {
       expiresIn: process.env.EXPIRES_IN,
       refreshExpiresIn: process.env.REFRESH_EXPIRES_IN,
     },
-  }
+  };
 };
 
 const getSsoConfig = (): any => {

@@ -1,14 +1,14 @@
 import { Controller, Get, Query, Req, Res, Session } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { Response } from 'express';
-import { Client } from './utils/sparcs-sso';
+import { session_userprofile } from '@prisma/client';
+import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { IAuth } from 'src/common/interfaces/structures';
+import { Public } from '../../common/decorators/skip-auth.decorator';
+import { SSOUser } from '../../common/interfaces/dto/auth/sso.dto';
+import { ProfileDto } from '../../common/interfaces/dto/user/user.response.dto';
 import settings from '../../settings';
 import { UserService } from '../user/user.service';
-import { Public } from '../../common/decorators/skip-auth.decorator';
-import { GetUser } from '../../common/decorators/get-user.decorator';
-import { session_userprofile } from '@prisma/client';
-import { SSOUser } from '../../common/interfaces/dto/auth/sso.dto';
-import { ProfileDto } from "../../common/interfaces/dto/user/user.response.dto";
+import { AuthService } from './auth.service';
+import { Client } from './utils/sparcs-sso';
 
 @Controller('session')
 export class AuthController {
@@ -30,10 +30,10 @@ export class AuthController {
   @Public()
   @Get('login')
   user_login(
-    @Query('next') next,
-    @Query('social_login') social_login,
-    @Req() req,
-    @Res() res,
+    @Query('next') next: string,
+    @Query('social_login') social_login: string,
+    @Req() req: IAuth.IRequest,
+    @Res() res: IAuth.IResponse,
   ) {
     if (req.user) {
       return res.redirect(next ?? '/');
@@ -53,7 +53,7 @@ export class AuthController {
     @Query('state') state: string,
     @Query('code') code: string,
     @Session() session: Record<string, any>,
-    @Res() response: Response,
+    @Res() response: IAuth.IResponse,
   ) {
     const stateBefore = session['sso_state'];
     if (!stateBefore || stateBefore != state) {
@@ -80,12 +80,47 @@ export class AuthController {
   }
 
   @Get('info')
-  async getUserProfile(@GetUser() user: session_userprofile): Promise<ProfileDto> {
+  async getUserProfile(
+    @GetUser() user: session_userprofile,
+  ): Promise<ProfileDto> {
     /*
     @Todo
     implement userSerializer, before that, we'd like to architect the dto types
      */
     const profile = await this.userService.getProfile(user);
     return profile;
+  }
+
+  @Public()
+  @Get('/')
+  async home(@Req() req: IAuth.IRequest, @Res() res: IAuth.IResponse) {
+    return res.redirect('/session/login');
+  }
+
+  @Public()
+  @Get('logout')
+  async logout(
+    @Req() req: IAuth.IRequest,
+    @Res() res: IAuth.IResponse,
+    @Query('next') next: string,
+    @GetUser() user: session_userprofile,
+  ) {
+    const webURL = process.env.WEB_URL;
+    if (user) {
+      const sid = user.sid;
+      const protocol = req.protocol;
+      const host = req.get('host');
+      const originalUrl = req.originalUrl;
+      const absoluteUrl = `${protocol}://${host}${originalUrl}`;
+      const logoutUrl = this.ssoClient.get_logout_url(sid, absoluteUrl);
+
+      res.clearCookie('accessToken', { path: '/', maxAge: 0, httpOnly: true });
+      res.clearCookie('refreshToken', { path: '/', maxAge: 0, httpOnly: true });
+
+      console.log(logoutUrl);
+      return res.redirect(logoutUrl);
+    }
+
+    return res.redirect(webURL + '/');
   }
 }
