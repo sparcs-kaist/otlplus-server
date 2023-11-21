@@ -61,6 +61,6 @@ jobs:
       - name: Copy env file
         run: cp ./env/.env.example ./env/.env.local
       - name: Generate prisma
-        run: prisma-generate
+        run: npm run prisma-generate
       - name: Build
         run: npm run build
