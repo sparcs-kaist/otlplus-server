@@ -53,3 +53,9 @@ export class AddLectureDto {
   @Type(() => Number)
   lecture!: number;
 }
+
+export class ReorderTimetableDto {
+  @IsNumber()
+  @Type(() => Number)
+  arrange_order!: number;
+}
