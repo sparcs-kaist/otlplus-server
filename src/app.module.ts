@@ -8,6 +8,7 @@ import { JwtCookieGuard } from './modules/auth/guard/jwt-cookie.guard';
 import { MockAuthGuard } from './modules/auth/guard/mock-auth-guard';
 import { CoursesModule } from './modules/courses/courses.module';
 import { LecturesModule } from './modules/lectures/lectures.module';
+import { RatesModule } from './modules/rates/rates.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { SemestersModule } from './modules/semesters/semesters.module';
 import { TimetablesModule } from './modules/timetables/timetables.module';
@@ -24,6 +25,7 @@ import { PrismaModule } from './prisma/prisma.module';
     UserModule,
     SemestersModule,
     TimetablesModule,
+    RatesModule,
   ],
   controllers: [AppController],
   providers: [

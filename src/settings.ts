@@ -14,6 +14,7 @@ export default () => {
     getJwtConfig: () => getJwtConfig(),
     getSsoConfig: () => getSsoConfig(),
     getCorsConfig: () => getCorsConfig(),
+    getVersion: () => getVersion(),
   };
 };
 
@@ -71,4 +72,8 @@ const getSsoConfig = (): any => {
     ssoClientId: process.env.SSO_CLIENT_ID,
     ssoSecretKey: process.env.SSO_SECRET_KEY,
   };
+};
+
+const getVersion = () => {
+  return String(process.env.npm_package_version);
 };
