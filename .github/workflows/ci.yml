@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main, dev, release]
+    branches: [main, dev, release, ci/*]
   pull_request:
-    branches: [main, dev, release]
+    branches: [main, dev, release, ci/*]
 
 env:
   NODE_VERSION: 18
@@ -60,5 +60,7 @@ jobs:
         run: npm ci
       - name: Copy env file
         run: cp ./env/.env.example ./env/.env.local
+      - name: Generate prisma
+        run: prisma-generate
       - name: Build
         run: npm run build
