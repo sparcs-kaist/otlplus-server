@@ -97,14 +97,16 @@ export class TimetablesController {
 
   @Post('/:timetableId/reorder')
   async reorderTimetable(
+    /**
+     * @todo use user by auth instead of userId by endpoint param
+     * userId should be removed from endpoint in the future
+     * since each user should only control their own timetable
+     */
     @Param('userId') userId: number,
     @Param('timetableId') timetableId: number,
     @Body() body: ReorderTimetableDto,
     @GetUser() user: session_userprofile,
   ) {
-    // TODO: use user by auth instead of userId by endpoint param
-    // userId should be removed from endpoint in the future
-    // since each user should only control their own timetable
     const timeTable = await this.timetablesService.reorderTimetable(
       user,
       timetableId,
