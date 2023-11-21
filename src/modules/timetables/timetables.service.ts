@@ -194,6 +194,7 @@ export class TimetablesService {
       if (targetArrangeOrder === targetTimetable.arrange_order) {
         return targetTimetable;
       }
+
       const relatedTimeTables = await this.timetableRepository.getTimetables(
         user,
         targetTimetable.year,
@@ -205,6 +206,7 @@ export class TimetablesService {
       ) {
         throw new BadRequestException('Wrong field arrange_order in request');
       }
+
       let timeTablesToBeUpdated: { id: number; arrange_order: number }[] = [];
       if (targetArrangeOrder < targetTimetable.arrange_order) {
         timeTablesToBeUpdated = relatedTimeTables
@@ -233,6 +235,7 @@ export class TimetablesService {
             };
           });
       }
+
       await Promise.all(
         timeTablesToBeUpdated.map(async (timetable) => {
           return this.timetableRepository.updateOrder(
