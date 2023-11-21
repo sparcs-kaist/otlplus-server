@@ -151,9 +151,8 @@ export class TimetablesService {
 
   async deleteTimetable(user: session_userprofile, timetableId: number) {
     return await this.prismaService.$transaction(async (tx) => {
-      const { semester, year, arrange_order } = await this.getTimetable(
-        timetableId,
-      );
+      const { semester, year, arrange_order } =
+        await this.timetableRepository.getTimeTableById(timetableId);
       await this.timetableRepository.deleteById(timetableId);
       const relatedTimeTables = await this.timetableRepository.getTimetables(
         user,
@@ -186,9 +185,14 @@ export class TimetablesService {
   ) {
     return await this.prismaService.$transaction(async (tx) => {
       const { arrange_order: targetArrangeOrder } = body;
-      const targetTimetable = await this.getTimetable(timetableId);
+      const targetTimetable = await this.timetableRepository.getTimeTableById(
+        timetableId,
+      );
       if (targetTimetable.user_id !== user.id) {
         throw new BadRequestException('User is not owner of timetable');
+      }
+      if (targetArrangeOrder === targetTimetable.arrange_order) {
+        return targetTimetable;
       }
       const relatedTimeTables = await this.timetableRepository.getTimetables(
         user,
@@ -228,9 +232,6 @@ export class TimetablesService {
               arrange_order: timeTable.arrange_order - 1,
             };
           });
-      } else {
-        // arrange_order == timetable.arrange_order
-        return await this.timetableRepository.getTimeTableById(timetableId);
       }
       await Promise.all(
         timeTablesToBeUpdated.map(async (timetable) => {
@@ -240,11 +241,11 @@ export class TimetablesService {
           );
         }),
       );
-      await this.timetableRepository.updateOrder(
+      const updatedTimeTable = await this.timetableRepository.updateOrder(
         targetTimetable.id,
         targetArrangeOrder,
       );
-      return await this.timetableRepository.getTimeTableById(timetableId);
+      return updatedTimeTable;
     });
   }
 }
