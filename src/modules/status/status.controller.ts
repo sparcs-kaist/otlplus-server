@@ -4,6 +4,6 @@ import { Controller, Get } from '@nestjs/common';
 export class StatusController {
   @Get()
   getStatus() {
-    return "It's Healthy!";
+    return 'I am Healthy!';
   }
 }
