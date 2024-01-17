@@ -46,6 +46,29 @@ export const timeTableDetails =
     },
   });
 
+export const plannerDetails = Prisma.validator<Prisma.planner_plannerArgs>()({
+  include: {
+    planner_arbitraryplanneritem: true,
+    planner_futureplanneritem: true,
+    planner_planner_additional_tracks: {
+      include: {
+        graduation_additionaltrack: {
+          include: {
+            subject_department: true,
+          },
+        },
+      },
+    },
+    planner_takenplanneritem: true,
+    graduation_generaltrack: true,
+    graduation_majortrack: {
+      include: {
+        subject_department: true,
+      },
+    },
+  },
+});
+
 export type NESTED = true;
 
 export const reviewDetails = Prisma.validator<Prisma.review_reviewArgs>()({
@@ -81,6 +104,22 @@ export const wishlistWithLectures =
       },
     },
   });
+    },
+  },
+});
+
+const majorTrack = Prisma.validator<Prisma.graduation_majortrackArgs>()({
+  include: {
+    subject_department: true,
+  },
+});
+
+const additionalTrack =
+  Prisma.validator<Prisma.graduation_additionaltrackArgs>()({
+    include: {
+      subject_department: true,
+    },
+  });
 
 export type LectureReviewDetails = Prisma.subject_lectureGetPayload<
   typeof lectureReviews
@@ -104,13 +143,3 @@ export type TimeTableDetails = Prisma.timetable_timetableGetPayload<
 >;
 export type TimeTableBasic = Prisma.timetable_timetableGetPayload<null>;
 export type SemesterBasic = Prisma.subject_semesterGetPayload<null>;
-
-export type WishlistWithLectures = Prisma.timetable_wishlistGetPayload<
-  typeof wishlistWithLectures
->;
-
-export function isLectureDetails(
-  lecture: LectureExtended | LectureDetails,
-): lecture is LectureDetails {
-  return 'subject_classtime' in lecture && 'subject_examtime' in lecture;
-}
