@@ -21,7 +21,7 @@ const getCorsConfig = () => {
   const { NODE_ENV } = process.env;
   if (NODE_ENV === 'local') {
     return {
-      origin: 'http://localhost:3000',
+      origin: 'http://localhost:5173',
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
       credentials: true,
       preflightContinue: false,
