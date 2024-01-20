@@ -35,7 +35,17 @@ export type Union<
   ? U
   : never;
 
+<<<<<<< HEAD
 export function getRandomChoice<T>(choices: T[]): T {
   const randomIndex = Math.floor(Math.random() * choices.length);
   return choices[randomIndex];
+=======
+export function generationUnionTypeChecker<UnionType extends string>(
+  ...values: UnionType[]
+) {
+  return function (value: unknown): UnionType | false {
+    if (typeof value !== 'string') return false;
+    return values.includes(value as UnionType) ? (value as UnionType) : false;
+  };
+>>>>>>> e490d62 (feat: add union type checker)
 }
