@@ -55,7 +55,7 @@ export function orderFilter(order: string[] | undefined): orderFilterType[] {
     }
 
     orderDict[orderBy[orderBy.length - 1]] = order;
-    orderFilter.push(orderDictHelper(orderBy.slice(1), order));
+    orderFilter.push(orderDict);
   });
   return orderFilter;
 }
