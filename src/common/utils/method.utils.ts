@@ -35,17 +35,18 @@ export type Union<
   ? U
   : never;
 
-<<<<<<< HEAD
 export function getRandomChoice<T>(choices: T[]): T {
   const randomIndex = Math.floor(Math.random() * choices.length);
   return choices[randomIndex];
-=======
+}
+
 export function generationUnionTypeChecker<UnionType extends string>(
   ...values: UnionType[]
 ) {
-  return function (value: unknown): UnionType | false {
-    if (typeof value !== 'string') return false;
-    return values.includes(value as UnionType) ? (value as UnionType) : false;
+  return function (value: unknown): UnionType | Error {
+    if (typeof value !== 'string') return new Error('Invalid value: ' + value);
+    return values.includes(value as UnionType)
+      ? (value as UnionType)
+      : new Error('Invalid value: ' + value);
   };
->>>>>>> e490d62 (feat: add union type checker)
 }
