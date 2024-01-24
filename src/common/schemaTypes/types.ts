@@ -17,6 +17,13 @@ export const courseDetails = Prisma.validator<Prisma.subject_courseArgs>()({
   },
 });
 
+export const lectureMedium = Prisma.validator<Prisma.subject_lectureArgs>()({
+  include: {
+    subject_department: true,
+    subject_lecture_professors: { include: { professor: true } },
+  },
+});
+
 export const lectureDetails = Prisma.validator<Prisma.subject_lectureArgs>()({
   include: {
     subject_department: true,
@@ -59,6 +66,20 @@ const lectureReviews = Prisma.validator<Prisma.subject_lectureArgs>()({
   },
 });
 
+export const wishlistLectures =
+  Prisma.validator<Prisma.timetable_wishlistArgs>()({
+    include: {
+      timetable_wishlist_lectures: {
+        include: {
+          subject_lecture: {
+            include: lectureMedium.include,
+          },
+        },
+        where: { subject_lecture: { deleted: false } },
+      },
+    },
+  });
+
 export type LectureReviewDetails = Prisma.subject_lectureGetPayload<
   typeof lectureReviews
 >;
@@ -67,6 +88,9 @@ export type ReviewDetails = Prisma.review_reviewGetPayload<
 >;
 export type LectureDetails = Prisma.subject_lectureGetPayload<
   typeof lectureDetails
+>;
+export type LectureMedium = Prisma.subject_lectureGetPayload<
+  typeof lectureMedium
 >;
 export type LectureBasic = Prisma.subject_lectureGetPayload<null>;
 export type CourseDetails = Prisma.subject_courseGetPayload<
@@ -77,3 +101,13 @@ export type TimeTableDetails = Prisma.timetable_timetableGetPayload<
 >;
 export type TimeTableBasic = Prisma.timetable_timetableGetPayload<null>;
 export type SemesterBasic = Prisma.subject_semesterGetPayload<null>;
+
+export type WishlistWithLectures = Prisma.timetable_wishlistGetPayload<
+  typeof wishlistLectures
+>;
+
+export function isLectureDetails(
+  lecture: LectureMedium | LectureDetails,
+): lecture is LectureDetails {
+  return 'subject_classtime' in lecture;
+}

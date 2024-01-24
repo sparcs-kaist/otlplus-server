@@ -1,15 +1,18 @@
 import { applyOrder } from 'src/common/utils/search.utils';
-import { LectureDetails, NESTED } from '../../schemaTypes/types';
+import {
+  LectureDetails,
+  LectureMedium,
+  NESTED,
+  isLectureDetails,
+} from '../../schemaTypes/types';
 import { LectureResponseDto } from '../dto/lecture/lecture.response.dto';
 import { toJsonClasstime } from './classtime.serializer';
 import { toJsonExamtime } from './examtime.serializer';
 import { toJsonProfessor } from './professor.serializer';
 
-export function toJsonLecture<T>(
-  lecture: T extends NESTED
-    ? Omit<LectureDetails, 'subject_classtime' & 'subject_examtime'>
-    : LectureDetails,
-  nested: T extends NESTED ? true : false,
+export function toJsonLecture<T extends boolean>(
+  lecture: T extends NESTED ? LectureMedium : LectureDetails,
+  nested: T,
 ): LectureResponseDto {
   let result = {
     id: lecture.id,
@@ -52,17 +55,18 @@ export function toJsonLecture<T>(
     return result;
   }
 
-  result = Object.assign(result, {
-    grade: lecture.grade,
-    load: lecture.load,
-    speech: lecture.speech,
-    classtimes: lecture.subject_classtime.map((classtime) =>
-      toJsonClasstime(classtime),
-    ),
-    examtimes: lecture.subject_examtime.map((examtime) =>
-      toJsonExamtime(examtime),
-    ),
-  });
-
-  return result;
+  if (isLectureDetails(lecture)) {
+    result = Object.assign(result, {
+      grade: lecture.grade,
+      load: lecture.load,
+      speech: lecture.speech,
+      classtimes: lecture.subject_classtime.map((classtime) =>
+        toJsonClasstime(classtime),
+      ),
+      examtimes: lecture.subject_examtime.map((examtime) =>
+        toJsonExamtime(examtime),
+      ),
+    });
+    return result;
+  } else throw new Error("Lecture is not of type 'LectureDetails'");
 }
