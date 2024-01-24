@@ -3,6 +3,7 @@ import {
   GeneralTrackBasic,
   MajorTrackDetails,
 } from 'src/common/schemaTypes/types';
+import { AddtionalTrackTypeNarrower } from '../constants/additional.track.response.dto';
 import { AdditionalTrackResponseDto } from '../dto/track/additional.response.dto';
 import { GeneralTrackResponseDto } from '../dto/track/general.response.dto';
 import { MajorTrackResponseDto } from '../dto/track/major.response.dto';
@@ -46,11 +47,17 @@ export const toJsonMajorTrack = (
 export const toJsonAdditionalTrack = (
   additionalTrack: AdditionalTrackDetails,
 ): AdditionalTrackResponseDto => {
+  const type = AddtionalTrackTypeNarrower(additionalTrack.type);
+
+  if (type instanceof Error) {
+    throw type;
+  }
+
   return {
     id: additionalTrack.id,
     start_year: additionalTrack.start_year,
     end_year: additionalTrack.end_year,
-    type: additionalTrack.type,
+    type,
     department:
       additionalTrack.subject_department === null
         ? null
