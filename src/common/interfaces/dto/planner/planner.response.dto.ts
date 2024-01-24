@@ -12,8 +12,8 @@ export interface PlannerResponseDto {
   general_track: GeneralTrackResponseDto;
   major_track: MajorTrackResponseDto;
   additional_tracks: AdditionalTrackResponseDto[];
-  taken_items: TakenPlannerItemResponseDto;
-  future_items: FuturePlannerItemResponseDto;
-  arbitrary_items: ArbitraryPlannerItemResponseDto;
+  taken_items: TakenPlannerItemResponseDto[];
+  future_items: FuturePlannerItemResponseDto[];
+  arbitrary_items: ArbitraryPlannerItemResponseDto[];
   arrange_order: number;
 }

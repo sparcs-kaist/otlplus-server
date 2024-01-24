@@ -46,26 +46,57 @@ export const timeTableDetails =
     },
   });
 
-export const plannerDetails = Prisma.validator<Prisma.planner_plannerArgs>()({
+const majorTrack = Prisma.validator<Prisma.graduation_majortrackArgs>()({
   include: {
-    planner_arbitraryplanneritem: true,
-    planner_futureplanneritem: true,
-    planner_planner_additional_tracks: {
-      include: {
-        graduation_additionaltrack: {
-          include: {
-            subject_department: true,
-          },
+    subject_department: true,
+  },
+});
+
+const additionalTrack =
+  Prisma.validator<Prisma.graduation_additionaltrackArgs>()({
+    include: {
+      subject_department: true,
+    },
+  });
+
+const takenPlannerItem =
+  Prisma.validator<Prisma.planner_takenplanneritemArgs>()({
+    include: {
+      subject_lecture: {
+        include: {
+          ...lectureDetails.include,
+          course: courseDetails,
         },
       },
     },
-    planner_takenplanneritem: true,
-    graduation_generaltrack: true,
-    graduation_majortrack: {
+  });
+
+const arbitraryPlannerItem =
+  Prisma.validator<Prisma.planner_arbitraryplanneritemArgs>()({
+    include: {
+      subject_department: true,
+    },
+  });
+
+const futurePlannerItem =
+  Prisma.validator<Prisma.planner_futureplanneritemArgs>()({
+    include: {
+      subject_course: courseDetails,
+    },
+  });
+
+export const plannerDetails = Prisma.validator<Prisma.planner_plannerArgs>()({
+  include: {
+    planner_planner_additional_tracks: {
       include: {
-        subject_department: true,
+        graduation_additionaltrack: additionalTrack,
       },
     },
+    graduation_generaltrack: true,
+    graduation_majortrack: majorTrack,
+    planner_takenplanneritem: takenPlannerItem,
+    planner_arbitraryplanneritem: arbitraryPlannerItem,
+    planner_futureplanneritem: futurePlannerItem,
   },
 });
 
@@ -104,22 +135,6 @@ export const wishlistWithLectures =
       },
     },
   });
-    },
-  },
-});
-
-const majorTrack = Prisma.validator<Prisma.graduation_majortrackArgs>()({
-  include: {
-    subject_department: true,
-  },
-});
-
-const additionalTrack =
-  Prisma.validator<Prisma.graduation_additionaltrackArgs>()({
-    include: {
-      subject_department: true,
-    },
-  });
 
 export type LectureReviewDetails = Prisma.subject_lectureGetPayload<
   typeof lectureReviews
@@ -143,3 +158,12 @@ export type TimeTableDetails = Prisma.timetable_timetableGetPayload<
 >;
 export type TimeTableBasic = Prisma.timetable_timetableGetPayload<null>;
 export type SemesterBasic = Prisma.subject_semesterGetPayload<null>;
+export type PlannerDetails = Prisma.planner_plannerGetPayload<
+  typeof plannerDetails
+>;
+export type GeneralTrackBasic = Prisma.graduation_generaltrackGetPayload<null>;
+export type MajorTrackDetails = Prisma.graduation_majortrackGetPayload<
+  typeof majorTrack
+>;
+export type AdditionalTrackDetails =
+  Prisma.graduation_additionaltrackGetPayload<typeof additionalTrack>;

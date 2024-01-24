@@ -1,6 +1,11 @@
 import { PlannerDetails } from 'src/common/schemaTypes/types';
 import { PlannerResponseDto } from '../dto/planner/planner.response.dto';
 import {
+  toJsonArbitraryItem,
+  toJsonFutureItem,
+  toJsonTakenItem,
+} from './planner.item.serializer';
+import {
   toJsonAdditionalTrack,
   toJsonGeneralTrack,
   toJsonMajorTrack,
@@ -17,9 +22,15 @@ export const toJsonPlanner = (planner: PlannerDetails): PlannerResponseDto => {
       (additional_track) =>
         toJsonAdditionalTrack(additional_track.graduation_additionaltrack),
     ),
-    taken_items: toJsonTakenItem(planner.taken_items),
-    future_items: toJsonFutureItem(planner.future_items),
-    arbitrary_items: toJsonArbitraryItem(planner.arbitrary_items),
+    taken_items: planner.planner_takenplanneritem.map((item) =>
+      toJsonTakenItem(item),
+    ),
+    future_items: planner.planner_futureplanneritem.map((item) =>
+      toJsonFutureItem(item),
+    ),
+    arbitrary_items: planner.planner_arbitraryplanneritem.map((item) =>
+      toJsonArbitraryItem(item),
+    ),
     arrange_order: planner.arrange_order,
   };
 };

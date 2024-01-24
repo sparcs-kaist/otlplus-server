@@ -6,7 +6,7 @@ export interface ArbitraryPlannerItemResponseDto {
   is_excluded: boolean;
   year: number;
   semester: number;
-  department: DepartmentResponseDto;
+  department: DepartmentResponseDto | null;
   type: string;
   type_en: string;
   credit: number;
