@@ -2,17 +2,25 @@ import { Injectable } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { IFeed } from 'src/common/interfaces/dto/feeds/IFeed';
 import { DepartmentRepository } from 'src/prisma/repositories/department.repository';
+import { FeedsRepository } from 'src/prisma/repositories/feeds.repository';
 
 @Injectable()
 export class FeedsService {
-  constructor(private readonly departmentRepository: DepartmentRepository) {}
+  constructor(
+    private readonly departmentRepository: DepartmentRepository,
+    private readonly feedsRepository: FeedsRepository,
+  ) {}
 
-  async getFeeds(
-    query: IFeed.QueryDto,
-    user: session_userprofile,
-  ): Promise<void> {
-    const { date } = query;
-    const departments = this.departmentRepository.getRelatedDepartments(user);
+  async getFeeds(query: IFeed.QueryDto, user: session_userprofile) {
+    const { date: dateString } = query;
+    const date = new Date('2024-01-15');
+    const departments = await this.departmentRepository.getRelatedDepartments(
+      user,
+    );
+
+    const feeds = await this.feedsRepository.getFeeds(date);
+
+    return feeds;
 
     //   famous_humanity_review_daily_feed = FamousHumanityReviewDailyFeed.get(date=date)
 
