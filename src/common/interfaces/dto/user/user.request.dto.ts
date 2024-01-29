@@ -13,8 +13,3 @@ export class UserTakenCoursesQueryDto {
   @OrderDefaultValidator(_PROHIBITED_FIELD_PATTERN)
   order?: string[];
 }
-
-export class UserFeedsQueryDto {
-  @IsString()
-  date!: string;
-}

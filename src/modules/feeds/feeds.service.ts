@@ -1,23 +1,17 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
-import { UserFeedsQueryDto } from 'src/common/interfaces/dto/user/user.request.dto';
+import { IFeed } from 'src/common/interfaces/dto/feeds/IFeed';
 import { DepartmentRepository } from 'src/prisma/repositories/department.repository';
 
 @Injectable()
 export class FeedsService {
   constructor(private readonly departmentRepository: DepartmentRepository) {}
 
-  async getUserFeeds(
-    query: UserFeedsQueryDto,
+  async getFeeds(
+    query: IFeed.QueryDto,
     user: session_userprofile,
   ): Promise<void> {
-    const { date: dateString } = query;
-    let date;
-    try {
-      date = new Date(dateString);
-    } catch (error) {
-      throw new BadRequestException('Invalid date format');
-    }
+    const { date } = query;
     const departments = this.departmentRepository.getRelatedDepartments(user);
 
     //   famous_humanity_review_daily_feed = FamousHumanityReviewDailyFeed.get(date=date)
