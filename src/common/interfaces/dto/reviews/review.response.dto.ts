@@ -1,24 +1,24 @@
 import { CourseResponseDto } from '../course/course.response.dto';
 import { LectureResponseDto } from '../lecture/lecture.response.dto';
 
-export class ReviewResponseDto {
-  id!: number;
+export interface ReviewResponseDto {
+  id: number;
 
-  course!: CourseResponseDto;
+  course: CourseResponseDto;
 
-  lecture!: LectureResponseDto;
+  lecture: LectureResponseDto;
 
-  content!: string;
+  content: string;
 
-  like!: number;
+  like: number;
 
-  is_deleted!: number;
+  is_deleted: number;
 
-  grade!: number;
+  grade: number;
 
-  load!: number;
+  load: number;
 
-  speech!: number;
+  speech: number;
 
-  userspecific_is_liked!: boolean;
+  userspecific_is_liked: boolean;
 }
