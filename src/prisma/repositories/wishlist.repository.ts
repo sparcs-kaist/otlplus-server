@@ -14,6 +14,7 @@ export class WishlistRepository {
       where: { user_id: userId },
       create: { user_id: userId },
       update: {},
+      include: wishlistWithLectures.include,
     });
   }
 

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Param,
   Post,
   UnauthorizedException,
@@ -14,6 +15,18 @@ import { WishlistService } from './wishlist.service';
 @Controller('api/users/:userId/wishlist')
 export class WishlistController {
   constructor(private readonly wishlistService: WishlistService) {}
+
+  @Get()
+  async getLectures(
+    @Param('userId') userId: number,
+    @GetUser() user: session_userprofile,
+  ) {
+    if (userId !== user.id) throw new UnauthorizedException(); // TODO: Better message
+    const wishlist = await this.wishlistService.getWishlistWithLectures(
+      user.id,
+    );
+    return toJsonWishlist(wishlist);
+  }
 
   @Post('add-lecture')
   async addLecture(

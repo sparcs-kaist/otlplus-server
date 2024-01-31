@@ -14,6 +14,10 @@ export class WishlistService {
     private readonly lectureRepository: LectureRepository,
   ) {}
 
+  async getWishlistWithLectures(userId: number) {
+    return await this.wishlistRepository.getOrCreateWishlist(userId);
+  }
+
   async addLecture(userId: number, body: WishlistAddLectureDto) {
     const wishlist = await this.wishlistRepository.getOrCreateWishlist(userId);
 
