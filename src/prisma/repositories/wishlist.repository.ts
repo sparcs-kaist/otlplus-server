@@ -41,7 +41,7 @@ export class WishlistRepository {
     });
   }
 
-  async getWishlistLectures(
+  async getWishlistWithLectures(
     wishlistId: number,
   ): Promise<WishlistWithLectures | null> {
     return await this.prisma.timetable_wishlist.findUnique({
