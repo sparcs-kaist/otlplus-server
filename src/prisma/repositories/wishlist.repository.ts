@@ -30,9 +30,14 @@ export class WishlistRepository {
     });
   }
 
-  async lectureExistsInWishlist(wishlistId: number, lectureId: number) {
-    return await this.prisma.timetable_wishlist_lectures.findFirst({
-      where: { lecture_id: lectureId, wishlist_id: wishlistId },
+  async getLectureInWishlist(wishlistId: number, lectureId: number) {
+    return await this.prisma.timetable_wishlist_lectures.findUnique({
+      where: {
+        wishlist_id_lecture_id: {
+          wishlist_id: wishlistId,
+          lecture_id: lectureId,
+        },
+      },
     });
   }
 

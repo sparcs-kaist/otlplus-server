@@ -18,7 +18,7 @@ export class WishlistService {
     const wishlist = await this.wishlistRepository.getOrCreateWishlist(userId);
 
     if (
-      await this.wishlistRepository.lectureExistsInWishlist(
+      await this.wishlistRepository.getLectureInWishlist(
         wishlist.id,
         body.lecture,
       )
