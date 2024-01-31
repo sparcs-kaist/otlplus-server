@@ -109,5 +109,5 @@ export type WishlistWithLectures = Prisma.timetable_wishlistGetPayload<
 export function isLectureDetails(
   lecture: LectureExtended | LectureDetails,
 ): lecture is LectureDetails {
-  return 'subject_classtime' in lecture;
+  return 'subject_classtime' in lecture && 'subject_examtime' in lecture;
 }
