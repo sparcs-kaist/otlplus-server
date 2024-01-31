@@ -6,7 +6,7 @@ export namespace IFeed {
     type: string;
     date: Date;
     priority: number;
-    reviews?: ReviewResponseDto;
+    reviews?: ReviewResponseDto[];
   }
 
   export class QueryDto {

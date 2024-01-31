@@ -50,16 +50,26 @@ export class FeedsRepository {
     return famousHumanityReviewDailyFeed;
   }
 
-  public async getOrCreateRankedReviewDailyFeeds(date: Date) {
-    const rankedReviewDailyFeeds =
-      await this.prisma.main_rankedreviewdailyfeed.findMany({
+  public async getOrCreateRankedReviewDailyFeed(date: Date) {
+    let rankedReviewDailyFeed =
+      await this.prisma.main_rankedreviewdailyfeed.findFirst({
         where: {
           date,
-          visible: true,
         },
       });
 
-    return rankedReviewDailyFeeds;
+    if (!rankedReviewDailyFeed) {
+      rankedReviewDailyFeed =
+        await this.prisma.main_rankedreviewdailyfeed.create({
+          data: {
+            date,
+            priority: Math.random(),
+            visible: Math.random() < 0.15,
+          },
+        });
+    }
+
+    return rankedReviewDailyFeed;
   }
 
   public async getOrCreateFamousMajorReviewDailyFeeds(
