@@ -5,7 +5,7 @@ import { IFeed } from 'src/common/interfaces/dto/feeds/IFeed';
 import { toJsonFeed } from 'src/common/interfaces/serializer/feeds.serializer';
 import { FeedsService } from './feeds.service';
 
-@Controller('api/users/:user_id/feeds')
+@Controller('api/users/:userId/feeds')
 export class FeedsController {
   constructor(private readonly feedsService: FeedsService) {}
 

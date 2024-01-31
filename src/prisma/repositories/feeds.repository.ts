@@ -1,27 +1,53 @@
 import { Injectable } from '@nestjs/common';
-import { session_userprofile, subject_department } from '@prisma/client';
+import { subject_department } from '@prisma/client';
+import { reviewDetails } from 'src/common/schemaTypes/types';
 import { PrismaService } from '../prisma.service';
 
 @Injectable()
 export class FeedsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  public async getFeeds(date: Date) {
-    const famousHumanityReviewDailyFeeds =
-      await this.prisma.main_famoushumanityreviewdailyfeed.findMany({
+  public async getOrCreateFamousHumanityReviewDailyFeed(date: Date) {
+    let famousHumanityReviewDailyFeed =
+      await this.prisma.main_famoushumanityreviewdailyfeed.findFirst({
         where: {
           date,
-          visible: true,
         },
         include: {
           main_famoushumanityreviewdailyfeed_reviews: {
-            include: {
-              review_review: true,
-            },
+            include: { review_review: { include: reviewDetails.include } },
           },
         },
-        take: 3,
       });
+
+    if (!famousHumanityReviewDailyFeed) {
+      const humanityBestReviews =
+        await this.prisma.review_humanitybestreview.findMany({ take: 3 }); // Be random
+
+      famousHumanityReviewDailyFeed =
+        await this.prisma.main_famoushumanityreviewdailyfeed.create({
+          include: {
+            main_famoushumanityreviewdailyfeed_reviews: {
+              include: { review_review: { include: reviewDetails.include } },
+            },
+          },
+          data: {
+            date,
+            priority: Math.random(),
+            main_famoushumanityreviewdailyfeed_reviews: {
+              createMany: {
+                data: humanityBestReviews,
+              },
+            },
+            visible: Math.random() < 0.5,
+          },
+        });
+    }
+
+    return famousHumanityReviewDailyFeed;
+  }
+
+  public async getOrCreateRankedReviewDailyFeeds(date: Date) {
     const rankedReviewDailyFeeds =
       await this.prisma.main_rankedreviewdailyfeed.findMany({
         where: {
@@ -30,11 +56,11 @@ export class FeedsRepository {
         },
       });
 
-    return famousHumanityReviewDailyFeeds;
+    return rankedReviewDailyFeeds;
   }
-  public async getUserFeeds(
+
+  public async getOrCreateFamousMajorReviewDailyFeeds(
     date: Date,
-    user: session_userprofile,
     subject_department: subject_department,
   ) {
     const famousMajorReviewDailyFeeds =
@@ -44,14 +70,28 @@ export class FeedsRepository {
           subject_department,
         },
       });
-    const reviewWriteDailyUserFeeds =
-      await this.prisma.main_reviewwritedailyuserfeed.findMany();
-    const relatedCourseDailyUserFeeds =
-      await this.prisma.main_relatedcoursedailyuserfeed.findMany();
-    const rateDailyUserFeeds =
-      await this.prisma.main_ratedailyuserfeed.findMany();
-    //   review_write_daily_user_feed = ReviewWriteDailyUserFeed.get(date=date, user=userprofile)
-    //   related_course_daily_user_feed = RelatedCourseDailyUserFeed.get(date=date, user=userprofile)
-    //   rate_daily_user_feed = RateDailyUserFeed.get(date=date, user=userprofile)
+
+    return famousMajorReviewDailyFeeds;
   }
+
+  // public async getOrCreateReviewWriteDailyUserFeeds() {
+  //   const reviewWriteDailyUserFeeds =
+  //     await this.prisma.main_reviewwritedailyuserfeed.findMany();
+
+  //   return reviewWriteDailyUserFeeds;
+  // }
+
+  // public async getUserFeeds(
+  //   date: Date,
+  //   user: session_userprofile,
+  //   subject_department: subject_department,
+  // ) {
+  //   const relatedCourseDailyUserFeeds =
+  //     await this.prisma.main_relatedcoursedailyuserfeed.findMany();
+  //   const rateDailyUserFeeds =
+  //     await this.prisma.main_ratedailyuserfeed.findMany();
+  //   review_write_daily_user_feed = ReviewWriteDailyUserFeed.get(date=date, user=userprofile)
+  //   related_course_daily_user_feed = RelatedCourseDailyUserFeed.get(date=date, user=userprofile)
+  //   rate_daily_user_feed = RateDailyUserFeed.get(date=date, user=userprofile)
+  // }
 }

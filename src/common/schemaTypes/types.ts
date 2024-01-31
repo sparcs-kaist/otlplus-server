@@ -39,7 +39,7 @@ export const timeTableDetails =
 
 export type NESTED = true;
 
-const reviewDetails = Prisma.validator<Prisma.review_reviewArgs>()({
+export const reviewDetails = Prisma.validator<Prisma.review_reviewArgs>()({
   include: {
     course: courseDetails,
     lecture: lectureDetails,
@@ -47,7 +47,7 @@ const reviewDetails = Prisma.validator<Prisma.review_reviewArgs>()({
   },
 });
 
-const lectureReviews = Prisma.validator<Prisma.subject_lectureArgs>()({
+export const lectureReviews = Prisma.validator<Prisma.subject_lectureArgs>()({
   include: {
     review: {
       include: {

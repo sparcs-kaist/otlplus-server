@@ -13,14 +13,27 @@ export class FeedsService {
 
   async getFeeds(query: IFeed.QueryDto, user: session_userprofile) {
     const { date: dateString } = query;
-    const date = new Date('2024-01-15');
+    const date = new Date(dateString);
     const departments = await this.departmentRepository.getRelatedDepartments(
       user,
     );
 
-    const feeds = await this.feedsRepository.getFeeds(date);
+    const famousHumanityReviewDailyFeed =
+      await this.feedsRepository.getOrCreateFamousHumanityReviewDailyFeed(date);
 
-    return feeds;
+    // const rankedReviewDailyFeeds =
+    //   await this.feedsRepository.getOrCreateRankedReviewDailyFeeds(date);
+
+    // const famousMajorReviewDailyFeeds = await Promise.all(
+    //   departments.map(async (department) => {
+    //     return this.feedsRepository.getOrCreateFamousMajorReviewDailyFeeds(
+    //       date,
+    //       department,
+    //     );
+    //   }),
+    // );
+
+    return [famousHumanityReviewDailyFeed];
 
     //   famous_humanity_review_daily_feed = FamousHumanityReviewDailyFeed.get(date=date)
 

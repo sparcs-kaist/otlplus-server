@@ -6,6 +6,9 @@ export const toJsonFeed = (feed: any): IFeed.ICommon => {
     type: 'FAMOUS_HUMANITY_REVIEW',
     date: feed.date,
     priority: feed.priority,
-    reviews: toJsonReview(feed.main_famoushumanityreviewdailyfeed_reviews),
+    reviews: feed.main_famoushumanityreviewdailyfeed_reviews.map(
+      (feedReview: any) => toJsonReview(feedReview.review_review),
+    ),
   };
 };
+``;
