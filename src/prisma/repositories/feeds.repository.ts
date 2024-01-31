@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { subject_department } from '@prisma/client';
+import { review_humanitybestreview, subject_department } from '@prisma/client';
 import { reviewDetails } from 'src/common/schemaTypes/types';
 import { PrismaService } from '../prisma.service';
 
@@ -21,8 +21,11 @@ export class FeedsRepository {
       });
 
     if (!famousHumanityReviewDailyFeed) {
-      const humanityBestReviews =
-        await this.prisma.review_humanitybestreview.findMany({ take: 3 }); // Be random
+      // Prisma does not support RAND() in ORDER BY.
+      const humanityBestReviews = (await this.prisma.$queryRaw`
+        SELECT * FROM review_humanitybestreview 
+        ORDER BY RAND() 
+        LIMIT 3`) satisfies review_humanitybestreview;
 
       famousHumanityReviewDailyFeed =
         await this.prisma.main_famoushumanityreviewdailyfeed.create({
