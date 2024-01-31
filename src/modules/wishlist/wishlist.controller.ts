@@ -38,4 +38,15 @@ export class WishlistController {
     const wishlist = await this.wishlistService.addLecture(user.id, body);
     return toJsonWishlist(wishlist);
   }
+
+  @Post('remove-lecture')
+  async removeLecture(
+    @Param('userId') userId: number,
+    @Body() body: WishlistAddLectureDto,
+    @GetUser() user: session_userprofile,
+  ) {
+    if (userId !== user.id) throw new UnauthorizedException(); // TODO: Better message
+    const wishlist = await this.wishlistService.removeLecture(user.id, body);
+    return toJsonWishlist(wishlist);
+  }
 }

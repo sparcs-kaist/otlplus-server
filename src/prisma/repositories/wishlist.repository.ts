@@ -31,6 +31,17 @@ export class WishlistRepository {
     });
   }
 
+  async removeLecture(wishlistId: number, lectureId: number) {
+    return await this.prisma.timetable_wishlist_lectures.delete({
+      where: {
+        wishlist_id_lecture_id: {
+          lecture_id: lectureId,
+          wishlist_id: wishlistId,
+        },
+      },
+    });
+  }
+
   async getLectureInWishlist(wishlistId: number, lectureId: number) {
     return await this.prisma.timetable_wishlist_lectures.findUnique({
       where: {
