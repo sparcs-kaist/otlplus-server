@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import {
   WishlistWithLectures,
-  wishlistLectures,
+  wishlistWithLectures,
 } from 'src/common/schemaTypes/types';
 import { PrismaService } from '../prisma.service';
 
@@ -44,7 +44,7 @@ export class WishlistRepository {
   async getWishlistLectures(wishlistId: number) {
     return (await this.prisma.timetable_wishlist.findUnique({
       where: { id: wishlistId },
-      include: wishlistLectures.include,
+      include: wishlistWithLectures.include,
     })) as WishlistWithLectures;
   }
 }

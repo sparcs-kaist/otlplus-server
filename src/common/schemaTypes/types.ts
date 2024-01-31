@@ -66,7 +66,7 @@ const lectureReviews = Prisma.validator<Prisma.subject_lectureArgs>()({
   },
 });
 
-export const wishlistLectures =
+export const wishlistWithLectures =
   Prisma.validator<Prisma.timetable_wishlistArgs>()({
     include: {
       timetable_wishlist_lectures: {
@@ -103,7 +103,7 @@ export type TimeTableBasic = Prisma.timetable_timetableGetPayload<null>;
 export type SemesterBasic = Prisma.subject_semesterGetPayload<null>;
 
 export type WishlistWithLectures = Prisma.timetable_wishlistGetPayload<
-  typeof wishlistLectures
+  typeof wishlistWithLectures
 >;
 
 export function isLectureDetails(
