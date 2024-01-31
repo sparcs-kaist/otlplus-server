@@ -341,28 +341,28 @@ export class CourseRepository {
       return null;
     }
 
-    const filter = [];
+    const filters = [];
+    const includeHumanity = group.includes('Humanity');
 
     if (group.includes('Basic')) {
-      filter.push('Basic Required', 'Basic Elective');
+      group.splice(group.indexOf('Basic'), 1);
+      filters.push({ type_en: { in: ['Basic Required', 'Basic Elective'] } });
     }
     if (group.includes('Humanity')) {
-      filter.push(
-        'Humanities & Social Elective',
-        'Humanities & Social Elective(Arts-Co',
-        'Humanities & Social Elective(Arts-Ge',
-        'Humanities & Social Elective(Humanit',
-        'Humanities & Social Elective(Social-',
-      );
+      group.splice(group.indexOf('Humanity'), 1);
+      filters.push({ type_en: { startsWith: 'Humanities & Social Elective' } });
     }
-    if (group.length > 2) {
-      filter.push('Major Required', 'Major Elective', 'Elective(Graduate)');
+    if (group.length) {
+      filters.push({
+        type_en: {
+          in: ['Major Required', 'Major Elective', 'Elective(Graduate)'],
+        },
+        subject_department: { code: { in: group } },
+      });
     }
 
     return {
-      type_en: {
-        in: filter,
-      },
+      OR: filters,
     };
   }
 
