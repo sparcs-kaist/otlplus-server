@@ -343,11 +343,17 @@ export class CourseRepository {
 
     const filter = [];
 
-    if ('Basic' in group) {
+    if (group.includes('Basic')) {
       filter.push('Basic Required', 'Basic Elective');
     }
-    if ('Humanity' in group) {
-      filter.push('Humanities & Social Elective');
+    if (group.includes('Humanity')) {
+      filter.push(
+        'Humanities & Social Elective',
+        'Humanities & Social Elective(Arts-Co',
+        'Humanities & Social Elective(Arts-Ge',
+        'Humanities & Social Elective(Humanit',
+        'Humanities & Social Elective(Social-',
+      );
     }
     if (group.length > 2) {
       filter.push('Major Required', 'Major Elective', 'Elective(Graduate)');
@@ -355,7 +361,7 @@ export class CourseRepository {
 
     return {
       type_en: {
-        in: { filter },
+        in: filter,
       },
     };
   }
