@@ -32,7 +32,10 @@ export class WishlistService {
       );
 
     await this.wishlistRepository.addLecture(wishlist.id, lecture.id);
-
-    return await this.wishlistRepository.getWishlistLectures(wishlist.id);
+    const updatedWishlist = await this.wishlistRepository.getWishlistLectures(
+      wishlist.id,
+    );
+    if (!updatedWishlist) throw new Error('Wishlist not found');
+    return updatedWishlist;
   }
 }
