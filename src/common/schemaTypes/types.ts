@@ -72,7 +72,7 @@ export const wishlistWithLectures =
       timetable_wishlist_lectures: {
         include: {
           subject_lecture: {
-            include: lectureExtended.include,
+            include: lectureDetails.include,
           },
         },
         where: { subject_lecture: { deleted: false } },

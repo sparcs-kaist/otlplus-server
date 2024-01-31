@@ -7,7 +7,7 @@ export const toJsonWishlist = (
 ): WishlistWithLecturesResponseDto => {
   return {
     lectures: wishlist.timetable_wishlist_lectures.map((lecture) =>
-      toJsonLecture(lecture.subject_lecture, true),
+      toJsonLecture(lecture.subject_lecture, false),
     ),
   };
 };
