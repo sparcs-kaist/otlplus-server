@@ -7,6 +7,7 @@ import { ReviewsRepository } from './repositories/review.repository';
 import { SemesterRepository } from './repositories/semester.repository';
 import { TimetableRepository } from './repositories/timetable.repository';
 import { UserRepository } from './repositories/user.repository';
+import { WishlistRepository } from './repositories/wishlist.repository';
 
 @Module({
   providers: [
@@ -18,6 +19,7 @@ import { UserRepository } from './repositories/user.repository';
     CourseRepository,
     SemesterRepository,
     TimetableRepository,
+    WishlistRepository,
   ],
   exports: [
     PrismaService,
@@ -28,6 +30,7 @@ import { UserRepository } from './repositories/user.repository';
     CourseRepository,
     SemesterRepository,
     TimetableRepository,
+    WishlistRepository,
   ],
 })
 export class PrismaModule {}
