@@ -55,18 +55,19 @@ export function toJsonLecture<T extends boolean>(
     return result;
   }
 
-  if (isLectureDetails(lecture)) {
-    result = Object.assign(result, {
-      grade: lecture.grade,
-      load: lecture.load,
-      speech: lecture.speech,
-      classtimes: lecture.subject_classtime.map((classtime) =>
-        toJsonClasstime(classtime),
-      ),
-      examtimes: lecture.subject_examtime.map((examtime) =>
-        toJsonExamtime(examtime),
-      ),
-    });
-    return result;
-  } else throw new Error("Lecture is not of type 'LectureDetails'");
+  if (!isLectureDetails(lecture))
+    throw new Error("Lecture is not of type 'LectureDetails'");
+
+  result = Object.assign(result, {
+    grade: lecture.grade,
+    load: lecture.load,
+    speech: lecture.speech,
+    classtimes: lecture.subject_classtime.map((classtime) =>
+      toJsonClasstime(classtime),
+    ),
+    examtimes: lecture.subject_examtime.map((examtime) =>
+      toJsonExamtime(examtime),
+    ),
+  });
+  return result;
 }

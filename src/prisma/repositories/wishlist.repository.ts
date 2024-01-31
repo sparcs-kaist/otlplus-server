@@ -41,10 +41,12 @@ export class WishlistRepository {
     });
   }
 
-  async getWishlistLectures(wishlistId: number) {
-    return (await this.prisma.timetable_wishlist.findUnique({
+  async getWishlistLectures(
+    wishlistId: number,
+  ): Promise<WishlistWithLectures | null> {
+    return await this.prisma.timetable_wishlist.findUnique({
       where: { id: wishlistId },
       include: wishlistWithLectures.include,
-    })) as WishlistWithLectures;
+    });
   }
 }
