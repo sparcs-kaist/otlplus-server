@@ -14,7 +14,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     // @ts-ignore
     this.$on('query', async (e) => {
       // @ts-ignore
-      console.log(`Query: ${e.query} ${e.params}`);
+      // console.log(`Query: ${e.query} ${e.params}`);
     });
   }
 
