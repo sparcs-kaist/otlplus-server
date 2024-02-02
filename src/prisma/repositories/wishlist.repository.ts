@@ -14,6 +14,7 @@ export class WishlistRepository {
       where: { user_id: userId },
       create: { user_id: userId },
       update: {},
+      include: wishlistWithLectures.include,
     });
   }
 
@@ -27,6 +28,17 @@ export class WishlistRepository {
       },
       create: { wishlist_id: wishlistId, lecture_id: lectureId },
       update: {},
+    });
+  }
+
+  async removeLecture(wishlistId: number, lectureId: number) {
+    return await this.prisma.timetable_wishlist_lectures.delete({
+      where: {
+        wishlist_id_lecture_id: {
+          lecture_id: lectureId,
+          wishlist_id: wishlistId,
+        },
+      },
     });
   }
 

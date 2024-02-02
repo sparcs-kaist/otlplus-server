@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Param,
   Post,
   UnauthorizedException,
@@ -15,6 +16,18 @@ import { WishlistService } from './wishlist.service';
 export class WishlistController {
   constructor(private readonly wishlistService: WishlistService) {}
 
+  @Get()
+  async getLectures(
+    @Param('userId') userId: number,
+    @GetUser() user: session_userprofile,
+  ) {
+    if (userId !== user.id) throw new UnauthorizedException(); // TODO: Better message
+    const wishlist = await this.wishlistService.getWishlistWithLectures(
+      user.id,
+    );
+    return toJsonWishlist(wishlist);
+  }
+
   @Post('add-lecture')
   async addLecture(
     @Param('userId') userId: number,
@@ -23,6 +36,17 @@ export class WishlistController {
   ) {
     if (userId !== user.id) throw new UnauthorizedException(); // TODO: Better message
     const wishlist = await this.wishlistService.addLecture(user.id, body);
+    return toJsonWishlist(wishlist);
+  }
+
+  @Post('remove-lecture')
+  async removeLecture(
+    @Param('userId') userId: number,
+    @Body() body: WishlistAddLectureDto,
+    @GetUser() user: session_userprofile,
+  ) {
+    if (userId !== user.id) throw new UnauthorizedException(); // TODO: Better message
+    const wishlist = await this.wishlistService.removeLecture(user.id, body);
     return toJsonWishlist(wishlist);
   }
 }

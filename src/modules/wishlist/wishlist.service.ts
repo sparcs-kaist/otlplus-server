@@ -14,6 +14,10 @@ export class WishlistService {
     private readonly lectureRepository: LectureRepository,
   ) {}
 
+  async getWishlistWithLectures(userId: number) {
+    return await this.wishlistRepository.getOrCreateWishlist(userId);
+  }
+
   async addLecture(userId: number, body: WishlistAddLectureDto) {
     const wishlist = await this.wishlistRepository.getOrCreateWishlist(userId);
 
@@ -32,6 +36,24 @@ export class WishlistService {
       );
 
     await this.wishlistRepository.addLecture(wishlist.id, lecture.id);
+    const updatedWishlist =
+      await this.wishlistRepository.getWishlistWithLectures(wishlist.id);
+    if (!updatedWishlist) throw new Error('Wishlist not found');
+    return updatedWishlist;
+  }
+
+  async removeLecture(userId: number, body: WishlistAddLectureDto) {
+    const wishlist = await this.wishlistRepository.getOrCreateWishlist(userId);
+
+    if (
+      !(await this.wishlistRepository.getLectureInWishlist(
+        wishlist.id,
+        body.lecture,
+      ))
+    )
+      throw new BadRequestException("Wrong field 'lecture' in request data");
+
+    await this.wishlistRepository.removeLecture(wishlist.id, body.lecture);
     const updatedWishlist =
       await this.wishlistRepository.getWishlistWithLectures(wishlist.id);
     if (!updatedWishlist) throw new Error('Wishlist not found');
