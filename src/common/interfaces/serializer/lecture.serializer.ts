@@ -1,15 +1,18 @@
 import { applyOrder } from 'src/common/utils/search.utils';
-import { LectureDetails, NESTED } from '../../schemaTypes/types';
+import {
+  LectureDetails,
+  LectureExtended,
+  NESTED,
+  isLectureDetails,
+} from '../../schemaTypes/types';
 import { LectureResponseDto } from '../dto/lecture/lecture.response.dto';
 import { toJsonClasstime } from './classtime.serializer';
 import { toJsonExamtime } from './examtime.serializer';
 import { toJsonProfessor } from './professor.serializer';
 
-export function toJsonLecture<T>(
-  lecture: T extends NESTED
-    ? Omit<LectureDetails, 'subject_classtime' & 'subject_examtime'>
-    : LectureDetails,
-  nested: T extends NESTED ? true : false,
+export function toJsonLecture<T extends boolean>(
+  lecture: T extends NESTED ? LectureExtended : LectureDetails,
+  nested: T,
 ): LectureResponseDto {
   let result = {
     id: lecture.id,
@@ -52,6 +55,9 @@ export function toJsonLecture<T>(
     return result;
   }
 
+  if (!isLectureDetails(lecture))
+    throw new Error("Lecture is not of type 'LectureDetails'");
+
   result = Object.assign(result, {
     grade: lecture.grade,
     load: lecture.load,
@@ -63,6 +69,5 @@ export function toJsonLecture<T>(
       toJsonExamtime(examtime),
     ),
   });
-
   return result;
 }
