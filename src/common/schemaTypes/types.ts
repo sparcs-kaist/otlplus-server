@@ -8,6 +8,8 @@ export type courseSelectResultType = Prisma.subject_courseGetPayload<{
   include: Prisma.subject_courseInclude;
 }>;
 
+export const courseBasic = Prisma.validator<Prisma.subject_courseArgs>()({});
+
 export const courseDetails = Prisma.validator<Prisma.subject_courseArgs>()({
   include: {
     subject_department: true,
@@ -93,6 +95,7 @@ export type LectureExtended = Prisma.subject_lectureGetPayload<
   typeof lectureExtended
 >;
 export type LectureBasic = Prisma.subject_lectureGetPayload<null>;
+export type CourseBasic = Prisma.subject_courseGetPayload<typeof courseBasic>;
 export type CourseDetails = Prisma.subject_courseGetPayload<
   typeof courseDetails
 >;
