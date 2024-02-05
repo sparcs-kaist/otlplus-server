@@ -2,11 +2,13 @@ import { Injectable } from '@nestjs/common';
 import {
   review_humanitybestreview,
   review_majorbestreview,
+  session_userprofile_taken_lectures,
   subject_department,
 } from '@prisma/client';
 import {
   famousHumanityReviewDailyFeed_details,
   famousMajorReviewDailyFeed_Details,
+  reviewWriteDailyUserFeed_details,
 } from 'src/common/schemaTypes/feeds';
 import { PrismaService } from '../prisma.service';
 
@@ -113,12 +115,38 @@ export class FeedsRepository {
     return famousMajorReviewDailyFeed;
   }
 
-  // public async getOrCreateReviewWriteDailyUserFeeds() {
-  //   const reviewWriteDailyUserFeeds =
-  //     await this.prisma.main_reviewwritedailyuserfeed.findMany();
+  public async getOrCreateReviewWriteDailyUserFeeds(
+    date: Date,
+    userId: number,
+  ) {
+    let reviewWriteDailyUserFeed =
+      await this.prisma.main_reviewwritedailyuserfeed.findFirst({
+        include: reviewWriteDailyUserFeed_details.include,
+      });
 
-  //   return reviewWriteDailyUserFeeds;
-  // }
+    if (!reviewWriteDailyUserFeed) {
+      const takenLecture = (await this.prisma.$queryRaw`
+        SELECT *
+        FROM session_userprofile_taken_lectures
+        WHERE user_id = ${userId}
+        ORDER BY RAND() 
+        LIMIT 1`) satisfies session_userprofile_taken_lectures;
+
+      reviewWriteDailyUserFeed =
+        await this.prisma.main_reviewwritedailyuserfeed.create({
+          include: reviewWriteDailyUserFeed_details.include,
+          data: {
+            date,
+            priority: Math.random(),
+            visible: Math.random() < 0.6,
+            user_id: userId,
+            lecture_id: takenLecture.id,
+          },
+        });
+    }
+
+    return reviewWriteDailyUserFeed;
+  }
 
   // public async getUserFeeds(
   //   date: Date,

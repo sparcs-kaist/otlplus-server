@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { ReviewDetails, reviewDetails } from './types';
+import { ReviewDetails, lectureDetails, reviewDetails } from './types';
 
 export const famousHumanityReviewDailyFeed_details =
   Prisma.validator<Prisma.main_famoushumanityreviewdailyfeedArgs>()({
@@ -23,6 +23,15 @@ export const famousMajorReviewDailyFeed_Details =
     },
   });
 
+export const reviewWriteDailyUserFeed_details =
+  Prisma.validator<Prisma.main_reviewwritedailyuserfeedArgs>()({
+    include: {
+      subject_lecture: {
+        include: lectureDetails.include,
+      },
+    },
+  });
+
 export type FamousHumanityReviewDailyFeed_details =
   Prisma.main_famoushumanityreviewdailyfeedGetPayload<
     typeof famousHumanityReviewDailyFeed_details
@@ -38,11 +47,17 @@ export type FamousMajorReviewDailyFeed_Details =
     typeof famousMajorReviewDailyFeed_Details
   >;
 
+export type ReviewWriteDailyUserFeed_details =
+  Prisma.main_reviewwritedailyuserfeedGetPayload<
+    typeof reviewWriteDailyUserFeed_details
+  >;
+
 export const isFamousHumanityReviewDailyFeed = (
   feed:
     | FamousHumanityReviewDailyFeed_details
     | RankedReviewDailyFeed_details
-    | FamousMajorReviewDailyFeed_Details,
+    | FamousMajorReviewDailyFeed_Details
+    | ReviewWriteDailyUserFeed_details,
 ): feed is FamousHumanityReviewDailyFeed_details => {
   return 'main_famoushumanityreviewdailyfeed_reviews' in feed;
 };
@@ -51,7 +66,18 @@ export const isFamousMajorReviewDailyFeed = (
   feed:
     | FamousHumanityReviewDailyFeed_details
     | RankedReviewDailyFeed_details
-    | FamousMajorReviewDailyFeed_Details,
+    | FamousMajorReviewDailyFeed_Details
+    | ReviewWriteDailyUserFeed_details,
 ): feed is FamousMajorReviewDailyFeed_Details => {
   return 'main_famousmajorreviewdailyfeed_reviews' in feed;
+};
+
+export const isReviewWriteDailyUserFeed = (
+  feed:
+    | FamousHumanityReviewDailyFeed_details
+    | RankedReviewDailyFeed_details
+    | FamousMajorReviewDailyFeed_Details
+    | ReviewWriteDailyUserFeed_details,
+): feed is ReviewWriteDailyUserFeed_details => {
+  return 'subject_lecture' in feed;
 };

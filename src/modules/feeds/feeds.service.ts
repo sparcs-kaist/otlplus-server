@@ -45,12 +45,19 @@ export class FeedsService {
       }),
     );
 
+    const reviewWriteDailyUserFeed =
+      await this.feedsRepository.getOrCreateReviewWriteDailyUserFeeds(
+        date,
+        user.id,
+      );
+
     // @TODO: Handle non-visible Feeds
 
     return [
       famousHumanityReviewDailyFeed,
       rankedReviewDailyFeedWithReviews,
       ...famousMajorReviewDailyFeeds,
+      reviewWriteDailyUserFeed,
     ];
   }
 }

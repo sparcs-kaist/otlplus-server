@@ -2,18 +2,22 @@ import {
   FamousHumanityReviewDailyFeed_details,
   FamousMajorReviewDailyFeed_Details,
   RankedReviewDailyFeed_details,
+  ReviewWriteDailyUserFeed_details,
   isFamousHumanityReviewDailyFeed,
   isFamousMajorReviewDailyFeed,
+  isReviewWriteDailyUserFeed,
 } from 'src/common/schemaTypes/feeds';
 import { IFeed } from '../dto/feeds/IFeed';
 import { toJsonDepartment } from './department.serializer';
+import { toJsonLecture } from './lecture.serializer';
 import { toJsonReview } from './review.serializer';
 
 export const toJsonFeed = (
   feed:
     | FamousHumanityReviewDailyFeed_details
     | RankedReviewDailyFeed_details
-    | FamousMajorReviewDailyFeed_Details,
+    | FamousMajorReviewDailyFeed_Details
+    | ReviewWriteDailyUserFeed_details,
 ): IFeed.IBasic => {
   if (isFamousHumanityReviewDailyFeed(feed)) {
     return {
@@ -33,6 +37,13 @@ export const toJsonFeed = (
         toJsonReview(feedReview.review_review),
       ),
       department: toJsonDepartment(feed.subject_department),
+    };
+  } else if (isReviewWriteDailyUserFeed(feed)) {
+    return {
+      type: 'REVIEW_WRITE',
+      date: feed.date,
+      priority: feed.priority,
+      lecture: toJsonLecture(feed.subject_lecture, true),
     };
   }
 
