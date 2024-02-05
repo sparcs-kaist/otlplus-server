@@ -1,15 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import {
+  main_relatedcoursedailyuserfeed,
+  main_reviewwritedailyuserfeed,
   review_humanitybestreview,
   review_majorbestreview,
-  session_userprofile_taken_lectures,
   subject_department,
 } from '@prisma/client';
 import {
   famousHumanityReviewDailyFeed_details,
   famousMajorReviewDailyFeed_Details,
+  relatedCourseDailyUserFeed_details,
   reviewWriteDailyUserFeed_details,
 } from 'src/common/schemaTypes/feeds';
+import { getRandomChoice } from 'src/common/utils/method.utils';
 import { PrismaService } from '../prisma.service';
 
 @Injectable()
@@ -118,19 +121,30 @@ export class FeedsRepository {
   public async getOrCreateReviewWriteDailyUserFeeds(
     date: Date,
     userId: number,
-  ) {
+  ): Promise<main_reviewwritedailyuserfeed | null> {
     let reviewWriteDailyUserFeed =
       await this.prisma.main_reviewwritedailyuserfeed.findFirst({
         include: reviewWriteDailyUserFeed_details.include,
+        where: {
+          date,
+          user_id: userId,
+        },
       });
 
     if (!reviewWriteDailyUserFeed) {
-      const takenLecture = (await this.prisma.$queryRaw`
-        SELECT *
-        FROM session_userprofile_taken_lectures
-        WHERE user_id = ${userId}
-        ORDER BY RAND() 
-        LIMIT 1`) satisfies session_userprofile_taken_lectures;
+      /**
+       * @TODO: add handling writable review
+       */
+      const takenLecture = getRandomChoice(
+        await this.prisma.session_userprofile_taken_lectures.findMany({
+          where: {
+            userprofile_id: userId,
+          },
+        }),
+      );
+      if (!takenLecture) {
+        return null;
+      }
 
       reviewWriteDailyUserFeed =
         await this.prisma.main_reviewwritedailyuserfeed.create({
@@ -146,6 +160,51 @@ export class FeedsRepository {
     }
 
     return reviewWriteDailyUserFeed;
+  }
+
+  public async getOrCreateRelatedCourseDailyUserFeed(
+    date: Date,
+    userId: number,
+  ): Promise<main_relatedcoursedailyuserfeed | null> {
+    let relatedCourseDailyUserFeed =
+      await this.prisma.main_relatedcoursedailyuserfeed.findFirst({
+        include: relatedCourseDailyUserFeed_details.include,
+        where: {
+          date,
+          user_id: userId,
+        },
+      });
+
+    if (!relatedCourseDailyUserFeed) {
+      const takenLecture = getRandomChoice(
+        await this.prisma.session_userprofile_taken_lectures.findMany({
+          include: {
+            lecture: true,
+          },
+          where: {
+            userprofile_id: userId,
+          },
+        }),
+      );
+
+      if (!takenLecture) {
+        return null;
+      }
+
+      relatedCourseDailyUserFeed =
+        await this.prisma.main_relatedcoursedailyuserfeed.create({
+          include: relatedCourseDailyUserFeed_details.include,
+          data: {
+            date,
+            priority: Math.random(),
+            visible: Math.random() < 0.45,
+            course_id: takenLecture.lecture.course_id,
+            user_id: userId,
+          },
+        });
+    }
+
+    return relatedCourseDailyUserFeed;
   }
 
   // public async getUserFeeds(

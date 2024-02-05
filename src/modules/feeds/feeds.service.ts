@@ -13,15 +13,23 @@ export class FeedsService {
     private readonly reviewsRepository: ReviewsRepository,
   ) {}
 
-  async getFeeds(query: IFeed.QueryDto, user: session_userprofile) {
+  private filterFeeds(feeds: any, feed: any) {
+    if (feed && feed.visible) {
+      feeds.push(feed);
+    }
+  }
+
+  public async getFeeds(query: IFeed.QueryDto, user: session_userprofile) {
     const { date: dateString } = query;
     const date = new Date(dateString);
     const departments = await this.departmentRepository.getRelatedDepartments(
       user,
     );
+    const feeds: any[] = [];
 
     const famousHumanityReviewDailyFeed =
       await this.feedsRepository.getOrCreateFamousHumanityReviewDailyFeed(date);
+    this.filterFeeds(feeds, famousHumanityReviewDailyFeed);
 
     /**
      * "RANKED_REVIEW" does not require RankedReviewDailyFeed
@@ -35,6 +43,7 @@ export class FeedsService {
       ...rankedReviewDailyFeed,
       ...{ reviews: top3LikedReviews },
     };
+    this.filterFeeds(feeds, rankedReviewDailyFeedWithReviews);
 
     const famousMajorReviewDailyFeeds = await Promise.all(
       departments.map(async (department) => {
@@ -44,20 +53,24 @@ export class FeedsService {
         );
       }),
     );
+    famousMajorReviewDailyFeeds.forEach((feed) => {
+      this.filterFeeds(feeds, feed);
+    });
 
     const reviewWriteDailyUserFeed =
       await this.feedsRepository.getOrCreateReviewWriteDailyUserFeeds(
         date,
         user.id,
       );
+    this.filterFeeds(feeds, reviewWriteDailyUserFeed);
 
-    // @TODO: Handle non-visible Feeds
+    const relatedCourseDailyUserFeed =
+      await this.feedsRepository.getOrCreateRelatedCourseDailyUserFeed(
+        date,
+        user.id,
+      );
+    this.filterFeeds(feeds, relatedCourseDailyUserFeed);
 
-    return [
-      famousHumanityReviewDailyFeed,
-      rankedReviewDailyFeedWithReviews,
-      ...famousMajorReviewDailyFeeds,
-      reviewWriteDailyUserFeed,
-    ];
+    return feeds;
   }
 }

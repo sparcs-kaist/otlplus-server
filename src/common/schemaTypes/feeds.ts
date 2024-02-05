@@ -1,5 +1,10 @@
 import { Prisma } from '@prisma/client';
-import { ReviewDetails, lectureDetails, reviewDetails } from './types';
+import {
+  ReviewDetails,
+  courseDetails,
+  lectureDetails,
+  reviewDetails,
+} from './types';
 
 export const famousHumanityReviewDailyFeed_details =
   Prisma.validator<Prisma.main_famoushumanityreviewdailyfeedArgs>()({
@@ -32,6 +37,15 @@ export const reviewWriteDailyUserFeed_details =
     },
   });
 
+export const relatedCourseDailyUserFeed_details =
+  Prisma.validator<Prisma.main_relatedcoursedailyuserfeedArgs>()({
+    include: {
+      subject_course: {
+        include: courseDetails.include,
+      },
+    },
+  });
+
 export type FamousHumanityReviewDailyFeed_details =
   Prisma.main_famoushumanityreviewdailyfeedGetPayload<
     typeof famousHumanityReviewDailyFeed_details
@@ -52,12 +66,18 @@ export type ReviewWriteDailyUserFeed_details =
     typeof reviewWriteDailyUserFeed_details
   >;
 
+export type RelatedCourseDailyUserFeed_details =
+  Prisma.main_relatedcoursedailyuserfeedGetPayload<
+    typeof relatedCourseDailyUserFeed_details
+  >;
+
 export const isFamousHumanityReviewDailyFeed = (
   feed:
     | FamousHumanityReviewDailyFeed_details
     | RankedReviewDailyFeed_details
     | FamousMajorReviewDailyFeed_Details
-    | ReviewWriteDailyUserFeed_details,
+    | ReviewWriteDailyUserFeed_details
+    | RelatedCourseDailyUserFeed_details,
 ): feed is FamousHumanityReviewDailyFeed_details => {
   return 'main_famoushumanityreviewdailyfeed_reviews' in feed;
 };
@@ -67,7 +87,8 @@ export const isFamousMajorReviewDailyFeed = (
     | FamousHumanityReviewDailyFeed_details
     | RankedReviewDailyFeed_details
     | FamousMajorReviewDailyFeed_Details
-    | ReviewWriteDailyUserFeed_details,
+    | ReviewWriteDailyUserFeed_details
+    | RelatedCourseDailyUserFeed_details,
 ): feed is FamousMajorReviewDailyFeed_Details => {
   return 'main_famousmajorreviewdailyfeed_reviews' in feed;
 };
@@ -77,7 +98,8 @@ export const isReviewWriteDailyUserFeed = (
     | FamousHumanityReviewDailyFeed_details
     | RankedReviewDailyFeed_details
     | FamousMajorReviewDailyFeed_Details
-    | ReviewWriteDailyUserFeed_details,
+    | ReviewWriteDailyUserFeed_details
+    | RelatedCourseDailyUserFeed_details,
 ): feed is ReviewWriteDailyUserFeed_details => {
   return 'subject_lecture' in feed;
 };
