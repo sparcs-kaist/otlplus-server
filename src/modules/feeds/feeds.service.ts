@@ -71,6 +71,10 @@ export class FeedsService {
       );
     this.filterFeeds(feeds, relatedCourseDailyUserFeed);
 
+    const rateDailyUserFeed =
+      await this.feedsRepository.getOrCreateRateDailyUserFeed(date, user.id);
+    this.filterFeeds(feeds, rateDailyUserFeed);
+
     return feeds;
   }
 }

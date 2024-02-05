@@ -2,10 +2,12 @@ import {
   FamousHumanityReviewDailyFeed_details,
   FamousMajorReviewDailyFeed_Details,
   RankedReviewDailyFeed_details,
+  RateDailyUserFeed_details,
   RelatedCourseDailyUserFeed_details,
   ReviewWriteDailyUserFeed_details,
   isFamousHumanityReviewDailyFeed,
   isFamousMajorReviewDailyFeed,
+  isRankedReviewDailyUserFeed,
   isReviewWriteDailyUserFeed,
 } from 'src/common/schemaTypes/feeds';
 import { IFeed } from '../dto/feeds/IFeed';
@@ -20,7 +22,8 @@ export const toJsonFeed = (
     | RankedReviewDailyFeed_details
     | FamousMajorReviewDailyFeed_Details
     | ReviewWriteDailyUserFeed_details
-    | RelatedCourseDailyUserFeed_details,
+    | RelatedCourseDailyUserFeed_details
+    | RateDailyUserFeed_details,
 ): IFeed.IBasic => {
   if (isFamousHumanityReviewDailyFeed(feed)) {
     return {
@@ -55,12 +58,13 @@ export const toJsonFeed = (
       priority: feed.priority,
       course: toJsonCourseBasic(feed.subject_course),
     };
+  } else if (isRankedReviewDailyUserFeed(feed)) {
+    return {
+      type: 'RANKED_REVIEW',
+      date: feed.date,
+      priority: feed.priority,
+      reviews: feed.reviews.map((review) => toJsonReview(review)),
+    };
   }
-
-  return {
-    type: 'RANKED_REVIEW',
-    date: feed.date,
-    priority: feed.priority,
-    reviews: feed.reviews.map((review) => toJsonReview(review)),
-  };
+  return { type: 'RATE', date: feed.date, priority: feed.priority };
 };

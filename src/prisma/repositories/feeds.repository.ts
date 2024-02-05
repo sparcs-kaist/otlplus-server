@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
+  main_ratedailyuserfeed,
   main_relatedcoursedailyuserfeed,
   main_reviewwritedailyuserfeed,
   review_humanitybestreview,
@@ -20,76 +21,71 @@ export class FeedsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   public async getOrCreateFamousHumanityReviewDailyFeed(date: Date) {
-    let famousHumanityReviewDailyFeed =
-      await this.prisma.main_famoushumanityreviewdailyfeed.findFirst({
-        where: {
-          date,
-        },
-        include: famousHumanityReviewDailyFeed_details.include,
-      });
+    let feed = await this.prisma.main_famoushumanityreviewdailyfeed.findFirst({
+      where: {
+        date,
+      },
+      include: famousHumanityReviewDailyFeed_details.include,
+    });
 
-    if (!famousHumanityReviewDailyFeed) {
+    if (!feed) {
       // Prisma does not support RAND() in ORDER BY.
       const humanityBestReviews = (await this.prisma.$queryRaw`
         SELECT * FROM review_humanitybestreview 
         ORDER BY RAND() 
         LIMIT 3`) satisfies review_humanitybestreview;
 
-      famousHumanityReviewDailyFeed =
-        await this.prisma.main_famoushumanityreviewdailyfeed.create({
-          include: famousHumanityReviewDailyFeed_details.include,
-          data: {
-            date,
-            priority: Math.random(),
-            main_famoushumanityreviewdailyfeed_reviews: {
-              createMany: {
-                data: humanityBestReviews,
-              },
+      feed = await this.prisma.main_famoushumanityreviewdailyfeed.create({
+        include: famousHumanityReviewDailyFeed_details.include,
+        data: {
+          date,
+          priority: Math.random(),
+          main_famoushumanityreviewdailyfeed_reviews: {
+            createMany: {
+              data: humanityBestReviews,
             },
-            visible: Math.random() < 0.5,
           },
-        });
+          visible: Math.random() < 0.5,
+        },
+      });
     }
 
-    return famousHumanityReviewDailyFeed;
+    return feed;
   }
 
   public async getOrCreateRankedReviewDailyFeed(date: Date) {
-    let rankedReviewDailyFeed =
-      await this.prisma.main_rankedreviewdailyfeed.findFirst({
-        where: {
+    let feed = await this.prisma.main_rankedreviewdailyfeed.findFirst({
+      where: {
+        date,
+      },
+    });
+
+    if (!feed) {
+      feed = await this.prisma.main_rankedreviewdailyfeed.create({
+        data: {
           date,
+          priority: Math.random(),
+          visible: Math.random() < 0.15,
         },
       });
-
-    if (!rankedReviewDailyFeed) {
-      rankedReviewDailyFeed =
-        await this.prisma.main_rankedreviewdailyfeed.create({
-          data: {
-            date,
-            priority: Math.random(),
-            visible: Math.random() < 0.15,
-          },
-        });
     }
 
-    return rankedReviewDailyFeed;
+    return feed;
   }
 
   public async getOrCreateFamousMajorReviewDailyFeeds(
     date: Date,
     subject_department: subject_department,
   ) {
-    let famousMajorReviewDailyFeed =
-      await this.prisma.main_famousmajorreviewdailyfeed.findFirst({
-        include: famousMajorReviewDailyFeed_Details.include,
-        where: {
-          date,
-          subject_department,
-        },
-      });
+    let feed = await this.prisma.main_famousmajorreviewdailyfeed.findFirst({
+      include: famousMajorReviewDailyFeed_Details.include,
+      where: {
+        date,
+        subject_department,
+      },
+    });
 
-    if (!famousMajorReviewDailyFeed) {
+    if (!feed) {
       // Prisma does not support RAND() in ORDER BY.
       const majorBestReviews = (await this.prisma.$queryRaw`
         SELECT mbr.* FROM review_majorbestreview mbr
@@ -100,38 +96,36 @@ export class FeedsRepository {
         ORDER BY RAND() 
         LIMIT 3`) satisfies review_majorbestreview;
 
-      famousMajorReviewDailyFeed =
-        await this.prisma.main_famousmajorreviewdailyfeed.create({
-          include: famousMajorReviewDailyFeed_Details.include,
-          data: {
-            date,
-            priority: Math.random(),
-            visible: Math.random() < 0.6,
-            department_id: subject_department.id,
-            main_famousmajorreviewdailyfeed_reviews: {
-              createMany: { data: majorBestReviews },
-            },
+      feed = await this.prisma.main_famousmajorreviewdailyfeed.create({
+        include: famousMajorReviewDailyFeed_Details.include,
+        data: {
+          date,
+          priority: Math.random(),
+          visible: Math.random() < 0.6,
+          department_id: subject_department.id,
+          main_famousmajorreviewdailyfeed_reviews: {
+            createMany: { data: majorBestReviews },
           },
-        });
+        },
+      });
     }
 
-    return famousMajorReviewDailyFeed;
+    return feed;
   }
 
   public async getOrCreateReviewWriteDailyUserFeeds(
     date: Date,
     userId: number,
   ): Promise<main_reviewwritedailyuserfeed | null> {
-    let reviewWriteDailyUserFeed =
-      await this.prisma.main_reviewwritedailyuserfeed.findFirst({
-        include: reviewWriteDailyUserFeed_details.include,
-        where: {
-          date,
-          user_id: userId,
-        },
-      });
+    let feed = await this.prisma.main_reviewwritedailyuserfeed.findFirst({
+      include: reviewWriteDailyUserFeed_details.include,
+      where: {
+        date,
+        user_id: userId,
+      },
+    });
 
-    if (!reviewWriteDailyUserFeed) {
+    if (!feed) {
       /**
        * @TODO: add handling writable review
        */
@@ -146,36 +140,34 @@ export class FeedsRepository {
         return null;
       }
 
-      reviewWriteDailyUserFeed =
-        await this.prisma.main_reviewwritedailyuserfeed.create({
-          include: reviewWriteDailyUserFeed_details.include,
-          data: {
-            date,
-            priority: Math.random(),
-            visible: Math.random() < 0.6,
-            user_id: userId,
-            lecture_id: takenLecture.id,
-          },
-        });
+      feed = await this.prisma.main_reviewwritedailyuserfeed.create({
+        include: reviewWriteDailyUserFeed_details.include,
+        data: {
+          date,
+          priority: Math.random(),
+          visible: Math.random() < 0.6,
+          user_id: userId,
+          lecture_id: takenLecture.id,
+        },
+      });
     }
 
-    return reviewWriteDailyUserFeed;
+    return feed;
   }
 
   public async getOrCreateRelatedCourseDailyUserFeed(
     date: Date,
     userId: number,
   ): Promise<main_relatedcoursedailyuserfeed | null> {
-    let relatedCourseDailyUserFeed =
-      await this.prisma.main_relatedcoursedailyuserfeed.findFirst({
-        include: relatedCourseDailyUserFeed_details.include,
-        where: {
-          date,
-          user_id: userId,
-        },
-      });
+    let feed = await this.prisma.main_relatedcoursedailyuserfeed.findFirst({
+      include: relatedCourseDailyUserFeed_details.include,
+      where: {
+        date,
+        user_id: userId,
+      },
+    });
 
-    if (!relatedCourseDailyUserFeed) {
+    if (!feed) {
       const takenLecture = getRandomChoice(
         await this.prisma.session_userprofile_taken_lectures.findMany({
           include: {
@@ -191,20 +183,73 @@ export class FeedsRepository {
         return null;
       }
 
-      relatedCourseDailyUserFeed =
-        await this.prisma.main_relatedcoursedailyuserfeed.create({
-          include: relatedCourseDailyUserFeed_details.include,
-          data: {
-            date,
-            priority: Math.random(),
-            visible: Math.random() < 0.45,
-            course_id: takenLecture.lecture.course_id,
-            user_id: userId,
-          },
-        });
+      feed = await this.prisma.main_relatedcoursedailyuserfeed.create({
+        include: relatedCourseDailyUserFeed_details.include,
+        data: {
+          date,
+          priority: Math.random(),
+          visible: Math.random() < 0.45,
+          course_id: takenLecture.lecture.course_id,
+          user_id: userId,
+        },
+      });
     }
 
-    return relatedCourseDailyUserFeed;
+    return feed;
+  }
+
+  public async getOrCreateRateDailyUserFeed(
+    date: Date,
+    userId: number,
+  ): Promise<main_ratedailyuserfeed | null> {
+    let feed = await this.prisma.main_ratedailyuserfeed.findFirst({
+      where: {
+        date,
+        user_id: userId,
+      },
+    });
+
+    if (!feed) {
+      if (
+        await this.prisma.support_rate.findFirst({
+          where: {
+            user_id: userId,
+            year: date.getFullYear(),
+          },
+        })
+      ) {
+        return null;
+      }
+
+      const beforeDate = new Date(date);
+      beforeDate.setDate(date.getDate() - 3);
+      const afterDate = new Date(date);
+      afterDate.setDate(date.getDate() + 3);
+      const weekFeeds = await this.prisma.main_ratedailyuserfeed.findMany({
+        where: {
+          date: {
+            gt: beforeDate,
+            lt: afterDate,
+          },
+          visible: true,
+          user_id: userId,
+        },
+      });
+      if (weekFeeds.length > 0) {
+        return null;
+      }
+
+      feed = await this.prisma.main_ratedailyuserfeed.create({
+        data: {
+          date,
+          priority: Math.random(),
+          visible: Math.random() < 0.25,
+          user_id: userId,
+        },
+      });
+    }
+
+    return feed;
   }
 
   // public async getUserFeeds(
