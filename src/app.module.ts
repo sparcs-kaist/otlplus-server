@@ -14,6 +14,7 @@ import { SemestersModule } from './modules/semesters/semesters.module';
 import { StatusModule } from './modules/status/status.module';
 import { TimetablesModule } from './modules/timetables/timetables.module';
 import { UserModule } from './modules/user/user.module';
+import { WishlistModule } from './modules/wishlist/wishlist.module';
 import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
@@ -28,6 +29,7 @@ import { PrismaModule } from './prisma/prisma.module';
     TimetablesModule,
     StatusModule,
     FeedsModule,
+    WishlistModule,
   ],
   controllers: [AppController],
   providers: [
