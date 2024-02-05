@@ -1,6 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { review_humanitybestreview, subject_department } from '@prisma/client';
-import { reviewDetails } from 'src/common/schemaTypes/types';
+import {
+  review_humanitybestreview,
+  review_majorbestreview,
+  subject_department,
+} from '@prisma/client';
+import {
+  famousHumanityReviewDailyFeed_details,
+  famousMajorReviewDailyFeed_Details,
+} from 'src/common/schemaTypes/feeds';
 import { PrismaService } from '../prisma.service';
 
 @Injectable()
@@ -13,11 +20,7 @@ export class FeedsRepository {
         where: {
           date,
         },
-        include: {
-          main_famoushumanityreviewdailyfeed_reviews: {
-            include: { review_review: { include: reviewDetails.include } },
-          },
-        },
+        include: famousHumanityReviewDailyFeed_details.include,
       });
 
     if (!famousHumanityReviewDailyFeed) {
@@ -29,11 +32,7 @@ export class FeedsRepository {
 
       famousHumanityReviewDailyFeed =
         await this.prisma.main_famoushumanityreviewdailyfeed.create({
-          include: {
-            main_famoushumanityreviewdailyfeed_reviews: {
-              include: { review_review: { include: reviewDetails.include } },
-            },
-          },
+          include: famousHumanityReviewDailyFeed_details.include,
           data: {
             date,
             priority: Math.random(),
@@ -76,15 +75,42 @@ export class FeedsRepository {
     date: Date,
     subject_department: subject_department,
   ) {
-    const famousMajorReviewDailyFeeds =
-      await this.prisma.main_famousmajorreviewdailyfeed.findMany({
+    let famousMajorReviewDailyFeed =
+      await this.prisma.main_famousmajorreviewdailyfeed.findFirst({
+        include: famousMajorReviewDailyFeed_Details.include,
         where: {
           date,
           subject_department,
         },
       });
 
-    return famousMajorReviewDailyFeeds;
+    if (!famousMajorReviewDailyFeed) {
+      // Prisma does not support RAND() in ORDER BY.
+      const majorBestReviews = (await this.prisma.$queryRaw`
+        SELECT mbr.* FROM review_majorbestreview mbr
+        INNER JOIN review_review r ON r.id = mbr.review_id
+        INNER JOIN subject_lecture l ON l.id = r.lecture_id
+        INNER JOIN subject_department d on d.id = l.department_id
+        WHERE d.id = ${subject_department.id}
+        ORDER BY RAND() 
+        LIMIT 3`) satisfies review_majorbestreview;
+
+      famousMajorReviewDailyFeed =
+        await this.prisma.main_famousmajorreviewdailyfeed.create({
+          include: famousMajorReviewDailyFeed_Details.include,
+          data: {
+            date,
+            priority: Math.random(),
+            visible: Math.random() < 0.6,
+            department_id: subject_department.id,
+            main_famousmajorreviewdailyfeed_reviews: {
+              createMany: { data: majorBestReviews },
+            },
+          },
+        });
+    }
+
+    return famousMajorReviewDailyFeed;
   }
 
   // public async getOrCreateReviewWriteDailyUserFeeds() {

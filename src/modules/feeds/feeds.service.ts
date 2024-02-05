@@ -36,16 +36,21 @@ export class FeedsService {
       ...{ reviews: top3LikedReviews },
     };
 
-    // const famousMajorReviewDailyFeeds = await Promise.all(
-    //   departments.map(async (department) => {
-    //     return this.feedsRepository.getOrCreateFamousMajorReviewDailyFeeds(
-    //       date,
-    //       department,
-    //     );
-    //   }),
-    // );
+    const famousMajorReviewDailyFeeds = await Promise.all(
+      departments.map(async (department) => {
+        return this.feedsRepository.getOrCreateFamousMajorReviewDailyFeeds(
+          date,
+          department,
+        );
+      }),
+    );
 
     // @TODO: Handle non-visible Feeds
-    return [famousHumanityReviewDailyFeed, rankedReviewDailyFeedWithReviews];
+
+    return [
+      famousHumanityReviewDailyFeed,
+      rankedReviewDailyFeedWithReviews,
+      ...famousMajorReviewDailyFeeds,
+    ];
   }
 }

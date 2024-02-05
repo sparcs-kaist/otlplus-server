@@ -13,7 +13,7 @@ export class FeedsController {
   async getUserFeeds(
     @Query() query: IFeed.QueryDto,
     @GetUser() user: session_userprofile,
-  ) {
+  ): Promise<IFeed.IBasic[]> {
     const feeds = await this.feedsService.getFeeds(query, user);
     return feeds.map((feed) => toJsonFeed(feed));
   }

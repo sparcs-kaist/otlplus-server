@@ -13,8 +13,15 @@ export const famousHumanityReviewDailyFeed_details =
 export const rankedReviewDailyFeed_details =
   Prisma.validator<Prisma.main_rankedreviewdailyfeedArgs>()({});
 
-// export const famousMajorReviewDailyFeed_Details =
-//   Prisma.validator<Prisma.main_famousmajorreviewdailyfeedArgs>()({});
+export const famousMajorReviewDailyFeed_Details =
+  Prisma.validator<Prisma.main_famousmajorreviewdailyfeedArgs>()({
+    include: {
+      subject_department: true,
+      main_famousmajorreviewdailyfeed_reviews: {
+        include: { review_review: { include: reviewDetails.include } },
+      },
+    },
+  });
 
 export type FamousHumanityReviewDailyFeed_details =
   Prisma.main_famoushumanityreviewdailyfeedGetPayload<
@@ -26,13 +33,25 @@ export type RankedReviewDailyFeed_details =
     typeof rankedReviewDailyFeed_details
   > & { reviews: ReviewDetails[] };
 
-// export type FamousMajorReviewDailyFeed_Details =
-//   Prisma.main_famoushumanityreviewdailyfeedGetPayload<
-//     typeof famousMajorReviewDailyFeed_Details
-//   >;
+export type FamousMajorReviewDailyFeed_Details =
+  Prisma.main_famousmajorreviewdailyfeedGetPayload<
+    typeof famousMajorReviewDailyFeed_Details
+  >;
 
 export const isFamousHumanityReviewDailyFeed = (
-  feed: FamousHumanityReviewDailyFeed_details | RankedReviewDailyFeed_details,
+  feed:
+    | FamousHumanityReviewDailyFeed_details
+    | RankedReviewDailyFeed_details
+    | FamousMajorReviewDailyFeed_Details,
 ): feed is FamousHumanityReviewDailyFeed_details => {
   return 'main_famoushumanityreviewdailyfeed_reviews' in feed;
+};
+
+export const isFamousMajorReviewDailyFeed = (
+  feed:
+    | FamousHumanityReviewDailyFeed_details
+    | RankedReviewDailyFeed_details
+    | FamousMajorReviewDailyFeed_Details,
+): feed is FamousMajorReviewDailyFeed_Details => {
+  return 'main_famousmajorreviewdailyfeed_reviews' in feed;
 };
