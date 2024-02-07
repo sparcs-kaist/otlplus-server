@@ -14,10 +14,14 @@ import {
 import { FeedSchema } from 'src/common/schemaTypes/feeds';
 import { getRandomChoice } from 'src/common/utils/method.utils';
 import { PrismaService } from '../prisma.service';
+import { UserRepository } from './user.repository';
 
 @Injectable()
 export class FeedsRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly userRepository: UserRepository,
+  ) {}
 
   public async getOrCreateFamousHumanityReview(date: Date) {
     let feed = await this.prisma.main_famoushumanityreviewdailyfeed.findFirst({
@@ -91,8 +95,7 @@ export class FeedsRepository {
         SELECT mbr.* FROM review_majorbestreview mbr
         INNER JOIN review_review r ON r.id = mbr.review_id
         INNER JOIN subject_lecture l ON l.id = r.lecture_id
-        INNER JOIN subject_department d on d.id = l.department_id
-        WHERE d.id = ${subject_department.id}
+        WHERE l.department_id = ${subject_department.id}
         ORDER BY RAND() 
         LIMIT 3`) satisfies review_majorbestreview;
 
@@ -128,15 +131,8 @@ export class FeedsRepository {
     });
 
     if (!feed) {
-      /**
-       * @TODO: add handling writable review
-       */
       const takenLecture = getRandomChoice(
-        await this.prisma.session_userprofile_taken_lectures.findMany({
-          where: {
-            userprofile_id: userId,
-          },
-        }),
+        await this.userRepository.getReviewWritableTakenLectures(userId),
       );
       if (!takenLecture) {
         return null;
@@ -153,7 +149,6 @@ export class FeedsRepository {
         },
       });
     }
-    ``;
 
     return feed;
   }
