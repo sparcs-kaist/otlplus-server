@@ -6,122 +6,112 @@ import {
   reviewDetails,
 } from './types';
 
-export const famousHumanityReviewDailyFeed_details =
-  Prisma.validator<Prisma.main_famoushumanityreviewdailyfeedArgs>()({
-    include: {
-      main_famoushumanityreviewdailyfeed_reviews: {
-        include: { review_review: { include: reviewDetails.include } },
+export namespace FeedSchema {
+  export const FamousHumanityReview_Details =
+    Prisma.validator<Prisma.main_famoushumanityreviewdailyfeedArgs>()({
+      include: {
+        main_famoushumanityreviewdailyfeed_reviews: {
+          include: { review_review: { include: reviewDetails.include } },
+        },
       },
-    },
-  });
+    });
 
-export const rankedReviewDailyFeed_details =
-  Prisma.validator<Prisma.main_rankedreviewdailyfeedArgs>()({});
+  export const RankedReview_Details =
+    Prisma.validator<Prisma.main_rankedreviewdailyfeedArgs>()({});
 
-export const famousMajorReviewDailyFeed_Details =
-  Prisma.validator<Prisma.main_famousmajorreviewdailyfeedArgs>()({
-    include: {
-      subject_department: true,
-      main_famousmajorreviewdailyfeed_reviews: {
-        include: { review_review: { include: reviewDetails.include } },
+  export const FamousMajorReview_Details =
+    Prisma.validator<Prisma.main_famousmajorreviewdailyfeedArgs>()({
+      include: {
+        subject_department: true,
+        main_famousmajorreviewdailyfeed_reviews: {
+          include: { review_review: { include: reviewDetails.include } },
+        },
       },
-    },
-  });
+    });
 
-export const reviewWriteDailyUserFeed_details =
-  Prisma.validator<Prisma.main_reviewwritedailyuserfeedArgs>()({
-    include: {
-      subject_lecture: {
-        include: lectureDetails.include,
+  export const ReviewWrite_Details =
+    Prisma.validator<Prisma.main_reviewwritedailyuserfeedArgs>()({
+      include: {
+        subject_lecture: {
+          include: lectureDetails.include,
+        },
       },
-    },
-  });
+    });
 
-export const relatedCourseDailyUserFeed_details =
-  Prisma.validator<Prisma.main_relatedcoursedailyuserfeedArgs>()({
-    include: {
-      subject_course: {
-        include: courseDetails.include,
+  export const RelatedCourse_Details =
+    Prisma.validator<Prisma.main_relatedcoursedailyuserfeedArgs>()({
+      include: {
+        subject_course: {
+          include: courseDetails.include,
+        },
       },
-    },
-  });
+    });
 
-export const ratedailyUserFeed_details =
-  Prisma.validator<Prisma.main_ratedailyuserfeedArgs>()({});
+  export const RateDaily_Details =
+    Prisma.validator<Prisma.main_ratedailyuserfeedArgs>()({});
 
-export type FamousHumanityReviewDailyFeed_details =
-  Prisma.main_famoushumanityreviewdailyfeedGetPayload<
-    typeof famousHumanityReviewDailyFeed_details
+  export type FamousHumanityReview_Details =
+    Prisma.main_famoushumanityreviewdailyfeedGetPayload<
+      typeof FamousHumanityReview_Details
+    >;
+
+  export type RankedReview_Details =
+    Prisma.main_rankedreviewdailyfeedGetPayload<typeof RankedReview_Details> & {
+      reviews: ReviewDetails[];
+    };
+
+  export type FamousMajorReview_Details =
+    Prisma.main_famousmajorreviewdailyfeedGetPayload<
+      typeof FamousMajorReview_Details
+    >;
+
+  export type ReviewWrite_Details =
+    Prisma.main_reviewwritedailyuserfeedGetPayload<typeof ReviewWrite_Details>;
+
+  export type RelatedCourse_Details =
+    Prisma.main_relatedcoursedailyuserfeedGetPayload<
+      typeof RelatedCourse_Details
+    >;
+
+  export type RateDaily_Details = Prisma.main_ratedailyuserfeedGetPayload<
+    typeof RateDaily_Details
   >;
 
-export type RankedReviewDailyFeed_details =
-  Prisma.main_rankedreviewdailyfeedGetPayload<
-    typeof rankedReviewDailyFeed_details
-  > & { reviews: ReviewDetails[] };
+  export type Details =
+    | FamousHumanityReview_Details
+    | RankedReview_Details
+    | FamousMajorReview_Details
+    | ReviewWrite_Details
+    | RelatedCourse_Details
+    | RateDaily_Details;
 
-export type FamousMajorReviewDailyFeed_Details =
-  Prisma.main_famousmajorreviewdailyfeedGetPayload<
-    typeof famousMajorReviewDailyFeed_Details
-  >;
+  export const isFamousHumanityReview = (
+    feed: Details,
+  ): feed is FamousHumanityReview_Details => {
+    return 'main_famoushumanityreviewdailyfeed_reviews' in feed;
+  };
 
-export type ReviewWriteDailyUserFeed_details =
-  Prisma.main_reviewwritedailyuserfeedGetPayload<
-    typeof reviewWriteDailyUserFeed_details
-  >;
+  export const isFamousMajorReview = (
+    feed: Details,
+  ): feed is FamousMajorReview_Details => {
+    return 'main_famousmajorreviewdailyfeed_reviews' in feed;
+  };
 
-export type RelatedCourseDailyUserFeed_details =
-  Prisma.main_relatedcoursedailyuserfeedGetPayload<
-    typeof relatedCourseDailyUserFeed_details
-  >;
+  export const isReviewWrite = (feed: Details): feed is ReviewWrite_Details => {
+    return 'subject_lecture' in feed;
+  };
 
-export type RateDailyUserFeed_details = Prisma.main_ratedailyuserfeedGetPayload<
-  typeof ratedailyUserFeed_details
->;
+  export const isRelatedCourse = (
+    feed: Details,
+  ): feed is RelatedCourse_Details => {
+    return 'subject_course' in feed;
+  };
 
-export const isFamousHumanityReviewDailyFeed = (
-  feed:
-    | FamousHumanityReviewDailyFeed_details
-    | RankedReviewDailyFeed_details
-    | FamousMajorReviewDailyFeed_Details
-    | ReviewWriteDailyUserFeed_details
-    | RelatedCourseDailyUserFeed_details
-    | RateDailyUserFeed_details,
-): feed is FamousHumanityReviewDailyFeed_details => {
-  return 'main_famoushumanityreviewdailyfeed_reviews' in feed;
-};
+  export const isRankedReview = (
+    feed: Details,
+  ): feed is RankedReview_Details => {
+    return 'semester_id' in feed;
+  };
 
-export const isFamousMajorReviewDailyFeed = (
-  feed:
-    | FamousHumanityReviewDailyFeed_details
-    | RankedReviewDailyFeed_details
-    | FamousMajorReviewDailyFeed_Details
-    | ReviewWriteDailyUserFeed_details
-    | RelatedCourseDailyUserFeed_details
-    | RateDailyUserFeed_details,
-): feed is FamousMajorReviewDailyFeed_Details => {
-  return 'main_famousmajorreviewdailyfeed_reviews' in feed;
-};
-
-export const isReviewWriteDailyUserFeed = (
-  feed:
-    | FamousHumanityReviewDailyFeed_details
-    | RankedReviewDailyFeed_details
-    | FamousMajorReviewDailyFeed_Details
-    | ReviewWriteDailyUserFeed_details
-    | RelatedCourseDailyUserFeed_details
-    | RateDailyUserFeed_details,
-): feed is ReviewWriteDailyUserFeed_details => {
-  return 'subject_lecture' in feed;
-};
-
-export const isRankedReviewDailyUserFeed = (
-  feed:
-    | FamousHumanityReviewDailyFeed_details
-    | RankedReviewDailyFeed_details
-    | FamousMajorReviewDailyFeed_Details
-    | ReviewWriteDailyUserFeed_details
-    | RelatedCourseDailyUserFeed_details
-    | RateDailyUserFeed_details,
-): feed is RankedReviewDailyFeed_details => {
-  return 'semester_id' in feed;
-};
+  export function getType(feed: Details): { return };
+}
