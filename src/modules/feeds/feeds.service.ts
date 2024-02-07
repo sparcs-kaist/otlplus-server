@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
+import { EFeed } from 'src/common/entites/EFeed';
 import { IFeed } from 'src/common/interfaces/IFeed';
-import { FeedSchema } from 'src/common/schemaTypes/feeds';
 import { DepartmentRepository } from 'src/prisma/repositories/department.repository';
 import { FeedsRepository } from 'src/prisma/repositories/feeds.repository';
 import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
@@ -14,10 +14,7 @@ export class FeedsService {
     private readonly reviewsRepository: ReviewsRepository,
   ) {}
 
-  private filterFeeds(
-    feeds: FeedSchema.Details[],
-    feed: FeedSchema.Details | null,
-  ) {
+  private filterFeeds(feeds: EFeed.EDetails[], feed: EFeed.EDetails | null) {
     if (feed && feed.visible) {
       feeds.push(feed);
     }
@@ -29,7 +26,7 @@ export class FeedsService {
     const departments = await this.departmentRepository.getRelatedDepartments(
       user,
     );
-    const feeds: FeedSchema.Details[] = [];
+    const feeds: EFeed.EDetails[] = [];
 
     const famousHumanityReview =
       await this.feedsRepository.getOrCreateFamousHumanityReview(date);

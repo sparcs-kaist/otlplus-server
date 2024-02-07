@@ -1,4 +1,4 @@
-import { FeedSchema } from 'src/common/schemaTypes/feeds';
+import { EFeed } from 'src/common/entites/EFeed';
 import { IFeed } from '../IFeed';
 import { FeedType } from '../constants/feed';
 import { toJsonCourseRelated } from './course.serializer';
@@ -6,8 +6,8 @@ import { toJsonDepartment } from './department.serializer';
 import { toJsonLecture } from './lecture.serializer';
 import { toJsonReview } from './review.serializer';
 
-export const toJsonFeedDetails = (feed: FeedSchema.Details): IFeed.IDetails => {
-  if (FeedSchema.isFamousHumanityReview(feed)) {
+export const toJsonFeedDetails = (feed: EFeed.EDetails): IFeed.IDetails => {
+  if (EFeed.isFamousHumanityReview(feed)) {
     return {
       type: FeedType.FamousHumanityReview,
       date: feed.date,
@@ -16,7 +16,7 @@ export const toJsonFeedDetails = (feed: FeedSchema.Details): IFeed.IDetails => {
         (feedReview) => toJsonReview(feedReview.review_review),
       ),
     };
-  } else if (FeedSchema.isFamousMajorReview(feed)) {
+  } else if (EFeed.isFamousMajorReview(feed)) {
     return {
       type: FeedType.FamousMajorReview,
       date: feed.date,
@@ -26,21 +26,21 @@ export const toJsonFeedDetails = (feed: FeedSchema.Details): IFeed.IDetails => {
       ),
       department: toJsonDepartment(feed.subject_department),
     };
-  } else if (FeedSchema.isReviewWrite(feed)) {
+  } else if (EFeed.isReviewWrite(feed)) {
     return {
       type: FeedType.ReviewWrite,
       date: feed.date,
       priority: feed.priority,
       lecture: toJsonLecture(feed.subject_lecture, true),
     };
-  } else if (FeedSchema.isRelatedCourse(feed)) {
+  } else if (EFeed.isRelatedCourse(feed)) {
     return {
       type: FeedType.RelatedCourse,
       date: feed.date,
       priority: feed.priority,
       course: toJsonCourseRelated(feed.subject_course),
     };
-  } else if (FeedSchema.isRankedReview(feed)) {
+  } else if (EFeed.isRankedReview(feed)) {
     return {
       type: FeedType.RankedReview,
       date: feed.date,
