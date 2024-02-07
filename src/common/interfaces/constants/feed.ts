@@ -9,3 +9,15 @@ export const FeedType = {
   Rate: 'RATE',
 };
 export type FeedType = Union<typeof FeedType>;
+
+export const FeedVisibleRate = {
+  FamousHumanityReview: 0.5,
+  FamousMajorReview: 0.6,
+  ReviewWrite: 0.6,
+  RelatedCourse: 0.45,
+  RankedReview: 0.15,
+  Rate: 0.25,
+};
+export type FeedVisibleRate = Union<typeof FeedVisibleRate>;
+
+export const FeedRateMinDays = 3;

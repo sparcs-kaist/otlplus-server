@@ -7,6 +7,10 @@ import {
   review_majorbestreview,
   subject_department,
 } from '@prisma/client';
+import {
+  FeedRateMinDays,
+  FeedVisibleRate,
+} from 'src/common/interfaces/constants/feed';
 import { FeedSchema } from 'src/common/schemaTypes/feeds';
 import { getRandomChoice } from 'src/common/utils/method.utils';
 import { PrismaService } from '../prisma.service';
@@ -40,7 +44,7 @@ export class FeedsRepository {
               data: humanityBestReviews,
             },
           },
-          visible: Math.random() < 0.5,
+          visible: Math.random() < FeedVisibleRate.FamousHumanityReview,
         },
       });
     }
@@ -60,7 +64,7 @@ export class FeedsRepository {
         data: {
           date,
           priority: Math.random(),
-          visible: Math.random() < 0.15,
+          visible: Math.random() < FeedVisibleRate.RankedReview,
         },
       });
     }
@@ -71,6 +75,7 @@ export class FeedsRepository {
   public async getOrCreateFamousMajorReview(
     date: Date,
     subject_department: subject_department,
+    departmentNum: number = 1,
   ) {
     let feed = await this.prisma.main_famousmajorreviewdailyfeed.findFirst({
       include: FeedSchema.FamousMajorReview_Details.include,
@@ -96,7 +101,9 @@ export class FeedsRepository {
         data: {
           date,
           priority: Math.random(),
-          visible: Math.random() < 0.6,
+          visible:
+            Math.random() <
+            FeedVisibleRate.FamousMajorReview / departmentNum ** 0.7,
           department_id: subject_department.id,
           main_famousmajorreviewdailyfeed_reviews: {
             createMany: { data: majorBestReviews },
@@ -140,12 +147,13 @@ export class FeedsRepository {
         data: {
           date,
           priority: Math.random(),
-          visible: Math.random() < 0.6,
+          visible: Math.random() < FeedVisibleRate.ReviewWrite,
           user_id: userId,
-          lecture_id: takenLecture.id,
+          lecture_id: takenLecture.lecture_id,
         },
       });
     }
+    ``;
 
     return feed;
   }
@@ -166,7 +174,11 @@ export class FeedsRepository {
       const takenLecture = getRandomChoice(
         await this.prisma.session_userprofile_taken_lectures.findMany({
           include: {
-            lecture: true,
+            lecture: {
+              include: {
+                course: true,
+              },
+            },
           },
           where: {
             userprofile_id: userId,
@@ -183,7 +195,7 @@ export class FeedsRepository {
         data: {
           date,
           priority: Math.random(),
-          visible: Math.random() < 0.45,
+          visible: Math.random() < FeedVisibleRate.RelatedCourse,
           course_id: takenLecture.lecture.course_id,
           user_id: userId,
         },
@@ -217,9 +229,9 @@ export class FeedsRepository {
       }
 
       const beforeDate = new Date(date);
-      beforeDate.setDate(date.getDate() - 3);
+      beforeDate.setDate(date.getDate() - FeedRateMinDays);
       const afterDate = new Date(date);
-      afterDate.setDate(date.getDate() + 3);
+      afterDate.setDate(date.getDate() + FeedRateMinDays);
       const weekFeeds = await this.prisma.main_ratedailyuserfeed.findMany({
         where: {
           date: {
@@ -238,7 +250,7 @@ export class FeedsRepository {
         data: {
           date,
           priority: Math.random(),
-          visible: Math.random() < 0.25,
+          visible: Math.random() < FeedVisibleRate.Rate,
           user_id: userId,
         },
       });
