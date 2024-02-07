@@ -1,7 +1,7 @@
 import { Controller, Get, Query, Req, Res, Session } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
-import { IAuth } from 'src/common/interfaces/structures';
+import { IAuth } from 'src/common/interfaces';
 import { Public } from '../../common/decorators/skip-auth.decorator';
 import { SSOUser } from '../../common/interfaces/dto/auth/sso.dto';
 import { ProfileDto } from '../../common/interfaces/dto/user/user.response.dto';

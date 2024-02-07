@@ -1,6 +1,6 @@
 import { FeedSchema } from 'src/common/schemaTypes/feeds';
+import { IFeed } from '../IFeed';
 import { FeedType } from '../constants/feed';
-import { IFeed } from '../structures/IFeed';
 import { toJsonCourseRelated } from './course.serializer';
 import { toJsonDepartment } from './department.serializer';
 import { toJsonLecture } from './lecture.serializer';

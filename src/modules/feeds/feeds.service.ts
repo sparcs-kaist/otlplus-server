@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
-import { IFeed } from 'src/common/interfaces/structures/IFeed';
+import { IFeed } from 'src/common/interfaces/IFeed';
 import { FeedSchema } from 'src/common/schemaTypes/feeds';
 import { DepartmentRepository } from 'src/prisma/repositories/department.repository';
 import { FeedsRepository } from 'src/prisma/repositories/feeds.repository';

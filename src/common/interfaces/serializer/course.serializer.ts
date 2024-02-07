@@ -5,9 +5,9 @@ import {
 } from '@prisma/client';
 import { CourseDetails, NESTED } from '../../schemaTypes/types';
 import { applyOrder } from '../../utils/search.utils';
+import { ICourse } from '../ICourse';
 import { CourseResponseDtoNested } from '../dto/course/course.response.dto';
 import { ProfessorResponseDto } from '../dto/professor/professor.response.dto';
-import { ICourse } from '../structures/ICourse';
 import { toJsonDepartment } from './department.serializer';
 import { toJsonProfessor } from './professor.serializer';
 
