@@ -1,7 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
-import { toJsonFeed } from 'src/common/interfaces/serializer/feeds.serializer';
+import { toJsonFeedDetails } from 'src/common/interfaces/serializer/feeds.serializer';
 import { IFeed } from 'src/common/interfaces/structures/IFeed';
 import { FeedsService } from './feeds.service';
 
@@ -15,6 +15,6 @@ export class FeedsController {
     @GetUser() user: session_userprofile,
   ): Promise<IFeed.IDetials[]> {
     const feeds = await this.feedsService.getFeeds(query, user);
-    return feeds.map((feed) => toJsonFeed(feed));
+    return feeds.map((feed) => toJsonFeedDetails(feed));
   }
 }

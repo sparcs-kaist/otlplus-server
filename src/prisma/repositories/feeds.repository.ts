@@ -15,7 +15,7 @@ import { PrismaService } from '../prisma.service';
 export class FeedsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  public async getOrCreateFamousHumanityReviewDailyFeed(date: Date) {
+  public async getOrCreateFamousHumanityReview(date: Date) {
     let feed = await this.prisma.main_famoushumanityreviewdailyfeed.findFirst({
       where: {
         date,
@@ -48,7 +48,7 @@ export class FeedsRepository {
     return feed;
   }
 
-  public async getOrCreateRankedReviewDailyFeed(date: Date) {
+  public async getOrCreateRankedReview(date: Date) {
     let feed = await this.prisma.main_rankedreviewdailyfeed.findFirst({
       where: {
         date,
@@ -68,7 +68,7 @@ export class FeedsRepository {
     return feed;
   }
 
-  public async getOrCreateFamousMajorReviewDailyFeeds(
+  public async getOrCreateFamousMajorReview(
     date: Date,
     subject_department: subject_department,
   ) {
@@ -108,7 +108,7 @@ export class FeedsRepository {
     return feed;
   }
 
-  public async getOrCreateReviewWriteDailyUserFeeds(
+  public async getOrCreateReviewWrite(
     date: Date,
     userId: number,
   ): Promise<main_reviewwritedailyuserfeed | null> {
@@ -150,7 +150,7 @@ export class FeedsRepository {
     return feed;
   }
 
-  public async getOrCreateRelatedCourseDailyUserFeed(
+  public async getOrCreateRelatedCourse(
     date: Date,
     userId: number,
   ): Promise<main_relatedcoursedailyuserfeed | null> {
@@ -193,7 +193,7 @@ export class FeedsRepository {
     return feed;
   }
 
-  public async getOrCreateRateDailyUserFeed(
+  public async getOrCreateRate(
     date: Date,
     userId: number,
   ): Promise<main_ratedailyuserfeed | null> {

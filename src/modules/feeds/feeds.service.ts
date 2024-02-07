@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { IFeed } from 'src/common/interfaces/structures/IFeed';
+import { FeedSchema } from 'src/common/schemaTypes/feeds';
 import { DepartmentRepository } from 'src/prisma/repositories/department.repository';
 import { FeedsRepository } from 'src/prisma/repositories/feeds.repository';
 import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
@@ -13,7 +14,10 @@ export class FeedsService {
     private readonly reviewsRepository: ReviewsRepository,
   ) {}
 
-  private filterFeeds(feeds: any, feed: any) {
+  private filterFeeds(
+    feeds: FeedSchema.Details[],
+    feed: FeedSchema.Details | null,
+  ) {
     if (feed && feed.visible) {
       feeds.push(feed);
     }
@@ -25,55 +29,57 @@ export class FeedsService {
     const departments = await this.departmentRepository.getRelatedDepartments(
       user,
     );
-    const feeds: any[] = [];
+    const feeds: FeedSchema.Details[] = [];
 
-    const famousHumanityReviewDailyFeed =
-      await this.feedsRepository.getOrCreateFamousHumanityReviewDailyFeed(date);
-    this.filterFeeds(feeds, famousHumanityReviewDailyFeed);
+    const famousHumanityReview =
+      await this.feedsRepository.getOrCreateFamousHumanityReview(date);
+    this.filterFeeds(feeds, famousHumanityReview);
 
     /**
-     * "RANKED_REVIEW" does not require RankedReviewDailyFeed
+     * "RANKED_REVIEW" does not require RankedReview
      * Always shows TOP 3 liked reviews.
      */
-    const rankedReviewDailyFeed =
-      await this.feedsRepository.getOrCreateRankedReviewDailyFeed(date);
+    const rankedReview = await this.feedsRepository.getOrCreateRankedReview(
+      date,
+    );
     const top3LikedReviews = await this.reviewsRepository.getTopLikedReviews(3);
 
-    const rankedReviewDailyFeedWithReviews = {
-      ...rankedReviewDailyFeed,
+    /**
+     * RankedReview schema dosn not have relation with review_review.
+     * So, manually add reviews in app level.
+     */
+    const rankedReviewWithReviews = {
+      ...rankedReview,
       ...{ reviews: top3LikedReviews },
     };
-    this.filterFeeds(feeds, rankedReviewDailyFeedWithReviews);
+    this.filterFeeds(feeds, rankedReviewWithReviews);
 
-    const famousMajorReviewDailyFeeds = await Promise.all(
+    const famousMajorReviews = await Promise.all(
       departments.map(async (department) => {
-        return this.feedsRepository.getOrCreateFamousMajorReviewDailyFeeds(
+        return this.feedsRepository.getOrCreateFamousMajorReview(
           date,
           department,
         );
       }),
     );
-    famousMajorReviewDailyFeeds.forEach((feed) => {
+    famousMajorReviews.forEach((feed) => {
       this.filterFeeds(feeds, feed);
     });
 
-    const reviewWriteDailyUserFeed =
-      await this.feedsRepository.getOrCreateReviewWriteDailyUserFeeds(
-        date,
-        user.id,
-      );
-    this.filterFeeds(feeds, reviewWriteDailyUserFeed);
+    const reviewWrite = await this.feedsRepository.getOrCreateReviewWrite(
+      date,
+      user.id,
+    );
+    this.filterFeeds(feeds, reviewWrite);
 
-    const relatedCourseDailyUserFeed =
-      await this.feedsRepository.getOrCreateRelatedCourseDailyUserFeed(
-        date,
-        user.id,
-      );
-    this.filterFeeds(feeds, relatedCourseDailyUserFeed);
+    const relatedCourse = await this.feedsRepository.getOrCreateRelatedCourse(
+      date,
+      user.id,
+    );
+    this.filterFeeds(feeds, relatedCourse);
 
-    const rateDailyUserFeed =
-      await this.feedsRepository.getOrCreateRateDailyUserFeed(date, user.id);
-    this.filterFeeds(feeds, rateDailyUserFeed);
+    const rateDaily = await this.feedsRepository.getOrCreateRate(date, user.id);
+    this.filterFeeds(feeds, rateDaily);
 
     return feeds;
   }

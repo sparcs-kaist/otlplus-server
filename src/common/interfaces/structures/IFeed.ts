@@ -40,8 +40,6 @@ export namespace IFeed {
     | IRelatedCourse
     | IRankedReview;
 
-  export interface IDetailss {}
-
   export class QueryDto {
     @IsDateString()
     date!: string;
