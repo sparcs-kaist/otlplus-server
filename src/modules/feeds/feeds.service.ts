@@ -72,11 +72,16 @@ export class FeedsService {
     );
     this.filterFeeds(feeds, reviewWrite);
 
-    const relatedCourse = await this.feedsRepository.getOrCreateRelatedCourse(
-      date,
-      user.id,
-    );
-    this.filterFeeds(feeds, relatedCourse);
+    /**
+     * @NOTE
+     * RelatedCourse does not have Datas of posterior or prior courses.
+     * Comment out below until having enough Datas.
+     */
+    // const relatedCourse = await this.feedsRepository.getOrCreateRelatedCourse(
+    //   date,
+    //   user.id,
+    // );
+    // this.filterFeeds(feeds, relatedCourse);
 
     const rateDaily = await this.feedsRepository.getOrCreateRate(date, user.id);
     this.filterFeeds(feeds, rateDaily);
