@@ -32,7 +32,7 @@ export namespace IFeed {
     reviews: ReviewResponseDto[];
   }
 
-  export type IDetials =
+  export type IDetails =
     | IBasic
     | IFamousHumanityReview
     | IFamousMajorReview

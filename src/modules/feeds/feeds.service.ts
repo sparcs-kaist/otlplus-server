@@ -45,7 +45,7 @@ export class FeedsService {
     const top3LikedReviews = await this.reviewsRepository.getTopLikedReviews(3);
 
     /**
-     * RankedReview schema dosn not have relation with review_review.
+     * RankedReview schema dose not have relation with review_review.
      * So, manually add reviews in app level.
      */
     const rankedReviewWithReviews = {
