@@ -33,6 +33,14 @@ export function toJsonCourseBasic(course: subject_course): ICourse.IBasic {
   };
 }
 
+export function toJsonCourseRelated(course: subject_course): ICourse.IRelated {
+  return {
+    ...toJsonCourseBasic(course),
+    related_courses_prior: [],
+    related_courses_posterior: [],
+  };
+}
+
 export function toJsonCourse<T>(
   course: T extends NESTED
     ? Omit<CourseDetails, 'subject_course_professors'>

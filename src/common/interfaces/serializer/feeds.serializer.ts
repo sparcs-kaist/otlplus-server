@@ -1,7 +1,7 @@
 import { FeedSchema } from 'src/common/schemaTypes/feeds';
 import { FeedType } from '../constants/feed';
 import { IFeed } from '../structures/IFeed';
-import { toJsonCourseBasic } from './course.serializer';
+import { toJsonCourseRelated } from './course.serializer';
 import { toJsonDepartment } from './department.serializer';
 import { toJsonLecture } from './lecture.serializer';
 import { toJsonReview } from './review.serializer';
@@ -38,7 +38,7 @@ export const toJsonFeedDetails = (feed: FeedSchema.Details): IFeed.IDetials => {
       type: FeedType.RelatedCourse,
       date: feed.date,
       priority: feed.priority,
-      course: toJsonCourseBasic(feed.subject_course),
+      course: toJsonCourseRelated(feed.subject_course),
     };
   } else if (FeedSchema.isRankedReview(feed)) {
     return {

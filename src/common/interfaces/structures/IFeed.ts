@@ -25,7 +25,7 @@ export namespace IFeed {
   }
 
   export interface IRelatedCourse extends IBasic {
-    course: ICourse.IBasic;
+    course: ICourse.IRelated;
   }
 
   export interface IRankedReview extends IBasic {

@@ -18,4 +18,9 @@ export namespace ICourse {
     title_en_no_space: string;
     title_no_space: string;
   }
+
+  export interface IRelated extends IBasic {
+    related_courses_prior: IBasic[];
+    related_courses_posterior: IBasic[];
+  }
 }

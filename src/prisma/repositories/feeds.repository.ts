@@ -174,11 +174,7 @@ export class FeedsRepository {
       const takenLecture = getRandomChoice(
         await this.prisma.session_userprofile_taken_lectures.findMany({
           include: {
-            lecture: {
-              include: {
-                course: true,
-              },
-            },
+            lecture: true,
           },
           where: {
             userprofile_id: userId,
