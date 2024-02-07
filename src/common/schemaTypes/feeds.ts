@@ -112,6 +112,4 @@ export namespace FeedSchema {
   ): feed is RankedReview_Details => {
     return 'semester_id' in feed;
   };
-
-  export function getType(feed: Details): { return };
 }

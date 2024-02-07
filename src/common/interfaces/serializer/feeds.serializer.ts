@@ -1,42 +1,24 @@
-import {
-  FamousHumanityReviewDailyFeed_details,
-  FamousMajorReviewDailyFeed_Details,
-  RankedReviewDailyFeed_details,
-  RateDailyUserFeed_details,
-  RelatedCourseDailyUserFeed_details,
-  ReviewWriteDailyUserFeed_details,
-  isFamousHumanityReviewDailyFeed,
-  isFamousMajorReviewDailyFeed,
-  isRankedReviewDailyUserFeed,
-  isReviewWriteDailyUserFeed,
-} from 'src/common/schemaTypes/feeds';
-import { IFeed } from '../dto/feeds/IFeed';
+import { FeedSchema } from 'src/common/schemaTypes/feeds';
+import { FeedType } from '../constants/feed';
+import { IFeed } from '../structures/IFeed';
 import { toJsonCourseBasic } from './course.serializer';
 import { toJsonDepartment } from './department.serializer';
 import { toJsonLecture } from './lecture.serializer';
 import { toJsonReview } from './review.serializer';
 
-export const toJsonFeed = (
-  feed:
-    | FamousHumanityReviewDailyFeed_details
-    | RankedReviewDailyFeed_details
-    | FamousMajorReviewDailyFeed_Details
-    | ReviewWriteDailyUserFeed_details
-    | RelatedCourseDailyUserFeed_details
-    | RateDailyUserFeed_details,
-): IFeed.IBasic => {
-  if (isFamousHumanityReviewDailyFeed(feed)) {
+export const toJsonFeed = (feed: FeedSchema.Details): IFeed.IDetials => {
+  if (FeedSchema.isFamousHumanityReview(feed)) {
     return {
-      type: 'FAMOUS_HUMANITY_REVIEW',
+      type: FeedType.FamousHumanityReview,
       date: feed.date,
       priority: feed.priority,
       reviews: feed.main_famoushumanityreviewdailyfeed_reviews.map(
         (feedReview) => toJsonReview(feedReview.review_review),
       ),
     };
-  } else if (isFamousMajorReviewDailyFeed(feed)) {
+  } else if (FeedSchema.isFamousMajorReview(feed)) {
     return {
-      type: 'FAMOUS_MAJOR_REVIEW',
+      type: FeedType.FamousMajorReview,
       date: feed.date,
       priority: feed.priority,
       reviews: feed.main_famousmajorreviewdailyfeed_reviews.map((feedReview) =>
@@ -44,27 +26,27 @@ export const toJsonFeed = (
       ),
       department: toJsonDepartment(feed.subject_department),
     };
-  } else if (isReviewWriteDailyUserFeed(feed)) {
+  } else if (FeedSchema.isReviewWrite(feed)) {
     return {
-      type: 'REVIEW_WRITE',
+      type: FeedType.ReviewWrite,
       date: feed.date,
       priority: feed.priority,
       lecture: toJsonLecture(feed.subject_lecture, true),
     };
-  } else if ('subject_course' in feed) {
+  } else if (FeedSchema.isRelatedCourse(feed)) {
     return {
-      type: 'RELATED_COURSE',
+      type: FeedType.RelatedCourse,
       date: feed.date,
       priority: feed.priority,
       course: toJsonCourseBasic(feed.subject_course),
     };
-  } else if (isRankedReviewDailyUserFeed(feed)) {
+  } else if (FeedSchema.isRankedReview(feed)) {
     return {
-      type: 'RANKED_REVIEW',
+      type: FeedType.RankedReview,
       date: feed.date,
       priority: feed.priority,
       reviews: feed.reviews.map((review) => toJsonReview(review)),
     };
   }
-  return { type: 'RATE', date: feed.date, priority: feed.priority };
+  return { type: FeedType.Rate, date: feed.date, priority: feed.priority };
 };
