@@ -1,8 +1,8 @@
 import { IsDateString } from 'class-validator';
-import { ICourse } from '../dto/course/ICourse';
 import { DepartmentResponseDto } from '../dto/department/department.response.dto';
 import { NestedLectureResponseDto } from '../dto/lecture/lecture.response.dto';
 import { ReviewResponseDto } from '../dto/reviews/review.response.dto';
+import { ICourse } from './ICourse';
 
 export namespace IFeed {
   export interface IBasic {
