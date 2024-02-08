@@ -70,4 +70,27 @@ export class DepartmentRepository {
     ).map((specializedMajor) => specializedMajor.subject_department);
     return specializedMajors;
   }
+
+  async getAllDepartmentOptions(
+    excludedDepartmentCodes: string[],
+  ): Promise<subject_department[]> {
+    return this.prisma.subject_department.findMany({
+      where: {
+        visible: true,
+        code: { notIn: excludedDepartmentCodes },
+      },
+      orderBy: { name: 'asc' },
+    });
+  }
+
+  async getDepartmentCodesOfRecentLectures(
+    yearThreshold: number,
+  ): Promise<string[]> {
+    const res = (await this.prisma.$queryRaw`
+      SELECT DISTINCT d.code
+      FROM subject_lecture l
+      JOIN subject_department d on l.department_id = d.id 
+      WHERE l.year >= ${yearThreshold};`) as { code: string }[];
+    return res.map((e) => e.code);
+  }
 }
