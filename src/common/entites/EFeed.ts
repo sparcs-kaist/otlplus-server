@@ -19,7 +19,7 @@ export namespace EFeed {
   export const RankedReviewDetails =
     Prisma.validator<Prisma.main_rankedreviewdailyfeedArgs>()({});
 
-  export const EFamousMajorReviewDetails =
+  export const FamousMajorReviewDetails =
     Prisma.validator<Prisma.main_famousmajorreviewdailyfeedArgs>()({
       include: {
         subject_department: true,
@@ -63,7 +63,7 @@ export namespace EFeed {
 
   export type FamousMajorReviewDetails =
     Prisma.main_famousmajorreviewdailyfeedGetPayload<
-      typeof EFamousMajorReviewDetails
+      typeof FamousMajorReviewDetails
     >;
 
   export type ReviewWriteDetails =

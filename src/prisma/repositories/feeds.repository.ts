@@ -82,7 +82,7 @@ export class FeedsRepository {
     departmentNum: number = 1,
   ) {
     let feed = await this.prisma.main_famousmajorreviewdailyfeed.findFirst({
-      include: EFeed.EFamousMajorReviewDetails.include,
+      include: EFeed.FamousMajorReviewDetails.include,
       where: {
         date,
         subject_department,
@@ -100,7 +100,7 @@ export class FeedsRepository {
         LIMIT 3`) satisfies review_majorbestreview;
 
       feed = await this.prisma.main_famousmajorreviewdailyfeed.create({
-        include: EFeed.EFamousMajorReviewDetails.include,
+        include: EFeed.FamousMajorReviewDetails.include,
         data: {
           date,
           priority: Math.random(),
