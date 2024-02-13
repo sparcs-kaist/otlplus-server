@@ -7,7 +7,7 @@ import {
 } from '../schemaTypes/types';
 
 export namespace EFeed {
-  export const EFamousHumanityReviewDetails =
+  export const FamousHumanityReviewDetails =
     Prisma.validator<Prisma.main_famoushumanityreviewdailyfeedArgs>()({
       include: {
         main_famoushumanityreviewdailyfeed_reviews: {
@@ -16,7 +16,7 @@ export namespace EFeed {
       },
     });
 
-  export const ERankedReviewDetails =
+  export const RankedReviewDetails =
     Prisma.validator<Prisma.main_rankedreviewdailyfeedArgs>()({});
 
   export const EFamousMajorReviewDetails =
@@ -29,7 +29,7 @@ export namespace EFeed {
       },
     });
 
-  export const EReviewWriteDetails =
+  export const ReviewWriteDetails =
     Prisma.validator<Prisma.main_reviewwritedailyuserfeedArgs>()({
       include: {
         subject_lecture: {
@@ -38,7 +38,7 @@ export namespace EFeed {
       },
     });
 
-  export const ERelatedCourseDetails =
+  export const RelatedCourseDetails =
     Prisma.validator<Prisma.main_relatedcoursedailyuserfeedArgs>()({
       include: {
         subject_course: {
@@ -47,71 +47,70 @@ export namespace EFeed {
       },
     });
 
-  export const ERateDailyDetails =
+  export const RateDailyDetails =
     Prisma.validator<Prisma.main_ratedailyuserfeedArgs>()({});
 
-  export type EFamousHumanityReviewDetails =
+  export type FamousHumanityReviewDetails =
     Prisma.main_famoushumanityreviewdailyfeedGetPayload<
-      typeof EFamousHumanityReviewDetails
+      typeof FamousHumanityReviewDetails
     >;
 
-  export type ERankedReviewDetails =
-    Prisma.main_rankedreviewdailyfeedGetPayload<typeof ERankedReviewDetails> & {
-      reviews: ReviewDetails[];
-    };
+  export type RankedReviewDetails = Prisma.main_rankedreviewdailyfeedGetPayload<
+    typeof RankedReviewDetails
+  > & {
+    reviews: ReviewDetails[];
+  };
 
-  export type EFamousMajorReviewDetails =
+  export type FamousMajorReviewDetails =
     Prisma.main_famousmajorreviewdailyfeedGetPayload<
       typeof EFamousMajorReviewDetails
     >;
 
-  export type EReviewWriteDetails =
-    Prisma.main_reviewwritedailyuserfeedGetPayload<typeof EReviewWriteDetails>;
+  export type ReviewWriteDetails =
+    Prisma.main_reviewwritedailyuserfeedGetPayload<typeof ReviewWriteDetails>;
 
-  export type ERelatedCourseDetails =
+  export type RelatedCourseDetails =
     Prisma.main_relatedcoursedailyuserfeedGetPayload<
-      typeof ERelatedCourseDetails
+      typeof RelatedCourseDetails
     >;
 
-  export type ERateDailyDetails = Prisma.main_ratedailyuserfeedGetPayload<
-    typeof ERateDailyDetails
+  export type RateDailyDetails = Prisma.main_ratedailyuserfeedGetPayload<
+    typeof RateDailyDetails
   >;
 
-  export type EDetails =
-    | EFamousHumanityReviewDetails
-    | ERankedReviewDetails
-    | EFamousMajorReviewDetails
-    | EReviewWriteDetails
-    | ERelatedCourseDetails
-    | ERateDailyDetails;
+  export type Details =
+    | FamousHumanityReviewDetails
+    | RankedReviewDetails
+    | FamousMajorReviewDetails
+    | ReviewWriteDetails
+    | RelatedCourseDetails
+    | RateDailyDetails;
 
   export const isFamousHumanityReview = (
-    feed: EDetails,
-  ): feed is EFamousHumanityReviewDetails => {
+    feed: Details,
+  ): feed is FamousHumanityReviewDetails => {
     return 'main_famoushumanityreviewdailyfeed_reviews' in feed;
   };
 
   export const isFamousMajorReview = (
-    feed: EDetails,
-  ): feed is EFamousMajorReviewDetails => {
+    feed: Details,
+  ): feed is FamousMajorReviewDetails => {
     return 'main_famousmajorreviewdailyfeed_reviews' in feed;
   };
 
-  export const isReviewWrite = (
-    feed: EDetails,
-  ): feed is EReviewWriteDetails => {
+  export const isReviewWrite = (feed: Details): feed is ReviewWriteDetails => {
     return 'subject_lecture' in feed;
   };
 
   export const isRelatedCourse = (
-    feed: EDetails,
-  ): feed is ERelatedCourseDetails => {
+    feed: Details,
+  ): feed is RelatedCourseDetails => {
     return 'subject_course' in feed;
   };
 
   export const isRankedReview = (
-    feed: EDetails,
-  ): feed is ERankedReviewDetails => {
+    feed: Details,
+  ): feed is RankedReviewDetails => {
     return 'semester_id' in feed;
   };
 }

@@ -28,7 +28,7 @@ export class FeedsRepository {
       where: {
         date,
       },
-      include: EFeed.EFamousHumanityReviewDetails.include,
+      include: EFeed.FamousHumanityReviewDetails.include,
     });
 
     if (!feed) {
@@ -39,7 +39,7 @@ export class FeedsRepository {
         LIMIT 3`) satisfies review_humanitybestreview;
 
       feed = await this.prisma.main_famoushumanityreviewdailyfeed.create({
-        include: EFeed.EFamousHumanityReviewDetails.include,
+        include: EFeed.FamousHumanityReviewDetails.include,
         data: {
           date,
           priority: Math.random(),
@@ -123,7 +123,7 @@ export class FeedsRepository {
     userId: number,
   ): Promise<main_reviewwritedailyuserfeed | null> {
     let feed = await this.prisma.main_reviewwritedailyuserfeed.findFirst({
-      include: EFeed.EReviewWriteDetails.include,
+      include: EFeed.ReviewWriteDetails.include,
       where: {
         date,
         user_id: userId,
@@ -139,7 +139,7 @@ export class FeedsRepository {
       }
 
       feed = await this.prisma.main_reviewwritedailyuserfeed.create({
-        include: EFeed.EReviewWriteDetails.include,
+        include: EFeed.ReviewWriteDetails.include,
         data: {
           date,
           priority: Math.random(),
@@ -158,7 +158,7 @@ export class FeedsRepository {
     userId: number,
   ): Promise<main_relatedcoursedailyuserfeed | null> {
     let feed = await this.prisma.main_relatedcoursedailyuserfeed.findFirst({
-      include: EFeed.ERelatedCourseDetails.include,
+      include: EFeed.RelatedCourseDetails.include,
       where: {
         date,
         user_id: userId,
@@ -182,7 +182,7 @@ export class FeedsRepository {
       }
 
       feed = await this.prisma.main_relatedcoursedailyuserfeed.create({
-        include: EFeed.ERelatedCourseDetails.include,
+        include: EFeed.RelatedCourseDetails.include,
         data: {
           date,
           priority: Math.random(),

@@ -6,7 +6,7 @@ import { toJsonDepartment } from './department.serializer';
 import { toJsonLecture } from './lecture.serializer';
 import { toJsonReview } from './review.serializer';
 
-export const toJsonFeedDetails = (feed: EFeed.EDetails): IFeed.Details => {
+export const toJsonFeedDetails = (feed: EFeed.Details): IFeed.Details => {
   if (EFeed.isFamousHumanityReview(feed)) {
     return {
       type: FeedType.FamousHumanityReview,

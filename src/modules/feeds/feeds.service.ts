@@ -14,7 +14,7 @@ export class FeedsService {
     private readonly reviewsRepository: ReviewsRepository,
   ) {}
 
-  private filterFeeds(feeds: EFeed.EDetails[], feed: EFeed.EDetails | null) {
+  private filterFeeds(feeds: EFeed.Details[], feed: EFeed.Details | null) {
     if (feed && feed.visible) {
       feeds.push(feed);
     }
@@ -26,7 +26,7 @@ export class FeedsService {
     const departments = await this.departmentRepository.getRelatedDepartments(
       user,
     );
-    const feeds: EFeed.EDetails[] = [];
+    const feeds: EFeed.Details[] = [];
 
     const famousHumanityReview =
       await this.feedsRepository.getOrCreateFamousHumanityReview(date);
