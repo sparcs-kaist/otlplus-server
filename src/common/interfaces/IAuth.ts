@@ -1,9 +1,9 @@
-import { Request, Response } from 'express';
+import { Request as _Request, Response as _Response } from 'express';
 
 export namespace IAuth {
-  export type IRequest = Request & IRequestExtra;
+  export type Request = _Request & RequestExtra;
 
-  export interface IRequestExtra {
+  export interface RequestExtra {
     session: {
       next: string;
 
@@ -11,9 +11,9 @@ export namespace IAuth {
     };
   }
 
-  export interface IResponse extends Response {}
+  export interface Response extends _Response {}
 
-  export interface IJwtPayload {
+  export interface JwtPayload {
     sid: string;
   }
 }

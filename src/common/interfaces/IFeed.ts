@@ -5,40 +5,40 @@ import { NestedLectureResponseDto } from './dto/lecture/lecture.response.dto';
 import { ReviewResponseDto } from './dto/reviews/review.response.dto';
 
 export namespace IFeed {
-  export interface IBasic {
+  export interface Basic {
     type: string;
     date: Date;
     priority: number;
   }
 
-  export interface IFamousHumanityReview extends IBasic {
+  export interface FamousHumanityReview extends Basic {
     reviews: ReviewResponseDto[];
   }
 
-  export interface IFamousMajorReview extends IBasic {
+  export interface FamousMajorReview extends Basic {
     reviews: ReviewResponseDto[];
     department: DepartmentResponseDto;
   }
 
-  export interface IReviewWrite extends IBasic {
+  export interface ReviewWrite extends Basic {
     lecture: NestedLectureResponseDto;
   }
 
-  export interface IRelatedCourse extends IBasic {
-    course: ICourse.IRelated;
+  export interface RelatedCourse extends Basic {
+    course: ICourse.Related;
   }
 
-  export interface IRankedReview extends IBasic {
+  export interface RankedReview extends Basic {
     reviews: ReviewResponseDto[];
   }
 
-  export type IDetails =
-    | IBasic
-    | IFamousHumanityReview
-    | IFamousMajorReview
-    | IReviewWrite
-    | IRelatedCourse
-    | IRankedReview;
+  export type Details =
+    | Basic
+    | FamousHumanityReview
+    | FamousMajorReview
+    | ReviewWrite
+    | RelatedCourse
+    | RankedReview;
 
   export class QueryDto {
     @IsDateString()

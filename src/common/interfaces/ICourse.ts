@@ -1,5 +1,5 @@
 export namespace ICourse {
-  export interface IBasic {
+  export interface Basic {
     id: number;
     old_code: string;
     department_id: number;
@@ -19,8 +19,8 @@ export namespace ICourse {
     title_no_space: string;
   }
 
-  export interface IRelated extends IBasic {
-    related_courses_prior: IBasic[];
-    related_courses_posterior: IBasic[];
+  export interface Related extends Basic {
+    related_courses_prior: Basic[];
+    related_courses_posterior: Basic[];
   }
 }
