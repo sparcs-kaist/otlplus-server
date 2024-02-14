@@ -1,5 +1,5 @@
 import { support_rate } from '@prisma/client';
-import { IRate } from '../structures';
+import { IRate } from '../IRate';
 
 export function toJsonRate(rate: support_rate): IRate {
   return {

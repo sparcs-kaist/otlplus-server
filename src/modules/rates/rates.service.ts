@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { session_userprofile, support_rate } from '@prisma/client';
-import { IRate } from 'src/common/interfaces/structures';
+import { IRate } from 'src/common/interfaces/IRate';
 import { RateRepository } from 'src/prisma/repositories/rates.repository';
 import settings from 'src/settings';
 

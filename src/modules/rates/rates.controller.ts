@@ -1,8 +1,8 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { IRate } from 'src/common/interfaces/IRate';
 import { toJsonRate } from 'src/common/interfaces/serializer/rate.serializer';
-import { IRate } from 'src/common/interfaces/structures';
 import { RatesService } from './rates.service';
 
 @Controller('rates')
