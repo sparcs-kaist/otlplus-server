@@ -53,6 +53,8 @@ export class DepartmentsService {
       ),
     ]);
 
+    console.log('recentDepartmentCodes', recentDepartmentCodes);
+
     if (recentDepartmentCodes.length === 0)
       console.error(
         'recentDepartmentCodes is empty, which indicates something is wrong',

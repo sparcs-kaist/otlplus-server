@@ -86,11 +86,18 @@ export class DepartmentRepository {
   async getDepartmentCodesOfRecentLectures(
     yearThreshold: number,
   ): Promise<string[]> {
-    const res = (await this.prisma.$queryRaw`
-      SELECT DISTINCT d.code
-      FROM subject_lecture l
-      JOIN subject_department d on l.department_id = d.id 
-      WHERE l.year >= ${yearThreshold};`) as { code: string }[];
+    const res = await this.prisma.subject_department.findMany({
+      where: {
+        subject_lecture: {
+          some: {
+            year: { gte: yearThreshold },
+          },
+        },
+      },
+      select: {
+        code: true,
+      },
+    });
     return res.map((e) => e.code);
   }
 }
