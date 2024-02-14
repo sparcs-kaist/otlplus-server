@@ -26,7 +26,7 @@ export class SessionController {
 
   @Post('favorite-departments')
   async favoriteDepartments(
-    @Body() body: ISession.FavoriteDepartmentsDTO,
+    @Body() body: ISession.FavoriteDepartmentsDto,
     @GetUser() user: session_userprofile,
   ) {
     const departmentIds = body.fav_department.map((id) => parseInt(id));

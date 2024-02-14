@@ -1,7 +1,7 @@
 import { IsString } from 'class-validator';
 
 export namespace ISession {
-  export class FavoriteDepartmentsDTO {
+  export class FavoriteDepartmentsDto {
     @IsString({ each: true })
     fav_department!: string[];
   }
