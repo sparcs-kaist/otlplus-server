@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, subject_semester } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 
 @Injectable()
@@ -32,6 +32,18 @@ export class SemesterRepository {
       orderBy: orderBy,
       skip: skip,
       take: take,
+    });
+  }
+
+  async getNotWritableSemester(): Promise<subject_semester | null> {
+    const now = new Date();
+    return await this.prisma.subject_semester.findFirst({
+      where: {
+        OR: [
+          { courseAddDropPeriodEnd: { gte: now } },
+          { beginning: { gte: now } },
+        ],
+      },
     });
   }
 }

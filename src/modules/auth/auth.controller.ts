@@ -1,7 +1,7 @@
 import { Controller, Get, Query, Req, Res, Session } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
-import { IAuth } from 'src/common/interfaces/structures';
+import { IAuth } from 'src/common/interfaces';
 import { Public } from '../../common/decorators/skip-auth.decorator';
 import { SSOUser } from '../../common/interfaces/dto/auth/sso.dto';
 import { ProfileDto } from '../../common/interfaces/dto/user/user.response.dto';
@@ -32,8 +32,8 @@ export class AuthController {
   user_login(
     @Query('next') next: string,
     @Query('social_login') social_login: string,
-    @Req() req: IAuth.IRequest,
-    @Res() res: IAuth.IResponse,
+    @Req() req: IAuth.Request,
+    @Res() res: IAuth.Response,
   ) {
     if (req.user) {
       return res.redirect(next ?? '/');
@@ -53,7 +53,7 @@ export class AuthController {
     @Query('state') state: string,
     @Query('code') code: string,
     @Session() session: Record<string, any>,
-    @Res() response: IAuth.IResponse,
+    @Res() response: IAuth.Response,
   ) {
     const stateBefore = session['sso_state'];
     if (!stateBefore || stateBefore != state) {
@@ -93,15 +93,15 @@ export class AuthController {
 
   @Public()
   @Get('/')
-  async home(@Req() req: IAuth.IRequest, @Res() res: IAuth.IResponse) {
+  async home(@Req() req: IAuth.Request, @Res() res: IAuth.Response) {
     return res.redirect('/session/login');
   }
 
   @Public()
   @Get('logout')
   async logout(
-    @Req() req: IAuth.IRequest,
-    @Res() res: IAuth.IResponse,
+    @Req() req: IAuth.Request,
+    @Res() res: IAuth.Response,
     @Query('next') next: string,
     @GetUser() user: session_userprofile,
   ) {
