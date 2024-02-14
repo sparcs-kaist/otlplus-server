@@ -6,3 +6,9 @@ export class WishlistAddLectureDto {
   @Type(() => Number)
   lecture!: number;
 }
+
+export class WishlistRemoveLectureDto {
+  @IsNumber()
+  @Type(() => Number)
+  lecture!: number;
+}
