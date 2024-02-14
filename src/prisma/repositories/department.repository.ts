@@ -100,4 +100,26 @@ export class DepartmentRepository {
     });
     return res.map((e) => e.code);
   }
+
+  async getRelatedDepartments(
+    user: session_userprofile,
+  ): Promise<subject_department[]> {
+    const departments: subject_department[] = (
+      await Promise.all([
+        this.getDepartmentOfUser(user),
+        this.getMajors(user),
+        this.getMinors(user),
+        this.getSpecializedMajors(user),
+        this.getFavoriteDepartments(user),
+      ])
+    ).flatMap(
+      (
+        deps: subject_department | subject_department[] | null,
+      ): subject_department | subject_department[] => deps ?? [],
+    );
+    const uniqueDepartments: subject_department[] = departments.filter(
+      (dep, index, deps) => deps.findIndex((d) => d.id === dep.id) === index,
+    );
+    return uniqueDepartments;
+  }
 }

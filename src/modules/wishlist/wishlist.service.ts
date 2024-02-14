@@ -3,7 +3,10 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { WishlistAddLectureDto } from 'src/common/interfaces/dto/wishlist/wishlist.request.dto';
+import {
+  WishlistAddLectureDto,
+  WishlistRemoveLectureDto,
+} from 'src/common/interfaces/dto/wishlist/wishlist.request.dto';
 import { LectureRepository } from 'src/prisma/repositories/lecture.repository';
 import { WishlistRepository } from 'src/prisma/repositories/wishlist.repository';
 
@@ -42,7 +45,7 @@ export class WishlistService {
     return updatedWishlist;
   }
 
-  async removeLecture(userId: number, body: WishlistAddLectureDto) {
+  async removeLecture(userId: number, body: WishlistRemoveLectureDto) {
     const wishlist = await this.wishlistRepository.getOrCreateWishlist(userId);
 
     if (

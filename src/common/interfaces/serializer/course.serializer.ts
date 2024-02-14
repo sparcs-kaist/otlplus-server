@@ -1,10 +1,45 @@
-import { subject_lecture, subject_professor } from '@prisma/client';
+import {
+  subject_course,
+  subject_lecture,
+  subject_professor,
+} from '@prisma/client';
 import { CourseDetails, NESTED } from '../../schemaTypes/types';
 import { applyOrder } from '../../utils/search.utils';
+import { ICourse } from '../ICourse';
 import { CourseResponseDtoNested } from '../dto/course/course.response.dto';
 import { ProfessorResponseDto } from '../dto/professor/professor.response.dto';
 import { toJsonDepartment } from './department.serializer';
 import { toJsonProfessor } from './professor.serializer';
+
+export function toJsonCourseBasic(course: subject_course): ICourse.Basic {
+  return {
+    id: course.id,
+    old_code: course.old_code,
+    department_id: course.department_id,
+    type: course.type,
+    type_en: course.type_en,
+    title: course.title,
+    title_en: course.title_en,
+    summary: course.summury,
+    grade_sum: course.grade_sum,
+    load_sum: course.load_sum,
+    speech_sum: course.speech_sum,
+    review_total_weight: course.review_total_weight,
+    grade: course.grade,
+    load: course.load,
+    speech: course.speech,
+    title_en_no_space: course.title_en_no_space,
+    title_no_space: course.title_no_space,
+  };
+}
+
+export function toJsonCourseRelated(course: subject_course): ICourse.Related {
+  return {
+    ...toJsonCourseBasic(course),
+    related_courses_prior: [],
+    related_courses_posterior: [],
+  };
+}
 
 export function toJsonCourse<T>(
   course: T extends NESTED

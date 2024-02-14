@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
-import { ReviewDetails } from '../../common/schemaTypes/types';
+import { ReviewDetails, reviewDetails } from '../../common/schemaTypes/types';
 import { PrismaService } from '../prisma.service';
 
 @Injectable()
@@ -256,6 +256,16 @@ export class ReviewsRepository {
         },
         review_reviewvote: true,
       },
+    });
+  }
+
+  public async getTopLikedReviews(n: number) {
+    return await this.prisma.review_review.findMany({
+      include: reviewDetails.include,
+      orderBy: {
+        like: 'desc',
+      },
+      take: n,
     });
   }
 }
