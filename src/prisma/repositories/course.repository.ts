@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { ECourse } from 'src/common/entities/ECourse';
+import { ICourse } from 'src/common/interfaces';
 import { CourseReviewQueryDto } from 'src/common/interfaces/dto/course/course.review.request.dto';
 import {
   applyOffset,
@@ -423,5 +425,35 @@ export class CourseRepository {
         subject_courseuser: true,
       },
     });
+  }
+
+  async getCourseAutocomplete({
+    keyword,
+  }: ICourse.AutocompleteDto): Promise<ECourse.Extended | null> {
+    const candidate = await this.prisma.subject_course.findFirst({
+      where: {
+        OR: [
+          { subject_department: { name: { startsWith: keyword } } },
+          { subject_department: { name_en: { startsWith: keyword } } },
+          { title: { startsWith: keyword } },
+          { title_en: { startsWith: keyword } },
+          {
+            subject_course_professors: {
+              some: { professor: { professor_name: { startsWith: keyword } } },
+            },
+          },
+          {
+            subject_course_professors: {
+              some: {
+                professor: { professor_name_en: { startsWith: keyword } },
+              },
+            },
+          },
+        ],
+      },
+      include: ECourse.Extended.include,
+      orderBy: { old_code: 'asc' },
+    });
+    return candidate;
   }
 }
