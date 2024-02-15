@@ -7,10 +7,12 @@ import { AuthModule } from './modules/auth/auth.module';
 import { JwtCookieGuard } from './modules/auth/guard/jwt-cookie.guard';
 import { MockAuthGuard } from './modules/auth/guard/mock-auth-guard';
 import { CoursesModule } from './modules/courses/courses.module';
+import { DepartmentsModule } from './modules/departments/departments.module';
 import { FeedsModule } from './modules/feeds/feeds.module';
 import { LecturesModule } from './modules/lectures/lectures.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { SemestersModule } from './modules/semesters/semesters.module';
+import { SessionModule } from './modules/session/session.module';
 import { StatusModule } from './modules/status/status.module';
 import { TimetablesModule } from './modules/timetables/timetables.module';
 import { UserModule } from './modules/user/user.module';
@@ -30,6 +32,8 @@ import { PrismaModule } from './prisma/prisma.module';
     StatusModule,
     FeedsModule,
     WishlistModule,
+    SessionModule,
+    DepartmentsModule,
   ],
   controllers: [AppController],
   providers: [

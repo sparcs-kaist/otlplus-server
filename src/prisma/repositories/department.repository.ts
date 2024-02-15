@@ -71,6 +71,36 @@ export class DepartmentRepository {
     return specializedMajors;
   }
 
+  async getAllDepartmentOptions(
+    excludedDepartmentCodes: string[],
+  ): Promise<subject_department[]> {
+    return this.prisma.subject_department.findMany({
+      where: {
+        visible: true,
+        code: { notIn: excludedDepartmentCodes },
+      },
+      orderBy: { name: 'asc' },
+    });
+  }
+
+  async getDepartmentCodesOfRecentLectures(
+    yearThreshold: number,
+  ): Promise<string[]> {
+    const res = await this.prisma.subject_department.findMany({
+      where: {
+        subject_lecture: {
+          some: {
+            year: { gte: yearThreshold },
+          },
+        },
+      },
+      select: {
+        code: true,
+      },
+    });
+    return res.map((e) => e.code);
+  }
+
   async getRelatedDepartments(
     user: session_userprofile,
   ): Promise<subject_department[]> {
