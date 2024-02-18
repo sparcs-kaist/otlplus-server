@@ -314,4 +314,21 @@ export class ReviewsRepository {
       ORDER BY RAND() 
       LIMIT ${n}`;
   }
+
+  async upsertReviewVote(reviewId: number, userId: number) {
+    await this.prisma.review_reviewvote.upsert({
+      where: {
+        review_id_userprofile_id: {
+          review_id: reviewId,
+          userprofile_id: userId,
+        },
+      },
+      update: {},
+      create: {
+        review: { connect: { id: reviewId } },
+        userprofile: { connect: { id: userId } },
+      },
+    });
+    return null;
+  }
 }
