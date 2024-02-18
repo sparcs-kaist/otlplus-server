@@ -153,4 +153,22 @@ export class ReviewsService {
       });
     }
   }
+
+  async findReviewVote(
+    reviewId: number,
+    user: session_userprofile,
+  ): Promise<boolean> {
+    const review = await this.reviewsRepository.getReviewById(reviewId);
+    if (review == undefined) throw new HttpException("Can't find review", 404);
+    const isLiked: boolean = await this.reviewsRepository.isLiked(
+      review.id,
+      user.id,
+    );
+    return isLiked;
+  }
+
+  async createReviewVote(reviewId: number, user: session_userprofile) {
+    await this.reviewsRepository.upsertReviewVote(reviewId, user.id);
+    return null;
+  }
 }
