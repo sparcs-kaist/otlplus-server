@@ -38,6 +38,20 @@ export class UserRepository {
     });
   }
 
+  async changeFavoriteDepartments(userId: number, departmentIds: number[]) {
+    await this.prisma.session_userprofile_favorite_departments.deleteMany({
+      where: { userprofile_id: userId },
+    });
+    return await this.prisma.session_userprofile.update({
+      where: { id: userId },
+      data: {
+        favorite_departments: {
+          create: departmentIds.map((department_id) => ({ department_id })),
+        },
+      },
+    });
+  }
+
   async getReviewWritableTakenLectures(
     userId: number,
   ): Promise<session_userprofile_taken_lectures[]> {
