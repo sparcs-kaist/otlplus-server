@@ -1,5 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
+import { ECourse } from 'src/common/entities/ECourse';
+import { ICourse } from 'src/common/interfaces';
 import { CourseReviewQueryDto } from 'src/common/interfaces/dto/course/course.review.request.dto';
 import { toJsonLecture } from 'src/common/interfaces/serializer/lecture.serializer';
 import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
@@ -113,5 +115,39 @@ export class CoursesService {
     }
 
     return reviews.map((review) => toJsonReview(review, user));
+  }
+
+  async getCourseAutocomplete(dto: ICourse.AutocompleteDto) {
+    const candidate = await this.CourseRepository.getCourseAutocomplete(dto);
+    if (!candidate) return dto.keyword;
+    return this.findAutocompleteFromCandidate(candidate, dto.keyword);
+  }
+
+  private findAutocompleteFromCandidate(
+    candidate: ECourse.Extended,
+    keyword: string,
+  ) {
+    const keywordLower = keyword.toLowerCase();
+    if (candidate.subject_department.name.startsWith(keyword))
+      return candidate.subject_department.name;
+    if (
+      candidate.subject_department.name_en
+        ?.toLowerCase()
+        .startsWith(keywordLower)
+    )
+      return candidate.subject_department.name_en;
+    if (candidate.title.startsWith(keyword)) return candidate.title;
+    if (candidate.title_en.toLowerCase().startsWith(keywordLower))
+      return candidate.title_en;
+    for (const professor of candidate.subject_course_professors) {
+      if (professor.professor.professor_name.startsWith(keyword))
+        return professor.professor.professor_name;
+      if (
+        professor.professor.professor_name_en
+          ?.toLowerCase()
+          .startsWith(keywordLower)
+      )
+        return professor.professor.professor_name_en;
+    }
   }
 }

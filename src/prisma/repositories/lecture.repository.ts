@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, session_userprofile } from '@prisma/client';
+import { ELecture } from 'src/common/entities/ELecture';
+import { ILecture } from 'src/common/interfaces/ILecture';
 import { LectureQueryDto } from 'src/common/interfaces/dto/lecture/lecture.request.dto';
 import { applyOffset, applyOrder } from 'src/common/utils/search.utils';
 import {
@@ -313,5 +315,38 @@ export class LectureRepository {
     const hour = Math.floor(time / 2) + 8;
     const minute = (time % 2) * 30;
     return new Date(0, 0, 0, hour, minute, 0, 0);
+  }
+
+  async getLectureAutocomplete({
+    year,
+    semester,
+    keyword,
+  }: ILecture.AutocompleteDto): Promise<ELecture.Extended | null> {
+    const candidate = await this.prisma.subject_lecture.findFirst({
+      where: {
+        year,
+        semester,
+        OR: [
+          { subject_department: { name: { startsWith: keyword } } },
+          { subject_department: { name_en: { startsWith: keyword } } },
+          { title: { startsWith: keyword } },
+          { title_en: { startsWith: keyword } },
+          {
+            subject_lecture_professors: {
+              some: { professor: { professor_name: { startsWith: keyword } } },
+            },
+          },
+          {
+            subject_lecture_professors: {
+              some: {
+                professor: { professor_name_en: { startsWith: keyword } },
+              },
+            },
+          },
+        ],
+      },
+      include: ELecture.Extended.include,
+    });
+    return candidate;
   }
 }

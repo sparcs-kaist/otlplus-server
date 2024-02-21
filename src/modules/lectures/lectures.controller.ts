@@ -2,6 +2,7 @@ import { Controller, Get, Param, Query } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { Public } from 'src/common/decorators/skip-auth.decorator';
+import { ILecture } from 'src/common/interfaces/ILecture';
 import {
   LectureQueryDto,
   LectureReviewsQueryDto,
@@ -16,6 +17,12 @@ export class LecturesController {
   @Get()
   async getLectures(@Query() query: LectureQueryDto) {
     return await this.LectureService.getLectureByFilter(query);
+  }
+
+  @Public()
+  @Get('autocomplete')
+  async getLectureAutocomplete(@Query() query: ILecture.AutocompleteDto) {
+    return await this.LectureService.getLectureAutocomplete(query);
   }
 
   @Get(':id')
