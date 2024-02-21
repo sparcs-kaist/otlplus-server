@@ -1,10 +1,10 @@
 import { Type } from 'class-transformer';
 import { IsNumber, Max, Min } from 'class-validator';
 
-export interface IRate extends IRate.ICommon {}
+export interface IRate extends IRate.IBasic {}
 
 export namespace IRate {
-  export interface ICommon {
+  export interface IBasic {
     id: number;
     user_id: number;
     score: number;
