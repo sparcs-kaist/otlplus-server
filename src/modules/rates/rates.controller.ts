@@ -5,7 +5,7 @@ import { IRate } from 'src/common/interfaces/IRate';
 import { toJsonRate } from 'src/common/interfaces/serializer/rate.serializer';
 import { RatesService } from './rates.service';
 
-@Controller('rates')
+@Controller('api/rates')
 export class RatesController {
   constructor(private readonly ratesService: RatesService) {}
   @Post()
