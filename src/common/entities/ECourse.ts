@@ -14,7 +14,7 @@ export namespace ECourse {
 
   export const Details = Prisma.validator<Prisma.subject_courseArgs>()({
     include: {
-      ...Extended.include
+      ...Extended.include,
       lecture: true,
       subject_courseuser: true,
     },
