@@ -22,7 +22,13 @@ export class RateRepository {
     version: string,
   ) {
     return this.prisma.support_rate.create({
-      data: { user_id: userId, year, score, version },
+      data: {
+        user_id: userId,
+        year,
+        score,
+        version,
+        created_datetime: new Date(),
+      },
     });
   }
 }
