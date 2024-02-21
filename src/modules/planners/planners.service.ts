@@ -5,12 +5,12 @@ import { PlannerRepository } from 'src/prisma/repositories/planner.repository';
 
 @Injectable()
 export class PlannersService {
-  constructor(private readonly plannerRepository: PlannerRepository) {}
+  constructor(private readonly PlannerRepository: PlannerRepository) {}
 
   public async getPlannerByUser(
     query: PlannerRequestDtoDefault,
     user: session_userprofile,
   ) {
-    return await this.plannerRepository.getPlannerByUser(query, user);
+    return await this.PlannerRepository.getPlannerByUser(query, user);
   }
 }

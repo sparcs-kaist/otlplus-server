@@ -4,7 +4,7 @@ import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { PlannerRequestDtoDefault } from 'src/common/interfaces/dto/planner/planner.request.dto';
 import { PlannersService } from './planners.service';
 
-@Controller('users/:id/planners')
+@Controller('api/users/:id/planners')
 export class PlannersController {
   constructor(private readonly plannersService: PlannersService) {}
 

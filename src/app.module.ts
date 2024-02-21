@@ -10,6 +10,7 @@ import { CoursesModule } from './modules/courses/courses.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
 import { FeedsModule } from './modules/feeds/feeds.module';
 import { LecturesModule } from './modules/lectures/lectures.module';
+import { PlannersModule } from './modules/planners/planners.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { SemestersModule } from './modules/semesters/semesters.module';
 import { SessionModule } from './modules/session/session.module';
@@ -34,6 +35,7 @@ import { PrismaModule } from './prisma/prisma.module';
     WishlistModule,
     SessionModule,
     DepartmentsModule,
+    PlannersModule,
   ],
   controllers: [AppController],
   providers: [

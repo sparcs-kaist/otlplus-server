@@ -1,7 +1,7 @@
 import {
-  ArbitraryPlannerItemDetails,
-  FuturePlannerItemDetails,
-  TakenPlannerItemDetails,
+  ArbitraryPlannerItem,
+  FuturePlannerItem,
+  TakenPlannerItem,
 } from 'src/common/schemaTypes/types';
 import { ArbitraryPlannerItemResponseDto } from '../dto/planner_item/arbitrary.response.dto';
 import { FuturePlannerItemResponseDto } from '../dto/planner_item/future.reponse.dto';
@@ -11,7 +11,7 @@ import { toJsonDepartment } from './department.serializer';
 import { toJsonLecture } from './lecture.serializer';
 
 export const toJsonTakenItem = (
-  taken_item: TakenPlannerItemDetails,
+  taken_item: TakenPlannerItem,
 ): TakenPlannerItemResponseDto => {
   return {
     id: taken_item.id,
@@ -30,7 +30,7 @@ export const toJsonTakenItem = (
 };
 
 export const toJsonArbitraryItem = (
-  arbitrary_item: ArbitraryPlannerItemDetails,
+  arbitrary_item: ArbitraryPlannerItem,
 ): ArbitraryPlannerItemResponseDto => {
   return {
     id: arbitrary_item.id,
@@ -50,7 +50,7 @@ export const toJsonArbitraryItem = (
 };
 
 export const toJsonFutureItem = (
-  future_item: FuturePlannerItemDetails,
+  future_item: FuturePlannerItem,
 ): FuturePlannerItemResponseDto => {
   return {
     id: future_item.id,
