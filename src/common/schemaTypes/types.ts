@@ -161,9 +161,27 @@ export type SemesterBasic = Prisma.subject_semesterGetPayload<null>;
 export type PlannerDetails = Prisma.planner_plannerGetPayload<
   typeof plannerDetails
 >;
+export type ArbitraryPlannerItem =
+  Prisma.planner_arbitraryplanneritemGetPayload<typeof arbitraryPlannerItem>;
+export type FuturePlannerItem = Prisma.planner_futureplanneritemGetPayload<
+  typeof futurePlannerItem
+>;
+export type TakenPlannerItem = Prisma.planner_takenplanneritemGetPayload<
+  typeof takenPlannerItem
+>;
 export type GeneralTrackBasic = Prisma.graduation_generaltrackGetPayload<null>;
 export type MajorTrackDetails = Prisma.graduation_majortrackGetPayload<
   typeof majorTrack
 >;
 export type AdditionalTrackDetails =
   Prisma.graduation_additionaltrackGetPayload<typeof additionalTrack>;
+
+export type WishlistWithLectures = Prisma.timetable_wishlistGetPayload<
+  typeof wishlistWithLectures
+>;
+
+export function isLectureDetails(
+  lecture: LectureExtended | LectureDetails,
+): lecture is LectureDetails {
+  return 'subject_classtime' in lecture && 'subject_examtime' in lecture;
+}
