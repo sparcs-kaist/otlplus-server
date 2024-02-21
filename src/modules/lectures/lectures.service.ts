@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
+import { ELecture } from 'src/common/entities/ELecture';
+import { ILecture } from 'src/common/interfaces/ILecture';
 import {
   LectureQueryDto,
   LectureReviewsQueryDto,
@@ -67,5 +69,39 @@ export class LecturesService {
 
   public async getLecturesByIds(ids: number[]): Promise<LectureDetails[]> {
     return await this.LectureRepository.getLectureByIds(ids);
+  }
+
+  async getLectureAutocomplete(dto: ILecture.AutocompleteDto) {
+    const candidate = await this.LectureRepository.getLectureAutocomplete(dto);
+    if (!candidate) return dto.keyword;
+    return this.findAutocompleteFromCandidate(candidate, dto.keyword);
+  }
+
+  private findAutocompleteFromCandidate(
+    candidate: ELecture.Extended,
+    keyword: string,
+  ) {
+    const keywordLower = keyword.toLowerCase();
+    if (candidate.subject_department.name.startsWith(keyword))
+      return candidate.subject_department.name;
+    if (
+      candidate.subject_department.name_en
+        ?.toLowerCase()
+        .startsWith(keywordLower)
+    )
+      return candidate.subject_department.name_en;
+    if (candidate.title.startsWith(keyword)) return candidate.title;
+    if (candidate.title_en.toLowerCase().startsWith(keywordLower))
+      return candidate.title_en;
+    for (const professor of candidate.subject_lecture_professors) {
+      if (professor.professor.professor_name.startsWith(keyword))
+        return professor.professor.professor_name;
+      if (
+        professor.professor.professor_name_en
+          ?.toLowerCase()
+          .startsWith(keywordLower)
+      )
+        return professor.professor.professor_name_en;
+    }
   }
 }

@@ -1,3 +1,5 @@
+import { IsString } from 'class-validator';
+
 export namespace ICourse {
   export interface Basic {
     id: number;
@@ -22,5 +24,10 @@ export namespace ICourse {
   export interface Related extends Basic {
     related_courses_prior: Basic[];
     related_courses_posterior: Basic[];
+  }
+
+  export class AutocompleteDto {
+    @IsString()
+    keyword!: string;
   }
 }
