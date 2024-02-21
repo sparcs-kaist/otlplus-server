@@ -150,4 +150,8 @@ export class CoursesService {
         return professor.professor.professor_name_en;
     }
   }
+
+  async readCourse(userId: number, courseId: number) {
+    await this.CourseRepository.readCourse(userId, courseId);
+  }
 }
