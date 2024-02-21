@@ -7,6 +7,7 @@ import { PlannerRepository } from './repositories/planner.repository';
 import { ReviewsRepository } from './repositories/review.repository';
 import { SemesterRepository } from './repositories/semester.repository';
 import { TimetableRepository } from './repositories/timetable.repository';
+import { TracksRepository } from './repositories/track.repository';
 import { UserRepository } from './repositories/user.repository';
 import { WishlistRepository } from './repositories/wishlist.repository';
 
@@ -22,6 +23,7 @@ import { WishlistRepository } from './repositories/wishlist.repository';
     TimetableRepository,
     WishlistRepository,
     PlannerRepository,
+    TracksRepository,
   ],
   exports: [
     PrismaService,
@@ -34,6 +36,7 @@ import { WishlistRepository } from './repositories/wishlist.repository';
     TimetableRepository,
     WishlistRepository,
     PlannerRepository,
+    TracksRepository,
   ],
 })
 export class PrismaModule {}
