@@ -2,6 +2,7 @@ import { Controller, Get, Param, Query } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { Public } from 'src/common/decorators/skip-auth.decorator';
+import { ICourse } from 'src/common/interfaces';
 import { CourseReviewQueryDto } from 'src/common/interfaces/dto/course/course.review.request.dto';
 import { CourseQueryDto } from '../../common/interfaces/dto/course/course.request.dto';
 import { CoursesService } from './courses.service';
@@ -17,6 +18,11 @@ export class CourseController {
   ) {
     const courses = await this.CoursesService.getCourseByFilter(query, user);
     return courses;
+  }
+
+  @Get('autocomplete')
+  async getCourseAutocomplete(@Query() query: ICourse.AutocompleteDto) {
+    return await this.CoursesService.getCourseAutocomplete(query);
   }
 
   @Get(':id')
