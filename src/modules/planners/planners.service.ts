@@ -24,7 +24,7 @@ export class PlannersService {
       query,
       user,
     );
-    return queryResult.map((p) => toJsonPlanner(p));
+    return queryResult.map(toJsonPlanner);
   }
 
   async getRelatedPlanner(user: session_userprofile) {
@@ -57,12 +57,12 @@ export class PlannersService {
         const valid_end_year = lecture.year <= body.end_year;
         return valid_start_year && valid_end_year;
       });
-      valid_taken_lectures.map(async (lecture) => {
+      valid_taken_lectures.forEach(async (lecture) => {
         await this.PlannerRepository.createTakenPlannerItem(planner, lecture);
       });
     }
 
-    body.taken_items_to_copy.map(async (item) => {
+    body.taken_items_to_copy.forEach(async (item) => {
       const target_items = await this.PlannerRepository.getTakenPlannerItemById(
         user,
         item,
@@ -79,7 +79,7 @@ export class PlannersService {
       }
     });
 
-    body.future_items_to_copy.map(async (item) => {
+    body.future_items_to_copy.forEach(async (item) => {
       const target_items =
         await this.PlannerRepository.getFuturePlannerItemById(user, item);
       if (target_items.length == 0) {
@@ -93,7 +93,7 @@ export class PlannersService {
       }
     });
 
-    body.arbitrary_items_to_copy.map(async (item) => {
+    body.arbitrary_items_to_copy.forEach(async (item) => {
       const target_items =
         await this.PlannerRepository.getArbitraryPlannerItemById(user, item);
       if (target_items.length == 0) {

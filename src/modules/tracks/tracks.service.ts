@@ -14,9 +14,9 @@ export class TracksService {
     const { generalTracks, majorTracks, addtionalTracks } =
       await this.TracksRepository.getAllTracks();
     return {
-      general: generalTracks.map((t) => toJsonGeneralTrack(t)),
-      major: majorTracks.map((t) => toJsonMajorTrack(t)),
-      additional: addtionalTracks.map((t) => toJsonAdditionalTrack(t)),
+      general: generalTracks.map(toJsonGeneralTrack),
+      major: majorTracks.map(toJsonMajorTrack),
+      additional: addtionalTracks.map(toJsonAdditionalTrack),
     };
   }
 }
