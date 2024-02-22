@@ -22,8 +22,12 @@ export class PlannersController {
   @Get()
   async getPlanners(
     @Query() query: PlannerQueryDto,
+    @Param('id') id: number,
     @GetUser() user: session_userprofile,
   ) {
+    if (id !== user.id) {
+      throw new UnauthorizedException();
+    }
     const planners = await this.plannersService.getPlannerByUser(query, user);
     return planners;
   }
