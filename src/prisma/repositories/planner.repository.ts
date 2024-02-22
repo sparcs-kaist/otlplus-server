@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import {
   PlannerBodyDto,
@@ -95,7 +95,7 @@ export class PlannerRepository {
   public async getTakenPlannerItemById(
     user: session_userprofile,
     id: number,
-  ): Promise<TakenPlannerItem[]> {
+  ): Promise<TakenPlannerItem> {
     const planner = await this.prisma.planner_planner.findMany({
       include: {
         planner_takenplanneritem: {
@@ -111,7 +111,12 @@ export class PlannerRepository {
         },
       },
     });
-    return planner.map((p) => p.planner_takenplanneritem).flat();
+    const candidates = planner.map((p) => p.planner_takenplanneritem).flat();
+    const result = candidates.find((c) => c.id === id);
+    if (!result) {
+      throw new NotFoundException();
+    }
+    return result;
   }
 
   public async createTakenPlannerItem(
@@ -138,7 +143,7 @@ export class PlannerRepository {
   public async getFuturePlannerItemById(
     user: session_userprofile,
     id: number,
-  ): Promise<FuturePlannerItem[]> {
+  ): Promise<FuturePlannerItem> {
     const planner = await this.prisma.planner_planner.findMany({
       include: {
         planner_futureplanneritem: {
@@ -154,7 +159,12 @@ export class PlannerRepository {
         },
       },
     });
-    return planner.map((p) => p.planner_futureplanneritem).flat();
+    const candidates = planner.map((p) => p.planner_futureplanneritem).flat();
+    const result = candidates.find((c) => c.id === id);
+    if (!result) {
+      throw new NotFoundException();
+    }
+    return result;
   }
 
   public async createFuturePlannerItem(
@@ -183,7 +193,7 @@ export class PlannerRepository {
   public async getArbitraryPlannerItemById(
     user: session_userprofile,
     id: number,
-  ): Promise<ArbitraryPlannerItem[]> {
+  ): Promise<ArbitraryPlannerItem> {
     const planner = await this.prisma.planner_planner.findMany({
       include: {
         planner_arbitraryplanneritem: {
@@ -199,7 +209,14 @@ export class PlannerRepository {
         },
       },
     });
-    return planner.map((p) => p.planner_arbitraryplanneritem).flat();
+    const candidates = planner
+      .map((p) => p.planner_arbitraryplanneritem)
+      .flat();
+    const result = candidates.find((c) => c.id === id);
+    if (!result) {
+      throw new NotFoundException();
+    }
+    return result;
   }
 
   public async createArbitraryPlannerItem(

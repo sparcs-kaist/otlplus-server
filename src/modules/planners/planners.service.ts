@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import {
   PlannerBodyDto,
@@ -63,50 +63,32 @@ export class PlannersService {
     }
 
     body.taken_items_to_copy.forEach(async (item) => {
-      const targetItems = await this.PlannerRepository.getTakenPlannerItemById(
+      const targetItem = await this.PlannerRepository.getTakenPlannerItemById(
         user,
         item,
       );
-      if (targetItems.length == 0) {
-        throw new BadRequestException('No such planner item');
-      } else {
-        const targetItem = targetItems[0];
-        await this.PlannerRepository.createTakenPlannerItem(
-          planner,
-          targetItem.subject_lecture,
-          targetItem.is_excluded,
-        );
-      }
+      await this.PlannerRepository.createTakenPlannerItem(
+        planner,
+        targetItem.subject_lecture,
+        targetItem.is_excluded,
+      );
     });
 
     body.future_items_to_copy.forEach(async (item) => {
-      const targetItems = await this.PlannerRepository.getFuturePlannerItemById(
+      const targetItem = await this.PlannerRepository.getFuturePlannerItemById(
         user,
         item,
       );
-      if (targetItems.length == 0) {
-        throw new BadRequestException('No such planner item');
-      } else {
-        const targetItem = targetItems[0];
-        await this.PlannerRepository.createFuturePlannerItem(
-          planner,
-          targetItem,
-        );
-      }
+      await this.PlannerRepository.createFuturePlannerItem(planner, targetItem);
     });
 
     body.arbitrary_items_to_copy.forEach(async (item) => {
-      const targetItems =
+      const targetItem =
         await this.PlannerRepository.getArbitraryPlannerItemById(user, item);
-      if (targetItems.length == 0) {
-        throw new BadRequestException('No such planner item');
-      } else {
-        const targetItem = targetItems[0];
-        await this.PlannerRepository.createArbitraryPlannerItem(
-          planner,
-          targetItem,
-        );
-      }
+      await this.PlannerRepository.createArbitraryPlannerItem(
+        planner,
+        targetItem,
+      );
     });
 
     return toJsonPlanner(planner);
