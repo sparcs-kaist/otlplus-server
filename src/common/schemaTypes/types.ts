@@ -52,14 +52,14 @@ const majorTrack = Prisma.validator<Prisma.graduation_majortrackArgs>()({
   },
 });
 
-const additionalTrack =
+export const additionalTrack =
   Prisma.validator<Prisma.graduation_additionaltrackArgs>()({
     include: {
       subject_department: true,
     },
   });
 
-const takenPlannerItem =
+export const takenPlannerItem =
   Prisma.validator<Prisma.planner_takenplanneritemArgs>()({
     include: {
       subject_lecture: {
@@ -71,14 +71,14 @@ const takenPlannerItem =
     },
   });
 
-const arbitraryPlannerItem =
+export const arbitraryPlannerItem =
   Prisma.validator<Prisma.planner_arbitraryplanneritemArgs>()({
     include: {
       subject_department: true,
     },
   });
 
-const futurePlannerItem =
+export const futurePlannerItem =
   Prisma.validator<Prisma.planner_futureplanneritemArgs>()({
     include: {
       subject_course: courseDetails,
@@ -158,6 +158,7 @@ export type TimeTableDetails = Prisma.timetable_timetableGetPayload<
 >;
 export type TimeTableBasic = Prisma.timetable_timetableGetPayload<null>;
 export type SemesterBasic = Prisma.subject_semesterGetPayload<null>;
+export type PlannerBasic = Prisma.planner_plannerGetPayload<null>;
 export type PlannerDetails = Prisma.planner_plannerGetPayload<
   typeof plannerDetails
 >;
