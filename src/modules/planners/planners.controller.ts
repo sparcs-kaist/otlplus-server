@@ -10,7 +10,7 @@ import {
 import { session_userprofile } from '@prisma/client';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import {
-  PlannerBodyDto,
+  PlannerPostBodyDto,
   PlannerQueryDto,
 } from 'src/common/interfaces/dto/planner/planner.request.dto';
 import { PlannersService } from './planners.service';
@@ -34,7 +34,7 @@ export class PlannersController {
 
   @Post()
   async postPlanner(
-    @Body() planner: PlannerBodyDto,
+    @Body() planner: PlannerPostBodyDto,
     @Param('id') id: number,
     @GetUser() user: session_userprofile,
   ) {
@@ -43,5 +43,17 @@ export class PlannersController {
     }
     const newPlanner = await this.plannersService.postPlanner(planner, user);
     return newPlanner;
+  }
+
+  @Get(':plannerId')
+  async getPlannerById(
+    @Param('plannerId') plannerId: number,
+    @Param('id') id: number,
+    @GetUser() user: session_userprofile,
+  ) {
+    if (id !== user.id) {
+      throw new UnauthorizedException();
+    }
+    return await this.plannersService.getPlannerById(plannerId);
   }
 }

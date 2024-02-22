@@ -30,7 +30,7 @@ export class PlannerQueryDto {
   limit?: number;
 }
 
-export class PlannerBodyDto {
+export class PlannerPostBodyDto {
   @IsInt()
   start_year!: number;
   @IsInt()
@@ -55,4 +55,26 @@ export class PlannerBodyDto {
   @IsArray()
   @IsInt({ each: true })
   arbitrary_items_to_copy!: number[];
+}
+
+export class PlannerPatchBodyDto {
+  @IsOptional()
+  @IsInt()
+  start_year?: number;
+  @IsOptional()
+  @IsInt()
+  end_year?: number;
+  @IsOptional()
+  @IsInt()
+  general_track?: number;
+  @IsOptional()
+  @IsInt()
+  major_track?: number;
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  additional_tracks?: number[];
+  @IsOptional()
+  @IsBoolean()
+  should_update_taken_semesters?: boolean;
 }

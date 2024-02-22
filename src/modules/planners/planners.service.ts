@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import {
-  PlannerBodyDto,
+  PlannerPostBodyDto,
   PlannerQueryDto,
 } from 'src/common/interfaces/dto/planner/planner.request.dto';
 import { PlannerResponseDto } from 'src/common/interfaces/dto/planner/planner.response.dto';
@@ -32,7 +32,7 @@ export class PlannersService {
   }
 
   public async postPlanner(
-    body: PlannerBodyDto,
+    body: PlannerPostBodyDto,
     user: session_userprofile,
   ): Promise<PlannerResponseDto> {
     const relatedPlanner = await this.getRelatedPlanner(user);
@@ -109,6 +109,11 @@ export class PlannersService {
       }
     });
 
+    return toJsonPlanner(planner);
+  }
+
+  public async getPlannerById(plannerId: number) {
+    const planner = await this.PlannerRepository.getPlannerById(plannerId);
     return toJsonPlanner(planner);
   }
 }

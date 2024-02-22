@@ -1,7 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { session_userprofile } from '@prisma/client';
 import {
-  PlannerBodyDto,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
+import { session_userprofile } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
+import {
+  PlannerPostBodyDto,
   PlannerQueryDto,
 } from 'src/common/interfaces/dto/planner/planner.request.dto';
 import {
@@ -23,6 +28,22 @@ import { PrismaService } from '../prisma.service';
 export class PlannerRepository {
   constructor(private readonly prisma: PrismaService) {}
 
+  public async getPlannerById(id: number): Promise<PlannerDetails> {
+    try {
+      return await this.prisma.planner_planner.findUniqueOrThrow({
+        ...plannerDetails,
+        where: {
+          id: id,
+        },
+      });
+    } catch (e) {
+      if (e instanceof PrismaClientKnownRequestError && e.code === 'P2025') {
+        throw new NotFoundException();
+      }
+      throw new InternalServerErrorException();
+    }
+  }
+
   public async getPlannerByUser(
     query: PlannerQueryDto,
     user: session_userprofile,
@@ -39,7 +60,7 @@ export class PlannerRepository {
   }
 
   public async createPlanner(
-    body: PlannerBodyDto,
+    body: PlannerPostBodyDto,
     arrange_order: number,
     user: session_userprofile,
   ): Promise<PlannerDetails> {
