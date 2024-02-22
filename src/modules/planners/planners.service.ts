@@ -36,73 +36,75 @@ export class PlannersService {
     user: session_userprofile,
   ): Promise<PlannerResponseDto> {
     const relatedPlanner = await this.getRelatedPlanner(user);
-    const arrange_order =
+    const arrangeOrder =
       relatedPlanner.length == 0
         ? 0
         : relatedPlanner[relatedPlanner.length - 1].arrange_order + 1;
     const planner = await this.PlannerRepository.createPlanner(
       body,
-      arrange_order,
+      arrangeOrder,
       user,
     );
 
     if (body.should_update_taken_semesters) {
-      const taken_lectures =
+      const takenLectures =
         await this.LectureRepository.findReviewWritableLectures(
           user,
           new Date(),
         );
-      const valid_taken_lectures = taken_lectures.filter((lecture) => {
-        const valid_start_year = lecture.year >= body.start_year;
-        const valid_end_year = lecture.year <= body.end_year;
-        return valid_start_year && valid_end_year;
+      const valid_takenLectures = takenLectures.filter((lecture) => {
+        const validStartYear = lecture.year >= body.start_year;
+        const validEndYear = lecture.year <= body.end_year;
+        return validStartYear && validEndYear;
       });
-      valid_taken_lectures.forEach(async (lecture) => {
+      valid_takenLectures.forEach(async (lecture) => {
         await this.PlannerRepository.createTakenPlannerItem(planner, lecture);
       });
     }
 
     body.taken_items_to_copy.forEach(async (item) => {
-      const target_items = await this.PlannerRepository.getTakenPlannerItemById(
+      const targetItems = await this.PlannerRepository.getTakenPlannerItemById(
         user,
         item,
       );
-      if (target_items.length == 0) {
+      if (targetItems.length == 0) {
         throw new BadRequestException('No such planner item');
       } else {
-        const target_item = target_items[0];
+        const targetItem = targetItems[0];
         await this.PlannerRepository.createTakenPlannerItem(
           planner,
-          target_item.subject_lecture,
-          target_item.is_excluded,
+          targetItem.subject_lecture,
+          targetItem.is_excluded,
         );
       }
     });
 
     body.future_items_to_copy.forEach(async (item) => {
-      const target_items =
-        await this.PlannerRepository.getFuturePlannerItemById(user, item);
-      if (target_items.length == 0) {
+      const targetItems = await this.PlannerRepository.getFuturePlannerItemById(
+        user,
+        item,
+      );
+      if (targetItems.length == 0) {
         throw new BadRequestException('No such planner item');
       } else {
-        const target_item = target_items[0];
+        const targetItem = targetItems[0];
         await this.PlannerRepository.createFuturePlannerItem(
           planner,
-          target_item,
+          targetItem,
         );
       }
     });
 
     body.arbitrary_items_to_copy.forEach(async (item) => {
-      const target_items =
+      const targetItems =
         await this.PlannerRepository.getArbitraryPlannerItemById(user, item);
-      if (target_items.length == 0) {
+      if (targetItems.length == 0) {
         throw new BadRequestException('No such planner item');
       } else {
-        const target_item = target_items[0];
+        const targetItem = targetItems[0];
         await this.PlannerRepository.createArbitraryPlannerItem(
           planner,
-          target_item,
+          targetItem,
         );
       }
     });
