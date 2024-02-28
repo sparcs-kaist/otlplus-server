@@ -7,7 +7,7 @@ import {
   review_majorbestreview,
   subject_department,
 } from '@prisma/client';
-import { EFeed } from 'src/common/entites/EFeed';
+import { EFeed } from 'src/common/entities/EFeed';
 import {
   FeedRateMinDays,
   FeedVisibleRate,
