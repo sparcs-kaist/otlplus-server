@@ -12,6 +12,6 @@ export class NoticesController {
   async getNotices() {
     const notices = await this.noticesService.getNotices();
 
-    return notices.map((notice) => toJsonNoticeBasic(notice));
+    return notices.map(toJsonNoticeBasic);
   }
 }
