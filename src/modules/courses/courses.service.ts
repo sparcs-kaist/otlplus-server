@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { ECourse } from 'src/common/entities/ECourse';
 import { ICourse } from 'src/common/interfaces';
+import { CourseQueryDto } from 'src/common/interfaces/dto/course/course.request.dto';
 import { CourseReviewQueryDto } from 'src/common/interfaces/dto/course/course.review.request.dto';
 import { toJsonLecture } from 'src/common/interfaces/serializer/lecture.serializer';
 import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
@@ -15,7 +16,7 @@ export class CoursesService {
   constructor(private readonly CourseRepository: CourseRepository) {}
 
   public async getCourseByFilter(
-    query: any,
+    query: CourseQueryDto,
     user: session_userprofile,
   ): Promise<(CourseResponseDtoNested & { userspecific_is_read: boolean })[]> {
     const queryResult = await this.CourseRepository.filterByRequest(query);
@@ -32,9 +33,9 @@ export class CoursesService {
       );
 
       if (user) {
-        const latestReadDatetime = course.subject_courseuser.find(
-          (x) => (x.user_profile_id = user.id),
-        )?.latest_read_datetime;
+        const latestReadDatetime = course.subject_courseuser.find((x) => {
+          return x.user_profile_id === user.id && x.course_id === course.id;
+        })?.latest_read_datetime;
         const latestWrittenDatetime = course.latest_written_datetime;
         return Object.assign(result, {
           userspecific_is_read:
@@ -149,5 +150,9 @@ export class CoursesService {
       )
         return professor.professor.professor_name_en;
     }
+  }
+
+  async readCourse(userId: number, courseId: number) {
+    await this.CourseRepository.readCourse(userId, courseId);
   }
 }
