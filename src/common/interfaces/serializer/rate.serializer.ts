@@ -1,7 +1,7 @@
 import { support_rate } from '@prisma/client';
 import { IRate } from '../IRate';
 
-export function toJsonRate(rate: support_rate): IRate {
+export function toJsonRate(rate: support_rate): IRate.Basic {
   return {
     id: rate.id,
     score: rate.score,

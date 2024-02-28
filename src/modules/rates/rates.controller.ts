@@ -12,7 +12,7 @@ export class RatesController {
   async createRates(
     @Body() body: IRate.CreateDto,
     @GetUser() user: session_userprofile,
-  ): Promise<IRate> {
+  ): Promise<IRate.Basic> {
     const rate = await this.ratesService.createRate(body, user);
     return toJsonRate(rate);
   }
