@@ -9,28 +9,30 @@ import { CoursesService } from './courses.service';
 
 @Controller('api/courses')
 export class CourseController {
-  constructor(private readonly CoursesService: CoursesService) {}
+  constructor(private readonly coursesService: CoursesService) {}
 
+  @Public()
   @Get()
   async getCourses(
     @Query() query: CourseQueryDto,
     @GetUser() user: session_userprofile,
   ) {
-    const courses = await this.CoursesService.getCourseByFilter(query, user);
+    const courses = await this.coursesService.getCourses(query, user);
     return courses;
   }
 
   @Get('autocomplete')
   async getCourseAutocomplete(@Query() query: ICourse.AutocompleteDto) {
-    return await this.CoursesService.getCourseAutocomplete(query);
+    return await this.coursesService.getCourseAutocomplete(query);
   }
 
+  @Public()
   @Get(':id')
   async getCourseById(
     @Param('id') id: number,
     @GetUser() user: session_userprofile,
   ) {
-    return await this.CoursesService.getCourseById(id, user);
+    return await this.coursesService.getCourseById(id, user);
   }
 
   @Get(':id/lectures')
@@ -38,7 +40,7 @@ export class CourseController {
     @Query() query: { order: string[] },
     @Param('id') id: number,
   ) {
-    return await this.CoursesService.getLecturesByCourseId(query, id);
+    return await this.coursesService.getLecturesByCourseId(query, id);
   }
 
   @Get(':id/reviews')
@@ -48,7 +50,7 @@ export class CourseController {
     @Param('id') id: number,
     @GetUser() user: session_userprofile,
   ) {
-    return await this.CoursesService.getReviewsByCourseId(query, id, user);
+    return await this.coursesService.getReviewsByCourseId(query, id, user);
   }
 
   @Post(':id/read')
@@ -56,6 +58,6 @@ export class CourseController {
     @Param('id') id: number,
     @GetUser() user: session_userprofile,
   ) {
-    await this.CoursesService.readCourse(user.id, id);
+    await this.coursesService.readCourse(user.id, id);
   }
 }
