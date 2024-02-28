@@ -33,6 +33,7 @@ import { WishlistRepository } from './repositories/wishlist.repository';
     SemesterRepository,
     TimetableRepository,
     WishlistRepository,
+    NoticesRepository,
   ],
 })
 export class PrismaModule {}
