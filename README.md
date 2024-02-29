@@ -26,6 +26,30 @@ sudo docker compose up
 
 또는 로컬에서 MySQL 5.7을 설치하여 연결할 수 있습니다.
 
+### Node.js 설치 및 버전 관리
+
+Node.js v18 을 설치합니다.
+
+버전 체크
+
+```bash
+node -v # v18.17.0
+npm -v  # v9.x.x
+```
+
+(Tip) [nvm](https://github.com/nvm-sh/nvm) 설치 후, nvm을 이용하여 로컬 개발 환경의 node.js 버전을 설정하는 것을 권장합니다!
+
+```bash
+nvm install 18
+nvm use 18
+```
+
+아래 명령어를 사용하면 `.nvmrc` 설정 파일에 따라 자동으로 버전이 변경됩니다.
+
+```bash
+nvm use # uses v18
+```
+
 ### NestJS 서버 실행
 
 ```sh
