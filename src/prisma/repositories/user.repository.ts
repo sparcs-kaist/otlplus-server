@@ -1,10 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  Prisma,
-  session_userprofile,
-  session_userprofile_taken_lectures,
-  subject_semester,
-} from '@prisma/client';
+import { Prisma, session_userprofile, subject_semester } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 
 @Injectable()
@@ -52,8 +47,9 @@ export class UserRepository {
   async getTakenLectures(
     userId: number,
     notWritableSemester?: subject_semester | null,
-  ): Promise<session_userprofile_taken_lectures[]> {
+  ) {
     return await this.prisma.session_userprofile_taken_lectures.findMany({
+      include: { lecture: true },
       where: {
         userprofile_id: userId,
         lecture: {

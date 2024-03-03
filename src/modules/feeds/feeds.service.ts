@@ -99,6 +99,28 @@ export class FeedsService {
     return feed;
   }
 
+  private async getRelatedCourses(date: Date, userId: number) {
+    let feed = await this.feedsRepository.getRelatedCourse(date, userId);
+
+    if (!feed) {
+      const takenLecture = getRandomChoice(
+        await this.userRepository.getTakenLectures(userId),
+      );
+
+      if (!takenLecture) {
+        return null;
+      }
+
+      feed = await this.feedsRepository.createRelatedCourse(
+        date,
+        userId,
+        takenLecture.lecture.course_id,
+      );
+    }
+
+    return feed;
+  }
+
   public async getFeeds(query: IFeed.QueryDto, user: session_userprofile) {
     const { date: dateString } = query;
     const date = new Date(dateString);
@@ -143,10 +165,7 @@ export class FeedsService {
      * RelatedCourse does not have Datas of posterior or prior courses.
      * Comment out below until having enough Datas.
      */
-    // const relatedCourse = await this.feedsRepository.getOrCreateRelatedCourse(
-    //   date,
-    //   user.id,
-    // );
+    // const relatedCourse = await this.getRelatedCourses(date, user.id);
     // this.filterFeeds(feeds, relatedCourse);
 
     const rateDaily = await this.feedsRepository.getOrCreateRate(date, user.id);

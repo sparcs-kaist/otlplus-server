@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
   main_ratedailyuserfeed,
-  main_relatedcoursedailyuserfeed,
   review_humanitybestreview,
   review_majorbestreview,
   subject_department,
@@ -11,7 +10,6 @@ import {
   FeedRateMinDays,
   FeedVisibleRate,
 } from 'src/common/interfaces/constants/feed';
-import { getRandomChoice } from 'src/common/utils/method.utils';
 import { PrismaService } from '../prisma.service';
 import { UserRepository } from './user.repository';
 
@@ -129,47 +127,32 @@ export class FeedsRepository {
       },
     });
   }
-  public async getOrCreateRelatedCourse(
-    date: Date,
-    userId: number,
-  ): Promise<main_relatedcoursedailyuserfeed | null> {
-    let feed = await this.prisma.main_relatedcoursedailyuserfeed.findFirst({
+
+  public async getRelatedCourse(date: Date, userId: number) {
+    return await this.prisma.main_relatedcoursedailyuserfeed.findFirst({
       include: EFeed.RelatedCourseDetails.include,
       where: {
         date,
         user_id: userId,
       },
     });
+  }
 
-    if (!feed) {
-      const takenLecture = getRandomChoice(
-        await this.prisma.session_userprofile_taken_lectures.findMany({
-          include: {
-            lecture: true,
-          },
-          where: {
-            userprofile_id: userId,
-          },
-        }),
-      );
-
-      if (!takenLecture) {
-        return null;
-      }
-
-      feed = await this.prisma.main_relatedcoursedailyuserfeed.create({
-        include: EFeed.RelatedCourseDetails.include,
-        data: {
-          date,
-          priority: Math.random(),
-          visible: Math.random() < FeedVisibleRate.RelatedCourse,
-          course_id: takenLecture.lecture.course_id,
-          user_id: userId,
-        },
-      });
-    }
-
-    return feed;
+  public async createRelatedCourse(
+    date: Date,
+    userId: number,
+    takenLectureCourseId: number,
+  ) {
+    return await this.prisma.main_relatedcoursedailyuserfeed.create({
+      include: EFeed.RelatedCourseDetails.include,
+      data: {
+        date,
+        priority: Math.random(),
+        visible: Math.random() < FeedVisibleRate.RelatedCourse,
+        course_id: takenLectureCourseId,
+        user_id: userId,
+      },
+    });
   }
 
   public async getOrCreateRate(
