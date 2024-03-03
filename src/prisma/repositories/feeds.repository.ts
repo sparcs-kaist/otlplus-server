@@ -104,6 +104,33 @@ export class FeedsRepository {
     });
   }
 
+  public async getReviewWrite(date: Date, userId: number) {
+    return await this.prisma.main_reviewwritedailyuserfeed.findFirst({
+      include: EFeed.ReviewWriteDetails.include,
+      where: {
+        date,
+        user_id: userId,
+      },
+    });
+  }
+
+  public async createReviewWrite(
+    date: Date,
+    userId: number,
+    takenLectureId: number,
+  ) {
+    return await this.prisma.main_reviewwritedailyuserfeed.create({
+      include: EFeed.ReviewWriteDetails.include,
+      data: {
+        date,
+        priority: Math.random(),
+        visible: Math.random() < FeedVisibleRate.ReviewWrite,
+        user_id: userId,
+        lecture_id: takenLectureId,
+      },
+    });
+  }
+
   public async getOrCreateReviewWrite(
     date: Date,
     userId: number,

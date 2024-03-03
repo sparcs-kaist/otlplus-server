@@ -2,9 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { session_userprofile, subject_department } from '@prisma/client';
 import { EFeed } from 'src/common/entities/EFeed';
 import { IFeed } from 'src/common/interfaces/IFeed';
+import { getRandomChoice } from 'src/common/utils/method.utils';
 import { DepartmentRepository } from 'src/prisma/repositories/department.repository';
 import { FeedsRepository } from 'src/prisma/repositories/feeds.repository';
 import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
+import { UserRepository } from 'src/prisma/repositories/user.repository';
 
 @Injectable()
 export class FeedsService {
@@ -12,6 +14,7 @@ export class FeedsService {
     private readonly departmentRepository: DepartmentRepository,
     private readonly feedsRepository: FeedsRepository,
     private readonly reviewsRepository: ReviewsRepository,
+    private readonly userRepository: UserRepository,
   ) {}
 
   private filterFeeds(feeds: EFeed.Details[], feed: EFeed.Details | null) {
@@ -74,6 +77,24 @@ export class FeedsService {
     );
   }
 
+  private async getReviewWrite(date: Date, userId: number) {
+    let feed = await this.feedsRepository.getReviewWrite(date, userId);
+
+    if (!feed) {
+      const takenLecture = getRandomChoice(
+        await this.userRepository.getReviewWritableTakenLectures(userId),
+      );
+
+      feed = await this.feedsRepository.createReviewWrite(
+        date,
+        userId,
+        takenLecture.lecture_id,
+      );
+    }
+
+    return feed;
+  }
+
   public async getFeeds(query: IFeed.QueryDto, user: session_userprofile) {
     const { date: dateString } = query;
     const date = new Date(dateString);
@@ -110,10 +131,7 @@ export class FeedsService {
       this.filterFeeds(feeds, feed);
     });
 
-    const reviewWrite = await this.feedsRepository.getOrCreateReviewWrite(
-      date,
-      user.id,
-    );
+    const reviewWrite = await this.getReviewWrite(date, user.id);
     this.filterFeeds(feeds, reviewWrite);
 
     /**
