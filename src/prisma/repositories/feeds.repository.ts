@@ -51,24 +51,22 @@ export class FeedsRepository {
     });
   }
 
-  public async getOrCreateRankedReview(date: Date) {
-    let feed = await this.prisma.main_rankedreviewdailyfeed.findFirst({
+  public async getRankedReview(date: Date) {
+    return await this.prisma.main_rankedreviewdailyfeed.findFirst({
       where: {
         date,
       },
     });
+  }
 
-    if (!feed) {
-      feed = await this.prisma.main_rankedreviewdailyfeed.create({
-        data: {
-          date,
-          priority: Math.random(),
-          visible: Math.random() < FeedVisibleRate.RankedReview,
-        },
-      });
-    }
-
-    return feed;
+  public async createRankedReview(date: Date) {
+    return await this.prisma.main_rankedreviewdailyfeed.create({
+      data: {
+        date,
+        priority: Math.random(),
+        visible: Math.random() < FeedVisibleRate.RankedReview,
+      },
+    });
   }
 
   public async getOrCreateFamousMajorReview(

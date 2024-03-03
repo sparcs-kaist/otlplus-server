@@ -20,9 +20,7 @@ export class FeedsService {
     }
   }
 
-  private async getFamousHumanityReview(
-    date: Date,
-  ): Promise<EFeed.FamousHumanityReviewDetails> {
+  private async getFamousHumanityReview(date: Date) {
     let feed = await this.feedsRepository.getFamousHumanityReview(date);
     if (!feed) {
       const humanityBestReviews =
@@ -34,6 +32,15 @@ export class FeedsService {
       );
     }
 
+    return feed;
+  }
+
+  private async getRankedReview(date: Date) {
+    let feed = await this.feedsRepository.getRankedReview(date);
+
+    if (!feed) {
+      feed = await this.feedsRepository.createRankedReview(date);
+    }
     return feed;
   }
 
@@ -52,9 +59,7 @@ export class FeedsService {
      * "RANKED_REVIEW" does not require RankedReview
      * Always shows TOP 3 liked reviews.
      */
-    const rankedReview = await this.feedsRepository.getOrCreateRankedReview(
-      date,
-    );
+    const rankedReview = await this.getRankedReview(date);
     const top3LikedReviews = await this.reviewsRepository.getTopLikedReviews(3);
 
     /**
