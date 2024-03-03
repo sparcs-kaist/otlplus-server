@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import {
   main_ratedailyuserfeed,
   main_relatedcoursedailyuserfeed,
-  main_reviewwritedailyuserfeed,
   review_humanitybestreview,
   review_majorbestreview,
   subject_department,
@@ -130,42 +129,6 @@ export class FeedsRepository {
       },
     });
   }
-
-  public async getOrCreateReviewWrite(
-    date: Date,
-    userId: number,
-  ): Promise<main_reviewwritedailyuserfeed | null> {
-    let feed = await this.prisma.main_reviewwritedailyuserfeed.findFirst({
-      include: EFeed.ReviewWriteDetails.include,
-      where: {
-        date,
-        user_id: userId,
-      },
-    });
-
-    if (!feed) {
-      const takenLecture = getRandomChoice(
-        await this.userRepository.getReviewWritableTakenLectures(userId),
-      );
-      if (!takenLecture) {
-        return null;
-      }
-
-      feed = await this.prisma.main_reviewwritedailyuserfeed.create({
-        include: EFeed.ReviewWriteDetails.include,
-        data: {
-          date,
-          priority: Math.random(),
-          visible: Math.random() < FeedVisibleRate.ReviewWrite,
-          user_id: userId,
-          lecture_id: takenLecture.lecture_id,
-        },
-      });
-    }
-
-    return feed;
-  }
-
   public async getOrCreateRelatedCourse(
     date: Date,
     userId: number,

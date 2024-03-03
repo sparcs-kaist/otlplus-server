@@ -6,6 +6,7 @@ import { getRandomChoice } from 'src/common/utils/method.utils';
 import { DepartmentRepository } from 'src/prisma/repositories/department.repository';
 import { FeedsRepository } from 'src/prisma/repositories/feeds.repository';
 import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
+import { SemesterRepository } from 'src/prisma/repositories/semester.repository';
 import { UserRepository } from 'src/prisma/repositories/user.repository';
 
 @Injectable()
@@ -15,6 +16,7 @@ export class FeedsService {
     private readonly feedsRepository: FeedsRepository,
     private readonly reviewsRepository: ReviewsRepository,
     private readonly userRepository: UserRepository,
+    private readonly semesterRepository: SemesterRepository,
   ) {}
 
   private filterFeeds(feeds: EFeed.Details[], feed: EFeed.Details | null) {
@@ -81,8 +83,10 @@ export class FeedsService {
     let feed = await this.feedsRepository.getReviewWrite(date, userId);
 
     if (!feed) {
+      const notWritableSemester =
+        await this.semesterRepository.getNotWritableSemester();
       const takenLecture = getRandomChoice(
-        await this.userRepository.getReviewWritableTakenLectures(userId),
+        await this.userRepository.getTakenLectures(userId, notWritableSemester),
       );
 
       feed = await this.feedsRepository.createReviewWrite(

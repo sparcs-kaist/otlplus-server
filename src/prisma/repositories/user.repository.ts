@@ -3,16 +3,13 @@ import {
   Prisma,
   session_userprofile,
   session_userprofile_taken_lectures,
+  subject_semester,
 } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
-import { SemesterRepository } from './semester.repository';
 
 @Injectable()
 export class UserRepository {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly semesterRepository: SemesterRepository,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async findBySid(sid: string) {
     return await this.prisma.session_userprofile.findFirst({
@@ -52,12 +49,10 @@ export class UserRepository {
     });
   }
 
-  async getReviewWritableTakenLectures(
+  async getTakenLectures(
     userId: number,
+    notWritableSemester?: subject_semester | null,
   ): Promise<session_userprofile_taken_lectures[]> {
-    const notWritableSemester =
-      await this.semesterRepository.getNotWritableSemester();
-
     return await this.prisma.session_userprofile_taken_lectures.findMany({
       where: {
         userprofile_id: userId,
