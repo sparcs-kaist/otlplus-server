@@ -45,7 +45,10 @@ export class LecturesController {
     @Param('lectureId') lectureId: number,
     @GetUser() user: session_userprofile,
   ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })[]> {
-    // TODO
-    throw new Error('Not implemented');
+    return await this.LectureService.getLectureRelatedReviews(
+      user,
+      lectureId,
+      query,
+    );
   }
 }

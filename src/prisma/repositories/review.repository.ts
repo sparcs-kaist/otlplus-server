@@ -7,7 +7,11 @@ import {
 } from '@prisma/client';
 import { EReview } from 'src/common/entities/EReview';
 import { orderFilter } from 'src/common/utils/search.utils';
-import { ReviewDetails, reviewDetails } from '../../common/schemaTypes/types';
+import {
+  LectureDetails,
+  ReviewDetails,
+  reviewDetails,
+} from '../../common/schemaTypes/types';
 import { PrismaService } from '../prisma.service';
 
 @Injectable()
@@ -148,6 +152,15 @@ export class ReviewsRepository {
       skip: offset,
       take: limit,
     });
+  }
+
+  public async getRelatedReviewsOfLecture(
+    order: string[],
+    offset: number,
+    limit: number,
+    lecture: LectureDetails,
+  ): Promise<ReviewDetails[]> {
+    throw new Error('Not implemented');
   }
 
   async isLiked(reviewId: number, userId: number): Promise<boolean> {
