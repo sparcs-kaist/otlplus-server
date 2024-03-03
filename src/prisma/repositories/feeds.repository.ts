@@ -23,37 +23,32 @@ export class FeedsRepository {
     private readonly userRepository: UserRepository,
   ) {}
 
-  public async getOrCreateFamousHumanityReview(date: Date) {
-    let feed = await this.prisma.main_famoushumanityreviewdailyfeed.findFirst({
+  public async getFamousHumanityReview(date: Date) {
+    return await this.prisma.main_famoushumanityreviewdailyfeed.findFirst({
       where: {
         date,
       },
       include: EFeed.FamousHumanityReviewDetails.include,
     });
+  }
 
-    if (!feed) {
-      // Prisma does not support RAND() in ORDER BY.
-      const humanityBestReviews = (await this.prisma.$queryRaw`
-        SELECT * FROM review_humanitybestreview 
-        ORDER BY RAND() 
-        LIMIT 3`) satisfies review_humanitybestreview;
-
-      feed = await this.prisma.main_famoushumanityreviewdailyfeed.create({
-        include: EFeed.FamousHumanityReviewDetails.include,
-        data: {
-          date,
-          priority: Math.random(),
-          main_famoushumanityreviewdailyfeed_reviews: {
-            createMany: {
-              data: humanityBestReviews,
-            },
+  public async createFamousHumanityReview(
+    date: Date,
+    humanityBestReviews: review_humanitybestreview,
+  ) {
+    return await this.prisma.main_famoushumanityreviewdailyfeed.create({
+      include: EFeed.FamousHumanityReviewDetails.include,
+      data: {
+        date,
+        priority: Math.random(),
+        main_famoushumanityreviewdailyfeed_reviews: {
+          createMany: {
+            data: humanityBestReviews,
           },
-          visible: Math.random() < FeedVisibleRate.FamousHumanityReview,
         },
-      });
-    }
-
-    return feed;
+        visible: Math.random() < FeedVisibleRate.FamousHumanityReview,
+      },
+    });
   }
 
   public async getOrCreateRankedReview(date: Date) {

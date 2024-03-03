@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { session_userprofile } from '@prisma/client';
+import { review_humanitybestreview, session_userprofile } from '@prisma/client';
 import { ReviewDetails, reviewDetails } from '../../common/schemaTypes/types';
 import { PrismaService } from '../prisma.service';
 
@@ -267,5 +267,15 @@ export class ReviewsRepository {
       },
       take: n,
     });
+  }
+
+  public async getTopNHumanityBestReviews(
+    n: number,
+  ): Promise<review_humanitybestreview> {
+    // Prisma does not support RAND() in ORDER BY.
+    return await this.prisma.$queryRaw`
+        SELECT * FROM review_humanitybestreview 
+        ORDER BY RAND() 
+        LIMIT ${n}`;
   }
 }

@@ -20,6 +20,23 @@ export class FeedsService {
     }
   }
 
+  private async getFamousHumanityReview(
+    date: Date,
+  ): Promise<EFeed.FamousHumanityReviewDetails> {
+    let feed = await this.feedsRepository.getFamousHumanityReview(date);
+    if (!feed) {
+      const humanityBestReviews =
+        await this.reviewsRepository.getTopNHumanityBestReviews(3);
+
+      feed = await this.feedsRepository.createFamousHumanityReview(
+        date,
+        humanityBestReviews,
+      );
+    }
+
+    return feed;
+  }
+
   public async getFeeds(query: IFeed.QueryDto, user: session_userprofile) {
     const { date: dateString } = query;
     const date = new Date(dateString);
@@ -28,8 +45,7 @@ export class FeedsService {
     );
     const feeds: EFeed.Details[] = [];
 
-    const famousHumanityReview =
-      await this.feedsRepository.getOrCreateFamousHumanityReview(date);
+    const famousHumanityReview = await this.getFamousHumanityReview(date);
     this.filterFeeds(feeds, famousHumanityReview);
 
     /**
