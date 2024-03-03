@@ -37,4 +37,15 @@ export class LecturesController {
   ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })[]> {
     return await this.LectureService.getLectureReviews(user, lectureId, query);
   }
+
+  @Public()
+  @Get(':lectureId/related-reviews')
+  async getLectureRelatedReviews(
+    @Query() query: IReview.LectureReviewsQueryDto,
+    @Param('lectureId') lectureId: number,
+    @GetUser() user: session_userprofile,
+  ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })[]> {
+    // TODO
+    throw new Error('Not implemented');
+  }
 }
