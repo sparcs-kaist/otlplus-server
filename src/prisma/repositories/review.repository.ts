@@ -160,7 +160,71 @@ export class ReviewsRepository {
     limit: number,
     lecture: LectureDetails,
   ): Promise<ReviewDetails[]> {
-    throw new Error('Not implemented');
+    const orderFilter: { [key: string]: string }[] = [];
+    order.forEach((orderList) => {
+      const orderDict: { [key: string]: string } = {};
+      let order = 'asc';
+      const orderBy = orderList.split('-');
+      if (orderBy[0] == '') {
+        order = 'desc';
+      }
+      orderDict[orderBy[orderBy.length - 1]] = order;
+      orderFilter.push(orderDict);
+    });
+
+    return await this.prisma.review_review.findMany({
+      where: {
+        lecture: {
+          course_id: lecture.course_id,
+          subject_lecture_professors: {
+            some: {
+              professor_id: {
+                in: lecture.subject_lecture_professors.map(
+                  (professor) => professor.professor_id,
+                ),
+              },
+            },
+          },
+        },
+      },
+      include: {
+        course: {
+          include: {
+            subject_department: true,
+            subject_course_professors: { include: { professor: true } },
+            lecture: true,
+            subject_courseuser: true,
+          },
+        },
+        lecture: {
+          include: {
+            subject_department: true,
+            subject_lecture_professors: { include: { professor: true } },
+            subject_classtime: true,
+            subject_examtime: true,
+          },
+        },
+        review_reviewvote: true,
+      },
+      skip: offset,
+      take: limit,
+      orderBy: orderFilter,
+      distinct: [
+        'id',
+        'course_id',
+        'lecture_id',
+        'content',
+        'grade',
+        'load',
+        'speech',
+        'writer_id',
+        'writer_label',
+        'updated_datetime',
+        'like',
+        'is_deleted',
+        'written_datetime',
+      ],
+    });
   }
 
   async isLiked(reviewId: number, userId: number): Promise<boolean> {
