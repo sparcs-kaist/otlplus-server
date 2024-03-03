@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { Public } from 'src/common/decorators/skip-auth.decorator';
@@ -49,5 +49,13 @@ export class CourseController {
     @GetUser() user: session_userprofile,
   ) {
     return await this.CoursesService.getReviewsByCourseId(query, id, user);
+  }
+
+  @Post(':id/read')
+  async readCourse(
+    @Param('id') id: number,
+    @GetUser() user: session_userprofile,
+  ) {
+    await this.CoursesService.readCourse(user.id, id);
   }
 }

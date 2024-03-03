@@ -10,6 +10,7 @@ import { CoursesModule } from './modules/courses/courses.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
 import { FeedsModule } from './modules/feeds/feeds.module';
 import { LecturesModule } from './modules/lectures/lectures.module';
+import { NoticesModule } from './modules/notices/notices.module';
 import { RatesModule } from './modules/rates/rates.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { SemestersModule } from './modules/semesters/semesters.module';
@@ -34,6 +35,7 @@ import { PrismaModule } from './prisma/prisma.module';
     StatusModule,
     FeedsModule,
     WishlistModule,
+    NoticesModule,
     SessionModule,
     DepartmentsModule,
   ],

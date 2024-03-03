@@ -456,4 +456,24 @@ export class CourseRepository {
     });
     return candidate;
   }
+
+  async readCourse(userId: number, courseId: number) {
+    const now = new Date();
+    return await this.prisma.subject_courseuser.upsert({
+      create: {
+        latest_read_datetime: now,
+        user_profile_id: userId,
+        course_id: courseId,
+      },
+      update: {
+        latest_read_datetime: now,
+      },
+      where: {
+        course_id_user_profile_id: {
+          course_id: courseId,
+          user_profile_id: userId,
+        },
+      },
+    });
+  }
 }
