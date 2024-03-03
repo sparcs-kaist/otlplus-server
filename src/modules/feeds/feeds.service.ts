@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { session_userprofile } from '@prisma/client';
+import { session_userprofile, subject_department } from '@prisma/client';
 import { EFeed } from 'src/common/entities/EFeed';
 import { IFeed } from 'src/common/interfaces/IFeed';
 import { DepartmentRepository } from 'src/prisma/repositories/department.repository';
@@ -24,7 +24,7 @@ export class FeedsService {
     let feed = await this.feedsRepository.getFamousHumanityReview(date);
     if (!feed) {
       const humanityBestReviews =
-        await this.reviewsRepository.getTopNHumanityBestReviews(3);
+        await this.reviewsRepository.getRandomNHumanityBestReviews(3);
 
       feed = await this.feedsRepository.createFamousHumanityReview(
         date,
@@ -42,6 +42,36 @@ export class FeedsService {
       feed = await this.feedsRepository.createRankedReview(date);
     }
     return feed;
+  }
+
+  private async getFamousMajorReviews(
+    date: Date,
+    departments: subject_department[],
+  ) {
+    return await Promise.all(
+      departments.map(async (department) => {
+        let feed = await this.feedsRepository.getFamousMajorReview(
+          date,
+          department,
+        );
+
+        if (!feed) {
+          const majorBestReviews =
+            await this.reviewsRepository.getRandomNMajorBestReviews(
+              3,
+              department,
+            );
+
+          feed = await this.feedsRepository.createFamousMajorReview(
+            date,
+            department,
+            majorBestReviews,
+          );
+        }
+
+        return feed;
+      }),
+    );
   }
 
   public async getFeeds(query: IFeed.QueryDto, user: session_userprofile) {
@@ -72,13 +102,9 @@ export class FeedsService {
     };
     this.filterFeeds(feeds, rankedReviewWithReviews);
 
-    const famousMajorReviews = await Promise.all(
-      departments.map(async (department) => {
-        return this.feedsRepository.getOrCreateFamousMajorReview(
-          date,
-          department,
-        );
-      }),
+    const famousMajorReviews = await this.getFamousMajorReviews(
+      date,
+      departments,
     );
     famousMajorReviews.forEach((feed) => {
       this.filterFeeds(feeds, feed);

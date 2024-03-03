@@ -69,46 +69,39 @@ export class FeedsRepository {
     });
   }
 
-  public async getOrCreateFamousMajorReview(
+  public async getFamousMajorReview(
     date: Date,
-    subject_department: subject_department,
-    departmentNum: number = 1,
+    department: subject_department,
   ) {
-    let feed = await this.prisma.main_famousmajorreviewdailyfeed.findFirst({
+    return await this.prisma.main_famousmajorreviewdailyfeed.findFirst({
       include: EFeed.FamousMajorReviewDetails.include,
       where: {
         date,
-        subject_department,
+        subject_department: department,
       },
     });
+  }
 
-    if (!feed) {
-      // Prisma does not support RAND() in ORDER BY.
-      const majorBestReviews = (await this.prisma.$queryRaw`
-        SELECT mbr.* FROM review_majorbestreview mbr
-        INNER JOIN review_review r ON r.id = mbr.review_id
-        INNER JOIN subject_lecture l ON l.id = r.lecture_id
-        WHERE l.department_id = ${subject_department.id}
-        ORDER BY RAND() 
-        LIMIT 3`) satisfies review_majorbestreview;
-
-      feed = await this.prisma.main_famousmajorreviewdailyfeed.create({
-        include: EFeed.FamousMajorReviewDetails.include,
-        data: {
-          date,
-          priority: Math.random(),
-          visible:
-            Math.random() <
-            FeedVisibleRate.FamousMajorReview / departmentNum ** 0.7,
-          department_id: subject_department.id,
-          main_famousmajorreviewdailyfeed_reviews: {
-            createMany: { data: majorBestReviews },
-          },
+  public async createFamousMajorReview(
+    date: Date,
+    department: subject_department,
+    majorBestReviews: review_majorbestreview[],
+    departmentNum: number = 1,
+  ) {
+    return await this.prisma.main_famousmajorreviewdailyfeed.create({
+      include: EFeed.FamousMajorReviewDetails.include,
+      data: {
+        date,
+        priority: Math.random(),
+        visible:
+          Math.random() <
+          FeedVisibleRate.FamousMajorReview / departmentNum ** 0.7,
+        department_id: department.id,
+        main_famousmajorreviewdailyfeed_reviews: {
+          createMany: { data: majorBestReviews },
         },
-      });
-    }
-
-    return feed;
+      },
+    });
   }
 
   public async getOrCreateReviewWrite(
