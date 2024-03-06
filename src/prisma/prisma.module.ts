@@ -3,6 +3,7 @@ import { PrismaService } from './prisma.service';
 import { CourseRepository } from './repositories/course.repository';
 import { DepartmentRepository } from './repositories/department.repository';
 import { LectureRepository } from './repositories/lecture.repository';
+import { NoticesRepository } from './repositories/notices.repository';
 import { PlannerRepository } from './repositories/planner.repository';
 import { ReviewsRepository } from './repositories/review.repository';
 import { SemesterRepository } from './repositories/semester.repository';
@@ -24,6 +25,7 @@ import { WishlistRepository } from './repositories/wishlist.repository';
     WishlistRepository,
     PlannerRepository,
     TracksRepository,
+    NoticesRepository,
   ],
   exports: [
     PrismaService,
@@ -37,6 +39,7 @@ import { WishlistRepository } from './repositories/wishlist.repository';
     WishlistRepository,
     PlannerRepository,
     TracksRepository,
+    NoticesRepository,
   ],
 })
 export class PrismaModule {}

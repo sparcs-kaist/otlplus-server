@@ -1,4 +1,4 @@
-import { EFeed } from 'src/common/entites/EFeed';
+import { EFeed } from 'src/common/entities/EFeed';
 import { IFeed } from '../IFeed';
 import { FeedType } from '../constants/feed';
 import { toJsonCourseRelated } from './course.serializer';
