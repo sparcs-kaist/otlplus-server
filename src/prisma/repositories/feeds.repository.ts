@@ -11,14 +11,10 @@ import {
   FeedVisibleRate,
 } from 'src/common/interfaces/constants/feed';
 import { PrismaService } from '../prisma.service';
-import { UserRepository } from './user.repository';
 
 @Injectable()
 export class FeedsRepository {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly userRepository: UserRepository,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   public async getFamousHumanityReview(date: Date) {
     return await this.prisma.main_famoushumanityreviewdailyfeed.findFirst({
