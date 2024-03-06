@@ -46,6 +46,60 @@ export const timeTableDetails =
     },
   });
 
+const majorTrack = Prisma.validator<Prisma.graduation_majortrackArgs>()({
+  include: {
+    subject_department: true,
+  },
+});
+
+export const additionalTrack =
+  Prisma.validator<Prisma.graduation_additionaltrackArgs>()({
+    include: {
+      subject_department: true,
+    },
+  });
+
+export const takenPlannerItem =
+  Prisma.validator<Prisma.planner_takenplanneritemArgs>()({
+    include: {
+      subject_lecture: {
+        include: {
+          ...lectureDetails.include,
+          course: courseDetails,
+        },
+      },
+    },
+  });
+
+export const arbitraryPlannerItem =
+  Prisma.validator<Prisma.planner_arbitraryplanneritemArgs>()({
+    include: {
+      subject_department: true,
+    },
+  });
+
+export const futurePlannerItem =
+  Prisma.validator<Prisma.planner_futureplanneritemArgs>()({
+    include: {
+      subject_course: courseDetails,
+    },
+  });
+
+export const plannerDetails = Prisma.validator<Prisma.planner_plannerArgs>()({
+  include: {
+    planner_planner_additional_tracks: {
+      include: {
+        graduation_additionaltrack: additionalTrack,
+      },
+    },
+    graduation_generaltrack: true,
+    graduation_majortrack: majorTrack,
+    planner_takenplanneritem: takenPlannerItem,
+    planner_arbitraryplanneritem: arbitraryPlannerItem,
+    planner_futureplanneritem: futurePlannerItem,
+  },
+});
+
 export type NESTED = true;
 
 export const reviewDetails = Prisma.validator<Prisma.review_reviewArgs>()({
@@ -104,6 +158,24 @@ export type TimeTableDetails = Prisma.timetable_timetableGetPayload<
 >;
 export type TimeTableBasic = Prisma.timetable_timetableGetPayload<null>;
 export type SemesterBasic = Prisma.subject_semesterGetPayload<null>;
+export type PlannerBasic = Prisma.planner_plannerGetPayload<null>;
+export type PlannerDetails = Prisma.planner_plannerGetPayload<
+  typeof plannerDetails
+>;
+export type ArbitraryPlannerItem =
+  Prisma.planner_arbitraryplanneritemGetPayload<typeof arbitraryPlannerItem>;
+export type FuturePlannerItem = Prisma.planner_futureplanneritemGetPayload<
+  typeof futurePlannerItem
+>;
+export type TakenPlannerItem = Prisma.planner_takenplanneritemGetPayload<
+  typeof takenPlannerItem
+>;
+export type GeneralTrackBasic = Prisma.graduation_generaltrackGetPayload<null>;
+export type MajorTrackDetails = Prisma.graduation_majortrackGetPayload<
+  typeof majorTrack
+>;
+export type AdditionalTrackDetails =
+  Prisma.graduation_additionaltrackGetPayload<typeof additionalTrack>;
 
 export type WishlistWithLectures = Prisma.timetable_wishlistGetPayload<
   typeof wishlistWithLectures
