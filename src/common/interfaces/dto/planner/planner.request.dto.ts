@@ -12,6 +12,8 @@ import {
   OrderDefaultValidator,
   _PROHIBITED_FIELD_PATTERN,
 } from '../../../decorators/validators.decorator';
+import { PlannerItemType } from '../../constants/planner';
+
 export class PlannerQueryDto {
   @IsOptional()
   @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
@@ -68,4 +70,20 @@ export class PlannerRemoveItemDto {
 export class PlannerReorderDto {
   @IsInt()
   arrange_order!: number;
+}
+
+export class PlannerUpdateItemDto {
+  @IsInt()
+  item!: number;
+
+  @IsEnum(PlannerItemType)
+  item_type!: PlannerItemType;
+
+  @IsInt()
+  @IsOptional()
+  semester?: number;
+
+  @IsBoolean()
+  @IsOptional()
+  is_excluded?: boolean;
 }

@@ -11,6 +11,7 @@ import { IPlanner } from 'src/common/interfaces/IPlanner';
 import {
   PlannerBodyDto,
   PlannerQueryDto,
+  PlannerUpdateItemDto,
   PlannerRemoveItemDto,
 } from 'src/common/interfaces/dto/planner/planner.request.dto';
 import { PlannerResponseDto } from 'src/common/interfaces/dto/planner/planner.response.dto';
@@ -259,5 +260,12 @@ export class PlannersService {
     const updated = await this.PlannerRepository.updateOrder(plannerId, order);
 
     return toJsonPlanner(updated);
+  }
+
+  async updatePlannerItem(
+    plannerId: number,
+    updateItemDto: PlannerUpdateItemDto,
+  ) {
+    return null;
   }
 }

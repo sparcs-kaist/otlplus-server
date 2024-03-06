@@ -17,3 +17,5 @@ export interface PlannerResponseDto {
   arbitrary_items: ArbitraryPlannerItemResponseDto[];
   arrange_order: number;
 }
+
+export interface PlannerItemResponseDto {}
