@@ -1,13 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, session_userprofile } from '@prisma/client';
 import { ELecture } from 'src/common/entities/ELecture';
+import { EReview } from 'src/common/entities/EReview';
 import { ILecture } from 'src/common/interfaces/ILecture';
 import { LectureQueryDto } from 'src/common/interfaces/dto/lecture/lecture.request.dto';
-import { applyOffset, applyOrder } from 'src/common/utils/search.utils';
+import {
+  applyOffset,
+  applyOrder,
+  orderFilter,
+} from 'src/common/utils/search.utils';
 import {
   LectureBasic,
   LectureDetails,
-  LectureReviewDetails,
   lectureDetails,
 } from '../../common/schemaTypes/types';
 import { groupBy } from '../../common/utils/method.utils';
@@ -35,49 +39,13 @@ export class LectureRepository {
     order: string[],
     offset: number,
     limit: number,
-  ): Promise<LectureReviewDetails | null> {
-    const orderFilter: { [key: string]: string }[] = [];
-    order.forEach((orderList) => {
-      const orderDict: { [key: string]: string } = {};
-      let order = 'asc';
-      const orderBy = orderList.split('-');
-      if (orderBy[0] == '') {
-        order = 'desc';
-      }
-      orderDict[orderBy[orderBy.length - 1]] = order;
-      orderFilter.push(orderDict);
-    });
-
-    return await this.prisma.subject_lecture.findUnique({
-      include: {
-        review: {
-          include: {
-            course: {
-              include: {
-                subject_department: true,
-                subject_course_professors: { include: { professor: true } },
-                lecture: true,
-                subject_courseuser: true,
-              },
-            },
-            lecture: {
-              include: {
-                subject_department: true,
-                subject_lecture_professors: { include: { professor: true } },
-                subject_classtime: true,
-                subject_examtime: true,
-              },
-            },
-            review_reviewvote: true,
-          },
-          orderBy: orderFilter,
-          skip: offset,
-          take: limit,
-        },
-      },
-      where: {
-        id: id,
-      },
+  ): Promise<EReview.Details[]> {
+    return await this.prisma.review_review.findMany({
+      where: { lecture_id: id },
+      include: EReview.Details.include,
+      orderBy: orderFilter(order),
+      skip: offset,
+      take: limit,
     });
   }
 
