@@ -5,6 +5,8 @@ import {
   session_userprofile,
   subject_department,
 } from '@prisma/client';
+import { EReview } from 'src/common/entities/EReview';
+import { orderFilter } from 'src/common/utils/search.utils';
 import { ReviewDetails, reviewDetails } from '../../common/schemaTypes/types';
 import { PrismaService } from '../prisma.service';
 
@@ -131,6 +133,21 @@ export class ReviewsRepository {
     });
 
     return reviews;
+  }
+
+  async getReviewsOfLecture(
+    id: number,
+    order: string[],
+    offset: number,
+    limit: number,
+  ): Promise<EReview.Details[]> {
+    return await this.prisma.review_review.findMany({
+      where: { lecture_id: id },
+      include: EReview.Details.include,
+      orderBy: orderFilter(order),
+      skip: offset,
+      take: limit,
+    });
   }
 
   async isLiked(reviewId: number, userId: number): Promise<boolean> {

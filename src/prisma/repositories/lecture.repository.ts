@@ -1,14 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, session_userprofile } from '@prisma/client';
 import { ELecture } from 'src/common/entities/ELecture';
-import { EReview } from 'src/common/entities/EReview';
 import { ILecture } from 'src/common/interfaces/ILecture';
 import { LectureQueryDto } from 'src/common/interfaces/dto/lecture/lecture.request.dto';
-import {
-  applyOffset,
-  applyOrder,
-  orderFilter,
-} from 'src/common/utils/search.utils';
+import { applyOffset, applyOrder } from 'src/common/utils/search.utils';
 import {
   LectureBasic,
   LectureDetails,
@@ -31,21 +26,6 @@ export class LectureRepository {
       where: {
         id: id,
       },
-    });
-  }
-
-  async getLectureReviewsById(
-    id: number,
-    order: string[],
-    offset: number,
-    limit: number,
-  ): Promise<EReview.Details[]> {
-    return await this.prisma.review_review.findMany({
-      where: { lecture_id: id },
-      include: EReview.Details.include,
-      orderBy: orderFilter(order),
-      skip: offset,
-      take: limit,
     });
   }
 

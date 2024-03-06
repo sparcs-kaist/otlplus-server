@@ -40,14 +40,14 @@ export class LecturesService {
   ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })[]> {
     const MAX_LIMIT = 100;
     const DEFAULT_ORDER = ['-written_datetime', '-id'];
-    const reviews = await this.LectureRepository.getLectureReviewsById(
+    const reviews = await this.reviewsRepository.getReviewsOfLecture(
       lectureId,
       query.order ?? DEFAULT_ORDER,
       query.offset ?? 0,
       query.limit ?? MAX_LIMIT,
     );
 
-    // TODO: Make this efficient. Get this info together in getLectureREviewsById
+    // TODO: Make this efficient. Get this info together in getReviewsOfLecture
     return await Promise.all(
       reviews.map(async (review) => {
         const result = toJsonReview(review);
