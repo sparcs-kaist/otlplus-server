@@ -5,6 +5,7 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 
+// TODO: Django specific한 구현이었던 것 아닐까 의심됨. prisma에 맞게 수정 필요
 export const _PROHIBITED_FIELD_PATTERN: RegExp[] = [
   /user/,
   /profile/,
