@@ -11,12 +11,14 @@ import { DepartmentsModule } from './modules/departments/departments.module';
 import { FeedsModule } from './modules/feeds/feeds.module';
 import { LecturesModule } from './modules/lectures/lectures.module';
 import { NoticesModule } from './modules/notices/notices.module';
+import { PlannersModule } from './modules/planners/planners.module';
 import { RatesModule } from './modules/rates/rates.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { SemestersModule } from './modules/semesters/semesters.module';
 import { SessionModule } from './modules/session/session.module';
 import { StatusModule } from './modules/status/status.module';
 import { TimetablesModule } from './modules/timetables/timetables.module';
+import { TracksModule } from './modules/tracks/tracks.module';
 import { UserModule } from './modules/user/user.module';
 import { WishlistModule } from './modules/wishlist/wishlist.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -38,6 +40,8 @@ import { PrismaModule } from './prisma/prisma.module';
     NoticesModule,
     SessionModule,
     DepartmentsModule,
+    PlannersModule,
+    TracksModule,
   ],
   controllers: [AppController],
   providers: [
