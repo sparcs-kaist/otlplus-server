@@ -1,4 +1,6 @@
 import { Prisma } from '@prisma/client';
+import { ELecture } from './ELecture';
+import { ECourse } from './ECourse';
 
 export namespace EPlanners {
   export namespace EItems {
@@ -12,7 +14,7 @@ export namespace EPlanners {
       export const Extended =
         Prisma.validator<Prisma.planner_futureplanneritemArgs>()({
           include: {
-            subject_course: true,
+            subject_course: ECourse.Details,
           },
         });
       export type Extended = Prisma.planner_futureplanneritemGetPayload<
@@ -22,7 +24,7 @@ export namespace EPlanners {
       export const Details =
         Prisma.validator<Prisma.planner_futureplanneritemArgs>()({
           include: {
-            subject_course: true,
+            ...Extended.include,
             planner_planner: true,
           },
         });
@@ -41,7 +43,7 @@ export namespace EPlanners {
       export const Extended =
         Prisma.validator<Prisma.planner_takenplanneritemArgs>()({
           include: {
-            subject_lecture: true,
+            subject_lecture: ELecture.Details,
           },
         });
       export type Extended = Prisma.planner_takenplanneritemGetPayload<
@@ -53,7 +55,8 @@ export namespace EPlanners {
           include: {
             subject_lecture: {
               include: {
-                course: true,
+                ...ELecture.Details.include,
+                course: ECourse.Details,
               },
             },
           },
