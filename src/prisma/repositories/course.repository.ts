@@ -116,7 +116,7 @@ export class CourseRepository {
     return review;
   }
 
-  public async filterByRequest(query: any): Promise<CourseDetails[]> {
+  public async getCourses(query: any): Promise<CourseDetails[]> {
     const DEFAULT_LIMIT = 150;
     const DEFAULT_ORDER = ['old_code'];
 

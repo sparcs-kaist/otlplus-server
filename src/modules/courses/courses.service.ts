@@ -19,7 +19,7 @@ export class CoursesService {
     query: CourseQueryDto,
     user: session_userprofile,
   ): Promise<(CourseResponseDtoNested & { userspecific_is_read: boolean })[]> {
-    const queryResult = await this.courseRepository.filterByRequest(query);
+    const queryResult = await this.courseRepository.getCourses(query);
     return Promise.all(
       queryResult.map(async (course) => {
         const representativeLecture = getRepresentativeLecture(course.lecture);
