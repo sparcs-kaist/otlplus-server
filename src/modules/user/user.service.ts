@@ -98,35 +98,26 @@ export class UserService {
       takenLecturesId,
       query.order ?? DEFAULT_ORDER,
     );
-    return courses.map((course) => {
-      const representativeLecture = getRepresentativeLecture(course.lecture);
-      const professorRaw = course.subject_course_professors.map(
-        (x) => x.professor,
-      );
-      const result = toJsonCourse<false>(
-        course,
-        representativeLecture,
-        professorRaw,
-        false,
-      );
-
-      if (user) {
-        const latestReadDatetime = course.subject_courseuser.find(
-          (x) => (x.user_profile_id = user.id),
-        )?.latest_read_datetime;
-        const latestWrittenDatetime = course.latest_written_datetime;
+    return Promise.all(
+      courses.map(async (course) => {
+        const representativeLecture = getRepresentativeLecture(course.lecture);
+        const professorRaw = course.subject_course_professors.map(
+          (x) => x.professor,
+        );
+        const result = toJsonCourse<false>(
+          course,
+          representativeLecture,
+          professorRaw,
+          false,
+        );
 
         return Object.assign(result, {
-          userspecific_is_read:
-            latestReadDatetime && latestWrittenDatetime
-              ? latestWrittenDatetime < latestReadDatetime
-              : false,
+          userspecific_is_read: await this.courseRepository.isUserSpecificRead(
+            course.id,
+            user.id,
+          ),
         });
-      } else {
-        return Object.assign(result, {
-          userspecific_is_read: false,
-        });
-      }
-    });
+      }),
+    );
   }
 }

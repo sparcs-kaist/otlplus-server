@@ -15,7 +15,6 @@ export const courseDetails = Prisma.validator<Prisma.subject_courseArgs>()({
     subject_department: true,
     subject_course_professors: { include: { professor: true } },
     lecture: true,
-    subject_courseuser: true,
   },
 });
 

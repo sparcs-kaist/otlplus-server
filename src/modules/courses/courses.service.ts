@@ -13,46 +13,39 @@ import { CourseRepository } from './../../prisma/repositories/course.repository'
 
 @Injectable()
 export class CoursesService {
-  constructor(private readonly CourseRepository: CourseRepository) {}
+  constructor(private readonly courseRepository: CourseRepository) {}
 
-  public async getCourseByFilter(
+  public async getCourses(
     query: CourseQueryDto,
     user: session_userprofile,
   ): Promise<(CourseResponseDtoNested & { userspecific_is_read: boolean })[]> {
-    const queryResult = await this.CourseRepository.filterByRequest(query);
-    return queryResult.map((course) => {
-      const representativeLecture = getRepresentativeLecture(course.lecture);
-      const professorRaw = course.subject_course_professors.map(
-        (x) => x.professor,
-      );
-      const result = toJsonCourse<false>(
-        course,
-        representativeLecture,
-        professorRaw,
-        false,
-      );
+    const queryResult = await this.courseRepository.getCourses(query);
+    return Promise.all(
+      queryResult.map(async (course) => {
+        const representativeLecture = getRepresentativeLecture(course.lecture);
+        const professorRaw = course.subject_course_professors.map(
+          (x) => x.professor,
+        );
+        const result = toJsonCourse<false>(
+          course,
+          representativeLecture,
+          professorRaw,
+          false,
+        );
 
-      if (user) {
-        const latestReadDatetime = course.subject_courseuser.find((x) => {
-          return x.user_profile_id === user.id && x.course_id === course.id;
-        })?.latest_read_datetime;
-        const latestWrittenDatetime = course.latest_written_datetime;
+        const userspecific_is_read = user
+          ? await this.courseRepository.isUserSpecificRead(course.id, user.id)
+          : false;
+
         return Object.assign(result, {
-          userspecific_is_read:
-            latestWrittenDatetime && latestReadDatetime
-              ? latestWrittenDatetime < latestReadDatetime
-              : false,
+          userspecific_is_read,
         });
-      } else {
-        return Object.assign(result, {
-          userspecific_is_read: false,
-        });
-      }
-    });
+      }),
+    );
   }
 
   public async getCourseById(id: number, user: session_userprofile) {
-    const course = await this.CourseRepository.getCourseById(id);
+    const course = await this.courseRepository.getCourseById(id);
     if (!course) {
       throw new NotFoundException();
     }
@@ -67,26 +60,17 @@ export class CoursesService {
       false,
     );
 
-    if (user) {
-      const latestReadDatetime = course.subject_courseuser.find(
-        (x) => (x.user_profile_id = user.id),
-      )?.latest_read_datetime;
-      const latestWrittenDatetime = course.latest_written_datetime;
-      return Object.assign(result, {
-        userspecific_is_read:
-          latestReadDatetime && latestWrittenDatetime
-            ? latestWrittenDatetime < latestReadDatetime
-            : false,
-      });
-    } else {
-      return Object.assign(result, {
-        userspecific_is_read: false,
-      });
-    }
+    const userspecific_is_read = user
+      ? await this.courseRepository.isUserSpecificRead(course.id, user.id)
+      : false;
+
+    return Object.assign(result, {
+      userspecific_is_read,
+    });
   }
 
   public async getLecturesByCourseId(query: { order: string[] }, id: number) {
-    const lectures = await this.CourseRepository.getLecturesByCourseId(
+    const lectures = await this.courseRepository.getLecturesByCourseId(
       query,
       id,
     );
@@ -110,7 +94,7 @@ export class CoursesService {
       '-written_datetime',
       '-id',
     ];
-    const reviews = await this.CourseRepository.getReviewsByCourseId(query, id);
+    const reviews = await this.courseRepository.getReviewsByCourseId(query, id);
     if (!reviews) {
       throw new NotFoundException();
     }
@@ -119,7 +103,7 @@ export class CoursesService {
   }
 
   async getCourseAutocomplete(dto: ICourse.AutocompleteDto) {
-    const candidate = await this.CourseRepository.getCourseAutocomplete(dto);
+    const candidate = await this.courseRepository.getCourseAutocomplete(dto);
     if (!candidate) return dto.keyword;
     return this.findAutocompleteFromCandidate(candidate, dto.keyword);
   }
@@ -153,6 +137,6 @@ export class CoursesService {
   }
 
   async readCourse(userId: number, courseId: number) {
-    await this.CourseRepository.readCourse(userId, courseId);
+    await this.courseRepository.readCourse(userId, courseId);
   }
 }

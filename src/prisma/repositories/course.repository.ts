@@ -11,6 +11,7 @@ import {
   CourseDetails,
   LectureDetails,
   ReviewDetails,
+  courseDetails,
 } from '../../common/schemaTypes/types';
 import { PrismaService } from '../prisma.service';
 
@@ -52,12 +53,7 @@ export class CourseRepository {
 
   public async getCourseById(id: number): Promise<CourseDetails | null> {
     return await this.prisma.subject_course.findUnique({
-      include: {
-        subject_department: true,
-        subject_course_professors: { include: { professor: true } },
-        lecture: true,
-        subject_courseuser: true,
-      },
+      include: courseDetails.include,
       where: {
         id: id,
       },
@@ -97,17 +93,11 @@ export class CourseRepository {
     query: CourseReviewQueryDto,
     id: number,
   ): Promise<ReviewDetails[]> {
-    console.log(orderFilter(query.order));
     const review = await this.prisma.review_review.findMany({
       where: { course_id: id },
       include: {
         course: {
-          include: {
-            subject_department: true,
-            subject_course_professors: { include: { professor: true } },
-            lecture: true,
-            subject_courseuser: true,
-          },
+          include: courseDetails.include,
         },
         lecture: {
           include: {
@@ -126,8 +116,7 @@ export class CourseRepository {
     return review;
   }
 
-  //@todo: optimize goal: 1.5s -> 0.5s, recommended: using cache
-  public async filterByRequest(query: any): Promise<CourseDetails[]> {
+  public async getCourses(query: any): Promise<CourseDetails[]> {
     const DEFAULT_LIMIT = 150;
     const DEFAULT_ORDER = ['old_code'];
 
@@ -155,12 +144,7 @@ export class CourseRepository {
       term_filter,
     ].filter((filter): filter is object => filter !== null);
     const queryResult = await this.prisma.subject_course.findMany({
-      include: {
-        subject_department: true,
-        subject_course_professors: { include: { professor: true } },
-        lecture: true,
-        subject_courseuser: true,
-      },
+      include: courseDetails.include,
       where: {
         AND: filterList,
       },
@@ -475,5 +459,26 @@ export class CourseRepository {
         },
       },
     });
+  }
+
+  public async isUserSpecificRead(courseId: number, userId: number) {
+    const courseUser = await this.prisma.subject_courseuser.findFirst({
+      select: {
+        subject_course: { select: { latest_written_datetime: true } },
+        latest_read_datetime: true,
+      },
+      where: {
+        course_id: courseId,
+        user_profile_id: userId,
+      },
+    });
+
+    if (!courseUser || !courseUser.subject_course.latest_written_datetime)
+      return false;
+
+    return (
+      courseUser.subject_course.latest_written_datetime <
+      courseUser.latest_read_datetime
+    );
   }
 }
