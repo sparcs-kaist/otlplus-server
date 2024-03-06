@@ -13,7 +13,9 @@ import { IPlanner } from 'src/common/interfaces/IPlanner';
 import {
   PlannerBodyDto,
   PlannerQueryDto,
+  PlannerRemoveItemDto,
 } from 'src/common/interfaces/dto/planner/planner.request.dto';
+import { PlannerResponseDto } from 'src/common/interfaces/dto/planner/planner.response.dto';
 import { PlannersService } from './planners.service';
 
 @Controller('api/users/:id/planners')
@@ -62,5 +64,14 @@ export class PlannersController {
       user,
     );
     return newPlanner;
+  }
+
+  @Post(':plannerId/remove-item')
+  async removePlanner(
+    @Body() dto: PlannerRemoveItemDto,
+    @Param('plannerId') plannerId: number,
+    @GetUser() user: session_userprofile,
+  ): Promise<PlannerResponseDto> {
+    throw new Error('Not implemented');
   }
 }

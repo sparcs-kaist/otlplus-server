@@ -2,6 +2,7 @@ import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
+  IsEnum,
   IsInt,
   IsNumber,
   IsOptional,
@@ -55,4 +56,11 @@ export class PlannerBodyDto {
   @IsArray()
   @IsInt({ each: true })
   arbitrary_items_to_copy!: number[];
+}
+
+export class PlannerRemoveItemDto {
+  @IsInt()
+  item!: number;
+  @IsEnum(['TAKEN', 'FUTURE', 'ARBITRARY'])
+  item_type!: 'TAKEN' | 'FUTURE' | 'ARBITRARY';
 }
