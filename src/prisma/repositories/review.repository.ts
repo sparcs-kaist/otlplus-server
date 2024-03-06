@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { session_userprofile } from '@prisma/client';
+import {
+  review_humanitybestreview,
+  review_majorbestreview,
+  session_userprofile,
+  subject_department,
+} from '@prisma/client';
 import { ReviewDetails, reviewDetails } from '../../common/schemaTypes/types';
 import { PrismaService } from '../prisma.service';
 
@@ -267,5 +272,29 @@ export class ReviewsRepository {
       },
       take: n,
     });
+  }
+
+  public async getRandomNHumanityBestReviews(
+    n: number,
+  ): Promise<review_humanitybestreview> {
+    // Prisma does not support RAND() in ORDER BY.
+    return await this.prisma.$queryRaw`
+      SELECT * FROM review_humanitybestreview 
+      ORDER BY RAND() 
+      LIMIT ${n}`;
+  }
+
+  public async getRandomNMajorBestReviews(
+    n: number,
+    department: subject_department,
+  ): Promise<review_majorbestreview[]> {
+    // Prisma does not support RAND() in ORDER BY.
+    return await this.prisma.$queryRaw`
+      SELECT mbr.* FROM review_majorbestreview mbr
+      INNER JOIN review_review r ON r.id = mbr.review_id
+      INNER JOIN subject_lecture l ON l.id = r.lecture_id
+      WHERE l.department_id = ${department.id}
+      ORDER BY RAND() 
+      LIMIT ${n}`;
   }
 }
