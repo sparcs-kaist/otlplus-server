@@ -12,6 +12,7 @@ import { FeedsModule } from './modules/feeds/feeds.module';
 import { LecturesModule } from './modules/lectures/lectures.module';
 import { NoticesModule } from './modules/notices/notices.module';
 import { PlannersModule } from './modules/planners/planners.module';
+import { RatesModule } from './modules/rates/rates.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { SemestersModule } from './modules/semesters/semesters.module';
 import { SessionModule } from './modules/session/session.module';
@@ -32,6 +33,7 @@ import { PrismaModule } from './prisma/prisma.module';
     UserModule,
     SemestersModule,
     TimetablesModule,
+    RatesModule,
     StatusModule,
     FeedsModule,
     WishlistModule,
