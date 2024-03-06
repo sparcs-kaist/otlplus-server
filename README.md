@@ -1,6 +1,6 @@
 # OTL Plus Server
 
-[![CI](https://github.com/sparcs-kaist/otlplus-server/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/sparcs-kaist/otlplus-server/actions/workflows/ci.yml)
+[![CI](https://github.com/sparcs-kaist/otlplus-server/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/sparcs-kaist/otlplus-server/actions/workflows/ci.yml)
 
 ## How to run
 
