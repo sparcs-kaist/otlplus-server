@@ -46,6 +46,8 @@ export class LecturesService {
       query.offset ?? 0,
       query.limit ?? MAX_LIMIT,
     );
+
+    // TODO: Make this efficient. Get this info together in getLectureREviewsById
     return await Promise.all(
       reviews.map(async (review) => {
         const result = toJsonReview(review);
