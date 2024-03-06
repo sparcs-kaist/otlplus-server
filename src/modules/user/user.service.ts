@@ -130,11 +130,17 @@ export class UserService {
     userId: number,
     query: ReviewLikedQueryDto,
   ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })[]> {
-    const MAX_LIMIT = 100;
+    const MAX_LIMIT = 300;
     const DEFAULT_ORDER = ['-written_datetime', '-id'];
 
-    const reviews = await this.reviewRepository.getLikedReviews(userId);
-    return Promise.all(
+    const reviews = await this.reviewRepository.getLikedReviews(
+      userId,
+      query.order ?? DEFAULT_ORDER,
+      query.offset ?? 0,
+      query.limit ?? MAX_LIMIT,
+    );
+
+    const result = await Promise.all(
       reviews.map(async (review) => {
         const result = toJsonReview(review);
         const isLiked: boolean = await this.reviewRepository.isLiked(
@@ -146,5 +152,7 @@ export class UserService {
         });
       }),
     );
+
+    return result;
   }
 }

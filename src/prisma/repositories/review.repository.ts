@@ -13,6 +13,8 @@ import {
   reviewDetails,
 } from '../../common/schemaTypes/types';
 import { PrismaService } from '../prisma.service';
+import { ReviewLikedQueryDto } from '../../common/interfaces/dto/user/user.request.dto';
+import { orderFilter } from '../../common/utils/search.utils';
 
 @Injectable()
 export class ReviewsRepository {
@@ -238,16 +240,27 @@ export class ReviewsRepository {
     }));
   }
 
-  public async getLikedReviews(userId: number): Promise<ReviewDetails[]> {
-    const likedReviewIds = (
-      await this.prisma.review_reviewvote.findMany({
-        where: {
-          userprofile_id: userId,
+  public async getLikedReviews(
+    userId: number,
+    order: string[],
+    offset: number,
+    limit: number,
+  ): Promise<ReviewDetails[]> {
+    const likedReviews = await this.prisma.review_review.findMany({
+      where: {
+        review_reviewvote: {
+          some: {
+            userprofile_id: userId,
+          },
         },
-      })
-    ).map((elem) => elem.review_id);
+      },
+      include: reviewDetails.include,
+      take: limit,
+      skip: offset,
+      orderBy: orderFilter(order),
+    });
 
-    const likedReviews = this.getReviewsByIds(likedReviewIds);
+    // const likedReviews = this.getReviewsByIds(likedReviewIds);
     return likedReviews;
   }
 
