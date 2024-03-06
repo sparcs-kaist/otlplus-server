@@ -11,7 +11,7 @@ import {
 import {
   CourseDetails,
   LectureDetails,
-  courseDetails
+  courseDetails,
 } from '../../common/schemaTypes/types';
 import { PrismaService } from '../prisma.service';
 
