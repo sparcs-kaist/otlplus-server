@@ -1,5 +1,13 @@
 import { Transform, Type } from 'class-transformer';
-import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 import {
   OrderDefaultValidator,
   _PROHIBITED_FIELD_PATTERN,
@@ -52,12 +60,15 @@ export class LectureReviewsQueryDto {
   order?: string[];
 
   @IsOptional()
-  @IsNumber()
+  @IsInt()
+  @Min(0)
   @Type(() => Number)
   offset?: number;
 
   @IsOptional()
-  @IsNumber()
+  @IsInt()
+  @Min(0)
+  @Max(100)
   @Type(() => Number)
   limit?: number;
 }
