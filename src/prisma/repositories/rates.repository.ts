@@ -27,7 +27,6 @@ export class RateRepository {
         year,
         score,
         version,
-        created_datetime: new Date(),
       },
     });
   }

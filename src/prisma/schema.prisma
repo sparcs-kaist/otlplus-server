@@ -581,7 +581,7 @@ model support_rate {
   id                  Int                 @id @default(autoincrement())
   score               Int                 @db.SmallInt
   year                Int                 @db.SmallInt
-  created_datetime    DateTime?           @db.DateTime(0)
+  created_datetime    DateTime            @default(now()) @db.DateTime(0)
   user_id             Int
   version             String              @db.VarChar(20)
   session_userprofile session_userprofile @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "support_rate_user_id_6d69ec9d_fk_session_userprofile_id")
