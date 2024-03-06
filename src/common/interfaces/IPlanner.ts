@@ -69,7 +69,7 @@ export namespace IPlanner {
 
     export interface Future extends Basic {
       year: number;
-      semseter: number;
+      semester: number;
       course: ICourse.Response;
     }
 
@@ -81,7 +81,7 @@ export namespace IPlanner {
     export interface Arbitrary extends Basic {
       year: number;
       semester: number;
-      department: IDepartment.Basic;
+      department: IDepartment.Basic | null;
       type: string;
       type_en: string;
       credit: number;

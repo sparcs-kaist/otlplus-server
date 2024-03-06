@@ -16,7 +16,6 @@ export namespace ECourse {
     include: {
       ...Extended.include,
       lecture: true,
-      subject_courseuser: true,
     },
   });
   export type Details = Prisma.subject_courseGetPayload<typeof Details>;
