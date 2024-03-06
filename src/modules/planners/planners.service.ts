@@ -3,6 +3,7 @@ import { session_userprofile } from '@prisma/client';
 import {
   PlannerBodyDto,
   PlannerQueryDto,
+  PlannerUpdateItemDto,
 } from 'src/common/interfaces/dto/planner/planner.request.dto';
 import { PlannerResponseDto } from 'src/common/interfaces/dto/planner/planner.response.dto';
 import { toJsonPlanner } from 'src/common/interfaces/serializer/planner.serializer';
@@ -12,15 +13,15 @@ import { PlannerRepository } from 'src/prisma/repositories/planner.repository';
 @Injectable()
 export class PlannersService {
   constructor(
-    private readonly PlannerRepository: PlannerRepository,
-    private readonly LectureRepository: LectureRepository,
+    private readonly plannerRepository: PlannerRepository,
+    private readonly lectureRepository: LectureRepository,
   ) {}
 
   public async getPlannerByUser(
     query: PlannerQueryDto,
     user: session_userprofile,
   ) {
-    const queryResult = await this.PlannerRepository.getPlannerByUser(
+    const queryResult = await this.plannerRepository.getPlannerByUser(
       query,
       user,
     );
@@ -28,7 +29,7 @@ export class PlannersService {
   }
 
   async getRelatedPlanner(user: session_userprofile) {
-    return await this.PlannerRepository.getRelatedPlanner(user);
+    return await this.plannerRepository.getRelatedPlanner(user);
   }
 
   public async postPlanner(
@@ -40,7 +41,7 @@ export class PlannersService {
       relatedPlanner.length == 0
         ? 0
         : relatedPlanner[relatedPlanner.length - 1].arrange_order + 1;
-    const planner = await this.PlannerRepository.createPlanner(
+    const planner = await this.plannerRepository.createPlanner(
       body,
       arrangeOrder,
       user,
@@ -48,7 +49,7 @@ export class PlannersService {
 
     if (body.should_update_taken_semesters) {
       const takenLectures =
-        await this.LectureRepository.findReviewWritableLectures(
+        await this.lectureRepository.findReviewWritableLectures(
           user,
           new Date(),
         );
@@ -58,16 +59,16 @@ export class PlannersService {
         return validStartYear && validEndYear;
       });
       valid_takenLectures.forEach(async (lecture) => {
-        await this.PlannerRepository.createTakenPlannerItem(planner, lecture);
+        await this.plannerRepository.createTakenPlannerItem(planner, lecture);
       });
     }
 
     body.taken_items_to_copy.forEach(async (item) => {
-      const targetItem = await this.PlannerRepository.getTakenPlannerItemById(
+      const targetItem = await this.plannerRepository.getTakenPlannerItemById(
         user,
         item,
       );
-      await this.PlannerRepository.createTakenPlannerItem(
+      await this.plannerRepository.createTakenPlannerItem(
         planner,
         targetItem.subject_lecture,
         targetItem.is_excluded,
@@ -75,22 +76,29 @@ export class PlannersService {
     });
 
     body.future_items_to_copy.forEach(async (item) => {
-      const targetItem = await this.PlannerRepository.getFuturePlannerItemById(
+      const targetItem = await this.plannerRepository.getFuturePlannerItemById(
         user,
         item,
       );
-      await this.PlannerRepository.createFuturePlannerItem(planner, targetItem);
+      await this.plannerRepository.createFuturePlannerItem(planner, targetItem);
     });
 
     body.arbitrary_items_to_copy.forEach(async (item) => {
       const targetItem =
-        await this.PlannerRepository.getArbitraryPlannerItemById(user, item);
-      await this.PlannerRepository.createArbitraryPlannerItem(
+        await this.plannerRepository.getArbitraryPlannerItemById(user, item);
+      await this.plannerRepository.createArbitraryPlannerItem(
         planner,
         targetItem,
       );
     });
 
     return toJsonPlanner(planner);
+  }
+
+  async updatePlannerItem(
+    plannerId: number,
+    updateItemDto: PlannerUpdateItemDto,
+  ) {
+    return null;
   }
 }

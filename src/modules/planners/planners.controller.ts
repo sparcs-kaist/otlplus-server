@@ -12,6 +12,7 @@ import { GetUser } from 'src/common/decorators/get-user.decorator';
 import {
   PlannerBodyDto,
   PlannerQueryDto,
+  PlannerUpdateItemDto,
 } from 'src/common/interfaces/dto/planner/planner.request.dto';
 import { PlannersService } from './planners.service';
 
@@ -43,5 +44,22 @@ export class PlannersController {
     }
     const newPlanner = await this.plannersService.postPlanner(planner, user);
     return newPlanner;
+  }
+
+  @Post(':plannerId/update-item')
+  async updatePlanner(
+    @Param('id') userId: number,
+    @Param('plannerId') plannerId: number,
+    @GetUser() user: session_userprofile,
+    @Body() updateItemDto: PlannerUpdateItemDto,
+  ) {
+    if (userId !== user.id) {
+      throw new UnauthorizedException();
+    }
+
+    return await this.plannersService.updatePlannerItem(
+      plannerId,
+      updateItemDto,
+    );
   }
 }
