@@ -9,6 +9,7 @@ import { PlannerResponseDto } from 'src/common/interfaces/dto/planner/planner.re
 import { toJsonPlanner } from 'src/common/interfaces/serializer/planner.serializer';
 import { LectureRepository } from 'src/prisma/repositories/lecture.repository';
 import { PlannerRepository } from 'src/prisma/repositories/planner.repository';
+import { EPlanners } from '../../common/entities/EPlanners';
 
 @Injectable()
 export class PlannersService {
@@ -98,7 +99,18 @@ export class PlannersService {
   async updatePlannerItem(
     plannerId: number,
     updateItemDto: PlannerUpdateItemDto,
-  ) {
-    return null;
+  ): Promise<
+    | EPlanners.EItems.Taken.Details
+    | EPlanners.EItems.Future.Extended
+    | EPlanners.EItems.Arbitrary.Extended
+  > {
+    const planner = await this.plannerRepository.getPlannerById(plannerId);
+
+    const { item_type, item, ...updatedFields } = updateItemDto;
+    return await this.plannerRepository.updatePlannerItem(
+      item_type,
+      item,
+      updatedFields,
+    );
   }
 }

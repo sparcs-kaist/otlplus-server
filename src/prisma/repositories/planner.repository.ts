@@ -1,8 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import {
   PlannerBodyDto,
   PlannerQueryDto,
+  PlannerUpdateItemDto,
 } from 'src/common/interfaces/dto/planner/planner.request.dto';
 import {
   ArbitraryPlannerItem,
@@ -18,6 +23,9 @@ import {
 } from 'src/common/schemaTypes/types';
 import { orderFilter } from 'src/common/utils/search.utils';
 import { PrismaService } from '../prisma.service';
+import { PlannerItemType } from '../../common/interfaces/constants/planner';
+import { EPlanners } from '../../common/entities/EPlanners';
+import EItems = EPlanners.EItems;
 
 @Injectable()
 export class PlannerRepository {
@@ -246,5 +254,59 @@ export class PlannerRepository {
         credit_au: target_item.credit_au,
       },
     });
+  }
+
+  async getPlannerById(planerId: number) {
+    return this.prisma.planner_planner.findUnique({
+      where: {
+        id: planerId,
+      },
+    });
+  }
+
+  async updatePlannerItem(
+    item_type: string,
+    item: number,
+    updatedFields: Pick<PlannerUpdateItemDto, 'semester' | 'is_excluded'>,
+  ): Promise<
+    | EPlanners.EItems.Taken.Details
+    | EPlanners.EItems.Future.Extended
+    | EPlanners.EItems.Arbitrary.Extended
+  > {
+    if (item_type === PlannerItemType.Taken) {
+      return this.prisma.planner_takenplanneritem.update({
+        where: {
+          id: item,
+        },
+        data: {
+          is_excluded: updatedFields.is_excluded,
+        },
+        include: EPlanners.EItems.Taken.Details.include,
+      });
+    } else if (item_type === PlannerItemType.Future) {
+      return this.prisma.planner_futureplanneritem.update({
+        where: {
+          id: item,
+        },
+        data: {
+          is_excluded: updatedFields.is_excluded,
+          semester: updatedFields.semester,
+        },
+        include: EPlanners.EItems.Future.Extended.include,
+      });
+    } else if (item_type === PlannerItemType.Arbitrary) {
+      return this.prisma.planner_arbitraryplanneritem.update({
+        where: {
+          id: item,
+        },
+        data: {
+          is_excluded: updatedFields.is_excluded,
+          semester: updatedFields.semester,
+        },
+        include: EPlanners.EItems.Arbitrary.Extended.include,
+      });
+    } else {
+      throw new BadRequestException('Invalid Planner Item Type');
+    }
   }
 }
