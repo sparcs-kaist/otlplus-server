@@ -4,6 +4,7 @@ import { TakenPlannerItemResponseDto } from '../planner_item/taken.response.dto'
 import { AdditionalTrackResponseDto } from '../track/additional.response.dto';
 import { GeneralTrackResponseDto } from '../track/general.response.dto';
 import { MajorTrackResponseDto } from '../track/major.response.dto';
+import { IPlanner } from '../../IPlanner';
 
 export interface PlannerResponseDto {
   id: number;
@@ -12,9 +13,9 @@ export interface PlannerResponseDto {
   general_track: GeneralTrackResponseDto;
   major_track: MajorTrackResponseDto;
   additional_tracks: AdditionalTrackResponseDto[];
-  taken_items: TakenPlannerItemResponseDto[];
-  future_items: FuturePlannerItemResponseDto[];
-  arbitrary_items: ArbitraryPlannerItemResponseDto[];
+  taken_items: IPlanner.IItem.Taken[];
+  future_items: IPlanner.IItem.Future[];
+  arbitrary_items: IPlanner.IItem.Arbitrary[];
   arrange_order: number;
 }
 

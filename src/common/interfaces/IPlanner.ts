@@ -1,7 +1,7 @@
-import { PlannerItemType } from './constants/planner';
 import { ICourse } from './ICourse';
 import { ILecture } from './ILecture';
 import { IDepartment } from './IDepartment';
+import { PlannerItemType, PlannerItemTypeEnum } from './constants/planner';
 import { Type } from 'class-transformer';
 import { IsIn, IsInt, IsNumber, IsString } from 'class-validator';
 import { DepartmentResponseDto } from './dto/department/department.response.dto';
@@ -61,6 +61,18 @@ export namespace IPlanner {
     credit_au!: number;
   }
   export namespace IItem {
+    export type IMutate<IT = PlannerItemType> =
+      IT extends PlannerItemTypeEnum.Taken
+        ? IPlanner.IItem.Taken
+        : IT extends PlannerItemTypeEnum.Future
+        ? IPlanner.IItem.Future
+        : IT extends PlannerItemTypeEnum.Arbitrary
+        ? IPlanner.IItem.Arbitrary
+        :
+            | IPlanner.IItem.Taken
+            | IPlanner.IItem.Future
+            | IPlanner.IItem.Arbitrary;
+
     export interface Basic {
       id: number;
       item_type: PlannerItemType;

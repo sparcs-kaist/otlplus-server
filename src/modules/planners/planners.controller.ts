@@ -19,6 +19,7 @@ import {
 } from 'src/common/interfaces/dto/planner/planner.request.dto';
 import { PlannerResponseDto } from 'src/common/interfaces/dto/planner/planner.response.dto';
 import { PlannersService } from './planners.service';
+import { toJsonPlannerItem } from '../../common/interfaces/serializer/planner.item.serializer';
 
 @Controller('api/users/:id/planners')
 export class PlannersController {
@@ -124,9 +125,10 @@ export class PlannersController {
       throw new UnauthorizedException();
     }
 
-    return await this.plannersService.updatePlannerItem(
+    const updatedItem = await this.plannersService.updatePlannerItem(
       plannerId,
       updateItemDto,
     );
+    return toJsonPlannerItem(updatedItem, updateItemDto.item_type);
   }
 }

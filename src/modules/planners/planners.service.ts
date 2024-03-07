@@ -24,6 +24,7 @@ import { DepartmentRepository } from 'src/prisma/repositories/department.reposit
 import { LectureRepository } from 'src/prisma/repositories/lecture.repository';
 import { PlannerRepository } from 'src/prisma/repositories/planner.repository';
 import { CourseRepository } from './../../prisma/repositories/course.repository';
+import { EPlanners } from '../../common/entities/EPlanners';
 
 @Injectable()
 export class PlannersService {
@@ -265,7 +266,18 @@ export class PlannersService {
   async updatePlannerItem(
     plannerId: number,
     updateItemDto: PlannerUpdateItemDto,
-  ) {
-    return null;
+  ): Promise<
+    | EPlanners.EItems.Taken.Details
+    | EPlanners.EItems.Future.Extended
+    | EPlanners.EItems.Arbitrary.Extended
+  > {
+    const planner = await this.PlannerRepository.getPlannerById(plannerId);
+
+    const { item_type, item, ...updatedFields } = updateItemDto;
+    return await this.PlannerRepository.updatePlannerItem(
+      item_type,
+      item,
+      updatedFields,
+    );
   }
 }

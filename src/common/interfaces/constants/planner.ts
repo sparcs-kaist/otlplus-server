@@ -6,3 +6,9 @@ export const PlannerItemType = {
   Arbitrary: 'ARBITRARY',
 };
 export type PlannerItemType = Union<typeof PlannerItemType>;
+
+export enum PlannerItemTypeEnum {
+  Taken = 'TAKEN',
+  Future = 'FUTURE',
+  Arbitrary = 'ARBITRARY',
+}
