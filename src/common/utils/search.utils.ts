@@ -41,7 +41,46 @@ export type orderFilterType = {
   [key: string]: orderFilterType | string;
 };
 
+export type relationOrderDict = {
+  [key: string]: relationOrderDict | string;
+};
+
 export function orderFilter(order: string[] | undefined): orderFilterType[] {
+  if (order === undefined) {
+    return [];
+  }
+  const orderFilter: orderFilterType[] = [];
+  order.forEach((str) => {
+    const orderDict: relationOrderDict = {};
+    let order = 'asc';
+    const orderBy = str.split(/-/);
+    console.log(orderBy, str);
+
+    const orderByStr = str.startsWith('-') ? str.split(/-/)[1] : str;
+    if (str.startsWith('-')) {
+      order = 'desc';
+    }
+
+    const orderByList = orderByStr.split('__');
+    if (orderByList.length == 1) {
+      orderDict[orderBy[orderBy.length - 1]] = order;
+      orderFilter.push(orderDict);
+    } else {
+      const relation = orderByList[0];
+      const field = orderByList[1];
+      const fieldDict: relationOrderDict = {};
+      fieldDict[field] = order;
+      orderDict[relation] = fieldDict;
+      orderFilter.push(orderDict);
+    }
+    console.log(orderBy);
+  });
+  return orderFilter;
+}
+
+export function orderFilterLegacy(
+  order: string[] | undefined,
+): orderFilterType[] {
   if (order === undefined) {
     return [];
   }
@@ -53,6 +92,7 @@ export function orderFilter(order: string[] | undefined): orderFilterType[] {
     if (orderBy[0] == '') {
       order = 'desc';
     }
+    console.log(orderBy);
 
     orderDict[orderBy[orderBy.length - 1]] = order;
     orderFilter.push(orderDict);
