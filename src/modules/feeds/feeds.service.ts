@@ -88,6 +88,9 @@ export class FeedsService {
       const takenLecture = getRandomChoice(
         await this.userRepository.getTakenLectures(userId, notWritableSemester),
       );
+      if (!takenLecture) {
+        return null;
+      }
 
       feed = await this.feedsRepository.createReviewWrite(
         date,
