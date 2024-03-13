@@ -4,9 +4,10 @@ import { ShareService } from './share.service';
 import { TimetablesModule } from '../timetables/timetables.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { SemestersModule } from '../semesters/semesters.module';
+import { LecturesModule } from '../lectures/lectures.module';
 
 @Module({
-  imports: [PrismaModule, TimetablesModule, SemestersModule],
+  imports: [PrismaModule, TimetablesModule, SemestersModule, LecturesModule],
   controllers: [ShareController],
   providers: [ShareService],
 })

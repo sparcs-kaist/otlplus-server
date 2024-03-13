@@ -8,6 +8,7 @@ import { ITimetable } from 'src/common/interfaces';
 import { TimetableRepository } from 'src/prisma/repositories/timetable.repository';
 import { SemesterRepository } from 'src/prisma/repositories/semester.repository';
 import { SemestersService } from '../semesters/semesters.service';
+import { LecturesService } from '../lectures/lectures.service';
 
 @Injectable()
 export class ShareService {
@@ -18,6 +19,7 @@ export class ShareService {
     private readonly prismaService: PrismaService,
     private readonly timetableRepository: TimetableRepository,
     private readonly semesterRepository: SemesterRepository,
+    private readonly lecturesService: LecturesService, // LecturesService 추가
   ) {
     registerFont(join(this.file_path, 'fonts/NotoSansKR-Regular.otf'), {
       family: 'NotoSansKR',
@@ -37,6 +39,26 @@ export class ShareService {
 
     const seasonName = seasons[semester.semester - 1];
     return `${semester.year} ${seasonName}`;
+  }
+
+  private getTimetableType(lectures: ITimetable.ILecture[]): '5days' | '7days' {
+    return lectures.some((lecture) =>
+      lecture.subject_classtime.some((classtime) => classtime.day >= 5),
+    )
+      ? '7days'
+      : '5days';
+  }
+
+  // Make sure to adjust other methods that use lectures to match the type
+  private async getTimetableEntries(
+    timetableId: number,
+  ): Promise<ITimetable.ILecture[]> {
+    const timetableDetails =
+      await this.timetableRepository.getLecturesWithClassTimes(timetableId);
+    if (!timetableDetails) {
+      throw new HttpException('No such timetable', HttpStatus.NOT_FOUND);
+    }
+    return timetableDetails.map((detail) => detail.subject_lecture);
   }
 
   private drawRoundedRectangle(
@@ -91,47 +113,83 @@ export class ShareService {
     return lines;
   }
 
-  private drawTextbox(
+  private drawText(
     ctx: CanvasRenderingContext2D,
     x: number,
     y: number,
-    width: number,
     text: string,
     font: string,
     fontSize: number,
     color: string,
-    align?: 'right' | 'left',
+    align?: 'right' | 'left' | 'center',
   ) {
-    const lines = this.sliceTextToFitWidth(text, width, font, fontSize);
     ctx.fillStyle = color;
     ctx.font = `${fontSize}px '${font}'`;
     ctx.textAlign = align ? align : 'left';
-    if (align == 'right') ctx.fillText(text, x, y);
-    else {
-      lines.forEach((line, i) => {
-        ctx.fillText(line, x, y + fontSize * (i + 1));
-      });
-    }
+    ctx.fillText(text, x, y);
   }
 
-  private getTimetableType(lectures: ITimetable.ILecture[]): '5days' | '7days' {
-    return lectures.some((lecture) =>
-      lecture.subject_classtime.some((classtime) => classtime.day >= 5),
-    )
-      ? '7days'
-      : '5days';
-  }
+  private drawTile(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    title: string,
+    professor: string,
+    location: string,
+    font: string,
+    fontSize: number,
+  ) {
+    const slicedTitle = this.sliceTextToFitWidth(title, width, font, fontSize);
+    const slicedProfessor = this.sliceTextToFitWidth(
+      professor,
+      width,
+      font,
+      fontSize,
+    );
+    const slicedLocation = this.sliceTextToFitWidth(
+      location,
+      width,
+      font,
+      fontSize,
+    );
 
-  // Make sure to adjust other methods that use lectures to match the type
-  private async getTimetableEntries(
-    timetableId: number,
-  ): Promise<ITimetable.ILecture[]> {
-    const timetableDetails =
-      await this.timetableRepository.getLecturesWithClassTimes(timetableId);
-    if (!timetableDetails) {
-      throw new HttpException('No such timetable', HttpStatus.NOT_FOUND);
-    }
-    return timetableDetails.map((detail) => detail.subject_lecture);
+    let textTotalHeight = 0;
+    const slices: string[] = [
+      ...slicedTitle,
+      '',
+      ...slicedProfessor,
+      '',
+      ...slicedLocation,
+    ];
+
+    // Calculate total height for text
+    textTotalHeight = slices.reduce((total, slice, index) => {
+      if (slice === '') return total + 2; // space between sections
+      return total + fontSize;
+    }, 0);
+
+    const topPad = (height - textTotalHeight) / 2;
+    let offsetY = topPad + fontSize;
+
+    slices.forEach((slice, index) => {
+      if (slice !== '') {
+        this.drawText(
+          ctx,
+          x,
+          y + offsetY,
+          slice,
+          font,
+          fontSize,
+          'rgba(0, 0, 0, ' + (index < slicedTitle.length ? 0.8 : 0.5) + ')', // Adjust opacity
+          'left',
+        );
+        offsetY += fontSize;
+      } else {
+        offsetY += 2; // Adding space between sections
+      }
+    });
   }
 
   async createTimetableImage(
@@ -181,16 +239,15 @@ export class ShareService {
     if (!semesterObject) {
       throw new HttpException('Semester not found', HttpStatus.NOT_FOUND);
     }
-    const isEnglish = language && language.includes('en');
+    const isEnglish: boolean = !!language && language.includes('en');
     const semesterName = this.getSemesterName(
       semesterObject,
       isEnglish ? 'en' : 'kr',
     );
-    this.drawTextbox(
+    this.drawText(
       ctx,
       timetableType === '5days' ? 952 : 952 + 350,
       78,
-      200,
       semesterName,
       'NotoSansKR',
       semesterFontSize,
@@ -198,13 +255,15 @@ export class ShareService {
       'right',
     );
 
-    lectures.forEach((lecture) => {
+    // 강의 정보를 순차적으로 처리
+    for (const lecture of lectures) {
       const color = TIMETABLE_CELL_COLORS[lecture.course_id % 16];
-      lecture.subject_classtime.forEach((classtime) => {
+
+      // 각 강의 시간에 대해 비동기 처리
+      for (const classtime of lecture.subject_classtime) {
         const { day, begin, end } = classtime;
         const beginNumber = begin.getUTCHours() * 60 + begin.getUTCMinutes();
         const endNumber = end.getUTCHours() * 60 + end.getUTCMinutes();
-        console.log(day, begin, end, beginNumber, endNumber);
 
         const [x, y, width, height] = [
           178 * day + 76,
@@ -213,21 +272,34 @@ export class ShareService {
           ((endNumber - beginNumber) * 4) / 3 - 7,
         ];
 
-        // const [x, y, width, height] = [100, 100, 200, 60]; // Placeholder values
-
         this.drawRoundedRectangle(ctx, x, y, width, height, 10, color);
-        this.drawTextbox(
+
+        // 교수님 이름과 강의실 정보를 비동기적으로 가져온 후 타일 그리기
+        const professorShortStr =
+          await this.lecturesService.getProfessorShortStr(
+            lecture.id,
+            isEnglish,
+          );
+        const classroomShortStr =
+          await this.lecturesService.getClassroomShortStr(
+            lecture.id,
+            isEnglish,
+          );
+
+        this.drawTile(
           ctx,
-          x + 10,
-          y + 10,
-          width - 20,
-          lecture.title,
+          x + 12,
+          y + 8,
+          width - 24,
+          height - 16,
+          isEnglish ? lecture.title_en : lecture.title,
+          professorShortStr,
+          classroomShortStr,
           'NotoSansKR',
           tileFontSize,
-          '#000',
         );
-      });
-    });
+      }
+    }
 
     // Return the image as a buffer
     return canvas.toBuffer();

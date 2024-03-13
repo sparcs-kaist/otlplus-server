@@ -50,6 +50,12 @@ export namespace ITimetable {
     common_title: string | null;
     common_title_en: string | null;
     subject_classtime: IClasstime[];
+    // professor_names: string[] | null; // 교수 이름 목록
+    // professor_names_en: string[] | null; // 교수 영문 이름 목록
+    // classroom_str: string | null; // 강의실 문자열
+    // classroom_str_en: string | null; // 강의실 영문 문자열
+    // classroom_short: string | null; // 강의실 축약 문자열
+    // classroom_short_en: string | null; // 강의실 영문 축약 문자열
     // Additional properties as needed
   }
 
