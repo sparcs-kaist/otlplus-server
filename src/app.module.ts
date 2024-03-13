@@ -22,6 +22,7 @@ import { TracksModule } from './modules/tracks/tracks.module';
 import { UserModule } from './modules/user/user.module';
 import { WishlistModule } from './modules/wishlist/wishlist.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { ShareModule } from './modules/share/share.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { PrismaModule } from './prisma/prisma.module';
     DepartmentsModule,
     PlannersModule,
     TracksModule,
+    ShareModule,
   ],
   controllers: [AppController],
   providers: [

@@ -156,4 +156,17 @@ export class TimetableRepository {
       },
     });
   }
+
+  async getLecturesWithClassTimes(timetableId: number) {
+    return this.prisma.timetable_timetable_lectures.findMany({
+      where: { timetable_id: timetableId },
+      include: {
+        subject_lecture: {
+          include: {
+            subject_classtime: true,
+          },
+        },
+      },
+    });
+  }
 }
