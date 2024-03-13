@@ -7,6 +7,8 @@ import {
 } from '@prisma/client';
 import { EReview } from 'src/common/entities/EReview';
 import { orderFilter } from 'src/common/utils/search.utils';
+import { ECourse } from '../../common/entities/ECourse';
+import { ELecture } from '../../common/entities/ELecture';
 import {
   LectureDetails,
   ReviewDetails,
@@ -188,22 +190,8 @@ export class ReviewsRepository {
         },
       },
       include: {
-        course: {
-          include: {
-            subject_department: true,
-            subject_course_professors: { include: { professor: true } },
-            lecture: true,
-            subject_courseuser: true,
-          },
-        },
-        lecture: {
-          include: {
-            subject_department: true,
-            subject_lecture_professors: { include: { professor: true } },
-            subject_classtime: true,
-            subject_examtime: true,
-          },
-        },
+        course: ECourse.Details,
+        lecture: ELecture.Details,
         review_reviewvote: true,
       },
       skip: offset,
