@@ -6,6 +6,12 @@ import { PrismaService } from '../prisma.service';
 export class DepartmentRepository {
   constructor(private readonly prisma: PrismaService) {}
 
+  async getBasicDepartmentById(id: number): Promise<subject_department | null> {
+    return this.prisma.subject_department.findUnique({
+      where: { id },
+    });
+  }
+
   async getDepartmentOfUser(
     user: session_userprofile,
   ): Promise<subject_department | null> {

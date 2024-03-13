@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { IPlanner } from 'src/common/interfaces/IPlanner';
 import {
   PlannerBodyDto,
   PlannerQueryDto,
@@ -44,4 +45,24 @@ export class PlannersController {
     const newPlanner = await this.plannersService.postPlanner(planner, user);
     return newPlanner;
   }
+
+  @Post(':plannerId/add-arbitrary-item')
+  async addArbitraryItem(
+    @Param('id') id: number,
+
+    @Param('plannerId') plannerId: number,
+    @Body() item: IPlanner.AddArbitraryItemDto,
+    @GetUser() user: session_userprofile,
+  ) {
+    if (id !== user.id) throw new UnauthorizedException();
+
+    const newPlanner = await this.plannersService.addArbitraryItem(
+      plannerId,
+      item,
+      user,
+    );
+    return newPlanner;
+  }
 }
+
+// https://github.com/sparcs-kaist/otlplus/blob/8086f13604f0832fbfc3fd5fa977d61a60c311d5/apps/planner/views.py

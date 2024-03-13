@@ -1,11 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
+import { IPlanner } from 'src/common/interfaces/IPlanner';
 import {
   PlannerBodyDto,
   PlannerQueryDto,
 } from 'src/common/interfaces/dto/planner/planner.request.dto';
 import { PlannerResponseDto } from 'src/common/interfaces/dto/planner/planner.response.dto';
+import { toJsonArbitraryItem } from 'src/common/interfaces/serializer/planner.item.serializer';
 import { toJsonPlanner } from 'src/common/interfaces/serializer/planner.serializer';
+import { DepartmentRepository } from 'src/prisma/repositories/department.repository';
 import { LectureRepository } from 'src/prisma/repositories/lecture.repository';
 import { PlannerRepository } from 'src/prisma/repositories/planner.repository';
 
@@ -14,6 +21,7 @@ export class PlannersService {
   constructor(
     private readonly PlannerRepository: PlannerRepository,
     private readonly LectureRepository: LectureRepository,
+    private readonly DepartmentRepository: DepartmentRepository,
   ) {}
 
   public async getPlannerByUser(
@@ -92,5 +100,32 @@ export class PlannersService {
     });
 
     return toJsonPlanner(planner);
+  }
+
+  async addArbitraryItem(
+    plannerId: number,
+    body: IPlanner.AddArbitraryItemDto,
+    user: session_userprofile,
+  ) {
+    const planner = await this.PlannerRepository.getBasicPlannerById(plannerId);
+    if (!planner) throw new NotFoundException();
+    if (planner.user_id !== user.id) throw new UnauthorizedException();
+
+    const department = await this.DepartmentRepository.getBasicDepartmentById(
+      body.department,
+    );
+
+    const arbitraryItem =
+      await this.PlannerRepository.createArbitraryPlannerItem(planner, {
+        year: body.year,
+        semester: body.semester,
+        department_id: department?.id || null,
+        type: body.type,
+        type_en: body.type_en,
+        credit: body.credit,
+        credit_au: body.credit_au,
+        is_excluded: false,
+      });
+    return toJsonArbitraryItem(arbitraryItem);
   }
 }
