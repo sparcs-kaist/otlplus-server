@@ -12,7 +12,7 @@ import { ShareService } from './share.service';
 import { TimetableRepository } from 'src/prisma/repositories/timetable.repository';
 import { Response } from 'express';
 
-@Controller('share')
+@Controller('/api/share')
 export class ShareController {
   constructor(
     private readonly shareService: ShareService,
@@ -29,14 +29,16 @@ export class ShareController {
     @Res() res: Response,
   ) {
     try {
-      const imageStream = await this.shareService.createTimetableImage(
+      const imageBuffer = await this.shareService.createTimetableImage(
         timetableId,
         year,
         semester,
         language,
+        user,
       );
       res.setHeader('Content-Type', 'image/png');
-      imageStream.pipe(res);
+      // imageStream.pipe(res);
+      res.send(imageBuffer);
     } catch (error) {
       throw new HttpException(
         'An error occurred while generating the timetable image',
