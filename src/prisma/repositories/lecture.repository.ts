@@ -7,7 +7,6 @@ import { applyOffset, applyOrder } from 'src/common/utils/search.utils';
 import {
   LectureBasic,
   LectureDetails,
-  LectureReviewDetails,
   lectureDetails,
 } from '../../common/schemaTypes/types';
 import { groupBy } from '../../common/utils/method.utils';
@@ -24,57 +23,6 @@ export class LectureRepository {
   async getLectureById(id: number): Promise<LectureDetails> {
     return await this.prisma.subject_lecture.findUniqueOrThrow({
       include: lectureDetails.include,
-      where: {
-        id: id,
-      },
-    });
-  }
-
-  async getLectureReviewsById(
-    id: number,
-    order: string[],
-    offset: number,
-    limit: number,
-  ): Promise<LectureReviewDetails | null> {
-    const orderFilter: { [key: string]: string }[] = [];
-    order.forEach((orderList) => {
-      const orderDict: { [key: string]: string } = {};
-      let order = 'asc';
-      const orderBy = orderList.split('-');
-      if (orderBy[0] == '') {
-        order = 'desc';
-      }
-      orderDict[orderBy[orderBy.length - 1]] = order;
-      orderFilter.push(orderDict);
-    });
-
-    return await this.prisma.subject_lecture.findUnique({
-      include: {
-        review: {
-          include: {
-            course: {
-              include: {
-                subject_department: true,
-                subject_course_professors: { include: { professor: true } },
-                lecture: true,
-                subject_courseuser: true,
-              },
-            },
-            lecture: {
-              include: {
-                subject_department: true,
-                subject_lecture_professors: { include: { professor: true } },
-                subject_classtime: true,
-                subject_examtime: true,
-              },
-            },
-            review_reviewvote: true,
-          },
-          orderBy: orderFilter,
-          skip: offset,
-          take: limit,
-        },
-      },
       where: {
         id: id,
       },

@@ -2,10 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { ELecture } from 'src/common/entities/ELecture';
 import { ILecture } from 'src/common/interfaces/ILecture';
-import {
-  LectureQueryDto,
-  LectureReviewsQueryDto,
-} from 'src/common/interfaces/dto/lecture/lecture.request.dto';
+import { IReview } from 'src/common/interfaces/IReview';
+import { LectureQueryDto } from 'src/common/interfaces/dto/lecture/lecture.request.dto';
 import { LectureResponseDto } from 'src/common/interfaces/dto/lecture/lecture.response.dto';
 import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
 import { toJsonLecture } from 'src/common/interfaces/serializer/lecture.serializer';
@@ -36,17 +34,18 @@ export class LecturesService {
   public async getLectureReviews(
     user: session_userprofile,
     lectureId: number,
-    query: LectureReviewsQueryDto,
+    query: IReview.LectureReviewsQueryDto,
   ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })[]> {
     const MAX_LIMIT = 100;
     const DEFAULT_ORDER = ['-written_datetime', '-id'];
-    const lecture = await this.LectureRepository.getLectureReviewsById(
+    const reviews = await this.reviewsRepository.getReviewsOfLecture(
       lectureId,
       query.order ?? DEFAULT_ORDER,
       query.offset ?? 0,
       query.limit ?? MAX_LIMIT,
     );
-    const reviews = lecture?.review ? lecture.review : [];
+
+    // TODO: Make this efficient. Get this info together in getReviewsOfLecture
     return await Promise.all(
       reviews.map(async (review) => {
         const result = toJsonReview(review);

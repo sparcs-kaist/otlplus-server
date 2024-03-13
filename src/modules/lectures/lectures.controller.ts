@@ -3,10 +3,8 @@ import { session_userprofile } from '@prisma/client';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { Public } from 'src/common/decorators/skip-auth.decorator';
 import { ILecture } from 'src/common/interfaces/ILecture';
-import {
-  LectureQueryDto,
-  LectureReviewsQueryDto,
-} from 'src/common/interfaces/dto/lecture/lecture.request.dto';
+import { IReview } from 'src/common/interfaces/IReview';
+import { LectureQueryDto } from 'src/common/interfaces/dto/lecture/lecture.request.dto';
 import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
 import { LecturesService } from './lectures.service';
 
@@ -33,7 +31,7 @@ export class LecturesController {
   @Public()
   @Get(':lectureId/reviews')
   async getLectureReviews(
-    @Query() query: LectureReviewsQueryDto,
+    @Query() query: IReview.LectureReviewsQueryDto,
     @Param('lectureId') lectureId: number,
     @GetUser() user: session_userprofile,
   ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })[]> {

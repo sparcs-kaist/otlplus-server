@@ -42,19 +42,18 @@ export type orderFilterType = {
 };
 
 export function orderFilter(order: string[] | undefined): orderFilterType[] {
-  if (order === undefined) {
-    return [];
-  }
+  // TODO: unit test
+  if (order === undefined) return [];
+
   const orderFilter: orderFilterType[] = [];
   order.forEach((orderList) => {
-    const orderDict: { [key: string]: string } = {};
-    let order = 'asc';
-    const orderBy = orderList.split(/-|__/);
-    if (orderBy[0] == '') {
-      order = 'desc';
-    }
+    const orderBy = orderList.split('-');
+    const order = orderBy[0] == '' ? 'desc' : 'asc';
 
-    orderDict[orderBy[orderBy.length - 1]] = order;
+    const orderDict = orderDictHelper(
+      orderBy[orderBy.length - 1].split('__'),
+      order,
+    );
     orderFilter.push(orderDict);
   });
   return orderFilter;

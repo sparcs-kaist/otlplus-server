@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ECourse } from 'src/common/entities/ECourse';
+import { EReview } from 'src/common/entities/EReview';
 import { ICourse } from 'src/common/interfaces';
 import { CourseReviewQueryDto } from 'src/common/interfaces/dto/course/course.review.request.dto';
 import {
@@ -10,7 +11,6 @@ import {
 import {
   CourseDetails,
   LectureDetails,
-  ReviewDetails,
   courseDetails,
 } from '../../common/schemaTypes/types';
 import { PrismaService } from '../prisma.service';
@@ -92,23 +92,10 @@ export class CourseRepository {
   public async getReviewsByCourseId(
     query: CourseReviewQueryDto,
     id: number,
-  ): Promise<ReviewDetails[]> {
+  ): Promise<EReview.Details[]> {
     const review = await this.prisma.review_review.findMany({
       where: { course_id: id },
-      include: {
-        course: {
-          include: courseDetails.include,
-        },
-        lecture: {
-          include: {
-            subject_department: true,
-            subject_lecture_professors: { include: { professor: true } },
-            subject_classtime: true,
-            subject_examtime: true,
-          },
-        },
-        review_reviewvote: true,
-      },
+      include: EReview.Details.include,
       take: query.limit,
       skip: query.offset,
       orderBy: orderFilter(query.order),
