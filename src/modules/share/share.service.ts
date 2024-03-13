@@ -1,25 +1,25 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { session_userprofile, subject_semester } from '@prisma/client';
+import { session_userprofile } from '@prisma/client';
 import { CanvasRenderingContext2D } from 'canvas';
 import { createCanvas, loadImage, registerFont } from 'canvas';
 import { join } from 'path';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { ITimetable } from 'src/common/interfaces';
-import { TimetableRepository } from 'src/prisma/repositories/timetable.repository';
 import { SemesterRepository } from 'src/prisma/repositories/semester.repository';
 import { SemestersService } from '../semesters/semesters.service';
 import { LecturesService } from '../lectures/lectures.service';
+import { TimetablesService } from '../timetables/timetables.service';
 
 @Injectable()
 export class ShareService {
   private readonly file_path =
-    process.env.NODE_ENV === 'local' ? 'static/' : '/var/www/otlplus/static/';
+    process.env.NODE_ENV === 'local'
+      ? 'static/'
+      : '/var/www/otlplus-server/static/';
 
   constructor(
-    private readonly prismaService: PrismaService,
-    private readonly timetableRepository: TimetableRepository,
     private readonly semesterRepository: SemesterRepository,
     private readonly lecturesService: LecturesService, // LecturesService 추가
+    private readonly semestersService: SemestersService,
+    private readonly timetablesService: TimetablesService,
   ) {
     registerFont(join(this.file_path, 'fonts/NotoSansKR-Regular.otf'), {
       family: 'NotoSansKR',
@@ -27,38 +27,6 @@ export class ShareService {
     registerFont(join(this.file_path, 'fonts/NotoSansKR-Regular.otf'), {
       family: 'NotoSansKR',
     });
-  }
-
-  private getSemesterName(
-    semester: subject_semester,
-    language: string = 'kr',
-  ): string {
-    const seasons = language.includes('en')
-      ? ['spring', 'summer', 'fall', 'winter']
-      : ['봄', '여름', '가을', '겨울'];
-
-    const seasonName = seasons[semester.semester - 1];
-    return `${semester.year} ${seasonName}`;
-  }
-
-  private getTimetableType(lectures: ITimetable.ILecture[]): '5days' | '7days' {
-    return lectures.some((lecture) =>
-      lecture.subject_classtime.some((classtime) => classtime.day >= 5),
-    )
-      ? '7days'
-      : '5days';
-  }
-
-  // Make sure to adjust other methods that use lectures to match the type
-  private async getTimetableEntries(
-    timetableId: number,
-  ): Promise<ITimetable.ILecture[]> {
-    const timetableDetails =
-      await this.timetableRepository.getLecturesWithClassTimes(timetableId);
-    if (!timetableDetails) {
-      throw new HttpException('No such timetable', HttpStatus.NOT_FOUND);
-    }
-    return timetableDetails.map((detail) => detail.subject_lecture);
   }
 
   private drawRoundedRectangle(
@@ -220,8 +188,10 @@ export class ShareService {
     const semesterFontSize = 30;
     const tileFontSize = 24;
 
-    const lectures = await this.getTimetableEntries(timetableId);
-    const timetableType = this.getTimetableType(lectures);
+    const lectures = await this.timetablesService.getTimetableEntries(
+      timetableId,
+    );
+    const timetableType = this.timetablesService.getTimetableType(lectures);
     const imageTemplatePath = join(
       this.file_path,
       `img/Image_template_${timetableType}.png`,
@@ -240,7 +210,7 @@ export class ShareService {
       throw new HttpException('Semester not found', HttpStatus.NOT_FOUND);
     }
     const isEnglish: boolean = !!language && language.includes('en');
-    const semesterName = this.getSemesterName(
+    const semesterName = await this.semestersService.getSemesterName(
       semesterObject,
       isEnglish ? 'en' : 'kr',
     );

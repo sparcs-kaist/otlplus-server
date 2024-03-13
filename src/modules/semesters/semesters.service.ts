@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { SemesterRepository } from 'src/prisma/repositories/semester.repository';
 import { SemesterQueryDto } from '../../common/interfaces/dto/semester/semester.request.dto';
 import { orderFilter } from '../../common/utils/search.utils';
+import { subject_semester } from '@prisma/client';
 
 @Injectable()
 export class SemestersService {
@@ -13,5 +14,17 @@ export class SemestersService {
       orderBy: orderBy,
     });
     return semesters;
+  }
+
+  public getSemesterName(
+    semester: subject_semester,
+    language: string = 'kr',
+  ): string {
+    const seasons = language.includes('en')
+      ? ['spring', 'summer', 'fall', 'winter']
+      : ['봄', '여름', '가을', '겨울'];
+
+    const seasonName = seasons[semester.semester - 1];
+    return `${semester.year} ${seasonName}`;
   }
 }

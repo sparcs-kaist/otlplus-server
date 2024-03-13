@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import {
   AddLectureDto,
@@ -14,6 +19,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { LectureRepository } from '../../prisma/repositories/lecture.repository';
 import { SemesterRepository } from '../../prisma/repositories/semester.repository';
 import { TimetableRepository } from '../../prisma/repositories/timetable.repository';
+import { ITimetable } from 'src/common/interfaces';
 
 @Injectable()
 export class TimetablesService {
@@ -250,5 +256,25 @@ export class TimetablesService {
       );
       return updatedTimeTable;
     });
+  }
+
+  public getTimetableType(lectures: ITimetable.ILecture[]): '5days' | '7days' {
+    return lectures.some((lecture) =>
+      lecture.subject_classtime.some((classtime) => classtime.day >= 5),
+    )
+      ? '7days'
+      : '5days';
+  }
+
+  // Make sure to adjust other methods that use lectures to match the type
+  public async getTimetableEntries(
+    timetableId: number,
+  ): Promise<ITimetable.ILecture[]> {
+    const timetableDetails =
+      await this.timetableRepository.getLecturesWithClassTimes(timetableId);
+    if (!timetableDetails) {
+      throw new HttpException('No such timetable', HttpStatus.NOT_FOUND);
+    }
+    return timetableDetails.map((detail) => detail.subject_lecture);
   }
 }
