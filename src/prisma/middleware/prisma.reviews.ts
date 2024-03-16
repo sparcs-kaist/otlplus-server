@@ -13,9 +13,8 @@ import { PrismaService } from '../prisma.service';
 export class ReviewMiddleware {
   constructor(
     @Inject(forwardRef(() => PrismaService))
-    private readonly prisma: PrismaService,
-  ) //private readonly courseRepository: CourseRepository,
-  //private readonly lectureRepository: LectureRepository,
+    private readonly prisma: PrismaService, //private readonly courseRepository: CourseRepository,
+  ) //private readonly lectureRepository: LectureRepository,
   //private readonly professorRepositiry: ProfessorRepositiry,
   {}
 
@@ -224,11 +223,11 @@ export class ReviewMiddleware {
   }
   async reviewRecalcLike(reviewVote: review_reviewvote) {
     const count = await this.prisma.review_reviewvote.count({
-      where: { review_id: reviewVote.id },
+      where: { review_id: reviewVote.review_id },
     });
     await this.prisma.review_review.update({
       where: { id: reviewVote.review_id },
-      data: { like: count + 1 },
+      data: { like: count },
     });
   }
   async reviewSavedMiddleware(result: any, action: string) {
