@@ -1,5 +1,6 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import {
+  PrismaClient,
   review_review,
   review_reviewvote,
   subject_course,
@@ -8,15 +9,31 @@ import {
 } from '@prisma/client';
 import { IReview } from 'src/common/interfaces/IReview';
 import { PrismaService } from '../prisma.service';
+import { Middleware } from './middleware';
 
-@Injectable()
-export class ReviewMiddleware {
+export class ReviewMiddleware implements Middleware {
   constructor(
-    @Inject(forwardRef(() => PrismaService))
-    private readonly prisma: PrismaService, //private readonly courseRepository: CourseRepository,
-  ) //private readonly lectureRepository: LectureRepository,
-  //private readonly professorRepositiry: ProfessorRepositiry,
+    // @Inject(forwardRef(() => PrismaService))
+    // private readonly prisma: PrismaService, //private readonly courseRepository: CourseRepository,
+    private readonly prisma: PrismaClient, //private readonly lectureRepository: LectureRepository,
+  ) //private readonly professorRepositiry: ProfessorRepositiry,
   {}
+
+  public async execute(
+    prisma: PrismaClient,
+    params: any,
+    next: (params: any) => Promise<any>,
+  ): Promise<any> {
+    if (
+      params.action === 'create' ||
+      params.action === 'update' ||
+      params.action === 'upsert'
+    ) {
+      const result = await next(params);
+      await this.reviewSavedMiddleware(result, params.action);
+      return result;
+    }
+  }
 
   async lectureRecalcScore(lecture: subject_lecture) {
     const professors = await this.prisma.subject_professor.findMany({
