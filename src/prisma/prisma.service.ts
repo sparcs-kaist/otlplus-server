@@ -8,12 +8,15 @@ import {
 import { PrismaClient } from '@prisma/client';
 import settings from '../settings';
 import { ReviewMiddleware } from './middleware/prisma.reviews';
+import { middlewareConstructor } from './middleware/constructor';
+import { LazyModuleLoader } from '@nestjs/core';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
   constructor(
     @Inject(forwardRef(() => ReviewMiddleware))
     private readonly reviewMiddleware: ReviewMiddleware,
+    private lazyModuleLoader: LazyModuleLoader,
   ) {
     const ormOption = settings().ormconfig();
     super(ormOption);
@@ -27,6 +30,13 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
       // console.log(`Query: ${e.query} ${e.params}`);
     });
     this.$use(async (params, next) => {
+      console.time('mw construct');
+      const middleware = middlewareConstructor(this, params);
+      console.time('mw construct');
+      if (middleware) {
+        await middleware.execute(this, params, next);
+      }
+
       if (params.model === 'review_review') {
         //todo: determine reuslt type
         if (
