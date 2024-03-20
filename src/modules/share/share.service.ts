@@ -63,21 +63,25 @@ export class ShareService {
     const ctx = canvas.getContext('2d');
     ctx.font = `${fontSize}px '${font}'`;
 
-    const words = text.split(' ');
+    let currentLine = '';
     const lines = [];
-    let currentLine = words[0];
 
-    words.slice(1).forEach((word) => {
-      const width = ctx.measureText(`${currentLine} ${word}`).width;
-      if (width < maxWidth) {
-        currentLine += ` ${word}`;
-      } else {
+    for (const char of text) {
+      const testLine = currentLine + char;
+      const metrics = ctx.measureText(testLine);
+      const testWidth = metrics.width;
+      if (testWidth > maxWidth && currentLine !== '') {
         lines.push(currentLine);
-        currentLine = word;
+        currentLine = char;
+      } else {
+        currentLine = testLine;
       }
-    });
+    }
 
-    lines.push(currentLine); // Push the last line
+    if (currentLine) {
+      lines.push(currentLine);
+    }
+
     return lines;
   }
 
