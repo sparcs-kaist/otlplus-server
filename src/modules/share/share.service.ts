@@ -141,7 +141,7 @@ export class ShareService {
     }, 0);
 
     const topPad = (height - textTotalHeight) / 2;
-    let offsetY = topPad + fontSize;
+    let offsetY = topPad + fontSize - 7;
 
     slices.forEach((slice, index) => {
       if (slice !== '') {
@@ -154,7 +154,7 @@ export class ShareService {
           fontSize,
           'rgba(0, 0, 0, ' + (index < slicedTitle.length ? 0.8 : 0.5) + ')', // Adjust opacity
         );
-        offsetY += fontSize;
+        offsetY += fontSize + 2;
       } else {
         offsetY += 2; // Adding space between sections
       }
