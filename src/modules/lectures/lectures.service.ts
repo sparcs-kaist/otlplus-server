@@ -71,7 +71,7 @@ export class LecturesService {
     lectureId: number,
     query: IReview.LectureReviewsQueryDto,
   ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })[]> {
-    const MAX_LIMIT = 100;
+    const DEFAULT_LIMIT = 100;
     const DEFAULT_ORDER = ['-written_datetime', '-id'];
 
     const lecture = await this.LectureRepository.getLectureById(lectureId);
@@ -79,7 +79,7 @@ export class LecturesService {
       await this.reviewsRepository.getRelatedReviewsOfLecture(
         query.order ?? DEFAULT_ORDER,
         query.offset ?? 0,
-        query.limit ?? MAX_LIMIT,
+        query.limit ?? DEFAULT_LIMIT,
         lecture,
       );
 
