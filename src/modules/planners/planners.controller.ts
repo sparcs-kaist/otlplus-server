@@ -14,6 +14,7 @@ import {
   PlannerBodyDto,
   PlannerQueryDto,
   PlannerRemoveItemDto,
+  PlannerReorderDto,
 } from 'src/common/interfaces/dto/planner/planner.request.dto';
 import { PlannerResponseDto } from 'src/common/interfaces/dto/planner/planner.response.dto';
 import { PlannersService } from './planners.service';
@@ -75,6 +76,19 @@ export class PlannersController {
     return await this.plannersService.removePlannerItem(
       plannerId,
       removeItem,
+      user,
+    );
+  }
+
+  @Post(':plannerId/reorder')
+  async reorderPlanner(
+    @Body() reorder: PlannerReorderDto,
+    @Param('plannerId') plannerId: number,
+    @GetUser() user: session_userprofile,
+  ): Promise<PlannerResponseDto> {
+    return await this.plannersService.reorderPlanner(
+      plannerId,
+      reorder.arrange_order,
       user,
     );
   }

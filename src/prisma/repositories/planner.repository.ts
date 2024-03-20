@@ -105,6 +105,21 @@ export class PlannerRepository {
     return planner;
   }
 
+  public async updateOrder(
+    plannerId: number,
+    order: number,
+  ): Promise<PlannerDetails> {
+    return await this.prisma.planner_planner.update({
+      ...plannerDetails,
+      where: {
+        id: plannerId,
+      },
+      data: {
+        arrange_order: order,
+      },
+    });
+  }
+
   public async getRelatedPlanner(
     user: session_userprofile,
   ): Promise<PlannerBasic[]> {

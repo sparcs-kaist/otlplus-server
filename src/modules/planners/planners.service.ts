@@ -171,6 +171,25 @@ export class PlannersService {
       user,
       plannerId,
     );
+
     return toJsonPlanner(planner);
+  }
+
+  public async reorderPlanner(
+    plannerId: number,
+    order: number,
+    user: session_userprofile,
+  ): Promise<PlannerResponseDto> {
+    const planner = await this.PlannerRepository.getPlannerById(
+      user,
+      plannerId,
+    );
+
+    if (!planner) {
+      throw new NotFoundException();
+    }
+
+    const updated = await this.PlannerRepository.updateOrder(plannerId, order);
+    return toJsonPlanner(updated);
   }
 }
