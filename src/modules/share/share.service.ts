@@ -126,11 +126,9 @@ export class ShareService {
     let textTotalHeight = 0;
     const slices: string[] = [
       ...slicedTitle,
-      '',
-      ...slicedProfessor,
-      '',
       ...slicedLocation,
-    ];
+      ...slicedProfessor,
+    ].slice(0, 3);
 
     // Calculate total height for text
     textTotalHeight = slices.reduce((total, slice, index) => {
@@ -151,7 +149,6 @@ export class ShareService {
           font,
           fontSize,
           'rgba(0, 0, 0, ' + (index < slicedTitle.length ? 0.8 : 0.5) + ')', // Adjust opacity
-          'left',
         );
         offsetY += fontSize;
       } else {
@@ -242,7 +239,7 @@ export class ShareService {
           ((endNumber - beginNumber) * 4) / 3 - 7,
         ];
 
-        this.drawRoundedRectangle(ctx, x, y, width, height, 10, color);
+        this.drawRoundedRectangle(ctx, x, y, width, height, 4, color);
 
         // 교수님 이름과 강의실 정보를 비동기적으로 가져온 후 타일 그리기
         const professorShortStr =
