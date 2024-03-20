@@ -154,7 +154,7 @@ export class ShareService {
           fontSize,
           'rgba(0, 0, 0, ' + (index < slicedTitle.length ? 0.8 : 0.5) + ')', // Adjust opacity
         );
-        offsetY += fontSize + 2;
+        offsetY += fontSize + 5;
       } else {
         offsetY += 2; // Adding space between sections
       }
