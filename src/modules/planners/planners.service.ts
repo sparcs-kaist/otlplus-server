@@ -77,6 +77,9 @@ export class PlannersService {
         user,
         item,
       );
+      if (!targetItem) {
+        return; // ignore non-existing items during copy
+      }
       await this.PlannerRepository.createTakenPlannerItem(
         planner,
         targetItem.subject_lecture,
@@ -89,12 +92,18 @@ export class PlannersService {
         user,
         item,
       );
+      if (!targetItem) {
+        return; // ignore non-existing items during copy
+      }
       await this.PlannerRepository.createFuturePlannerItem(planner, targetItem);
     });
 
     body.arbitrary_items_to_copy.forEach(async (item) => {
       const targetItem =
         await this.PlannerRepository.getArbitraryPlannerItemById(user, item);
+      if (!targetItem) {
+        return; // ignore non-existing items during copy
+      }
       await this.PlannerRepository.createArbitraryPlannerItem(
         planner,
         targetItem,
