@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -8,6 +9,7 @@ import { IPlanner } from 'src/common/interfaces/IPlanner';
 import {
   PlannerBodyDto,
   PlannerQueryDto,
+  PlannerRemoveItemDto,
 } from 'src/common/interfaces/dto/planner/planner.request.dto';
 import { PlannerResponseDto } from 'src/common/interfaces/dto/planner/planner.response.dto';
 import { toJsonArbitraryItem } from 'src/common/interfaces/serializer/planner.item.serializer';
@@ -127,5 +129,48 @@ export class PlannersService {
         is_excluded: false,
       });
     return toJsonArbitraryItem(arbitraryItem);
+  }
+
+  public async removePlannerItem(
+    plannerId: number,
+    removeItem: PlannerRemoveItemDto,
+    user: session_userprofile,
+  ): Promise<PlannerResponseDto> {
+    switch (removeItem.item_type) {
+      case 'TAKEN':
+        throw new BadRequestException(
+          'Planner item with type "taken" can\'t be deleted',
+        );
+      case 'FUTURE': {
+        const futureItem =
+          await this.PlannerRepository.getFuturePlannerItemById(
+            user,
+            removeItem.item,
+          );
+        if (futureItem.planner_id !== plannerId) {
+          throw new NotFoundException();
+        }
+        await this.PlannerRepository.deleteFuturePlannerItem(futureItem);
+        break;
+      }
+      case 'ARBITRARY': {
+        const arbitraryItem =
+          await this.PlannerRepository.getArbitraryPlannerItemById(
+            user,
+            removeItem.item,
+          );
+        if (arbitraryItem.planner_id !== plannerId) {
+          throw new NotFoundException();
+        }
+        await this.PlannerRepository.deleteArbitraryPlannerItem(arbitraryItem);
+        break;
+      }
+    }
+
+    const planner = await this.PlannerRepository.getPlannerById(
+      user,
+      plannerId,
+    );
+    return toJsonPlanner(planner);
   }
 }

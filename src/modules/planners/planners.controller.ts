@@ -68,10 +68,14 @@ export class PlannersController {
 
   @Post(':plannerId/remove-item')
   async removePlanner(
-    @Body() dto: PlannerRemoveItemDto,
+    @Body() removeItem: PlannerRemoveItemDto,
     @Param('plannerId') plannerId: number,
     @GetUser() user: session_userprofile,
   ): Promise<PlannerResponseDto> {
-    throw new Error('Not implemented');
+    return await this.plannersService.removePlannerItem(
+      plannerId,
+      removeItem,
+      user,
+    );
   }
 }

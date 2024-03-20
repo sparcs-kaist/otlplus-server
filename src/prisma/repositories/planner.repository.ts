@@ -88,6 +88,23 @@ export class PlannerRepository {
     });
   }
 
+  public async getPlannerById(
+    user: session_userprofile,
+    id: number,
+  ): Promise<PlannerDetails> {
+    const planner = await this.prisma.planner_planner.findFirst({
+      ...plannerDetails,
+      where: {
+        user_id: user.id,
+        id: id,
+      },
+    });
+    if (!planner) {
+      throw new NotFoundException();
+    }
+    return planner;
+  }
+
   public async getRelatedPlanner(
     user: session_userprofile,
   ): Promise<PlannerBasic[]> {
@@ -199,6 +216,14 @@ export class PlannerRepository {
     });
   }
 
+  public async deleteFuturePlannerItem(target_item: FuturePlannerItem) {
+    return await this.prisma.planner_futureplanneritem.delete({
+      where: {
+        id: target_item.id,
+      },
+    });
+  }
+
   public async getArbitraryPlannerItemById(
     user: session_userprofile,
     id: number,
@@ -258,6 +283,14 @@ export class PlannerRepository {
         credit_au: target_item.credit_au,
       },
       include: EArbitraryPlannerItem.Details.include,
+    });
+  }
+
+  public async deleteArbitraryPlannerItem(target_item: ArbitraryPlannerItem) {
+    return await this.prisma.planner_arbitraryplanneritem.delete({
+      where: {
+        id: target_item.id,
+      },
     });
   }
 }
