@@ -160,18 +160,6 @@ export class ReviewsRepository {
     limit: number,
     lecture: LectureDetails,
   ): Promise<ReviewDetails[]> {
-    const orderFilter: { [key: string]: string }[] = [];
-    order.forEach((orderList) => {
-      const orderDict: { [key: string]: string } = {};
-      let order = 'asc';
-      const orderBy = orderList.split('-');
-      if (orderBy[0] == '') {
-        order = 'desc';
-      }
-      orderDict[orderBy[orderBy.length - 1]] = order;
-      orderFilter.push(orderDict);
-    });
-
     return await this.prisma.review_review.findMany({
       ...EReview.Details,
       where: {
@@ -190,7 +178,7 @@ export class ReviewsRepository {
       },
       skip: offset,
       take: limit,
-      orderBy: orderFilter,
+      orderBy: orderFilter(order),
       distinct: [
         'id',
         'course_id',
