@@ -7,8 +7,6 @@ import {
 } from '@prisma/client';
 import { EReview } from 'src/common/entities/EReview';
 import { orderFilter } from 'src/common/utils/search.utils';
-import { ECourse } from '../../common/entities/ECourse';
-import { ELecture } from '../../common/entities/ELecture';
 import {
   LectureDetails,
   ReviewDetails,
@@ -175,6 +173,7 @@ export class ReviewsRepository {
     });
 
     return await this.prisma.review_review.findMany({
+      ...EReview.Details,
       where: {
         lecture: {
           course_id: lecture.course_id,
@@ -188,11 +187,6 @@ export class ReviewsRepository {
             },
           },
         },
-      },
-      include: {
-        course: ECourse.Details,
-        lecture: ELecture.Details,
-        review_reviewvote: true,
       },
       skip: offset,
       take: limit,
