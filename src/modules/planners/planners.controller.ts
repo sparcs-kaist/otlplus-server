@@ -64,5 +64,3 @@ export class PlannersController {
     return newPlanner;
   }
 }
-
-// https://github.com/sparcs-kaist/otlplus/blob/8086f13604f0832fbfc3fd5fa977d61a60c311d5/apps/planner/views.py
