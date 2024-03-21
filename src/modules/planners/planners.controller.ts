@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { IPlanner } from 'src/common/interfaces/IPlanner';
 import {
   PlannerBodyDto,
   PlannerQueryDto,
@@ -43,5 +44,24 @@ export class PlannersController {
     }
     const newPlanner = await this.plannersService.postPlanner(planner, user);
     return newPlanner;
+  }
+
+  @Post(':plannerId/add-future-item')
+  async addFutureItem(
+    @Body() item: IPlanner.FuturePlannerItemDto,
+    @Param('id') userId: number,
+    @Param('plannerId') plannerId: number,
+    @GetUser() user: session_userprofile,
+  ) {
+    if (userId !== user.id) {
+      throw new UnauthorizedException();
+    }
+    const futureItem = await this.plannersService.createFuturePlannerItem(
+      plannerId,
+      item.year,
+      item.semester,
+      item.courseId,
+    );
+    return futureItem;
   }
 }
