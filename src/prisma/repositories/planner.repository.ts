@@ -293,4 +293,38 @@ export class PlannerRepository {
       },
     });
   }
+
+  public async getPlannerById(plannerId: number) {
+    return await this.prisma.planner_planner.findUnique({
+      where: {
+        id: plannerId,
+      },
+    });
+  }
+
+  public async createPlannerItem(
+    plannerId: number,
+    year: number,
+    semester: number,
+    courseId: number,
+  ): Promise<FuturePlannerItem> {
+    return await this.prisma.planner_futureplanneritem.create({
+      ...futurePlannerItem,
+      data: {
+        year: year,
+        semester: semester,
+        planner_planner: {
+          connect: {
+            id: plannerId,
+          },
+        },
+        subject_course: {
+          connect: {
+            id: courseId,
+          },
+        },
+        is_excluded: false,
+      },
+    });
+  }
 }
