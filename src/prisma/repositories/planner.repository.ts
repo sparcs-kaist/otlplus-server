@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
+import { EArbitraryPlannerItem } from 'src/common/entities/EArbitraryPlannerItem';
 import {
   PlannerBodyDto,
   PlannerQueryDto,
@@ -35,6 +36,14 @@ export class PlannerRepository {
       orderBy: orderFilter(query.order),
       skip: query.offset,
       take: query.limit,
+    });
+  }
+
+  public async getBasicPlannerById(id: number): Promise<PlannerBasic | null> {
+    return await this.prisma.planner_planner.findUnique({
+      where: {
+        id: id,
+      },
     });
   }
 
@@ -221,8 +230,11 @@ export class PlannerRepository {
 
   public async createArbitraryPlannerItem(
     planner: PlannerBasic,
-    target_item: ArbitraryPlannerItem,
-  ) {
+    target_item: Omit<
+      ArbitraryPlannerItem,
+      'id' | 'planner_id' | 'subject_department'
+    >,
+  ): Promise<EArbitraryPlannerItem.Details> {
     return await this.prisma.planner_arbitraryplanneritem.create({
       data: {
         planner_planner: {
@@ -245,6 +257,7 @@ export class PlannerRepository {
         credit: target_item.credit,
         credit_au: target_item.credit_au,
       },
+      include: EArbitraryPlannerItem.Details.include,
     });
   }
 }
