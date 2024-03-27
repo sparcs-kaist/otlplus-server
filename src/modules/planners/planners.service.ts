@@ -77,6 +77,9 @@ export class PlannersService {
         user,
         item,
       );
+      if (!targetItem) {
+        return; // ignore non-existing items during copy
+      }
       await this.PlannerRepository.createTakenPlannerItem(
         planner,
         targetItem.subject_lecture,
@@ -89,12 +92,18 @@ export class PlannersService {
         user,
         item,
       );
+      if (!targetItem) {
+        return; // ignore non-existing items during copy
+      }
       await this.PlannerRepository.createFuturePlannerItem(planner, targetItem);
     });
 
     body.arbitrary_items_to_copy.forEach(async (item) => {
       const targetItem =
         await this.PlannerRepository.getArbitraryPlannerItemById(user, item);
+      if (!targetItem) {
+        return; // ignore non-existing items during copy
+      }
       await this.PlannerRepository.createArbitraryPlannerItem(
         planner,
         targetItem,
@@ -147,7 +156,7 @@ export class PlannersService {
             user,
             removeItem.item,
           );
-        if (futureItem.planner_id !== plannerId) {
+        if (!futureItem || futureItem.planner_id !== plannerId) {
           throw new NotFoundException();
         }
         await this.PlannerRepository.deleteFuturePlannerItem(futureItem);
@@ -159,7 +168,7 @@ export class PlannersService {
             user,
             removeItem.item,
           );
-        if (arbitraryItem.planner_id !== plannerId) {
+        if (!arbitraryItem || arbitraryItem.planner_id !== plannerId) {
           throw new NotFoundException();
         }
         await this.PlannerRepository.deleteArbitraryPlannerItem(arbitraryItem);
@@ -171,6 +180,49 @@ export class PlannersService {
       user,
       plannerId,
     );
+
+    if (!planner) {
+      throw new NotFoundException();
+    }
+
     return toJsonPlanner(planner);
+  }
+
+  public async reorderPlanner(
+    plannerId: number,
+    order: number,
+    user: session_userprofile,
+  ): Promise<PlannerResponseDto> {
+    const planner = await this.PlannerRepository.getPlannerById(
+      user,
+      plannerId,
+    );
+
+    if (!planner) {
+      throw new NotFoundException();
+    }
+
+    const oldOrder = planner.arrange_order;
+    const relatedPlannerIds = (
+      await this.PlannerRepository.getRelatedPlanner(user)
+    ).map((planner) => planner.id);
+
+    if (oldOrder < order) {
+      await this.PlannerRepository.decrementOrders(
+        relatedPlannerIds,
+        oldOrder + 1,
+        order,
+      );
+    } else if (oldOrder > order) {
+      await this.PlannerRepository.incrementOrders(
+        relatedPlannerIds,
+        order,
+        oldOrder - 1,
+      );
+    }
+
+    const updated = await this.PlannerRepository.updateOrder(plannerId, order);
+
+    return toJsonPlanner(updated);
   }
 }

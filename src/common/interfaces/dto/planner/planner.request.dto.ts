@@ -64,3 +64,8 @@ export class PlannerRemoveItemDto {
   @IsEnum(['TAKEN', 'FUTURE', 'ARBITRARY'])
   item_type!: 'TAKEN' | 'FUTURE' | 'ARBITRARY';
 }
+
+export class PlannerReorderDto {
+  @IsInt()
+  arrange_order!: number;
+}
