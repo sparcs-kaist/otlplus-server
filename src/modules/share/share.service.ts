@@ -150,10 +150,17 @@ export class ShareService {
     });
   }
 
-  async createTimetableImage(
-    query: TimetableImageQueryDto,
-    user: any,
+  private async drawTimetable(
+    drawTimetableData: IShare.drawTimetableDatas,
   ): Promise<Buffer> {
+    const {
+      lectures,
+      timetableType,
+      semesterName,
+      isEnglish,
+      semesterFontSize,
+      tileFontSize,
+    } = drawTimetableData;
     const TIMETABLE_CELL_COLORS = [
       '#F2CECE',
       '#F4B3AE',
@@ -172,39 +179,20 @@ export class ShareService {
       '#EBCAEF',
       '#f4badb',
     ];
-    const semesterFontSize = 30;
-    const tileFontSize = 24;
 
-    const lectures = await this.timetablesService.getTimetableEntries(
-      query.timetable,
-    );
-    const timetableType = this.timetablesService.getTimetableType(lectures);
     const imageTemplatePath = join(
       this.file_path,
       `img/Image_template_${timetableType}.png`,
     );
-
     const baseImage = await loadImage(imageTemplatePath);
     const canvas = createCanvas(baseImage.width, baseImage.height);
     const ctx = canvas.getContext('2d');
     ctx.drawImage(baseImage, 0, 0);
 
-    const semesterObject = await this.semesterRepository.findSemester(
-      query.year,
-      query.semester,
-    );
-    if (!semesterObject) {
-      throw new HttpException('Semester not found', HttpStatus.NOT_FOUND);
-    }
-    const isEnglish: boolean =
-      !!query.language && query.language.includes('en');
-    const semesterName = await this.semestersService.getSemesterName(
-      semesterObject,
-      isEnglish ? 'en' : 'kr',
-    );
+    // Draw semester name
     this.drawText({
       ctx,
-      x: timetableType === '5days' ? 952 : 952 + 350,
+      x: timetableType === '5days' ? 952 : 1302,
       y: 78,
       text: semesterName,
       font: 'NotoSansKR',
@@ -213,12 +201,12 @@ export class ShareService {
       align: 'right',
     });
 
-    // 강의 정보를 순차적으로 처리
+    // Draw lectures
     for (const lecture of lectures) {
       const color = TIMETABLE_CELL_COLORS[lecture.course_id % 16];
 
-      // 각 강의 시간에 대해 비동기 처리
       for (const classtime of lecture.subject_classtime) {
+        // Time and position calculations
         const { day, begin, end } = classtime;
         const beginNumber = begin.getUTCHours() * 60 + begin.getUTCMinutes();
         const endNumber = end.getUTCHours() * 60 + end.getUTCMinutes();
@@ -230,6 +218,7 @@ export class ShareService {
           ((endNumber - beginNumber) * 4) / 3 - 7,
         ];
 
+        // Draw each lecture tile
         this.drawRoundedRectangle({
           ctx,
           x,
@@ -240,7 +229,6 @@ export class ShareService {
           color,
         });
 
-        // 교수님 이름과 강의실 정보를 비동기적으로 가져온 후 타일 그리기
         const professorShortStr =
           await this.lecturesService.getProfessorShortStr(
             lecture.id,
@@ -267,8 +255,39 @@ export class ShareService {
       }
     }
 
-    // Return the image as a buffer
     return canvas.toBuffer('image/png');
-    // return canvas.createPNGStream();
+  }
+
+  async createTimetableImage(query: TimetableImageQueryDto): Promise<Buffer> {
+    const lectures = await this.timetablesService.getTimetableEntries(
+      query.timetable,
+    );
+    const timetableType = this.timetablesService.getTimetableType(lectures);
+    const semesterObject = await this.semesterRepository.findSemester(
+      query.year,
+      query.semester,
+    );
+
+    if (!semesterObject) {
+      throw new HttpException('Semester not found', HttpStatus.NOT_FOUND);
+    }
+
+    const isEnglish = !!query.language && query.language.includes('en');
+    const semesterName = await this.semestersService.getSemesterName(
+      semesterObject,
+      isEnglish ? 'en' : 'kr',
+    );
+
+    // 데이터 전처리 로직
+    const drawTimetableData = {
+      lectures,
+      timetableType,
+      semesterName,
+      isEnglish,
+      semesterFontSize: 30,
+      tileFontSize: 24,
+    };
+
+    return this.drawTimetable(drawTimetableData);
   }
 }

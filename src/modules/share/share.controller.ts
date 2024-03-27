@@ -26,10 +26,7 @@ export class ShareController {
     @GetUser() user: session_userprofile,
     @Res() res: Response,
   ) {
-    const imageBuffer = await this.shareService.createTimetableImage(
-      query,
-      user,
-    );
+    const imageBuffer = await this.shareService.createTimetableImage(query);
     res.setHeader('Content-Type', 'image/png');
     res.send(imageBuffer);
   }

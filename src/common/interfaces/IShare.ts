@@ -1,4 +1,5 @@
 import { CanvasRenderingContext2D } from 'canvas';
+import { ILecture } from './ILecture';
 
 export namespace IShare {
   export interface RoundedRectangleOptions {
@@ -33,5 +34,14 @@ export namespace IShare {
     location: string;
     font: string;
     fontSize: number;
+  }
+
+  export interface drawTimetableDatas {
+    lectures: ILecture.Basic[];
+    timetableType: string;
+    semesterName: string;
+    isEnglish: boolean;
+    semesterFontSize: number;
+    tileFontSize: number;
   }
 }
