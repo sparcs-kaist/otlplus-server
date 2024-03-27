@@ -8,7 +8,50 @@ import { SemestersService } from '../semesters/semesters.service';
 import { LecturesService } from '../lectures/lectures.service';
 import { TimetablesService } from '../timetables/timetables.service';
 import { TimetableImageQueryDto } from 'src/common/interfaces/dto/share/share.request.dto';
-import { IShare } from 'src/common/interfaces';
+import { ILecture } from 'src/common/interfaces';
+
+interface RoundedRectangleOptions {
+  ctx: CanvasRenderingContext2D;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  radius: number;
+  color: string;
+}
+
+interface TextOptions {
+  ctx: CanvasRenderingContext2D;
+  x: number;
+  y: number;
+  text: string;
+  font: string;
+  fontSize: number;
+  color: string;
+  align?: 'right' | 'left' | 'center'; // Optional parameter
+}
+
+interface DrawTileOptions {
+  ctx: CanvasRenderingContext2D;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  title: string;
+  professor: string;
+  location: string;
+  font: string;
+  fontSize: number;
+}
+
+interface DrawTimetableDatas {
+  lectures: ILecture.Basic[];
+  timetableType: string;
+  semesterName: string;
+  isEnglish: boolean;
+  semesterFontSize: number;
+  tileFontSize: number;
+}
 
 @Injectable()
 export class ShareService {
@@ -31,7 +74,7 @@ export class ShareService {
     });
   }
 
-  private drawRoundedRectangle(options: IShare.RoundedRectangleOptions) {
+  private drawRoundedRectangle(options: RoundedRectangleOptions) {
     const { ctx, x, y, width, height, radius, color } = options;
     ctx.fillStyle = color;
     ctx.beginPath();
@@ -80,7 +123,7 @@ export class ShareService {
     return lines;
   }
 
-  private drawText(options: IShare.TextOptions) {
+  private drawText(options: TextOptions) {
     const { ctx, x, y, text, font, fontSize, color, align = 'left' } = options; // Default alignment to 'left'
     ctx.fillStyle = color;
     ctx.font = `${fontSize}px '${font}'`;
@@ -88,7 +131,7 @@ export class ShareService {
     ctx.fillText(text, x, y);
   }
 
-  private drawTile(options: IShare.DrawTileOptions) {
+  private drawTile(options: DrawTileOptions) {
     const {
       ctx,
       x,
@@ -151,7 +194,7 @@ export class ShareService {
   }
 
   private async drawTimetable(
-    drawTimetableData: IShare.drawTimetableDatas,
+    drawTimetableData: DrawTimetableDatas,
   ): Promise<Buffer> {
     const {
       lectures,
