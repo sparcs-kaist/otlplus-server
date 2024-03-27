@@ -8,5 +8,6 @@ import { TimetablesService } from './timetables.service';
   imports: [PrismaModule, LecturesModule],
   controllers: [TimetablesController],
   providers: [TimetablesService],
+  exports: [TimetablesService],
 })
 export class TimetablesModule {}

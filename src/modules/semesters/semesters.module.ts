@@ -7,5 +7,6 @@ import { SemestersService } from './semesters.service';
   imports: [PrismaModule],
   controllers: [SemestersController],
   providers: [SemestersService],
+  exports: [SemestersService],
 })
 export class SemestersModule {}

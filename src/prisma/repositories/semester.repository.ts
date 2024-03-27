@@ -46,4 +46,18 @@ export class SemesterRepository {
       },
     });
   }
+
+  async findSemester(
+    year: number,
+    semester: number,
+  ): Promise<subject_semester | null> {
+    return await this.prisma.subject_semester.findUnique({
+      where: {
+        year_semester: {
+          year: year,
+          semester: semester,
+        },
+      },
+    });
+  }
 }

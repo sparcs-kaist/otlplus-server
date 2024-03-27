@@ -11,12 +11,14 @@ import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer
 import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
 import { LectureDetails, ReviewDetails } from '../../common/schemaTypes/types';
 import { LectureRepository } from './../../prisma/repositories/lecture.repository';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class LecturesService {
   constructor(
     private LectureRepository: LectureRepository,
     private reviewsRepository: ReviewsRepository,
+    private prisma: PrismaService,
   ) {}
 
   public async getLectureByFilter(
@@ -139,5 +141,79 @@ export class LecturesService {
       )
         return professor.professor.professor_name_en;
     }
+  }
+
+  async getProfessorShortStr(
+    lectureId: number,
+    isEnglish: boolean = false,
+  ): Promise<string> {
+    const lectureWithProfessors =
+      await this.LectureRepository.getProfessorsByLectureId(lectureId);
+
+    if (!lectureWithProfessors) {
+      throw new Error(`Lecture with ID ${lectureId} not found.`);
+    }
+
+    const profNameList = lectureWithProfessors.subject_lecture_professors.map(
+      (lp) =>
+        isEnglish
+          ? lp.professor.professor_name_en
+          : lp.professor.professor_name,
+    );
+
+    if (profNameList.length <= 2) {
+      return profNameList.join(', ');
+    }
+    return isEnglish
+      ? `${profNameList[0]} and ${profNameList.length - 1} others`
+      : `${profNameList[0]} 외 ${profNameList.length - 1} 명`;
+  }
+
+  async getClassroomShortStr(
+    lectureId: number,
+    isEnglish: boolean = false,
+  ): Promise<string> {
+    const lectureWithClassTimes =
+      await this.LectureRepository.getClassroomByLectureId(lectureId);
+
+    if (
+      !lectureWithClassTimes ||
+      !lectureWithClassTimes.subject_classtime ||
+      lectureWithClassTimes.subject_classtime.length === 0
+    ) {
+      throw new Error(`Lecture with ID ${lectureId} not found.`);
+    }
+
+    // 첫 번째 classtime 요소에서 정보를 가져옵니다.
+    const classtime = lectureWithClassTimes.subject_classtime[0];
+    const { building_full_name, building_full_name_en, room_name } = classtime;
+
+    if (!building_full_name) {
+      return isEnglish ? 'Unknown' : '정보 없음';
+    }
+
+    let classroomShort = '';
+    if (building_full_name.startsWith('(')) {
+      const buildingCode = building_full_name.substring(
+        1,
+        building_full_name.indexOf(')'),
+      );
+      classroomShort = `(${buildingCode}) ${room_name || ''}`;
+    } else {
+      classroomShort = `${building_full_name} ${room_name || ''}`;
+    }
+
+    let classroomShortEn = '';
+    if (building_full_name_en && building_full_name_en.startsWith('(')) {
+      const buildingCodeEn = building_full_name_en.substring(
+        1,
+        building_full_name_en.indexOf(')'),
+      );
+      classroomShortEn = `(${buildingCodeEn}) ${room_name || ''}`;
+    } else {
+      classroomShortEn = `${building_full_name_en} ${room_name || ''}`;
+    }
+
+    return isEnglish ? classroomShortEn : classroomShort;
   }
 }
