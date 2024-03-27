@@ -156,7 +156,7 @@ export class PlannersService {
             user,
             removeItem.item,
           );
-        if (futureItem.planner_id !== plannerId) {
+        if (!futureItem || futureItem.planner_id !== plannerId) {
           throw new NotFoundException();
         }
         await this.PlannerRepository.deleteFuturePlannerItem(futureItem);
@@ -168,7 +168,7 @@ export class PlannersService {
             user,
             removeItem.item,
           );
-        if (arbitraryItem.planner_id !== plannerId) {
+        if (!arbitraryItem || arbitraryItem.planner_id !== plannerId) {
           throw new NotFoundException();
         }
         await this.PlannerRepository.deleteArbitraryPlannerItem(arbitraryItem);
@@ -180,6 +180,10 @@ export class PlannersService {
       user,
       plannerId,
     );
+
+    if (!planner) {
+      throw new NotFoundException();
+    }
 
     return toJsonPlanner(planner);
   }
