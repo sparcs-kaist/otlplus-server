@@ -7,6 +7,8 @@ import { SemesterRepository } from 'src/prisma/repositories/semester.repository'
 import { SemestersService } from '../semesters/semesters.service';
 import { LecturesService } from '../lectures/lectures.service';
 import { TimetablesService } from '../timetables/timetables.service';
+import { TimetableImageQueryDto } from 'src/common/interfaces/dto/share/share.request.dto';
+import { IShare } from 'src/common/interfaces';
 
 @Injectable()
 export class ShareService {
@@ -29,15 +31,8 @@ export class ShareService {
     });
   }
 
-  private drawRoundedRectangle(
-    ctx: CanvasRenderingContext2D,
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-    radius: number,
-    color: string,
-  ) {
+  private drawRoundedRectangle(options: IShare.RoundedRectangleOptions) {
+    const { ctx, x, y, width, height, radius, color } = options;
     ctx.fillStyle = color;
     ctx.beginPath();
     ctx.moveTo(x + radius, y);
@@ -85,34 +80,27 @@ export class ShareService {
     return lines;
   }
 
-  private drawText(
-    ctx: CanvasRenderingContext2D,
-    x: number,
-    y: number,
-    text: string,
-    font: string,
-    fontSize: number,
-    color: string,
-    align?: 'right' | 'left' | 'center',
-  ) {
+  private drawText(options: IShare.TextOptions) {
+    const { ctx, x, y, text, font, fontSize, color, align = 'left' } = options; // Default alignment to 'left'
     ctx.fillStyle = color;
     ctx.font = `${fontSize}px '${font}'`;
     ctx.textAlign = align ? align : 'left';
     ctx.fillText(text, x, y);
   }
 
-  private drawTile(
-    ctx: CanvasRenderingContext2D,
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-    title: string,
-    professor: string,
-    location: string,
-    font: string,
-    fontSize: number,
-  ) {
+  private drawTile(options: IShare.DrawTileOptions) {
+    const {
+      ctx,
+      x,
+      y,
+      width,
+      height,
+      title,
+      professor,
+      location,
+      font,
+      fontSize,
+    } = options;
     const slicedTitle = this.sliceTextToFitWidth(title, width, font, fontSize);
     const slicedProfessor = this.sliceTextToFitWidth(
       professor,
@@ -145,15 +133,16 @@ export class ShareService {
 
     slices.forEach((slice, index) => {
       if (slice !== '') {
-        this.drawText(
+        this.drawText({
           ctx,
           x,
-          y + offsetY,
-          slice,
+          y: y + offsetY,
+          text: slice,
           font,
           fontSize,
-          'rgba(0, 0, 0, ' + (index < slicedTitle.length ? 0.8 : 0.5) + ')', // Adjust opacity
-        );
+          color:
+            'rgba(0, 0, 0, ' + (index < slicedTitle.length ? 0.8 : 0.5) + ')', // Adjust opacity
+        });
         offsetY += fontSize + 5;
       } else {
         offsetY += 2; // Adding space between sections
@@ -162,10 +151,7 @@ export class ShareService {
   }
 
   async createTimetableImage(
-    timetableId: number,
-    year: number,
-    semester: number,
-    language: string,
+    query: TimetableImageQueryDto,
     user: any,
   ): Promise<Buffer> {
     const TIMETABLE_CELL_COLORS = [
@@ -190,7 +176,7 @@ export class ShareService {
     const tileFontSize = 24;
 
     const lectures = await this.timetablesService.getTimetableEntries(
-      timetableId,
+      query.timetable,
     );
     const timetableType = this.timetablesService.getTimetableType(lectures);
     const imageTemplatePath = join(
@@ -204,27 +190,28 @@ export class ShareService {
     ctx.drawImage(baseImage, 0, 0);
 
     const semesterObject = await this.semesterRepository.findSemester(
-      year,
-      semester,
+      query.year,
+      query.semester,
     );
     if (!semesterObject) {
       throw new HttpException('Semester not found', HttpStatus.NOT_FOUND);
     }
-    const isEnglish: boolean = !!language && language.includes('en');
+    const isEnglish: boolean =
+      !!query.language && query.language.includes('en');
     const semesterName = await this.semestersService.getSemesterName(
       semesterObject,
       isEnglish ? 'en' : 'kr',
     );
-    this.drawText(
+    this.drawText({
       ctx,
-      timetableType === '5days' ? 952 : 952 + 350,
-      78,
-      semesterName,
-      'NotoSansKR',
-      semesterFontSize,
-      '#CCCCCC',
-      'right',
-    );
+      x: timetableType === '5days' ? 952 : 952 + 350,
+      y: 78,
+      text: semesterName,
+      font: 'NotoSansKR',
+      fontSize: semesterFontSize,
+      color: '#CCCCCC',
+      align: 'right',
+    });
 
     // 강의 정보를 순차적으로 처리
     for (const lecture of lectures) {
@@ -243,7 +230,15 @@ export class ShareService {
           ((endNumber - beginNumber) * 4) / 3 - 7,
         ];
 
-        this.drawRoundedRectangle(ctx, x, y, width, height, 4, color);
+        this.drawRoundedRectangle({
+          ctx,
+          x,
+          y,
+          width,
+          height,
+          radius: 4,
+          color,
+        });
 
         // 교수님 이름과 강의실 정보를 비동기적으로 가져온 후 타일 그리기
         const professorShortStr =
@@ -257,23 +252,23 @@ export class ShareService {
             isEnglish,
           );
 
-        this.drawTile(
+        this.drawTile({
           ctx,
-          x + 12,
-          y + 8,
-          width - 24,
-          height - 16,
-          isEnglish ? lecture.title_en : lecture.title,
-          professorShortStr,
-          classroomShortStr,
-          'NotoSansKR',
-          tileFontSize,
-        );
+          x: x + 12,
+          y: y + 8,
+          width: width - 24,
+          height: height - 16,
+          title: isEnglish ? lecture.title_en : lecture.title,
+          professor: professorShortStr,
+          location: classroomShortStr,
+          font: 'NotoSansKR',
+          fontSize: tileFontSize,
+        });
       }
     }
 
     // Return the image as a buffer
-    return canvas.toBuffer();
+    return canvas.toBuffer('image/png');
     // return canvas.createPNGStream();
   }
 }

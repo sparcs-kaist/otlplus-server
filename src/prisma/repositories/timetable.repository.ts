@@ -7,6 +7,7 @@ import {
   timeTableDetails,
 } from '../../common/schemaTypes/types';
 import { PrismaService } from '../prisma.service';
+import { ETimetable } from 'src/common/entities/ETimetabls';
 
 @Injectable()
 export class TimetableRepository {
@@ -160,13 +161,7 @@ export class TimetableRepository {
   async getLecturesWithClassTimes(timetableId: number) {
     return this.prisma.timetable_timetable_lectures.findMany({
       where: { timetable_id: timetableId },
-      include: {
-        subject_lecture: {
-          include: {
-            subject_classtime: true,
-          },
-        },
-      },
+      include: ETimetable.WithLectureClasstimes.include,
     });
   }
 }

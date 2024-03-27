@@ -111,16 +111,8 @@ export class LecturesService {
     lectureId: number,
     isEnglish: boolean = false,
   ): Promise<string> {
-    const lectureWithProfessors = await this.prisma.subject_lecture.findUnique({
-      where: { id: lectureId },
-      include: {
-        subject_lecture_professors: {
-          include: {
-            professor: true,
-          },
-        },
-      },
-    });
+    const lectureWithProfessors =
+      await this.LectureRepository.getProfessorsByLectureId(lectureId);
 
     if (!lectureWithProfessors) {
       throw new Error(`Lecture with ID ${lectureId} not found.`);
@@ -136,19 +128,17 @@ export class LecturesService {
     if (profNameList.length <= 2) {
       return profNameList.join(', ');
     }
-    return `${profNameList[0]} 외 ${profNameList.length - 1} 명`;
+    return isEnglish
+      ? `${profNameList[0]} and ${profNameList.length - 1} others`
+      : `${profNameList[0]} 외 ${profNameList.length - 1} 명`;
   }
 
   async getClassroomShortStr(
     lectureId: number,
     isEnglish: boolean = false,
   ): Promise<string> {
-    const lectureWithClassTimes = await this.prisma.subject_lecture.findUnique({
-      where: { id: lectureId },
-      include: {
-        subject_classtime: true, // 모든 classtime을 포함하도록 설정합니다.
-      },
-    });
+    const lectureWithClassTimes =
+      await this.LectureRepository.getClassroomByLectureId(lectureId);
 
     if (
       !lectureWithClassTimes ||

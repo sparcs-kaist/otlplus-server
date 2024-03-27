@@ -19,7 +19,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { LectureRepository } from '../../prisma/repositories/lecture.repository';
 import { SemesterRepository } from '../../prisma/repositories/semester.repository';
 import { TimetableRepository } from '../../prisma/repositories/timetable.repository';
-import { ITimetable } from 'src/common/interfaces';
+import { ILecture } from 'src/common/interfaces';
 
 @Injectable()
 export class TimetablesService {
@@ -258,7 +258,7 @@ export class TimetablesService {
     });
   }
 
-  public getTimetableType(lectures: ITimetable.ILecture[]): '5days' | '7days' {
+  public getTimetableType(lectures: ILecture.Basic[]): '5days' | '7days' {
     return lectures.some((lecture) =>
       lecture.subject_classtime.some((classtime) => classtime.day >= 5),
     )
@@ -269,7 +269,7 @@ export class TimetablesService {
   // Make sure to adjust other methods that use lectures to match the type
   public async getTimetableEntries(
     timetableId: number,
-  ): Promise<ITimetable.ILecture[]> {
+  ): Promise<ILecture.Basic[]> {
     const timetableDetails =
       await this.timetableRepository.getLecturesWithClassTimes(timetableId);
     if (!timetableDetails) {

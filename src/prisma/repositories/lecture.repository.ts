@@ -349,4 +349,26 @@ export class LectureRepository {
     });
     return candidate;
   }
+
+  async getProfessorsByLectureId(lectureId: number) {
+    return await this.prisma.subject_lecture.findUnique({
+      where: { id: lectureId },
+      include: {
+        subject_lecture_professors: {
+          include: {
+            professor: true,
+          },
+        },
+      },
+    });
+  }
+
+  async getClassroomByLectureId(lectureId: number) {
+    return await this.prisma.subject_lecture.findUnique({
+      where: { id: lectureId },
+      include: {
+        subject_classtime: true,
+      },
+    });
+  }
 }

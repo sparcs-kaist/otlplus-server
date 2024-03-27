@@ -1,13 +1,17 @@
-import { IsInt, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsInt, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class TimetableImageQueryDto {
-  @IsInt()
+  @Type(() => Number)
+  @IsNumber()
   timetable!: number;
 
-  @IsInt()
+  @Type(() => Number)
+  @IsNumber()
   year!: number;
 
-  @IsInt()
+  @Type(() => Number)
+  @IsNumber()
   semester!: number;
 
   @IsString()
