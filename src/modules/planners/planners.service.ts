@@ -237,7 +237,27 @@ export class PlannersService {
       throw new NotFoundException();
     }
 
+    const oldOrder = planner.arrange_order;
+    const relatedPlannerIds = (
+      await this.PlannerRepository.getRelatedPlanner(user)
+    ).map((planner) => planner.id);
+
+    if (oldOrder < order) {
+      await this.PlannerRepository.decrementOrders(
+        relatedPlannerIds,
+        oldOrder + 1,
+        order,
+      );
+    } else if (oldOrder > order) {
+      await this.PlannerRepository.incrementOrders(
+        relatedPlannerIds,
+        order,
+        oldOrder - 1,
+      );
+    }
+
     const updated = await this.PlannerRepository.updateOrder(plannerId, order);
+
     return toJsonPlanner(updated);
   }
 }

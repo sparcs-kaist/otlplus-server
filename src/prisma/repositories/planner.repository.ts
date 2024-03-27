@@ -116,6 +116,52 @@ export class PlannerRepository {
     });
   }
 
+  public async incrementOrders(
+    plannerIds: number[],
+    from: number,
+    to: number,
+  ): Promise<void> {
+    await this.prisma.planner_planner.updateMany({
+      where: {
+        id: {
+          in: plannerIds,
+        },
+        arrange_order: {
+          gte: from,
+          lte: to,
+        },
+      },
+      data: {
+        arrange_order: {
+          increment: 1,
+        },
+      },
+    });
+  }
+
+  public async decrementOrders(
+    plannerIds: number[],
+    from: number,
+    to: number,
+  ): Promise<void> {
+    await this.prisma.planner_planner.updateMany({
+      where: {
+        id: {
+          in: plannerIds,
+        },
+        arrange_order: {
+          gte: from,
+          lte: to,
+        },
+      },
+      data: {
+        arrange_order: {
+          decrement: 1,
+        },
+      },
+    });
+  }
+
   public async getRelatedPlanner(
     user: session_userprofile,
   ): Promise<PlannerBasic[]> {
