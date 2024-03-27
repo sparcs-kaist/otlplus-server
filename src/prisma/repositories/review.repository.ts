@@ -7,7 +7,11 @@ import {
 } from '@prisma/client';
 import { EReview } from 'src/common/entities/EReview';
 import { orderFilter } from 'src/common/utils/search.utils';
-import { ReviewDetails, reviewDetails } from '../../common/schemaTypes/types';
+import {
+  LectureDetails,
+  ReviewDetails,
+  reviewDetails,
+} from '../../common/schemaTypes/types';
 import { PrismaService } from '../prisma.service';
 
 @Injectable()
@@ -147,6 +151,49 @@ export class ReviewsRepository {
       orderBy: orderFilter(order),
       skip: offset,
       take: limit,
+    });
+  }
+
+  public async getRelatedReviewsOfLecture(
+    order: string[],
+    offset: number,
+    limit: number,
+    lecture: LectureDetails,
+  ): Promise<ReviewDetails[]> {
+    return await this.prisma.review_review.findMany({
+      ...EReview.Details,
+      where: {
+        lecture: {
+          course_id: lecture.course_id,
+          subject_lecture_professors: {
+            some: {
+              professor_id: {
+                in: lecture.subject_lecture_professors.map(
+                  (professor) => professor.professor_id,
+                ),
+              },
+            },
+          },
+        },
+      },
+      skip: offset,
+      take: limit,
+      orderBy: orderFilter(order),
+      distinct: [
+        'id',
+        'course_id',
+        'lecture_id',
+        'content',
+        'grade',
+        'load',
+        'speech',
+        'writer_id',
+        'writer_label',
+        'updated_datetime',
+        'like',
+        'is_deleted',
+        'written_datetime',
+      ],
     });
   }
 

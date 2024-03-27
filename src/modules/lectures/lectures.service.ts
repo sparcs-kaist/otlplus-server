@@ -9,7 +9,7 @@ import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.resp
 import { toJsonLecture } from 'src/common/interfaces/serializer/lecture.serializer';
 import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
 import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
-import { LectureDetails } from '../../common/schemaTypes/types';
+import { LectureDetails, ReviewDetails } from '../../common/schemaTypes/types';
 import { LectureRepository } from './../../prisma/repositories/lecture.repository';
 
 @Injectable()
@@ -46,6 +46,43 @@ export class LecturesService {
     );
 
     // TODO: Make this efficient. Get this info together in getReviewsOfLecture
+    return await Promise.all(
+      reviews.map(async (review) => {
+        const result = toJsonReview(review);
+        if (user) {
+          const isLiked: boolean = await this.reviewsRepository.isLiked(
+            review.id,
+            user.id,
+          );
+          return Object.assign(result, {
+            userspecific_is_liked: isLiked,
+          });
+        } else {
+          return Object.assign(result, {
+            userspecific_is_liked: false,
+          });
+        }
+      }),
+    );
+  }
+
+  public async getLectureRelatedReviews(
+    user: session_userprofile,
+    lectureId: number,
+    query: IReview.LectureReviewsQueryDto,
+  ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })[]> {
+    const DEFAULT_LIMIT = 100;
+    const DEFAULT_ORDER = ['-written_datetime', '-id'];
+
+    const lecture = await this.LectureRepository.getLectureById(lectureId);
+    const reviews: ReviewDetails[] =
+      await this.reviewsRepository.getRelatedReviewsOfLecture(
+        query.order ?? DEFAULT_ORDER,
+        query.offset ?? 0,
+        query.limit ?? DEFAULT_LIMIT,
+        lecture,
+      );
+
     return await Promise.all(
       reviews.map(async (review) => {
         const result = toJsonReview(review);
