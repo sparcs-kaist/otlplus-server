@@ -13,8 +13,6 @@ import {
   reviewDetails,
 } from '../../common/schemaTypes/types';
 import { PrismaService } from '../prisma.service';
-import { ReviewLikedQueryDto } from '../../common/interfaces/dto/user/user.request.dto';
-import { orderFilter } from '../../common/utils/search.utils';
 
 @Injectable()
 export class ReviewsRepository {
@@ -78,25 +76,7 @@ export class ReviewsRepository {
           in: reviewIds,
         },
       },
-      include: {
-        course: {
-          include: {
-            subject_department: true,
-            subject_course_professors: { include: { professor: true } },
-            lecture: true,
-            subject_courseuser: true,
-          },
-        },
-        lecture: {
-          include: {
-            subject_department: true,
-            subject_lecture_professors: { include: { professor: true } },
-            subject_classtime: true,
-            subject_examtime: true,
-          },
-        },
-        review_reviewvote: true,
-      },
+      include: EReview.Details.include,
     });
   }
 
