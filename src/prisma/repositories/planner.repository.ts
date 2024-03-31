@@ -339,12 +339,13 @@ export class PlannerRepository {
     });
   }
 
-  public async getPlannerById(plannerId: number) {
-    return await this.prisma.planner_planner.findUnique({
+  public async checkPlannerExists(plannerId: number): Promise<boolean> {
+    const planner = await this.prisma.planner_planner.findFirst({
       where: {
         id: plannerId,
       },
     });
+    return planner ? true : false;
   }
 
   public async createPlannerItem(

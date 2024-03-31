@@ -201,7 +201,7 @@ export class PlannersService {
     semester: number,
     courseId: number,
   ): Promise<FuturePlannerItemResponseDto> {
-    const planner = await this.PlannerRepository.getPlannerById(plannerId);
+    const planner = await this.PlannerRepository.checkPlannerExists(plannerId);
     if (!planner) {
       throw new HttpException("Planner Doesn't exist", HttpStatus.NOT_FOUND);
     }
