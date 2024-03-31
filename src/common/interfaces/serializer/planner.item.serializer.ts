@@ -9,10 +9,29 @@ import { TakenPlannerItemResponseDto } from '../dto/planner_item/taken.response.
 import { toJsonCourse } from './course.serializer';
 import { toJsonDepartment } from './department.serializer';
 import { toJsonLecture } from './lecture.serializer';
+import { IPlanner } from '../IPlanner';
+import { EPlanners } from '../../entities/EPlanners';
+import { PlannerItemType } from '../constants/planner';
+import { BadRequestException } from '@nestjs/common';
+
+export function toJsonPlannerItem<IT extends PlannerItemType>(
+  item: TakenPlannerItem | FuturePlannerItem | ArbitraryPlannerItem,
+  item_type: IT,
+): IPlanner.IItem.IMutate {
+  if (item_type === PlannerItemType.Taken) {
+    return toJsonTakenItem(item as TakenPlannerItem);
+  } else if (item_type === PlannerItemType.Future) {
+    return toJsonFutureItem(item as FuturePlannerItem);
+  } else if (item_type === PlannerItemType.Arbitrary) {
+    return toJsonArbitraryItem(item as ArbitraryPlannerItem);
+  } else {
+    throw new BadRequestException('Invalid Planner Item Type');
+  }
+}
 
 export const toJsonTakenItem = (
-  taken_item: TakenPlannerItem,
-): TakenPlannerItemResponseDto => {
+  taken_item: EPlanners.EItems.Taken.Details,
+): IPlanner.IItem.Taken => {
   return {
     id: taken_item.id,
     item_type: 'TAKEN',
@@ -30,8 +49,8 @@ export const toJsonTakenItem = (
 };
 
 export const toJsonArbitraryItem = (
-  arbitrary_item: ArbitraryPlannerItem,
-): ArbitraryPlannerItemResponseDto => {
+  arbitrary_item: EPlanners.EItems.Arbitrary.Extended,
+): IPlanner.IItem.Arbitrary => {
   return {
     id: arbitrary_item.id,
     item_type: 'ARBITRARY',
@@ -50,8 +69,8 @@ export const toJsonArbitraryItem = (
 };
 
 export const toJsonFutureItem = (
-  future_item: FuturePlannerItem,
-): FuturePlannerItemResponseDto => {
+  future_item: EPlanners.EItems.Future.Extended,
+): IPlanner.IItem.Future => {
   return {
     id: future_item.id,
     item_type: 'FUTURE',

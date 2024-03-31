@@ -1,4 +1,4 @@
-import { ENotice } from 'src/common/entites/ENotice';
+import { ENotice } from 'src/common/entities/ENotice';
 import { INotice } from '../INotice';
 
 export function toJsonNoticeBasic(notice: ENotice.Basic): INotice.Basic {

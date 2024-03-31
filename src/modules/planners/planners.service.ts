@@ -11,6 +11,7 @@ import { IPlanner } from 'src/common/interfaces/IPlanner';
 import {
   PlannerBodyDto,
   PlannerQueryDto,
+  PlannerUpdateItemDto,
   PlannerRemoveItemDto,
 } from 'src/common/interfaces/dto/planner/planner.request.dto';
 import { PlannerResponseDto } from 'src/common/interfaces/dto/planner/planner.response.dto';
@@ -23,6 +24,7 @@ import { DepartmentRepository } from 'src/prisma/repositories/department.reposit
 import { LectureRepository } from 'src/prisma/repositories/lecture.repository';
 import { PlannerRepository } from 'src/prisma/repositories/planner.repository';
 import { CourseRepository } from './../../prisma/repositories/course.repository';
+import { EPlanners } from '../../common/entities/EPlanners';
 
 @Injectable()
 export class PlannersService {
@@ -200,7 +202,7 @@ export class PlannersService {
     year: number,
     semester: number,
     courseId: number,
-  ): Promise<FuturePlannerItemResponseDto> {
+  ): Promise<IPlanner.IItem.Future> {
     const planner = await this.PlannerRepository.checkPlannerExists(plannerId);
     if (!planner) {
       throw new HttpException("Planner Doesn't exist", HttpStatus.NOT_FOUND);
@@ -259,5 +261,25 @@ export class PlannersService {
     const updated = await this.PlannerRepository.updateOrder(plannerId, order);
 
     return toJsonPlanner(updated);
+  }
+
+  async updatePlannerItem(
+    plannerId: number,
+    updateItemDto: PlannerUpdateItemDto,
+  ): Promise<
+    | EPlanners.EItems.Taken.Details
+    | EPlanners.EItems.Future.Extended
+    | EPlanners.EItems.Arbitrary.Extended
+  > {
+    const planner = await this.PlannerRepository.checkPlannerExists(plannerId);
+    if (!planner) {
+      throw new HttpException("Planner Doesn't exist", HttpStatus.NOT_FOUND);
+    }
+    const { item_type, item, ...updatedFields } = updateItemDto;
+    return await this.PlannerRepository.updatePlannerItem(
+      item_type,
+      item,
+      updatedFields,
+    );
   }
 }
