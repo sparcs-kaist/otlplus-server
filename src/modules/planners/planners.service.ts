@@ -202,7 +202,7 @@ export class PlannersService {
     year: number,
     semester: number,
     courseId: number,
-  ): Promise<FuturePlannerItemResponseDto> {
+  ): Promise<IPlanner.IItem.Future> {
     const planner = await this.PlannerRepository.checkPlannerExists(plannerId);
     if (!planner) {
       throw new HttpException("Planner Doesn't exist", HttpStatus.NOT_FOUND);
@@ -271,8 +271,10 @@ export class PlannersService {
     | EPlanners.EItems.Future.Extended
     | EPlanners.EItems.Arbitrary.Extended
   > {
-    const planner = await this.PlannerRepository.getPlannerById(plannerId);
-
+    const planner = await this.PlannerRepository.checkPlannerExists(plannerId);
+    if (!planner) {
+      throw new HttpException("Planner Doesn't exist", HttpStatus.NOT_FOUND);
+    }
     const { item_type, item, ...updatedFields } = updateItemDto;
     return await this.PlannerRepository.updatePlannerItem(
       item_type,
