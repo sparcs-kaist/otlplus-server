@@ -68,6 +68,18 @@ export class ReviewsRepository {
       },
     });
   }
+
+  async getReviewsByIds(reviewIds: number[]) {
+    return this.prisma.review_review.findMany({
+      where: {
+        id: {
+          in: reviewIds,
+        },
+      },
+      include: EReview.Details.include,
+    });
+  }
+
   public async getReviews(
     order: string[],
     offset: number,
@@ -207,6 +219,31 @@ export class ReviewsRepository {
       },
     }));
   }
+
+  public async getLikedReviews(
+    userId: number,
+    order: string[],
+    offset: number,
+    limit: number,
+  ): Promise<ReviewDetails[]> {
+    const likedReviews = await this.prisma.review_review.findMany({
+      where: {
+        review_reviewvote: {
+          some: {
+            userprofile_id: userId,
+          },
+        },
+      },
+      include: reviewDetails.include,
+      take: limit,
+      skip: offset,
+      orderBy: orderFilter(order),
+    });
+
+    // const likedReviews = this.getReviewsByIds(likedReviewIds);
+    return likedReviews;
+  }
+
   public async getReviewsCount(
     lectureYear?: number,
     lectureSemester?: number,

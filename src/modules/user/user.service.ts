@@ -1,7 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { CourseResponseDtoNested } from 'src/common/interfaces/dto/course/course.response.dto';
-import { UserTakenCoursesQueryDto } from 'src/common/interfaces/dto/user/user.request.dto';
+import {
+  ReviewLikedQueryDto,
+  UserTakenCoursesQueryDto,
+} from 'src/common/interfaces/dto/user/user.request.dto';
 import { ProfileDto } from 'src/common/interfaces/dto/user/user.response.dto';
 import { toJsonCourse } from 'src/common/interfaces/serializer/course.serializer';
 import { ResearchLecture } from '../../common/interfaces/constants/lecture';
@@ -14,6 +17,7 @@ import { LectureRepository } from '../../prisma/repositories/lecture.repository'
 import { ReviewsRepository } from '../../prisma/repositories/review.repository';
 import { UserRepository } from '../../prisma/repositories/user.repository';
 import { CourseRepository } from './../../prisma/repositories/course.repository';
+import { ReviewResponseDto } from '../../common/interfaces/dto/reviews/review.response.dto';
 
 @Injectable()
 export class UserService {
@@ -119,5 +123,36 @@ export class UserService {
         });
       }),
     );
+  }
+
+  async getUserLikedReviews(
+    user: session_userprofile,
+    userId: number,
+    query: ReviewLikedQueryDto,
+  ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })[]> {
+    const MAX_LIMIT = 300;
+    const DEFAULT_ORDER = ['-written_datetime', '-id'];
+
+    const reviews = await this.reviewRepository.getLikedReviews(
+      userId,
+      query.order ?? DEFAULT_ORDER,
+      query.offset ?? 0,
+      query.limit ?? MAX_LIMIT,
+    );
+
+    const result = await Promise.all(
+      reviews.map(async (review) => {
+        const result = toJsonReview(review);
+        const isLiked: boolean = await this.reviewRepository.isLiked(
+          review.id,
+          user.id,
+        );
+        return Object.assign(result, {
+          userspecific_is_liked: isLiked,
+        });
+      }),
+    );
+
+    return result;
   }
 }
