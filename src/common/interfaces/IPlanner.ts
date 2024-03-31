@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsIn, IsInt, IsString } from 'class-validator';
+import { IsIn, IsInt, IsNumber, IsString } from 'class-validator';
 import { DepartmentResponseDto } from './dto/department/department.response.dto';
 
 export namespace IPlanner {
@@ -14,6 +14,17 @@ export namespace IPlanner {
     type_en: string;
     credit: number;
     credit_au: number;
+  }
+
+  export class FuturePlannerItemDto {
+    @IsNumber()
+    courseId!: number;
+
+    @IsNumber()
+    year!: number;
+
+    @IsNumber()
+    semester!: number;
   }
 
   export class AddArbitraryItemDto {
