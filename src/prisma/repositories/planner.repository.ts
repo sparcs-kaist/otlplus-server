@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { EArbitraryPlannerItem } from 'src/common/entities/EArbitraryPlannerItem';
 import {
@@ -91,18 +91,75 @@ export class PlannerRepository {
   public async getPlannerById(
     user: session_userprofile,
     id: number,
-  ): Promise<PlannerDetails> {
-    const planner = await this.prisma.planner_planner.findFirst({
+  ): Promise<PlannerDetails | null> {
+    return this.prisma.planner_planner.findFirst({
       ...plannerDetails,
       where: {
         user_id: user.id,
         id: id,
       },
     });
-    if (!planner) {
-      throw new NotFoundException();
-    }
-    return planner;
+  }
+
+  public async updateOrder(
+    plannerId: number,
+    order: number,
+  ): Promise<PlannerDetails> {
+    return await this.prisma.planner_planner.update({
+      ...plannerDetails,
+      where: {
+        id: plannerId,
+      },
+      data: {
+        arrange_order: order,
+      },
+    });
+  }
+
+  public async incrementOrders(
+    plannerIds: number[],
+    from: number,
+    to: number,
+  ): Promise<void> {
+    await this.prisma.planner_planner.updateMany({
+      where: {
+        id: {
+          in: plannerIds,
+        },
+        arrange_order: {
+          gte: from,
+          lte: to,
+        },
+      },
+      data: {
+        arrange_order: {
+          increment: 1,
+        },
+      },
+    });
+  }
+
+  public async decrementOrders(
+    plannerIds: number[],
+    from: number,
+    to: number,
+  ): Promise<void> {
+    await this.prisma.planner_planner.updateMany({
+      where: {
+        id: {
+          in: plannerIds,
+        },
+        arrange_order: {
+          gte: from,
+          lte: to,
+        },
+      },
+      data: {
+        arrange_order: {
+          decrement: 1,
+        },
+      },
+    });
   }
 
   public async getRelatedPlanner(
@@ -121,7 +178,7 @@ export class PlannerRepository {
   public async getTakenPlannerItemById(
     user: session_userprofile,
     id: number,
-  ): Promise<TakenPlannerItem> {
+  ): Promise<TakenPlannerItem | null> {
     const planner = await this.prisma.planner_planner.findMany({
       include: {
         planner_takenplanneritem: {
@@ -138,11 +195,7 @@ export class PlannerRepository {
       },
     });
     const candidates = planner.map((p) => p.planner_takenplanneritem).flat();
-    const result = candidates.find((c) => c.id === id);
-    if (!result) {
-      throw new NotFoundException();
-    }
-    return result;
+    return candidates.find((c) => c.id === id) ?? null;
   }
 
   public async createTakenPlannerItem(
@@ -169,7 +222,7 @@ export class PlannerRepository {
   public async getFuturePlannerItemById(
     user: session_userprofile,
     id: number,
-  ): Promise<FuturePlannerItem> {
+  ): Promise<FuturePlannerItem | null> {
     const planner = await this.prisma.planner_planner.findMany({
       include: {
         planner_futureplanneritem: {
@@ -186,11 +239,7 @@ export class PlannerRepository {
       },
     });
     const candidates = planner.map((p) => p.planner_futureplanneritem).flat();
-    const result = candidates.find((c) => c.id === id);
-    if (!result) {
-      throw new NotFoundException();
-    }
-    return result;
+    return candidates.find((c) => c.id === id) ?? null;
   }
 
   public async createFuturePlannerItem(
@@ -227,7 +276,7 @@ export class PlannerRepository {
   public async getArbitraryPlannerItemById(
     user: session_userprofile,
     id: number,
-  ): Promise<ArbitraryPlannerItem> {
+  ): Promise<ArbitraryPlannerItem | null> {
     const planner = await this.prisma.planner_planner.findMany({
       include: {
         planner_arbitraryplanneritem: {
@@ -246,11 +295,7 @@ export class PlannerRepository {
     const candidates = planner
       .map((p) => p.planner_arbitraryplanneritem)
       .flat();
-    const result = candidates.find((c) => c.id === id);
-    if (!result) {
-      throw new NotFoundException();
-    }
-    return result;
+    return candidates.find((c) => c.id === id) ?? null;
   }
 
   public async createArbitraryPlannerItem(
@@ -294,12 +339,13 @@ export class PlannerRepository {
     });
   }
 
-  public async getPlannerById(plannerId: number) {
-    return await this.prisma.planner_planner.findUnique({
+  public async checkPlannerExists(plannerId: number): Promise<boolean> {
+    const planner = await this.prisma.planner_planner.findFirst({
       where: {
         id: plannerId,
       },
     });
+    return planner ? true : false;
   }
 
   public async createPlannerItem(
