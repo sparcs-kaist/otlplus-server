@@ -59,20 +59,3 @@ export namespace IReview {
     limit?: number;
   }
 }
-
-export namespace IReview {
-  export interface reCalcScoreReturn {
-    reviewNum: number;
-    totalWeight: number;
-    sums: {
-      gradeSum: number;
-      loadSum: number;
-      speechSum: number;
-    };
-    avgs: {
-      grade: number;
-      load: number;
-      speech: number;
-    };
-  }
-}

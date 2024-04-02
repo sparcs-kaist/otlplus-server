@@ -3,7 +3,6 @@ import {
   Controller,
   Get,
   HttpException,
-  HttpStatus,
   Param,
   Patch,
   Post,
@@ -78,20 +77,6 @@ export class ReviewsController {
       );
     } else {
       throw new HttpException("Can't find user", 401);
-    }
-  }
-
-  @Post(':reviewId/like')
-  async likeReviewInstance(
-    @Param('reviewId') reviewId: number,
-    @GetUser() user: session_userprofile,
-  ) {
-    const reviewVote = await this.reviewsService.findReviewVote(reviewId, user);
-    if (reviewVote) {
-      throw new HttpException('Already Liked', HttpStatus.BAD_REQUEST);
-    } else {
-      await this.reviewsService.createReviewVote(reviewId, user);
-      return null;
     }
   }
 }
