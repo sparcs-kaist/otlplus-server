@@ -21,13 +21,16 @@ export namespace IPlanner {
   }
 
   export class FuturePlannerItemDto {
-    @IsNumber()
-    courseId!: number;
+    @IsInt()
+    @Type(() => Number)
+    course!: number;
 
-    @IsNumber()
+    @IsInt()
+    @Type(() => Number)
     year!: number;
 
-    @IsNumber()
+    @IsIn([1, 2, 3, 4])
+    @Type(() => Number)
     semester!: number;
   }
 
