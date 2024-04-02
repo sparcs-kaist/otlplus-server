@@ -45,7 +45,7 @@ export class ReviewsRepository {
   }
 
   async getReviewById(reviewId: number): Promise<ReviewDetails | null> {
-    return this.prisma.review_review.findUnique({
+    return await this.prisma.review_review.findUnique({
       where: { id: reviewId },
       include: {
         course: {
@@ -397,5 +397,22 @@ export class ReviewsRepository {
       WHERE l.department_id = ${department.id}
       ORDER BY RAND() 
       LIMIT ${n}`;
+  }
+
+  async upsertReviewVote(reviewId: number, userId: number) {
+    await this.prisma.review_reviewvote.upsert({
+      where: {
+        review_id_userprofile_id: {
+          review_id: reviewId,
+          userprofile_id: userId,
+        },
+      },
+      update: {},
+      create: {
+        review: { connect: { id: reviewId } },
+        userprofile: { connect: { id: userId } },
+      },
+    });
+    return null;
   }
 }
