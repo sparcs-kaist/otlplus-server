@@ -1,4 +1,4 @@
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import {
   review_review,
   review_reviewvote,
@@ -13,9 +13,8 @@ import { PrismaService } from '../prisma.service';
 export class ReviewMiddleware {
   constructor(
     @Inject(forwardRef(() => PrismaService))
-    private readonly prisma: PrismaService, //private readonly courseRepository: CourseRepository,
-  ) //private readonly lectureRepository: LectureRepository,
-  //private readonly professorRepositiry: ProfessorRepositiry,
+    private readonly prisma: PrismaService, //private readonly courseRepository: CourseRepository, //private readonly lectureRepository: LectureRepository,
+  ) //private readonly professorRepositiry: ProfessorRepositiry,
   {}
 
   async lectureRecalcScore(lecture: subject_lecture) {
