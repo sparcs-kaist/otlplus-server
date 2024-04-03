@@ -88,6 +88,7 @@ export class ReviewsController {
   ) {
     const reviewVote = await this.reviewsService.findReviewVote(reviewId, user);
     if (reviewVote) {
+      console.log('already liked');
       throw new HttpException('Already Liked', HttpStatus.BAD_REQUEST);
     } else {
       await this.reviewsService.createReviewVote(reviewId, user);

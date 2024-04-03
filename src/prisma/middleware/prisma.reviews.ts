@@ -1,5 +1,6 @@
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
+  Prisma,
   review_review,
   review_reviewvote,
   subject_course,
@@ -11,12 +12,11 @@ import { PrismaService } from '../prisma.service';
 
 @Injectable()
 export class ReviewMiddleware {
-  constructor(
-    @Inject(forwardRef(() => PrismaService))
-    private readonly prisma: PrismaService, //private readonly courseRepository: CourseRepository,
-  ) //private readonly lectureRepository: LectureRepository,
-  //private readonly professorRepositiry: ProfessorRepositiry,
-  {}
+  private prisma: PrismaService;
+
+  constructor(prismaService: PrismaService) {
+    this.prisma = prismaService;
+  }
 
   async lectureRecalcScore(lecture: subject_lecture) {
     const professors = await this.prisma.subject_professor.findMany({
@@ -251,13 +251,37 @@ export class ReviewMiddleware {
     await this.recalcRelatedScore(result);
   }
 
-  async reviewVoteSavedMiddleware(result: any) {
+  public reviewVoteSavedMiddleware(): Prisma.Middleware {
     //reviewvote와 관련된 함수들은 무조건 review를 include해서 반환하도록 하면 안되는건가?
-    await this.reviewRecalcLike(result);
+    //await this.reviewRecalcLike(result);
+    return async (params: Prisma.MiddlewareParams, next): Promise<any> => {
+      if (params.model === 'review_reviewvote') {
+        if (
+          params.action === 'create' ||
+          params.action === 'update' ||
+          params.action === 'upsert'
+        ) {
+          const result = await next(params);
+          await this.reviewRecalcLike(result);
+          return result;
+        }
+      }
+      return next(params);
+    };
   }
 
-  async reviewVoteDeletedMiddleware(result: any) {
+  public reviewVoteDeletedMiddleware(): Prisma.Middleware {
     //그냥 reviewvote와 관련된 함수들은 무조건 review를 include해서 반환하도록 하면 안되는건가?
-    await this.reviewRecalcLike(result);
+    //await this.reviewRecalcLike(result);
+    return async (params: Prisma.MiddlewareParams, next): Promise<any> => {
+      if (params.model === 'review_reviewvote') {
+        if (params.action === 'delete') {
+          const result = await next(params);
+          await this.reviewRecalcLike(result);
+          return result;
+        }
+      }
+      return next(params);
+    };
   }
 }
