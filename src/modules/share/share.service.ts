@@ -1,14 +1,18 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
-import { CanvasRenderingContext2D } from 'canvas';
-import { createCanvas, loadImage, registerFont } from 'canvas';
+import {
+  CanvasRenderingContext2D,
+  createCanvas,
+  loadImage,
+  registerFont,
+} from 'canvas';
 import { join } from 'path';
-import { SemesterRepository } from 'src/prisma/repositories/semester.repository';
-import { SemestersService } from '../semesters/semesters.service';
-import { LecturesService } from '../lectures/lectures.service';
-import { TimetablesService } from '../timetables/timetables.service';
-import { TimetableImageQueryDto } from 'src/common/interfaces/dto/share/share.request.dto';
 import { ILecture } from 'src/common/interfaces';
+import { TimetableImageQueryDto } from 'src/common/interfaces/dto/share/share.request.dto';
+import { SemesterRepository } from 'src/prisma/repositories/semester.repository';
+import { LecturesService } from '../lectures/lectures.service';
+import { SemestersService } from '../semesters/semesters.service';
+import { TimetablesService } from '../timetables/timetables.service';
 
 interface RoundedRectangleOptions {
   ctx: CanvasRenderingContext2D;
@@ -301,9 +305,15 @@ export class ShareService {
     return canvas.toBuffer('image/png');
   }
 
-  async createTimetableImage(query: TimetableImageQueryDto): Promise<Buffer> {
+  async createTimetableImage(
+    query: TimetableImageQueryDto,
+    user: session_userprofile,
+  ): Promise<Buffer> {
     const lectures = await this.timetablesService.getTimetableEntries(
       query.timetable,
+      query.year,
+      query.semester,
+      user,
     );
     const timetableType = this.timetablesService.getTimetableType(lectures);
     const semesterObject = await this.semesterRepository.findSemester(
