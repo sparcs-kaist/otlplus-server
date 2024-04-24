@@ -1,14 +1,20 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { session_userprofile } from '@prisma/client';
+import { session_userprofile, subject_semester } from '@prisma/client';
 import {
   CanvasRenderingContext2D,
   createCanvas,
   loadImage,
   registerFont,
 } from 'canvas';
+import ical, {
+  ICalAlarmType,
+  ICalCalendar,
+  ICalEventRepeatingFreq,
+} from 'ical-generator';
+import moment from 'moment-timezone';
 import { join } from 'path';
 import { ELecture } from 'src/common/entities/ELecture';
-import { IShare } from 'src/common/interfaces';
+import { ILecture, IShare } from 'src/common/interfaces';
 import { SemesterRepository } from 'src/prisma/repositories/semester.repository';
 import { LecturesService } from '../lectures/lectures.service';
 import { SemestersService } from '../semesters/semesters.service';
@@ -342,5 +348,92 @@ export class ShareService {
     };
 
     return this.drawTimetable(drawTimetableData);
+  }
+
+  private async timetableIcal(timetableIcalData: {
+    name: string;
+    lectures: ILecture.Raw[];
+    semesterObject: subject_semester;
+    isEnglish: boolean;
+  }): Promise<ICalCalendar> {
+    const { name, lectures, semesterObject, isEnglish } = timetableIcalData;
+
+    const calendar = ical({
+      name: name,
+      prodId: '//SPARCS//OTL Plus',
+      timezone: 'Asia/Seoul',
+    });
+
+    for (const lecture of lectures) {
+      for (const classtime of lecture.subject_classtime) {
+        const classroomShortStr = await this.lecturesService.getClassroomStr(
+          lecture.id,
+          isEnglish,
+        );
+
+        const event = calendar.createEvent({
+          start: moment(classtime.begin).tz('Asia/Seoul'),
+          end: moment(classtime.end).tz('Asia/Seoul'),
+          summary: isEnglish ? lecture.title_en : lecture.title,
+          location: classroomShortStr, // Assuming classroom is a simple string
+          repeating: {
+            freq: ICalEventRepeatingFreq.WEEKLY,
+            until: moment(semesterObject.end).toDate(),
+          },
+        });
+
+        event.alarms([
+          {
+            type: ICalAlarmType.display,
+            trigger: 900,
+          },
+        ]);
+        console.log(calendar.events());
+      }
+    }
+
+    // console.log(lectures);
+    console.log(calendar.events());
+    return calendar;
+  }
+
+  async createTimetableIcal(
+    query: IShare.TimetableIcalQueryDto,
+    user: session_userprofile,
+  ): Promise<ICalCalendar> {
+    const lectures = await this.timetablesService.getTimetableEntries(
+      query.timetable,
+      query.year,
+      query.semester,
+      user,
+    );
+
+    if (!lectures || lectures.length === 0) {
+      throw new HttpException('Timetable not found', HttpStatus.NOT_FOUND);
+    }
+
+    const semesterObject = await this.semesterRepository.findSemester(
+      query.year,
+      query.semester,
+    );
+
+    if (!semesterObject) {
+      throw new HttpException('Semester not found', HttpStatus.NOT_FOUND);
+    }
+
+    const isEnglish = !!query.language && query.language.includes('en');
+    const semesterName = await this.semestersService.getSemesterName(
+      semesterObject,
+      isEnglish ? 'en' : 'kr',
+    );
+
+    const timetableIcalData = {
+      name: `[OTL] ${semesterName}`,
+      lectures: lectures,
+      semesterObject: semesterObject,
+      isEnglish: isEnglish,
+    };
+
+    return this.timetableIcal(timetableIcalData);
   }
 }

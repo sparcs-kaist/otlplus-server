@@ -26,4 +26,15 @@ export class ShareController {
     res.setHeader('Content-Type', 'image/png');
     res.send(imageBuffer);
   }
+
+  @Get('timetable/ical')
+  async getTimetableIcal(
+    @Query() query: IShare.TimetableIcalQueryDto,
+    @GetUser() user: session_userprofile,
+    @Res() res: Response,
+  ) {
+    const calendar = await this.shareService.createTimetableIcal(query, user);
+    res.setHeader('Content-Type', 'text/calendar');
+    res.send(calendar.toString());
+  }
 }

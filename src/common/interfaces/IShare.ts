@@ -64,4 +64,23 @@ export namespace IShare {
     @IsOptional()
     language?: string;
   }
+
+  export class TimetableIcalQueryDto {
+    @Type(() => Number)
+    @IsNumber()
+    timetable!: number;
+
+    @Type(() => Number)
+    @IsNumber()
+    year!: number;
+
+    @Type(() => Number)
+    @IsNumber()
+    semester!: number;
+
+    @IsString()
+    @IsOptional()
+    language?: string;
+  }
+
 }
