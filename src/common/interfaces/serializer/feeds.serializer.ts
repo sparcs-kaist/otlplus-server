@@ -1,3 +1,4 @@
+import { session_userprofile } from '@prisma/client';
 import { EFeed } from 'src/common/entities/EFeed';
 import { IFeed } from '../IFeed';
 import { FeedType } from '../constants/feed';
@@ -6,14 +7,17 @@ import { toJsonDepartment } from './department.serializer';
 import { toJsonLecture } from './lecture.serializer';
 import { toJsonReview } from './review.serializer';
 
-export const toJsonFeedDetails = (feed: EFeed.Details): IFeed.Details => {
+export const toJsonFeedDetails = (
+  feed: EFeed.Details,
+  user: session_userprofile,
+): IFeed.Details => {
   if (EFeed.isFamousHumanityReview(feed)) {
     return {
       type: FeedType.FamousHumanityReview,
       date: feed.date,
       priority: feed.priority,
       reviews: feed.main_famoushumanityreviewdailyfeed_reviews.map(
-        (feedReview) => toJsonReview(feedReview.review_review),
+        (feedReview) => toJsonReview(feedReview.review_review, user),
       ),
     };
   } else if (EFeed.isFamousMajorReview(feed)) {
@@ -22,7 +26,7 @@ export const toJsonFeedDetails = (feed: EFeed.Details): IFeed.Details => {
       date: feed.date,
       priority: feed.priority,
       reviews: feed.main_famousmajorreviewdailyfeed_reviews.map((feedReview) =>
-        toJsonReview(feedReview.review_review),
+        toJsonReview(feedReview.review_review, user),
       ),
       department: toJsonDepartment(feed.subject_department),
     };
@@ -45,7 +49,7 @@ export const toJsonFeedDetails = (feed: EFeed.Details): IFeed.Details => {
       type: FeedType.RankedReview,
       date: feed.date,
       priority: feed.priority,
-      reviews: feed.reviews.map((review) => toJsonReview(review)),
+      reviews: feed.reviews.map((review) => toJsonReview(review, user)),
     };
   }
   return { type: FeedType.Rate, date: feed.date, priority: feed.priority };
