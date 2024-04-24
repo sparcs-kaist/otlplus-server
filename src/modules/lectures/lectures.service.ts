@@ -8,10 +8,10 @@ import { LectureResponseDto } from 'src/common/interfaces/dto/lecture/lecture.re
 import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
 import { toJsonLecture } from 'src/common/interfaces/serializer/lecture.serializer';
 import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
 import { LectureDetails, ReviewDetails } from '../../common/schemaTypes/types';
 import { LectureRepository } from './../../prisma/repositories/lecture.repository';
-import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class LecturesService {
@@ -215,5 +215,34 @@ export class LecturesService {
     }
 
     return isEnglish ? classroomShortEn : classroomShort;
+  }
+
+  async getClassroomStr(
+    lectureId: number,
+    isEnglish: boolean = false,
+  ): Promise<string> {
+    const lectureWithClassTimes =
+      await this.LectureRepository.getClassroomByLectureId(lectureId);
+
+    if (
+      !lectureWithClassTimes ||
+      !lectureWithClassTimes.subject_classtime ||
+      lectureWithClassTimes.subject_classtime.length === 0
+    ) {
+      throw new Error(`Lecture with ID ${lectureId} not found.`);
+    }
+
+    // 첫 번째 classtime 요소에서 정보를 가져옵니다.
+    const classtime = lectureWithClassTimes.subject_classtime[0];
+    const { building_full_name, building_full_name_en, room_name } = classtime;
+
+    if (!building_full_name) {
+      return isEnglish ? 'Unknown' : '정보 없음';
+    }
+
+    const classroom = `${building_full_name} ${room_name || ''}`;
+    const classroomEn = `${building_full_name_en} ${room_name || ''}`;
+
+    return isEnglish ? classroomEn : classroom;
   }
 }

@@ -61,6 +61,8 @@
     "dotenv": "^16.0.3",
     "dotenv-cli": "^7.2.1",
     "express-session": "^1.17.3",
+    "ical-generator": "^7.1.0",
+    "moment-timezone": "^0.5.45",
     "morgan": "^1.10.0",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
