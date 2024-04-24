@@ -375,7 +375,7 @@ export class ShareService {
           semesterObject.beginning,
           'Asia/Seoul',
         );
-        const dayOfWeek = (classtime.day + 1) % 7; // Assuming day is a number 0-6 (Sun-Sat)
+        const dayOfWeek = (classtime.day + 1) % 7;
         const firstClassDate = semesterBeginning.clone().day(dayOfWeek);
 
         const eventStart = moment.tz(
@@ -406,7 +406,7 @@ export class ShareService {
           start: eventStart.toDate(),
           end: eventEnd.toDate(),
           summary: isEnglish ? lecture.title_en : lecture.title,
-          location: classroomShortStr, // Assuming classroom is a simple string
+          location: classroomShortStr,
           repeating: {
             freq: ICalEventRepeatingFreq.WEEKLY,
             until: moment(semesterObject.end).toDate(),
@@ -423,8 +423,6 @@ export class ShareService {
       }
     }
 
-    // console.log(lectures);
-    console.log(calendar.events());
     return calendar;
   }
 
