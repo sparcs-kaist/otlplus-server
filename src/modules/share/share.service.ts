@@ -371,47 +371,15 @@ export class ShareService {
           isEnglish,
         );
 
-        const semesterBeginning = moment.tz(
-          semesterObject.beginning,
-          'Asia/Seoul',
-        );
-        const dayOfWeek = (classtime.day + 1) % 7;
-        const firstClassDate = semesterBeginning.clone().day(dayOfWeek);
-
-        const eventStart = moment.tz(
-          {
-            year: firstClassDate.year(),
-            month: firstClassDate.month(),
-            day: firstClassDate.date(),
-            hour: classtime.begin.getUTCHours(),
-            minute: classtime.begin.getUTCMinutes(),
-            second: 0,
-          },
-          'Asia/Seoul',
-        );
-
-        const eventEnd = moment.tz(
-          {
-            year: firstClassDate.year(),
-            month: firstClassDate.month(),
-            day: firstClassDate.date(),
-            hour: classtime.end.getUTCHours(),
-            minute: classtime.end.getUTCMinutes(),
-            second: 0,
-          },
-          'Asia/Seoul',
-        );
-
         const event = calendar.createEvent({
-          start: eventStart.toDate(),
-          end: eventEnd.toDate(),
+          start: moment(classtime.begin).tz('Asia/Seoul'),
+          end: moment(classtime.end).tz('Asia/Seoul'),
           summary: isEnglish ? lecture.title_en : lecture.title,
-          location: classroomShortStr,
+          location: classroomShortStr, // Assuming classroom is a simple string
           repeating: {
             freq: ICalEventRepeatingFreq.WEEKLY,
             until: moment(semesterObject.end).toDate(),
           },
-          timezone: 'Asia/Seoul',
         });
 
         event.alarms([
@@ -420,9 +388,12 @@ export class ShareService {
             trigger: 900,
           },
         ]);
+        console.log(calendar.events());
       }
     }
 
+    // console.log(lectures);
+    console.log(calendar.events());
     return calendar;
   }
 
