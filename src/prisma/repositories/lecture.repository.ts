@@ -319,4 +319,32 @@ export class LectureRepository {
       },
     });
   }
+
+  async getUserLecturesByYearSemester(
+    userId: number,
+    year: number,
+    semester: number,
+  ): Promise<ILecture.Basic[]> {
+    const lectures =
+      await this.prisma.session_userprofile_taken_lectures.findMany({
+        where: {
+          userprofile_id: userId,
+          lecture: {
+            year: year,
+            semester: semester,
+            deleted: false,
+          },
+        },
+        include: {
+          lecture: {
+            include: {
+              subject_classtime: true,
+              subject_department: true,
+            },
+          },
+        },
+      });
+
+    return lectures.map((result) => result.lecture);
+  }
 }
