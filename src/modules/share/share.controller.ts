@@ -22,7 +22,10 @@ export class ShareController {
     @GetUser() user: session_userprofile,
     @Res() res: Response,
   ) {
-    const imageBuffer = await this.shareService.createTimetableImage(query);
+    const imageBuffer = await this.shareService.createTimetableImage(
+      query,
+      user,
+    );
     res.setHeader('Content-Type', 'image/png');
     res.send(imageBuffer);
   }
@@ -33,7 +36,7 @@ export class ShareController {
     @GetUser() user: session_userprofile,
     @Res() res: Response,
   ) {
-    const calendar = await this.shareService.createTimetableIcal(query);
+    const calendar = await this.shareService.createTimetableIcal(query, user);
     res.setHeader('Content-Type', 'text/calendar');
     res.send(calendar.toString());
   }

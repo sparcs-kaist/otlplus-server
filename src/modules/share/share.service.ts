@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { subject_semester } from '@prisma/client';
+import { session_userprofile, subject_semester } from '@prisma/client';
 import {
   CanvasRenderingContext2D,
   createCanvas,
@@ -314,9 +314,15 @@ export class ShareService {
     return canvas.toBuffer('image/png');
   }
 
-  async createTimetableImage(query: TimetableImageQueryDto): Promise<Buffer> {
+  async createTimetableImage(
+    query: TimetableImageQueryDto,
+    user: session_userprofile,
+  ): Promise<Buffer> {
     const lectures = await this.timetablesService.getTimetableEntries(
       query.timetable,
+      query.year,
+      query.semester,
+      user,
     );
     const timetableType = this.timetablesService.getTimetableType(lectures);
     const semesterObject = await this.semesterRepository.findSemester(
@@ -425,9 +431,13 @@ export class ShareService {
 
   async createTimetableIcal(
     query: TimetableIcalQueryDto,
+    user: session_userprofile,
   ): Promise<ICalCalendar> {
     const lectures = await this.timetablesService.getTimetableEntries(
       query.timetable,
+      query.year,
+      query.semester,
+      user,
     );
 
     if (!lectures || lectures.length === 0) {

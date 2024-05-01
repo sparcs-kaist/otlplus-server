@@ -14,6 +14,7 @@ import {
   courseDetails,
 } from '../../common/schemaTypes/types';
 import { PrismaService } from '../prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CourseRepository {
@@ -130,6 +131,7 @@ export class CourseRepository {
       keywordFilter,
       term_filter,
     ].filter((filter): filter is object => filter !== null);
+
     const queryResult = await this.prisma.subject_course.findMany({
       include: courseDetails.include,
       where: {
@@ -215,12 +217,19 @@ export class CourseRepository {
     if (term.includes('ALL')) {
       return null;
     } else {
-      const current_year = new Date().getFullYear().toString();
-      return {
+      const current_year = new Date().getFullYear();
+      const term_number = term.map((x) => parseInt(x))[0] ?? 0;
+
+      const termFilter: Prisma.subject_courseWhereInput = {
         lecture: {
-          year: current_year,
+          some: {
+            year: {
+              gte: current_year - term_number,
+            },
+          },
         },
       };
+      return termFilter;
     }
   }
 
