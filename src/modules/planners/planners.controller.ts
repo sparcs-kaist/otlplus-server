@@ -96,7 +96,7 @@ export class PlannersController {
       plannerId,
       item.year,
       item.semester,
-      item.courseId,
+      item.course,
     );
     return futureItem;
   }
