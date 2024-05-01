@@ -15,6 +15,6 @@ export class FeedsController {
     @GetUser() user: session_userprofile,
   ): Promise<IFeed.Details[]> {
     const feeds = await this.feedsService.getFeeds(query, user);
-    return feeds.map((feed) => toJsonFeedDetails(feed));
+    return feeds.map((feed) => toJsonFeedDetails(feed, user));
   }
 }
