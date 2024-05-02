@@ -5,6 +5,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
+import { ILecture } from 'src/common/interfaces';
 import {
   AddLectureDto,
   ReorderTimetableDto,
@@ -19,7 +20,6 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { LectureRepository } from '../../prisma/repositories/lecture.repository';
 import { SemesterRepository } from '../../prisma/repositories/semester.repository';
 import { TimetableRepository } from '../../prisma/repositories/timetable.repository';
-import { ILecture } from 'src/common/interfaces';
 
 @Injectable()
 export class TimetablesService {
@@ -269,11 +269,32 @@ export class TimetablesService {
   // Make sure to adjust other methods that use lectures to match the type
   public async getTimetableEntries(
     timetableId: number,
+    year: number,
+    semester: number,
+    user: session_userprofile,
   ): Promise<ILecture.Basic[]> {
-    const timetableDetails =
-      await this.timetableRepository.getLecturesWithClassTimes(timetableId);
-    if (!timetableDetails) {
-      throw new HttpException('No such timetable', HttpStatus.NOT_FOUND);
+    if (!user) {
+      throw new HttpException(
+        'User profile is required',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const MY_TIMETABLE_ID = -1;
+
+    let timetableDetails;
+    if (timetableId === MY_TIMETABLE_ID) {
+      return await this.lectureRepository.getUserLecturesByYearSemester(
+        user.id,
+        year,
+        semester,
+      );
+    } else {
+      timetableDetails =
+        await this.timetableRepository.getLecturesWithClassTimes(timetableId);
+      if (!timetableDetails) {
+        throw new HttpException('No such timetable', HttpStatus.NOT_FOUND);
+      }
     }
     return timetableDetails.map((detail) => detail.subject_lecture);
   }
