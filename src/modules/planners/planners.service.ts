@@ -25,6 +25,7 @@ import { LectureRepository } from 'src/prisma/repositories/lecture.repository';
 import { PlannerRepository } from 'src/prisma/repositories/planner.repository';
 import { CourseRepository } from './../../prisma/repositories/course.repository';
 import { EPlanners } from '../../common/entities/EPlanners';
+import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class PlannersService {
@@ -33,6 +34,7 @@ export class PlannersService {
     private readonly LectureRepository: LectureRepository,
     private readonly DepartmentRepository: DepartmentRepository,
     private readonly CourseRepository: CourseRepository,
+    private readonly prismaservice: PrismaService,
   ) {}
 
   public async getPlannerByUser(
@@ -230,37 +232,45 @@ export class PlannersService {
     order: number,
     user: session_userprofile,
   ): Promise<PlannerResponseDto> {
-    const planner = await this.PlannerRepository.getPlannerById(
-      user,
-      plannerId,
-    );
-
-    if (!planner) {
-      throw new NotFoundException();
-    }
-
-    const oldOrder = planner.arrange_order;
-    const relatedPlannerIds = (
-      await this.PlannerRepository.getRelatedPlanner(user)
-    ).map((planner) => planner.id);
-
-    if (oldOrder < order) {
-      await this.PlannerRepository.decrementOrders(
-        relatedPlannerIds,
-        oldOrder + 1,
-        order,
+    return this.prismaservice.$transaction(async (tx) => {
+      const planner = await this.PlannerRepository.getPlannerById(
+        user,
+        plannerId,
       );
-    } else if (oldOrder > order) {
-      await this.PlannerRepository.incrementOrders(
-        relatedPlannerIds,
+
+      if (!planner) {
+        throw new NotFoundException();
+      }
+
+      const oldOrder = planner.arrange_order;
+      const relatedPlannerIds = (
+        await this.PlannerRepository.getRelatedPlanner(user)
+      ).map((planner) => planner.id);
+
+      if (oldOrder < order) {
+        await this.PlannerRepository.decrementOrders(
+          relatedPlannerIds,
+          oldOrder + 1,
+          order,
+          tx,
+        );
+      } else if (oldOrder > order) {
+        await this.PlannerRepository.incrementOrders(
+          relatedPlannerIds,
+          order,
+          oldOrder - 1,
+          tx,
+        );
+      }
+
+      const updated = await this.PlannerRepository.updateOrder(
+        plannerId,
         order,
-        oldOrder - 1,
+        tx,
       );
-    }
 
-    const updated = await this.PlannerRepository.updateOrder(plannerId, order);
-
-    return toJsonPlanner(updated);
+      return toJsonPlanner(updated);
+    });
   }
 
   async updatePlannerItem(

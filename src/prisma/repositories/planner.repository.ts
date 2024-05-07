@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { session_userprofile } from '@prisma/client';
+import { Prisma, PrismaClient, session_userprofile } from '@prisma/client';
 import { EArbitraryPlannerItem } from 'src/common/entities/EArbitraryPlannerItem';
 import {
   PlannerBodyDto,
@@ -27,6 +27,7 @@ import { PrismaService } from '../prisma.service';
 import { PlannerItemType } from '../../common/interfaces/constants/planner';
 import { EPlanners } from '../../common/entities/EPlanners';
 import EItems = EPlanners.EItems;
+import * as runtime from '@prisma/client/runtime/library';
 
 @Injectable()
 export class PlannerRepository {
@@ -112,8 +113,10 @@ export class PlannerRepository {
   public async updateOrder(
     plannerId: number,
     order: number,
+    tx?: Omit<PrismaClient, runtime.ITXClientDenyList>,
   ): Promise<PlannerDetails> {
-    return await this.prisma.planner_planner.update({
+    const prisma = tx ?? this.prisma;
+    return await prisma.planner_planner.update({
       ...plannerDetails,
       where: {
         id: plannerId,
@@ -128,8 +131,10 @@ export class PlannerRepository {
     plannerIds: number[],
     from: number,
     to: number,
+    tx?: Omit<PrismaClient, runtime.ITXClientDenyList>,
   ): Promise<void> {
-    await this.prisma.planner_planner.updateMany({
+    const prisma = tx ?? this.prisma;
+    await prisma.planner_planner.updateMany({
       where: {
         id: {
           in: plannerIds,
@@ -151,8 +156,10 @@ export class PlannerRepository {
     plannerIds: number[],
     from: number,
     to: number,
+    tx?: Omit<PrismaClient, runtime.ITXClientDenyList>,
   ): Promise<void> {
-    await this.prisma.planner_planner.updateMany({
+    const prisma = tx ?? this.prisma;
+    await prisma.planner_planner.updateMany({
       where: {
         id: {
           in: plannerIds,
@@ -169,7 +176,6 @@ export class PlannerRepository {
       },
     });
   }
-
   public async getRelatedPlanner(
     user: session_userprofile,
   ): Promise<PlannerBasic[]> {
