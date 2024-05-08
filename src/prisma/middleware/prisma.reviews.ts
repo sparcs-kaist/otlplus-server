@@ -1,7 +1,7 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
+  Prisma,
   review_review,
-  review_reviewvote,
   subject_course,
   subject_lecture,
   subject_professor,
@@ -12,10 +12,19 @@ import { PrismaService } from '../prisma.service';
 @Injectable()
 export class ReviewMiddleware {
   constructor(
-    @Inject(forwardRef(() => PrismaService))
-    private readonly prisma: PrismaService,
+    private prisma: PrismaService, //private readonly courseRepository: CourseRepository, //private readonly lectureRepository: LectureRepository, //private readonly professorRepositiry: ProfessorRepositiry,
   ) {}
-
+  async execute(params: Prisma.MiddlewareParams, result: any) {
+    if (
+      params.action === 'create' ||
+      params.action === 'update' ||
+      params.action === 'upsert'
+    ) {
+      await this.reviewSavedMiddleware(result, params.action);
+    } else if (params.action === 'delete') {
+      await this.reviewDeletedMiddleware(result);
+    }
+  }
   async lectureRecalcScore(lecture: subject_lecture) {
     const professors = await this.prisma.subject_professor.findMany({
       where: {
@@ -219,15 +228,7 @@ export class ReviewMiddleware {
       ),
     );
   }
-  async reviewRecalcLike(reviewVote: review_reviewvote) {
-    const count = await this.prisma.review_reviewvote.count({
-      where: { review_id: reviewVote.review_id },
-    });
-    await this.prisma.review_review.update({
-      where: { id: reviewVote.review_id },
-      data: { like: count },
-    });
-  }
+
   async reviewSavedMiddleware(result: any, action: string) {
     await this.recalcRelatedScore(result); //내가 여기 왜 result를 넣었을까
     if (action === 'create') {
@@ -247,15 +248,5 @@ export class ReviewMiddleware {
 
   async reviewDeletedMiddleware(result: any) {
     await this.recalcRelatedScore(result);
-  }
-
-  async reviewVoteSavedMiddleware(result: any) {
-    //reviewvote와 관련된 함수들은 무조건 review를 include해서 반환하도록 하면 안되는건가?
-    await this.reviewRecalcLike(result);
-  }
-
-  async reviewVoteDeletedMiddleware(result: any) {
-    //그냥 reviewvote와 관련된 함수들은 무조건 review를 include해서 반환하도록 하면 안되는건가?
-    await this.reviewRecalcLike(result);
   }
 }

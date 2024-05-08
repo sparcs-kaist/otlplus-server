@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { ReviewMiddleware } from './middleware/prisma.reviews';
 import { PrismaService } from './prisma.service';
 import { CourseRepository } from './repositories/course.repository';
 import { DepartmentRepository } from './repositories/department.repository';
@@ -27,7 +26,6 @@ import { WishlistRepository } from './repositories/wishlist.repository';
     PlannerRepository,
     TracksRepository,
     NoticesRepository,
-    ReviewMiddleware,
   ],
   exports: [
     PrismaService,
@@ -42,7 +40,6 @@ import { WishlistRepository } from './repositories/wishlist.repository';
     PlannerRepository,
     TracksRepository,
     NoticesRepository,
-    ReviewMiddleware,
   ],
 })
 export class PrismaModule {}
