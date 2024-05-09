@@ -53,7 +53,6 @@
     "@types/sharp": "^0.32.0",
     "axios": "^1.4.0",
     "bcrypt": "^5.1.0",
-    "cached-prisma": "^1.2.1",
     "canvas": "^2.11.2",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
