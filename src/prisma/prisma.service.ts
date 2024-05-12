@@ -1,5 +1,6 @@
 import { INestApplication, Injectable, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+import { IPrismaMiddleware } from 'src/common/interfaces/IPrismaMiddleware';
 import settings from '../settings';
 import { mediator } from './middleware/mediator';
 
@@ -19,10 +20,23 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     });
     this.$use(async (params, next) => {
       const signal = mediator(this, params);
-      if (signal) {
-        const result = await next(params);
-        await signal.execute(params, result);
-        return result;
+      if (signal.signal) {
+        if (signal.IsPre) {
+          const s: IPrismaMiddleware.IPrismaMiddleware<true> = signal.signal;
+          const execute = await s.execute(params);
+          if (!execute) {
+            throw new Error('Middleware Error');
+          }
+          return next(params);
+        } else {
+          const result = await next(params);
+          const s: IPrismaMiddleware.IPrismaMiddleware<false> = signal.signal;
+          const execute = await s.execute(params, result);
+          if (!execute) {
+            throw new Error('Middleware Error');
+          }
+          return result;
+        }
       }
       return next(params);
     });

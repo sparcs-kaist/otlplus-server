@@ -1,25 +1,40 @@
-import { Injectable } from '@nestjs/common';
 import { Prisma, review_reviewvote } from '@prisma/client';
+import { IPrismaMiddleware } from 'src/common/interfaces/IPrismaMiddleware';
 import { PrismaService } from '../prisma.service';
 
-@Injectable()
-export class ReviewVoteMiddleware {
+export class ReviewVoteMiddleware
+  implements IPrismaMiddleware.IPrismaMiddleware<false>
+{
+  private static instance: ReviewVoteMiddleware;
+
   constructor(
     private prisma: PrismaService, //private readonly courseRepository: CourseRepository, //private readonly lectureRepository: LectureRepository, //private readonly professorRepositiry: ProfessorRepositiry,
   ) {}
-  async execute(params: Prisma.MiddlewareParams, result: any) {
+  async execute(
+    params: Prisma.MiddlewareParams,
+    result: any,
+  ): Promise<boolean> {
     if (
       params.action === 'create' ||
       params.action === 'update' ||
       params.action === 'upsert'
     ) {
       await this.reviewVoteSavedMiddleware(result);
+      return true;
     } else if (params.action === 'delete') {
       await this.reviewVoteDeletedMiddleware(result);
+      return true;
     }
+    return true;
+  }
+  public static getInstance(prisma: PrismaService): ReviewVoteMiddleware {
+    if (!this.instance) {
+      this.instance = new ReviewVoteMiddleware(prisma);
+    }
+    return this.instance;
   }
 
-  async reviewRecalcLike(reviewVote: review_reviewvote) {
+  private async reviewRecalcLike(reviewVote: review_reviewvote) {
     const count = await this.prisma.review_reviewvote.count({
       where: { review_id: reviewVote.review_id },
     });
@@ -29,13 +44,11 @@ export class ReviewVoteMiddleware {
     });
   }
 
-  async reviewVoteSavedMiddleware(result: any) {
-    //reviewvote와 관련된 함수들은 무조건 review를 include해서 반환하도록 하면 안되는건가?
+  private async reviewVoteSavedMiddleware(result: any) {
     await this.reviewRecalcLike(result);
   }
 
-  async reviewVoteDeletedMiddleware(result: any) {
-    //그냥 reviewvote와 관련된 함수들은 무조건 review를 include해서 반환하도록 하면 안되는건가?
+  private async reviewVoteDeletedMiddleware(result: any) {
     await this.reviewRecalcLike(result);
   }
 }
