@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { ECourse } from 'src/common/entities/ECourse';
 import { EReview } from 'src/common/entities/EReview';
 import { ICourse } from 'src/common/interfaces';
@@ -8,13 +9,8 @@ import {
   applyOrder,
   orderFilter,
 } from 'src/common/utils/search.utils';
-import {
-  CourseDetails,
-  LectureDetails,
-  courseDetails,
-} from '../../common/schemaTypes/types';
+import { CourseDetails, LectureDetails } from '../../common/schemaTypes/types';
 import { PrismaService } from '../prisma.service';
-import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CourseRepository {
@@ -54,7 +50,7 @@ export class CourseRepository {
 
   public async getCourseById(id: number): Promise<CourseDetails | null> {
     return await this.prisma.subject_course.findUnique({
-      include: courseDetails.include,
+      include: ECourse.Details.include,
       where: {
         id: id,
       },
@@ -133,7 +129,7 @@ export class CourseRepository {
     ].filter((filter): filter is object => filter !== null);
 
     const queryResult = await this.prisma.subject_course.findMany({
-      include: courseDetails.include,
+      include: ECourse.Details.include,
       where: {
         AND: filterList,
       },
