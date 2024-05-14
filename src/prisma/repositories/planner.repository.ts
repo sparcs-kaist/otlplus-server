@@ -1,10 +1,7 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { EArbitraryPlannerItem } from 'src/common/entities/EArbitraryPlannerItem';
+import { ELecture } from 'src/common/entities/ELecture';
 import {
   PlannerBodyDto,
   PlannerQueryDto,
@@ -13,7 +10,6 @@ import {
 import {
   ArbitraryPlannerItem,
   FuturePlannerItem,
-  LectureDetails,
   PlannerBasic,
   PlannerDetails,
   TakenPlannerItem,
@@ -23,9 +19,9 @@ import {
   takenPlannerItem,
 } from 'src/common/schemaTypes/types';
 import { orderFilter } from 'src/common/utils/search.utils';
-import { PrismaService } from '../prisma.service';
-import { PlannerItemType } from '../../common/interfaces/constants/planner';
 import { EPlanners } from '../../common/entities/EPlanners';
+import { PlannerItemType } from '../../common/interfaces/constants/planner';
+import { PrismaService } from '../prisma.service';
 import EItems = EPlanners.EItems;
 
 @Injectable()
@@ -208,7 +204,7 @@ export class PlannerRepository {
 
   public async createTakenPlannerItem(
     planner: PlannerBasic,
-    lecture: LectureDetails,
+    lecture: ELecture.Details,
     isExcluded: boolean = false,
   ) {
     return await this.prisma.planner_takenplanneritem.create({

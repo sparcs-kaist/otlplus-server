@@ -8,10 +8,10 @@ import { LectureResponseDto } from 'src/common/interfaces/dto/lecture/lecture.re
 import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
 import { toJsonLecture } from 'src/common/interfaces/serializer/lecture.serializer';
 import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
-import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
-import { LectureDetails, ReviewDetails } from '../../common/schemaTypes/types';
-import { LectureRepository } from './../../prisma/repositories/lecture.repository';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
+import { ReviewDetails } from '../../common/schemaTypes/types';
+import { LectureRepository } from './../../prisma/repositories/lecture.repository';
 
 @Injectable()
 export class LecturesService {
@@ -105,7 +105,7 @@ export class LecturesService {
     );
   }
 
-  public async getLecturesByIds(ids: number[]): Promise<LectureDetails[]> {
+  public async getLecturesByIds(ids: number[]): Promise<ELecture.Details[]> {
     return await this.LectureRepository.getLectureByIds(ids);
   }
 

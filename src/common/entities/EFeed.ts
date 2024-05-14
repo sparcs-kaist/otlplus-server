@@ -1,10 +1,7 @@
 import { Prisma } from '@prisma/client';
-import {
-  ReviewDetails,
-  courseDetails,
-  lectureDetails,
-  reviewDetails,
-} from '../schemaTypes/types';
+import { ReviewDetails, reviewDetails } from '../schemaTypes/types';
+import { ECourse } from './ECourse';
+import { ELecture } from './ELecture';
 
 export namespace EFeed {
   export const FamousHumanityReviewDetails =
@@ -33,7 +30,7 @@ export namespace EFeed {
     Prisma.validator<Prisma.main_reviewwritedailyuserfeedArgs>()({
       include: {
         subject_lecture: {
-          include: lectureDetails.include,
+          include: ELecture.Details.include,
         },
       },
     });
@@ -42,7 +39,7 @@ export namespace EFeed {
     Prisma.validator<Prisma.main_relatedcoursedailyuserfeedArgs>()({
       include: {
         subject_course: {
-          include: courseDetails.include,
+          include: ECourse.Details.include,
         },
       },
     });

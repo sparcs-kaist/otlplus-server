@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, PrismaClient, session_userprofile } from '@prisma/client';
+import { ELecture } from 'src/common/entities/ELecture';
+import { ETimetable } from 'src/common/entities/ETimetabls';
 import {
-  LectureDetails,
   TimeTableBasic,
   TimeTableDetails,
   timeTableDetails,
 } from '../../common/schemaTypes/types';
 import { PrismaService } from '../prisma.service';
-import { ETimetable } from 'src/common/entities/ETimetabls';
 
 @Injectable()
 export class TimetableRepository {
@@ -71,7 +71,7 @@ export class TimetableRepository {
     year: number,
     semester: number,
     arrangeOrder: number,
-    lectures: LectureDetails[],
+    lectures: ELecture.Details[],
   ): Promise<TimeTableDetails> {
     return await this.prisma.timetable_timetable.create({
       data: {

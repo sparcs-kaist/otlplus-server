@@ -2,21 +2,12 @@ import { Prisma } from '@prisma/client';
 import { ECourse } from '../entities/ECourse';
 import { ELecture } from '../entities/ELecture';
 
-export const lectureDetails = Prisma.validator<Prisma.subject_lectureArgs>()({
-  include: {
-    subject_department: true,
-    subject_lecture_professors: { include: { professor: true } },
-    subject_classtime: true,
-    subject_examtime: true,
-  },
-});
-
 export const timeTableDetails =
   Prisma.validator<Prisma.timetable_timetableArgs>()({
     include: {
       timetable_timetable_lectures: {
         include: {
-          subject_lecture: lectureDetails,
+          subject_lecture: ELecture.Details,
         },
       },
     },
@@ -40,7 +31,7 @@ export const takenPlannerItem =
     include: {
       subject_lecture: {
         include: {
-          ...lectureDetails.include,
+          ...ELecture.Details.include,
           course: ECourse.Details,
         },
       },
@@ -81,7 +72,7 @@ export type NESTED = true;
 export const reviewDetails = Prisma.validator<Prisma.review_reviewArgs>()({
   include: {
     course: ECourse.Details,
-    lecture: lectureDetails,
+    lecture: ELecture.Details,
     review_reviewvote: true,
   },
 });
@@ -91,7 +82,7 @@ export const lectureReviews = Prisma.validator<Prisma.subject_lectureArgs>()({
     review: {
       include: {
         course: ECourse.Details,
-        lecture: lectureDetails,
+        lecture: ELecture.Details,
         review_reviewvote: true,
       },
     },
@@ -104,7 +95,7 @@ export const wishlistWithLectures =
       timetable_wishlist_lectures: {
         include: {
           subject_lecture: {
-            include: lectureDetails.include,
+            include: ELecture.Details.include,
           },
         },
         where: { subject_lecture: { deleted: false } },
@@ -117,9 +108,6 @@ export type LectureReviewDetails = Prisma.subject_lectureGetPayload<
 >;
 export type ReviewDetails = Prisma.review_reviewGetPayload<
   typeof reviewDetails
->;
-export type LectureDetails = Prisma.subject_lectureGetPayload<
-  typeof lectureDetails
 >;
 export type LectureBasic = Prisma.subject_lectureGetPayload<null>;
 export type TimeTableDetails = Prisma.timetable_timetableGetPayload<
@@ -149,9 +137,3 @@ export type AdditionalTrackDetails =
 export type WishlistWithLectures = Prisma.timetable_wishlistGetPayload<
   typeof wishlistWithLectures
 >;
-
-export function isLectureDetails(
-  lecture: ELecture.Extended | LectureDetails,
-): lecture is LectureDetails {
-  return 'subject_classtime' in lecture && 'subject_examtime' in lecture;
-}

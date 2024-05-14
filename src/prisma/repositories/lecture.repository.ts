@@ -4,11 +4,7 @@ import { ELecture } from 'src/common/entities/ELecture';
 import { ILecture } from 'src/common/interfaces/ILecture';
 import { LectureQueryDto } from 'src/common/interfaces/dto/lecture/lecture.request.dto';
 import { applyOffset, applyOrder } from 'src/common/utils/search.utils';
-import {
-  LectureBasic,
-  LectureDetails,
-  lectureDetails,
-} from '../../common/schemaTypes/types';
+import { LectureBasic } from '../../common/schemaTypes/types';
 import { groupBy } from '../../common/utils/method.utils';
 import { PrismaService } from '../prisma.service';
 import { CourseRepository } from './course.repository';
@@ -20,9 +16,9 @@ export class LectureRepository {
     private readonly courseRepository: CourseRepository,
   ) {}
 
-  async getLectureById(id: number): Promise<LectureDetails> {
+  async getLectureById(id: number): Promise<ELecture.Details> {
     return await this.prisma.subject_lecture.findUniqueOrThrow({
-      include: lectureDetails.include,
+      include: ELecture.Details.include,
       where: {
         id: id,
       },
@@ -37,9 +33,9 @@ export class LectureRepository {
     });
   }
 
-  async getLectureByIds(ids: number[]): Promise<LectureDetails[]> {
+  async getLectureByIds(ids: number[]): Promise<ELecture.Details[]> {
     return await this.prisma.subject_lecture.findMany({
-      include: lectureDetails.include,
+      include: ELecture.Details.include,
       where: {
         id: {
           in: ids,
@@ -48,7 +44,7 @@ export class LectureRepository {
     });
   }
 
-  async filterByRequest(query: LectureQueryDto): Promise<LectureDetails[]> {
+  async filterByRequest(query: LectureQueryDto): Promise<ELecture.Details[]> {
     const DEFAULT_LIMIT = 300;
     const DEFAULT_ORDER = ['year', 'semester', 'old_code', 'class_no'];
     const researchTypes = [
@@ -103,22 +99,22 @@ export class LectureRepository {
       take: query.limit ?? DEFAULT_LIMIT,
     });
     const levelFilteredResult =
-      this.courseRepository.levelFilter<LectureDetails>(
+      this.courseRepository.levelFilter<ELecture.Details>(
         queryResult,
         query?.level,
       );
 
-    const orderedQuery = applyOrder<LectureDetails>(
+    const orderedQuery = applyOrder<ELecture.Details>(
       levelFilteredResult,
-      (query.order ?? DEFAULT_ORDER) as (keyof LectureDetails)[],
+      (query.order ?? DEFAULT_ORDER) as (keyof ELecture.Details)[],
     );
-    return applyOffset<LectureDetails>(orderedQuery, query.offset ?? 0);
+    return applyOffset<ELecture.Details>(orderedQuery, query.offset ?? 0);
   }
 
   async findReviewWritableLectures(
     user: session_userprofile,
     date?: Date,
-  ): Promise<LectureDetails[]> {
+  ): Promise<ELecture.Details[]> {
     type Semester = { semester: number; year: number };
     const currDate = date ?? new Date();
     const notWritableSemesters = await this.prisma.subject_semester.findMany({
@@ -188,7 +184,9 @@ export class LectureRepository {
     };
   }
 
-  async getTakenLectures(user: session_userprofile): Promise<LectureDetails[]> {
+  async getTakenLectures(
+    user: session_userprofile,
+  ): Promise<ELecture.Details[]> {
     const lectures = (
       await this.prisma.session_userprofile_taken_lectures.findMany({
         where: {

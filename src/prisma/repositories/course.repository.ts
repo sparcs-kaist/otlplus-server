@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { ECourse } from 'src/common/entities/ECourse';
+import { ELecture } from 'src/common/entities/ELecture';
 import { EReview } from 'src/common/entities/EReview';
 import { ICourse } from 'src/common/interfaces';
 import { CourseReviewQueryDto } from 'src/common/interfaces/dto/course/course.review.request.dto';
@@ -9,7 +10,6 @@ import {
   applyOrder,
   orderFilter,
 } from 'src/common/utils/search.utils';
-import { LectureDetails } from '../../common/schemaTypes/types';
 import { PrismaService } from '../prisma.service';
 
 @Injectable()
@@ -60,7 +60,7 @@ export class CourseRepository {
   public async getLecturesByCourseId(
     query: { order: string[] },
     id: number,
-  ): Promise<LectureDetails[]> {
+  ): Promise<ELecture.Details[]> {
     const course = await this.prisma.subject_course.findUnique({
       include: {
         lecture: {
@@ -80,9 +80,9 @@ export class CourseRepository {
       ? course.lecture.filter((lecture) => !lecture.deleted)
       : [];
     const order = query.order ? query.order : ['year', 'semester', 'class_no'];
-    return applyOrder<LectureDetails>(
+    return applyOrder<ELecture.Details>(
       filteredLecture,
-      order as (keyof LectureDetails)[],
+      order as (keyof ELecture.Details)[],
     );
   }
 
@@ -344,7 +344,7 @@ export class CourseRepository {
     };
   }
 
-  public levelFilter<T extends ECourse.Details | LectureDetails>(
+  public levelFilter<T extends ECourse.Details | ELecture.Details>(
     queryResult: T[],
     levels?: string[],
   ): T[] {

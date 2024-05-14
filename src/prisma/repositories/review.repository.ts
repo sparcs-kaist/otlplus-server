@@ -5,13 +5,10 @@ import {
   session_userprofile,
   subject_department,
 } from '@prisma/client';
+import { ELecture } from 'src/common/entities/ELecture';
 import { EReview } from 'src/common/entities/EReview';
 import { orderFilter } from 'src/common/utils/search.utils';
-import {
-  LectureDetails,
-  ReviewDetails,
-  reviewDetails,
-} from '../../common/schemaTypes/types';
+import { ReviewDetails, reviewDetails } from '../../common/schemaTypes/types';
 import { PrismaService } from '../prisma.service';
 
 @Injectable()
@@ -170,7 +167,7 @@ export class ReviewsRepository {
     order: string[],
     offset: number,
     limit: number,
-    lecture: LectureDetails,
+    lecture: ELecture.Details,
   ): Promise<ReviewDetails[]> {
     return await this.prisma.review_review.findMany({
       ...EReview.Details,
