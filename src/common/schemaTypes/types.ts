@@ -1,12 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { ECourse } from '../entities/ECourse';
-
-export const lectureExtended = Prisma.validator<Prisma.subject_lectureArgs>()({
-  include: {
-    subject_department: true,
-    subject_lecture_professors: { include: { professor: true } },
-  },
-});
+import { ELecture } from '../entities/ELecture';
 
 export const lectureDetails = Prisma.validator<Prisma.subject_lectureArgs>()({
   include: {
@@ -127,9 +121,6 @@ export type ReviewDetails = Prisma.review_reviewGetPayload<
 export type LectureDetails = Prisma.subject_lectureGetPayload<
   typeof lectureDetails
 >;
-export type LectureExtended = Prisma.subject_lectureGetPayload<
-  typeof lectureExtended
->;
 export type LectureBasic = Prisma.subject_lectureGetPayload<null>;
 export type TimeTableDetails = Prisma.timetable_timetableGetPayload<
   typeof timeTableDetails
@@ -160,7 +151,7 @@ export type WishlistWithLectures = Prisma.timetable_wishlistGetPayload<
 >;
 
 export function isLectureDetails(
-  lecture: LectureExtended | LectureDetails,
+  lecture: ELecture.Extended | LectureDetails,
 ): lecture is LectureDetails {
   return 'subject_classtime' in lecture && 'subject_examtime' in lecture;
 }

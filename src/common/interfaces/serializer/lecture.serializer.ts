@@ -1,7 +1,7 @@
+import { ELecture } from 'src/common/entities/ELecture';
 import { applyOrder } from 'src/common/utils/search.utils';
 import {
   LectureDetails,
-  LectureExtended,
   NESTED,
   isLectureDetails,
 } from '../../schemaTypes/types';
@@ -11,7 +11,7 @@ import { toJsonExamtime } from './examtime.serializer';
 import { toJsonProfessor } from './professor.serializer';
 
 export function toJsonLecture<T extends boolean>(
-  lecture: T extends NESTED ? LectureExtended : LectureDetails,
+  lecture: T extends NESTED ? ELecture.Extended : LectureDetails,
   nested: T,
 ): LectureResponseDto {
   let result = {
