@@ -1,12 +1,5 @@
 import { Prisma } from '@prisma/client';
-
-export const courseDetails = Prisma.validator<Prisma.subject_courseArgs>()({
-  include: {
-    subject_department: true,
-    subject_course_professors: { include: { professor: true } },
-    lecture: true,
-  },
-});
+import { ECourse } from '../entities/ECourse';
 
 export const lectureExtended = Prisma.validator<Prisma.subject_lectureArgs>()({
   include: {
@@ -54,7 +47,7 @@ export const takenPlannerItem =
       subject_lecture: {
         include: {
           ...lectureDetails.include,
-          course: courseDetails,
+          course: ECourse.Details,
         },
       },
     },
@@ -70,7 +63,7 @@ export const arbitraryPlannerItem =
 export const futurePlannerItem =
   Prisma.validator<Prisma.planner_futureplanneritemArgs>()({
     include: {
-      subject_course: courseDetails,
+      subject_course: ECourse.Details,
     },
   });
 
@@ -93,7 +86,7 @@ export type NESTED = true;
 
 export const reviewDetails = Prisma.validator<Prisma.review_reviewArgs>()({
   include: {
-    course: courseDetails,
+    course: ECourse.Details,
     lecture: lectureDetails,
     review_reviewvote: true,
   },
@@ -103,7 +96,7 @@ export const lectureReviews = Prisma.validator<Prisma.subject_lectureArgs>()({
   include: {
     review: {
       include: {
-        course: courseDetails,
+        course: ECourse.Details,
         lecture: lectureDetails,
         review_reviewvote: true,
       },
@@ -138,9 +131,6 @@ export type LectureExtended = Prisma.subject_lectureGetPayload<
   typeof lectureExtended
 >;
 export type LectureBasic = Prisma.subject_lectureGetPayload<null>;
-export type CourseDetails = Prisma.subject_courseGetPayload<
-  typeof courseDetails
->;
 export type TimeTableDetails = Prisma.timetable_timetableGetPayload<
   typeof timeTableDetails
 >;

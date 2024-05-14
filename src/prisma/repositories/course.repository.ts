@@ -9,7 +9,7 @@ import {
   applyOrder,
   orderFilter,
 } from 'src/common/utils/search.utils';
-import { CourseDetails, LectureDetails } from '../../common/schemaTypes/types';
+import { LectureDetails } from '../../common/schemaTypes/types';
 import { PrismaService } from '../prisma.service';
 
 @Injectable()
@@ -48,7 +48,7 @@ export class CourseRepository {
     'TS',
   ];
 
-  public async getCourseById(id: number): Promise<CourseDetails | null> {
+  public async getCourseById(id: number): Promise<ECourse.Details | null> {
     return await this.prisma.subject_course.findUnique({
       include: ECourse.Details.include,
       where: {
@@ -100,7 +100,7 @@ export class CourseRepository {
     return review;
   }
 
-  public async getCourses(query: any): Promise<CourseDetails[]> {
+  public async getCourses(query: any): Promise<ECourse.Details[]> {
     const DEFAULT_LIMIT = 150;
     const DEFAULT_ORDER = ['old_code'];
 
@@ -135,17 +135,17 @@ export class CourseRepository {
       },
       take: limit ?? DEFAULT_LIMIT,
     });
-    const levelFilteredResult = this.levelFilter<CourseDetails>(
+    const levelFilteredResult = this.levelFilter<ECourse.Details>(
       queryResult,
       level,
     );
 
     // Apply Ordering and Offset
-    const orderedResult = applyOrder<CourseDetails>(
+    const orderedResult = applyOrder<ECourse.Details>(
       levelFilteredResult,
       order ?? DEFAULT_ORDER,
     );
-    return applyOffset<CourseDetails>(orderedResult, offset ?? 0);
+    return applyOffset<ECourse.Details>(orderedResult, offset ?? 0);
   }
 
   public departmentFilter(department_names?: string[]): object | null {
@@ -344,7 +344,7 @@ export class CourseRepository {
     };
   }
 
-  public levelFilter<T extends CourseDetails | LectureDetails>(
+  public levelFilter<T extends ECourse.Details | LectureDetails>(
     queryResult: T[],
     levels?: string[],
   ): T[] {
@@ -371,7 +371,7 @@ export class CourseRepository {
   async getUserTakenCourses(
     takenLecturesId: number[],
     order: string[],
-  ): Promise<CourseDetails[]> {
+  ): Promise<ECourse.Details[]> {
     const orderFilter: { [key: string]: string }[] = [];
     order.forEach((orderList) => {
       const orderDict: { [key: string]: string } = {};
