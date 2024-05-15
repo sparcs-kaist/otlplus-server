@@ -1,25 +1,22 @@
+import { BadRequestException } from '@nestjs/common';
+import { ETakenPlannerItem } from 'src/common/entities/ETakenPlannerItem';
 import {
   ArbitraryPlannerItem,
   FuturePlannerItem,
-  TakenPlannerItem,
 } from 'src/common/schemaTypes/types';
-import { ArbitraryPlannerItemResponseDto } from '../dto/planner_item/arbitrary.response.dto';
-import { FuturePlannerItemResponseDto } from '../dto/planner_item/future.reponse.dto';
-import { TakenPlannerItemResponseDto } from '../dto/planner_item/taken.response.dto';
+import { EPlanners } from '../../entities/EPlanners';
+import { IPlanner } from '../IPlanner';
+import { PlannerItemType } from '../constants/planner';
 import { toJsonCourse } from './course.serializer';
 import { toJsonDepartment } from './department.serializer';
 import { toJsonLecture } from './lecture.serializer';
-import { IPlanner } from '../IPlanner';
-import { EPlanners } from '../../entities/EPlanners';
-import { PlannerItemType } from '../constants/planner';
-import { BadRequestException } from '@nestjs/common';
 
 export function toJsonPlannerItem<IT extends PlannerItemType>(
-  item: TakenPlannerItem | FuturePlannerItem | ArbitraryPlannerItem,
+  item: ETakenPlannerItem.Details | FuturePlannerItem | ArbitraryPlannerItem,
   item_type: IT,
 ): IPlanner.IItem.IMutate {
   if (item_type === PlannerItemType.Taken) {
-    return toJsonTakenItem(item as TakenPlannerItem);
+    return toJsonTakenItem(item as ETakenPlannerItem.Details);
   } else if (item_type === PlannerItemType.Future) {
     return toJsonFutureItem(item as FuturePlannerItem);
   } else if (item_type === PlannerItemType.Arbitrary) {

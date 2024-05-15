@@ -96,9 +96,6 @@ export type ArbitraryPlannerItem =
 export type FuturePlannerItem = Prisma.planner_futureplanneritemGetPayload<
   typeof futurePlannerItem
 >;
-export type TakenPlannerItem = Prisma.planner_takenplanneritemGetPayload<
-  typeof takenPlannerItem
->;
 export type GeneralTrackBasic = Prisma.graduation_generaltrackGetPayload<null>;
 
 export type WishlistWithLectures = Prisma.timetable_wishlistGetPayload<

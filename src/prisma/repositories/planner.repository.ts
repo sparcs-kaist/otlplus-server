@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { EArbitraryPlannerItem } from 'src/common/entities/EArbitraryPlannerItem';
 import { ELecture } from 'src/common/entities/ELecture';
+import { ETakenPlannerItem } from 'src/common/entities/ETakenPlannerItem';
 import {
   PlannerBodyDto,
   PlannerQueryDto,
@@ -12,7 +13,6 @@ import {
   FuturePlannerItem,
   PlannerBasic,
   PlannerDetails,
-  TakenPlannerItem,
   arbitraryPlannerItem,
   futurePlannerItem,
   plannerDetails,
@@ -22,7 +22,6 @@ import { orderFilter } from 'src/common/utils/search.utils';
 import { EPlanners } from '../../common/entities/EPlanners';
 import { PlannerItemType } from '../../common/interfaces/constants/planner';
 import { PrismaService } from '../prisma.service';
-import EItems = EPlanners.EItems;
 
 @Injectable()
 export class PlannerRepository {
@@ -182,7 +181,7 @@ export class PlannerRepository {
   public async getTakenPlannerItemById(
     user: session_userprofile,
     id: number,
-  ): Promise<TakenPlannerItem | null> {
+  ): Promise<ETakenPlannerItem.Details | null> {
     const planner = await this.prisma.planner_planner.findMany({
       include: {
         planner_takenplanneritem: {
