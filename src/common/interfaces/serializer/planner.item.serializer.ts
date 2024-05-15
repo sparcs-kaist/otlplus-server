@@ -1,9 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { ETakenPlannerItem } from 'src/common/entities/ETakenPlannerItem';
-import {
-  ArbitraryPlannerItem,
-  FuturePlannerItem,
-} from 'src/common/schemaTypes/types';
+import { EPlannerItem } from 'src/common/entities/EPlannerItem';
 import { EPlanners } from '../../entities/EPlanners';
 import { IPlanner } from '../IPlanner';
 import { PlannerItemType } from '../constants/planner';
@@ -12,15 +8,15 @@ import { toJsonDepartment } from './department.serializer';
 import { toJsonLecture } from './lecture.serializer';
 
 export function toJsonPlannerItem<IT extends PlannerItemType>(
-  item: ETakenPlannerItem.Details | FuturePlannerItem | ArbitraryPlannerItem,
+  item: EPlannerItem.Taken | EPlannerItem.Future | EPlannerItem.Arbitrary,
   item_type: IT,
 ): IPlanner.IItem.IMutate {
   if (item_type === PlannerItemType.Taken) {
-    return toJsonTakenItem(item as ETakenPlannerItem.Details);
+    return toJsonTakenItem(item as EPlannerItem.Taken);
   } else if (item_type === PlannerItemType.Future) {
-    return toJsonFutureItem(item as FuturePlannerItem);
+    return toJsonFutureItem(item as EPlannerItem.Future);
   } else if (item_type === PlannerItemType.Arbitrary) {
-    return toJsonArbitraryItem(item as ArbitraryPlannerItem);
+    return toJsonArbitraryItem(item as EPlannerItem.Arbitrary);
   } else {
     throw new BadRequestException('Invalid Planner Item Type');
   }

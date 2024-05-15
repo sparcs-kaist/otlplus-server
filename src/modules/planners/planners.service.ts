@@ -1,30 +1,31 @@
 import {
   BadRequestException,
+  HttpException,
+  HttpStatus,
   Injectable,
   NotFoundException,
   UnauthorizedException,
-  HttpException,
-  HttpStatus,
 } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
+import { EPlannerItem } from 'src/common/entities/EPlannerItem';
 import { IPlanner } from 'src/common/interfaces/IPlanner';
 import {
   PlannerBodyDto,
   PlannerQueryDto,
-  PlannerUpdateItemDto,
   PlannerRemoveItemDto,
+  PlannerUpdateItemDto,
 } from 'src/common/interfaces/dto/planner/planner.request.dto';
 import { PlannerResponseDto } from 'src/common/interfaces/dto/planner/planner.response.dto';
-import { FuturePlannerItemResponseDto } from 'src/common/interfaces/dto/planner_item/future.reponse.dto';
-import { toJsonFutureItem } from 'src/common/interfaces/serializer/planner.item.serializer';
-import { toJsonArbitraryItem } from 'src/common/interfaces/serializer/planner.item.serializer';
+import {
+  toJsonArbitraryItem,
+  toJsonFutureItem,
+} from 'src/common/interfaces/serializer/planner.item.serializer';
 import { toJsonPlanner } from 'src/common/interfaces/serializer/planner.serializer';
-import { FuturePlannerItem } from 'src/common/schemaTypes/types';
 import { DepartmentRepository } from 'src/prisma/repositories/department.repository';
 import { LectureRepository } from 'src/prisma/repositories/lecture.repository';
 import { PlannerRepository } from 'src/prisma/repositories/planner.repository';
-import { CourseRepository } from './../../prisma/repositories/course.repository';
 import { EPlanners } from '../../common/entities/EPlanners';
+import { CourseRepository } from './../../prisma/repositories/course.repository';
 
 @Injectable()
 export class PlannersService {
@@ -215,7 +216,7 @@ export class PlannersService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const item: FuturePlannerItem =
+    const item: EPlannerItem.Future =
       await this.PlannerRepository.createPlannerItem(
         plannerId,
         year,

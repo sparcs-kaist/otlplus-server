@@ -1,47 +1,21 @@
 import { Prisma } from '@prisma/client';
-import { EAdditionalTrack } from '../entities/EAdditionalTrack';
 import { ECourse } from '../entities/ECourse';
 import { ELecture } from '../entities/ELecture';
-import { EMajorTrack } from '../entities/EMajorTrack';
-
-export const takenPlannerItem =
-  Prisma.validator<Prisma.planner_takenplanneritemArgs>()({
-    include: {
-      subject_lecture: {
-        include: {
-          ...ELecture.Details.include,
-          course: ECourse.Details,
-        },
-      },
-    },
-  });
-
-export const arbitraryPlannerItem =
-  Prisma.validator<Prisma.planner_arbitraryplanneritemArgs>()({
-    include: {
-      subject_department: true,
-    },
-  });
-
-export const futurePlannerItem =
-  Prisma.validator<Prisma.planner_futureplanneritemArgs>()({
-    include: {
-      subject_course: ECourse.Details,
-    },
-  });
+import { EPlannerItem } from '../entities/EPlannerItem';
+import { ETrack } from '../entities/ETrack';
 
 export const plannerDetails = Prisma.validator<Prisma.planner_plannerArgs>()({
   include: {
     planner_planner_additional_tracks: {
       include: {
-        graduation_additionaltrack: EAdditionalTrack.Details,
+        graduation_additionaltrack: ETrack.Additional,
       },
     },
     graduation_generaltrack: true,
-    graduation_majortrack: EMajorTrack.Details,
-    planner_takenplanneritem: takenPlannerItem,
-    planner_arbitraryplanneritem: arbitraryPlannerItem,
-    planner_futureplanneritem: futurePlannerItem,
+    graduation_majortrack: ETrack.Major,
+    planner_takenplanneritem: EPlannerItem.Taken,
+    planner_arbitraryplanneritem: EPlannerItem.Arbitrary,
+    planner_futureplanneritem: EPlannerItem.Future,
   },
 });
 
@@ -91,12 +65,6 @@ export type PlannerBasic = Prisma.planner_plannerGetPayload<null>;
 export type PlannerDetails = Prisma.planner_plannerGetPayload<
   typeof plannerDetails
 >;
-export type ArbitraryPlannerItem =
-  Prisma.planner_arbitraryplanneritemGetPayload<typeof arbitraryPlannerItem>;
-export type FuturePlannerItem = Prisma.planner_futureplanneritemGetPayload<
-  typeof futurePlannerItem
->;
-export type GeneralTrackBasic = Prisma.graduation_generaltrackGetPayload<null>;
 
 export type WishlistWithLectures = Prisma.timetable_wishlistGetPayload<
   typeof wishlistWithLectures
