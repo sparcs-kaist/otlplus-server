@@ -1,14 +1,8 @@
 import { Prisma } from '@prisma/client';
+import { EAdditionalTrack } from '../entities/EAdditionalTrack';
 import { ECourse } from '../entities/ECourse';
 import { ELecture } from '../entities/ELecture';
 import { EMajorTrack } from '../entities/EMajorTrack';
-
-export const additionalTrack =
-  Prisma.validator<Prisma.graduation_additionaltrackArgs>()({
-    include: {
-      subject_department: true,
-    },
-  });
 
 export const takenPlannerItem =
   Prisma.validator<Prisma.planner_takenplanneritemArgs>()({
@@ -40,7 +34,7 @@ export const plannerDetails = Prisma.validator<Prisma.planner_plannerArgs>()({
   include: {
     planner_planner_additional_tracks: {
       include: {
-        graduation_additionaltrack: additionalTrack,
+        graduation_additionaltrack: EAdditionalTrack.Details,
       },
     },
     graduation_generaltrack: true,
@@ -106,8 +100,6 @@ export type TakenPlannerItem = Prisma.planner_takenplanneritemGetPayload<
   typeof takenPlannerItem
 >;
 export type GeneralTrackBasic = Prisma.graduation_generaltrackGetPayload<null>;
-export type AdditionalTrackDetails =
-  Prisma.graduation_additionaltrackGetPayload<typeof additionalTrack>;
 
 export type WishlistWithLectures = Prisma.timetable_wishlistGetPayload<
   typeof wishlistWithLectures
