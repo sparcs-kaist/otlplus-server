@@ -1,7 +1,7 @@
+import { EMajorTrack } from 'src/common/entities/EMajorTrack';
 import {
   AdditionalTrackDetails,
   GeneralTrackBasic,
-  MajorTrackDetails,
 } from 'src/common/schemaTypes/types';
 import { AddtionalTrackTypeNarrower } from '../constants/additional.track.response.dto';
 import { AdditionalTrackResponseDto } from '../dto/track/additional.response.dto';
@@ -31,7 +31,7 @@ export const toJsonGeneralTrack = (
 };
 
 export const toJsonMajorTrack = (
-  majorTrack: MajorTrackDetails,
+  majorTrack: EMajorTrack.Details,
 ): MajorTrackResponseDto => {
   return {
     id: majorTrack.id,

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { EMajorTrack } from 'src/common/entities/EMajorTrack';
 import {
   AdditionalTrackDetails,
   GeneralTrackBasic,
-  MajorTrackDetails,
 } from 'src/common/schemaTypes/types';
 import { PrismaService } from '../prisma.service';
 
@@ -12,7 +12,7 @@ export class TracksRepository {
 
   public async getAllTracks(): Promise<{
     generalTracks: GeneralTrackBasic[];
-    majorTracks: MajorTrackDetails[];
+    majorTracks: EMajorTrack.Details[];
     addtionalTracks: AdditionalTrackDetails[];
   }> {
     const generalTracks = await this.prisma.graduation_generaltrack.findMany({
