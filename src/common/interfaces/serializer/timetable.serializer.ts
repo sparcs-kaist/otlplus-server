@@ -1,10 +1,11 @@
 import { ELecture } from 'src/common/entities/ELecture';
-import { TimeTableBasic, TimeTableDetails } from '../../schemaTypes/types';
+import { ETimetable } from 'src/common/entities/ETimetabls';
+import { TimeTableBasic } from '../../schemaTypes/types';
 import { TimetableResponseDto } from '../dto/timetable/timetable.response.dto';
 import { toJsonLecture } from './lecture.serializer';
 
 export const toJsonTimetable = (
-  timetable: TimeTableDetails | TimeTableBasic,
+  timetable: ETimetable.Details | TimeTableBasic,
   lectures?: ELecture.Details[],
 ): TimetableResponseDto => {
   const lecturesList =

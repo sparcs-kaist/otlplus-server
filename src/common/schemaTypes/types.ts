@@ -2,17 +2,6 @@ import { Prisma } from '@prisma/client';
 import { ECourse } from '../entities/ECourse';
 import { ELecture } from '../entities/ELecture';
 
-export const timeTableDetails =
-  Prisma.validator<Prisma.timetable_timetableArgs>()({
-    include: {
-      timetable_timetable_lectures: {
-        include: {
-          subject_lecture: ELecture.Details,
-        },
-      },
-    },
-  });
-
 const majorTrack = Prisma.validator<Prisma.graduation_majortrackArgs>()({
   include: {
     subject_department: true,
@@ -110,9 +99,6 @@ export type ReviewDetails = Prisma.review_reviewGetPayload<
   typeof reviewDetails
 >;
 export type LectureBasic = Prisma.subject_lectureGetPayload<null>;
-export type TimeTableDetails = Prisma.timetable_timetableGetPayload<
-  typeof timeTableDetails
->;
 export type TimeTableBasic = Prisma.timetable_timetableGetPayload<null>;
 export type SemesterBasic = Prisma.subject_semesterGetPayload<null>;
 export type PlannerBasic = Prisma.planner_plannerGetPayload<null>;
