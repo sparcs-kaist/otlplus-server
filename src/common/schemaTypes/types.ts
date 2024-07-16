@@ -1,20 +1,7 @@
 import { Prisma } from '@prisma/client';
-import { ECourse } from '../entities/ECourse';
 import { ELecture } from '../entities/ELecture';
 
 export type NESTED = true;
-
-export const lectureReviews = Prisma.validator<Prisma.subject_lectureArgs>()({
-  include: {
-    review: {
-      include: {
-        course: ECourse.Details,
-        lecture: ELecture.Details,
-        review_reviewvote: true,
-      },
-    },
-  },
-});
 
 export const wishlistWithLectures =
   Prisma.validator<Prisma.timetable_wishlistArgs>()({
