@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { ELecture } from 'src/common/entities/ELecture';
-import { EPlannerItem } from 'src/common/entities/EPlannerItem';
 import {
   PlannerBodyDto,
   PlannerQueryDto,
@@ -175,11 +174,11 @@ export class PlannerRepository {
   public async getTakenPlannerItemById(
     user: session_userprofile,
     id: number,
-  ): Promise<EPlannerItem.Taken | null> {
+  ): Promise<EPlanners.EItems.Taken.Details | null> {
     const planner = await this.prisma.planner_planner.findMany({
       include: {
         planner_takenplanneritem: {
-          ...EPlannerItem.Taken,
+          ...EPlanners.EItems.Taken.Details,
         },
       },
       where: {

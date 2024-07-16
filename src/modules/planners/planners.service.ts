@@ -7,7 +7,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
-import { EPlannerItem } from 'src/common/entities/EPlannerItem';
 import { IPlanner } from 'src/common/interfaces/IPlanner';
 import {
   PlannerBodyDto,
@@ -216,7 +215,7 @@ export class PlannersService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const item: EPlannerItem.Future =
+    const item: EPlanners.EItems.Future.Extended =
       await this.PlannerRepository.createPlannerItem(
         plannerId,
         year,

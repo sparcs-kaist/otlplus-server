@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { ECourse } from '../entities/ECourse';
 import { ELecture } from '../entities/ELecture';
-import { EPlannerItem } from '../entities/EPlannerItem';
+import { EPlanners } from '../entities/EPlanners';
 import { ETrack } from '../entities/ETrack';
 
 export const plannerDetails = Prisma.validator<Prisma.planner_plannerArgs>()({
@@ -13,9 +13,9 @@ export const plannerDetails = Prisma.validator<Prisma.planner_plannerArgs>()({
     },
     graduation_generaltrack: true,
     graduation_majortrack: ETrack.Major,
-    planner_takenplanneritem: EPlannerItem.Taken,
-    planner_arbitraryplanneritem: EPlannerItem.Arbitrary,
-    planner_futureplanneritem: EPlannerItem.Future,
+    planner_takenplanneritem: EPlanners.EItems.Taken.Details,
+    planner_arbitraryplanneritem: EPlanners.EItems.Arbitrary.Extended,
+    planner_futureplanneritem: EPlanners.EItems.Future.Extended,
   },
 });
 
