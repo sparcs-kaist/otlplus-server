@@ -4,14 +4,6 @@ import { ELecture } from '../entities/ELecture';
 
 export type NESTED = true;
 
-export const reviewDetails = Prisma.validator<Prisma.review_reviewArgs>()({
-  include: {
-    course: ECourse.Details,
-    lecture: ELecture.Details,
-    review_reviewvote: true,
-  },
-});
-
 export const lectureReviews = Prisma.validator<Prisma.subject_lectureArgs>()({
   include: {
     review: {
@@ -38,9 +30,6 @@ export const wishlistWithLectures =
     },
   });
 
-export type ReviewDetails = Prisma.review_reviewGetPayload<
-  typeof reviewDetails
->;
 export type LectureBasic = Prisma.subject_lectureGetPayload<null>;
 export type TimeTableBasic = Prisma.timetable_timetableGetPayload<null>;
 export type SemesterBasic = Prisma.subject_semesterGetPayload<null>;

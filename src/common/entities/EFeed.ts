@@ -1,14 +1,14 @@
 import { Prisma } from '@prisma/client';
-import { ReviewDetails, reviewDetails } from '../schemaTypes/types';
 import { ECourse } from './ECourse';
 import { ELecture } from './ELecture';
+import { EReview } from './EReview';
 
 export namespace EFeed {
   export const FamousHumanityReviewDetails =
     Prisma.validator<Prisma.main_famoushumanityreviewdailyfeedArgs>()({
       include: {
         main_famoushumanityreviewdailyfeed_reviews: {
-          include: { review_review: { include: reviewDetails.include } },
+          include: { review_review: { include: EReview.Details.include } },
         },
       },
     });
@@ -21,7 +21,7 @@ export namespace EFeed {
       include: {
         subject_department: true,
         main_famousmajorreviewdailyfeed_reviews: {
-          include: { review_review: { include: reviewDetails.include } },
+          include: { review_review: { include: EReview.Details.include } },
         },
       },
     });
@@ -55,7 +55,7 @@ export namespace EFeed {
   export type RankedReviewDetails = Prisma.main_rankedreviewdailyfeedGetPayload<
     typeof RankedReviewDetails
   > & {
-    reviews: ReviewDetails[];
+    reviews: EReview.Details[];
   };
 
   export type FamousMajorReviewDetails =
