@@ -30,7 +30,9 @@ export class PlannerRepository {
     });
   }
 
-  public async getBasicPlannerById(id: number): Promise<EPlanners.Basic | null> {
+  public async getBasicPlannerById(
+    id: number,
+  ): Promise<EPlanners.Basic | null> {
     return await this.prisma.planner_planner.findUnique({
       where: {
         id: id,
@@ -324,7 +326,9 @@ export class PlannerRepository {
     });
   }
 
-  public async deleteArbitraryPlannerItem(target_item: EPlanners.EItems.Arbitrary.Extended) {
+  public async deleteArbitraryPlannerItem(
+    target_item: EPlanners.EItems.Arbitrary.Extended,
+  ) {
     return await this.prisma.planner_arbitraryplanneritem.delete({
       where: {
         id: target_item.id,
