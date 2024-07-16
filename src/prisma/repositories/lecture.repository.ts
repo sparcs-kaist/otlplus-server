@@ -4,7 +4,6 @@ import { ELecture } from 'src/common/entities/ELecture';
 import { ILecture } from 'src/common/interfaces/ILecture';
 import { LectureQueryDto } from 'src/common/interfaces/dto/lecture/lecture.request.dto';
 import { applyOffset, applyOrder } from 'src/common/utils/search.utils';
-import { LectureBasic } from '../../common/schemaTypes/types';
 import { groupBy } from '../../common/utils/method.utils';
 import { PrismaService } from '../prisma.service';
 import { CourseRepository } from './course.repository';
@@ -25,7 +24,7 @@ export class LectureRepository {
     });
   }
 
-  async getLectureBasicById(id: number): Promise<LectureBasic> {
+  async getLectureBasicById(id: number): Promise<ELecture.Basic> {
     return await this.prisma.subject_lecture.findUniqueOrThrow({
       where: {
         id: id,

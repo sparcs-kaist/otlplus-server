@@ -2,6 +2,8 @@ import { Prisma } from '@prisma/client';
 import { ELecture } from './ELecture';
 
 export namespace ETimetable {
+  export type Basic = Prisma.timetable_timetableGetPayload<null>;
+
   export const Details = Prisma.validator<Prisma.timetable_timetableArgs>()({
     include: {
       timetable_timetable_lectures: {

@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, PrismaClient, session_userprofile } from '@prisma/client';
 import { ELecture } from 'src/common/entities/ELecture';
-import { ETimetable } from 'src/common/entities/ETimetabls';
-import { TimeTableBasic } from '../../common/schemaTypes/types';
+import { ETimetable } from 'src/common/entities/ETimetable';
 import { PrismaService } from '../prisma.service';
 
 @Injectable()
@@ -45,7 +44,7 @@ export class TimetableRepository {
       skip?: number;
       take?: number;
     },
-  ): Promise<TimeTableBasic[]> {
+  ): Promise<ETimetable.Basic[]> {
     const skip = paginationAndSorting.skip;
     const take = paginationAndSorting.take;
     const orderBy = paginationAndSorting.orderBy;

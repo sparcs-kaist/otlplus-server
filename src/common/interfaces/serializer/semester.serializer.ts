@@ -1,8 +1,8 @@
-import { SemesterBasic } from '../../schemaTypes/types';
+import { ESemester } from 'src/common/entities/ESemester';
 import { SemesterResponseDto } from '../dto/semester/semester.response.dto';
 
 export const toJsonSemester = (
-  semester: SemesterBasic,
+  semester: ESemester.Basic,
 ): SemesterResponseDto => {
   return {
     year: semester.year,
