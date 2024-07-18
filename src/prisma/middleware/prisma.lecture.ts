@@ -123,42 +123,31 @@ export class LectureMiddleware implements IPrismaMiddleware.IPrismaMiddleware {
     commonTitle: string,
     updateType: 'title' | 'title_en',
   ) {
-    for (const lecture of lectures) {
-      const titleField =
-        updateType === 'title' ? lecture.title : lecture.title_en;
-      const updateClassField =
-        updateType === 'title' ? 'class_title' : 'class_title_en';
-      const updateCommonField =
-        updateType === 'title' ? 'common_title' : 'common_title_en';
-      if (titleField != commonTitle) {
-        const classTitle = titleField.substring(commonTitle.length);
-        await this.prisma.subject_lecture.update({
+    await Promise.all(
+      lectures.map(async (lecture) => {
+        const titleField =
+          updateType === 'title' ? lecture.title : lecture.title_en;
+        const updateClassField =
+          updateType === 'title' ? 'class_title' : 'class_title_en';
+        const updateCommonField =
+          updateType === 'title' ? 'common_title' : 'common_title_en';
+        let classTitle: string;
+        if (titleField != commonTitle) {
+          classTitle = titleField.substring(commonTitle.length);
+        } else if (lecture.class_no.length > 0) {
+          classTitle = lecture.class_no;
+        } else {
+          classTitle = 'A';
+        }
+        return await this.prisma.subject_lecture.update({
           where: { id: lecture.id },
           data: {
             [updateCommonField]: commonTitle,
             [updateClassField]: classTitle,
           },
         });
-      } else if (lecture.class_no.length > 0) {
-        const classTitle = lecture.class_no;
-        await this.prisma.subject_lecture.update({
-          where: { id: lecture.id },
-          data: {
-            [updateCommonField]: commonTitle,
-            [updateClassField]: classTitle,
-          },
-        });
-      } else {
-        const classTitle = 'A';
-        await this.prisma.subject_lecture.update({
-          where: { id: lecture.id },
-          data: {
-            [updateCommonField]: commonTitle,
-            [updateClassField]: classTitle,
-          },
-        });
-      }
-    }
+      }),
+    );
   }
   private lcsFront(lectureTitles: string[]): string {
     if (lectureTitles.length === 0) {

@@ -1,6 +1,8 @@
 import { IPrismaMiddleware } from 'src/common/interfaces/IPrismaMiddleware';
 import { PrismaService } from '../prisma.service';
-
+interface UserCount {
+  [lecture_id: number]: Set<number>;
+}
 export class TimetableMiddleware
   implements IPrismaMiddleware.IPrismaMiddleware
 {
@@ -63,21 +65,51 @@ export class TimetableMiddleware
           lecture_id: true,
         },
       });
-    const oneCountLeucters = lectureCounts
+    const oneCountLectures = lectureCounts
       .filter((count) => count._count.lecture_id === 1)
       .map((count) => count.lecture_id);
-    await this.prisma.subject_lecture.updateMany({
+    const numPeople = await this.getNumpeople(oneCountLectures);
+    Promise.all(
+      numPeople.map(async (count) => {
+        await this.prisma.subject_lecture.update({
+          where: {
+            id: count.lectureId,
+          },
+          data: {
+            num_people: count.userCount - 1,
+          },
+        });
+      }),
+    );
+    return true;
+  }
+
+  async getNumpeople(lectureIds: number[]) {
+    const timetables = await this.prisma.timetable_timetable_lectures.findMany({
       where: {
-        id: {
-          in: oneCountLeucters,
+        lecture_id: {
+          in: lectureIds,
         },
       },
-      data: {
-        num_people: {
-          decrement: 1,
-        },
+      include: {
+        timetable_timetable: true,
       },
     });
-    return true;
+    const userCount: UserCount = timetables.reduce((acc, t) => {
+      const { lecture_id, timetable_timetable } = t;
+      if (!acc[lecture_id]) {
+        acc[lecture_id] = new Set();
+      }
+      acc[lecture_id].add(timetable_timetable.user_id);
+      return acc;
+    }, {} as UserCount);
+
+    return Object.keys(userCount).map((lecture_id) => {
+      const lectureId = Number(lecture_id);
+      return {
+        lectureId: lectureId,
+        userCount: userCount[lectureId].size,
+      };
+    });
   }
 }
