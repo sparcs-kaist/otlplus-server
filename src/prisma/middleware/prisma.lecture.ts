@@ -3,31 +3,33 @@ import { IPrismaMiddleware } from 'src/common/interfaces/IPrismaMiddleware';
 import { XOR } from 'src/common/schemaTypes/types';
 import { PrismaService } from '../prisma.service';
 
-export class LectureMiddleware
-  implements IPrismaMiddleware.IPrismaMiddleware<false>
-{
+export class LectureMiddleware implements IPrismaMiddleware.IPrismaMiddleware {
   private static instance: LectureMiddleware;
+  private prisma: PrismaService;
 
-  constructor(private prisma: PrismaService) {}
+  constructor(prisma: PrismaService) {
+    this.prisma = prisma;
+  }
 
-  async execute(
-    params: Prisma.MiddlewareParams,
+  async preExecute(): Promise<boolean> {
+    return true;
+  }
+
+  async postExecute(
+    operations: IPrismaMiddleware.operationType,
+    args: any,
     result: any,
   ): Promise<boolean> {
     if (
-      params.action === 'create' ||
-      params.action === 'update' ||
-      params.action === 'upsert'
+      operations === 'create' ||
+      operations === 'update' ||
+      operations === 'upsert'
     ) {
       const t: XOR<
         Prisma.subject_lectureUpdateInput,
         Prisma.subject_lectureUncheckedUpdateInput
-      > = params.args.data;
-      if (!t) {
-        if (this._checkClassTitleUpdateRequired(result.lecture)) {
-          await this.updateClassTitle(result.lecture);
-        }
-      } else if (
+      > = args?.data;
+      if (
         !t.common_title &&
         !t.class_title &&
         !t.common_title_en &&
@@ -38,18 +40,21 @@ export class LectureMiddleware
         }
       }
 
-      if (!(params.action === 'create')) {
+      if (!(operations === 'create')) {
         //todo: cache delete
       }
     }
     return true;
   }
 
-  static getInstance(prisma: PrismaService): LectureMiddleware {
-    if (!this.instance) {
-      this.instance = new LectureMiddleware(prisma);
+  static initialize(prisma: PrismaService) {
+    if (!LectureMiddleware.instance) {
+      LectureMiddleware.instance = new LectureMiddleware(prisma);
     }
-    return this.instance;
+  }
+
+  static getInstance(): LectureMiddleware {
+    return LectureMiddleware.instance;
   }
 
   private _checkClassTitleUpdateRequired(lecture: subject_lecture) {

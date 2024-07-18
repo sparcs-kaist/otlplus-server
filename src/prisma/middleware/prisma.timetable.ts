@@ -1,62 +1,83 @@
-import { Prisma } from '@prisma/client';
 import { IPrismaMiddleware } from 'src/common/interfaces/IPrismaMiddleware';
 import { PrismaService } from '../prisma.service';
 
 export class TimetableMiddleware
-  implements IPrismaMiddleware.IPrismaMiddleware<true>
+  implements IPrismaMiddleware.IPrismaMiddleware
 {
   private static instance: TimetableMiddleware;
-  constructor(private prisma: PrismaService) {}
-  async execute(params: Prisma.MiddlewareParams): Promise<boolean> {
-    if (params.action === 'delete') {
-      const timetableId = params.args.where.id;
+  private prisma: PrismaService;
+
+  constructor(prisma: PrismaService) {
+    this.prisma = prisma;
+  }
+
+  async preExecute(
+    operations: IPrismaMiddleware.operationType,
+    args: any,
+  ): Promise<boolean> {
+    if (operations === 'delete') {
+      const timetableId = args.where.id;
       const lectures = await this.prisma.timetable_timetable_lectures.findMany({
         where: {
           timetable_id: timetableId,
         },
       });
-      for (const lecture of lectures) {
-        const res = await this.decreaseNumPeople(
-          lecture.lecture_id,
-          timetableId,
-        );
-        if (!res) throw new Error('Could not decrease num_people');
-      }
+      const res = await this.decreaseNumPeopleBatch(lectures, timetableId);
+      if (!res) throw new Error('Could not decrease num_people');
       return true;
     }
     return true;
   }
 
-  public static getInstance(
-    prisma: PrismaService,
-  ): IPrismaMiddleware.IPrismaMiddleware<false> {
-    if (!this.instance) {
-      this.instance = new TimetableMiddleware(prisma);
-    }
-    return this.instance;
+  async postExecute(): Promise<boolean> {
+    return true;
   }
 
-  private async decreaseNumPeople(lectureId: number, userId: number) {
-    const c = await this.prisma.timetable_timetable.count({
-      where: {
-        user_id: userId,
-        timetable_timetable_lectures: {
-          some: {
-            lecture_id: lectureId,
+  static initialize(prisma: PrismaService) {
+    if (!TimetableMiddleware.instance) {
+      TimetableMiddleware.instance = new TimetableMiddleware(prisma);
+    }
+  }
+
+  static getInstance(): TimetableMiddleware {
+    return TimetableMiddleware.instance;
+  }
+
+  private async decreaseNumPeopleBatch(
+    lectures: { lecture_id: number }[],
+    userId: number,
+  ) {
+    const lectureIds = lectures.map((lecture) => lecture.lecture_id);
+    const lectureCounts =
+      await this.prisma.timetable_timetable_lectures.groupBy({
+        by: ['lecture_id'],
+        where: {
+          lecture_id: {
+            in: lectureIds,
           },
+          timetable_timetable: {
+            user_id: userId,
+          },
+        },
+        _count: {
+          lecture_id: true,
+        },
+      });
+    const oneCountLeucters = lectureCounts
+      .filter((count) => count._count.lecture_id === 1)
+      .map((count) => count.lecture_id);
+    await this.prisma.subject_lecture.updateMany({
+      where: {
+        id: {
+          in: oneCountLeucters,
+        },
+      },
+      data: {
+        num_people: {
+          decrement: 1,
         },
       },
     });
-    if (c == 1) {
-      await this.prisma.subject_lecture.update({
-        where: { id: lectureId },
-        data: {
-          num_people: {
-            decrement: 1,
-          },
-        },
-      });
-    }
     return true;
   }
 }

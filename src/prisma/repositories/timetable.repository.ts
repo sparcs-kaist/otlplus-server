@@ -69,47 +69,47 @@ export class TimetableRepository {
     arrangeOrder: number,
     lectures: ELecture.Details[],
   ): Promise<ETimetable.Details> {
-    // return await this.prisma.timetable_timetable.create({
-    //   data: {
-    //     user_id: user.id,
-    //     year: year,
-    //     semester: semester,
-    //     arrange_order: arrangeOrder,
-    //     timetable_timetable_lectures: {
-    //       createMany: {
-    //         data: lectures.map((lecture) => {
-    //           return {
-    //             lecture_id: lecture.id,
-    //           };
-    //         }),
-    //       },
-    //     },
-    //   },
-    //   include: timeTableDetails.include,
-    // });
-    const timetable = await this.prisma.timetable_timetable.create({
+    return await this.prisma.timetable_timetable.create({
       data: {
         user_id: user.id,
         year: year,
         semester: semester,
         arrange_order: arrangeOrder,
-      },
-      include: timeTableDetails.include,
-    });
-    await Promise.all(
-      lectures.map(async (lecture) => {
-        await this.prisma.timetable_timetable_lectures.create({
-          data: {
-            timetable_id: timetable.id,
-            lecture_id: lecture.id,
+        timetable_timetable_lectures: {
+          createMany: {
+            data: lectures.map((lecture) => {
+              return {
+                lecture_id: lecture.id,
+              };
+            }),
           },
-        });
-      }),
-    );
-    return await this.prisma.timetable_timetable.findUniqueOrThrow({
-      where: { id: timetable.id },
+        },
+      },
       include: ETimetable.Details.include,
     });
+    // const timetable = await this.prisma.timetable_timetable.create({
+    //   data: {
+    //     user_id: user.id,
+    //     year: year,
+    //     semester: semester,
+    //     arrange_order: arrangeOrder,
+    //   },
+    //   include: timeTableDetails.include,
+    // });
+    // await Promise.all(
+    //   lectures.map(async (lecture) => {
+    //     await this.prisma.timetable_timetable_lectures.create({
+    //       data: {
+    //         timetable_id: timetable.id,
+    //         lecture_id: lecture.id,
+    //       },
+    //     });
+    //   }),
+    // );
+    // return await this.prisma.timetable_timetable.findUniqueOrThrow({
+    //   where: { id: timetable.id },
+    //   include: timeTableDetails.include,
+    // });
   }
 
   async getTimeTableBasicById(timeTableId: number) {

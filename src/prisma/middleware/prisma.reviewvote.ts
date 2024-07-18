@@ -1,37 +1,48 @@
-import { Prisma, review_reviewvote } from '@prisma/client';
+import { review_reviewvote } from '@prisma/client';
 import { IPrismaMiddleware } from 'src/common/interfaces/IPrismaMiddleware';
 import { PrismaService } from '../prisma.service';
 
 export class ReviewVoteMiddleware
-  implements IPrismaMiddleware.IPrismaMiddleware<false>
+  implements IPrismaMiddleware.IPrismaMiddleware
 {
   private static instance: ReviewVoteMiddleware;
+  private prisma: PrismaService;
 
   constructor(
-    private prisma: PrismaService, //private readonly courseRepository: CourseRepository, //private readonly lectureRepository: LectureRepository, //private readonly professorRepositiry: ProfessorRepositiry,
-  ) {}
-  async execute(
-    params: Prisma.MiddlewareParams,
+    prisma: PrismaService, //private readonly courseRepository: CourseRepository, //private readonly lectureRepository: LectureRepository, //private readonly professorRepositiry: ProfessorRepositiry,
+  ) {
+    this.prisma = prisma;
+  }
+  async preExecute(): Promise<boolean> {
+    return true;
+  }
+
+  async postExecute(
+    operatoins: IPrismaMiddleware.operationType,
+    args: any,
     result: any,
   ): Promise<boolean> {
     if (
-      params.action === 'create' ||
-      params.action === 'update' ||
-      params.action === 'upsert'
+      operatoins === 'create' ||
+      operatoins === 'update' ||
+      operatoins === 'upsert'
     ) {
       await this.reviewVoteSavedMiddleware(result);
       return true;
-    } else if (params.action === 'delete') {
+    } else if (operatoins === 'delete') {
       await this.reviewVoteDeletedMiddleware(result);
       return true;
     }
     return true;
   }
-  public static getInstance(prisma: PrismaService): ReviewVoteMiddleware {
-    if (!this.instance) {
-      this.instance = new ReviewVoteMiddleware(prisma);
+
+  static initialize(prisma: PrismaService) {
+    if (!ReviewVoteMiddleware.instance) {
+      ReviewVoteMiddleware.instance = new ReviewVoteMiddleware(prisma);
     }
-    return this.instance;
+  }
+  static getInstance(): ReviewVoteMiddleware {
+    return ReviewVoteMiddleware.instance;
   }
 
   private async reviewRecalcLike(reviewVote: review_reviewvote) {

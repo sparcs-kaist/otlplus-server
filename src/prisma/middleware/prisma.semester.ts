@@ -1,28 +1,36 @@
-import { Prisma } from '@prisma/client';
 import { IPrismaMiddleware } from 'src/common/interfaces/IPrismaMiddleware';
 import { PrismaService } from '../prisma.service';
 
-export class SemesterMiddleware
-  implements IPrismaMiddleware.IPrismaMiddleware<false>
-{
+export class SemesterMiddleware implements IPrismaMiddleware.IPrismaMiddleware {
   private static instance: SemesterMiddleware;
+  private prisma: PrismaService;
 
-  constructor(private prisma: PrismaService) {}
+  constructor(prisma: PrismaService) {
+    this.prisma = prisma;
+  }
 
-  async execute(
-    params: Prisma.MiddlewareParams,
+  async preExecute(): Promise<boolean> {
+    return true;
+  }
+
+  async postExecute(
+    operations: IPrismaMiddleware.operationType,
+    args: any,
     result: any,
   ): Promise<boolean> {
-    if (params.action === 'create') {
+    if (operations === 'create') {
       //todo: cache delete
     }
     return true;
   }
 
-  static getInstance(prisma: PrismaService): SemesterMiddleware {
-    if (!this.instance) {
-      this.instance = new SemesterMiddleware(prisma);
+  static initialize(prisma: PrismaService) {
+    if (!SemesterMiddleware.instance) {
+      SemesterMiddleware.instance = new SemesterMiddleware(prisma);
     }
-    return this.instance;
+  }
+
+  static getInstance(): SemesterMiddleware {
+    return SemesterMiddleware.instance;
   }
 }

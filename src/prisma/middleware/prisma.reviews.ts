@@ -1,5 +1,4 @@
 import {
-  Prisma,
   review_review,
   subject_course,
   subject_lecture,
@@ -9,36 +8,45 @@ import { IPrismaMiddleware } from 'src/common/interfaces/IPrismaMiddleware';
 import { IReview } from 'src/common/interfaces/IReview';
 import { PrismaService } from '../prisma.service';
 
-export class ReviewMiddleware
-  implements IPrismaMiddleware.IPrismaMiddleware<false>
-{
+export class ReviewMiddleware implements IPrismaMiddleware.IPrismaMiddleware {
   private static instance: ReviewMiddleware;
+  private prisma: PrismaService;
 
-  constructor(private prisma: PrismaService) {}
+  constructor(prisma: PrismaService) {
+    this.prisma = prisma;
+  }
 
-  async execute(
-    params: Prisma.MiddlewareParams,
+  async preExecute(): Promise<boolean> {
+    return true;
+  }
+
+  async postExecute(
+    operations: IPrismaMiddleware.operationType,
+    args: any,
     result: any,
   ): Promise<boolean> {
     if (
-      params.action === 'create' ||
-      params.action === 'update' ||
-      params.action === 'upsert'
+      operations === 'create' ||
+      operations === 'update' ||
+      operations === 'upsert'
     ) {
-      await this.reviewSavedMiddleware(result, params.action);
+      await this.reviewSavedMiddleware(result, operations);
       return true;
-    } else if (params.action === 'delete') {
+    } else if (operations === 'delete') {
       await this.reviewDeletedMiddleware(result);
       return true;
     }
     return true;
   }
 
-  public static getInstance(prisma: PrismaService): ReviewMiddleware {
-    if (!this.instance) {
-      this.instance = new ReviewMiddleware(prisma);
+  static initialize(prisma: PrismaService) {
+    if (!ReviewMiddleware.instance) {
+      ReviewMiddleware.instance = new ReviewMiddleware(prisma);
     }
-    return this.instance;
+  }
+
+  static getInstance(): ReviewMiddleware {
+    return ReviewMiddleware.instance;
   }
 
   private async lectureRecalcScore(lecture: subject_lecture) {

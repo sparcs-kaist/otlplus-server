@@ -473,4 +473,14 @@ export class CourseRepository {
       courseUser.latest_read_datetime
     );
   }
+
+  // async testCourse() {
+  //   const test = await this.prisma.subject_course.findFirst({
+  //     where: {
+  //       id: 3,
+  //     },
+  //   });
+  //   console.log(`return value of testCourse find ${test}`);
+  //   return test;
+  // }
 }

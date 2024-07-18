@@ -1,27 +1,35 @@
-import { Prisma, review_review, subject_lecture } from '@prisma/client';
+import { review_review, subject_lecture } from '@prisma/client';
 import { IPrismaMiddleware } from 'src/common/interfaces/IPrismaMiddleware';
 import { IReview } from 'src/common/interfaces/IReview';
 import { PrismaService } from '../prisma.service';
 
 export class LectureProfessorsMiddleware
-  implements IPrismaMiddleware.IPrismaMiddleware<false>
+  implements IPrismaMiddleware.IPrismaMiddleware
 {
   private static instance: LectureProfessorsMiddleware;
+  private prisma: PrismaService;
 
-  constructor(private prisma: PrismaService) {}
+  constructor(prisma: PrismaService) {
+    this.prisma = prisma;
+  }
 
-  async execute(
-    params: Prisma.MiddlewareParams,
+  async preExecute(): Promise<boolean> {
+    return true;
+  }
+
+  async postExecute(
+    operations: IPrismaMiddleware.operationType,
+    args: any,
     result: any,
   ): Promise<boolean> {
-    if (params.action === 'create') {
+    if (operations === 'create') {
       const lectureId = result.lecture_id;
       const lecture = await this.prisma.subject_lecture.findUniqueOrThrow({
         where: { id: lectureId },
       });
       await this.lectureRecalcScore(lecture);
       return true;
-    } else if (params.action === 'delete' || params.action === 'deleteMany') {
+    } else if (operations === 'delete' || operations === 'deleteMany') {
       const lectureId = result.lecture_id;
       const lecture = await this.prisma.subject_lecture.findUniqueOrThrow({
         where: { id: lectureId },
@@ -32,11 +40,16 @@ export class LectureProfessorsMiddleware
     return true;
   }
 
-  static getInstance(prisma: PrismaService): LectureProfessorsMiddleware {
-    if (!this.instance) {
-      this.instance = new LectureProfessorsMiddleware(prisma);
+  static initialize(prisma: PrismaService) {
+    if (!LectureProfessorsMiddleware.instance) {
+      LectureProfessorsMiddleware.instance = new LectureProfessorsMiddleware(
+        prisma,
+      );
     }
-    return this.instance;
+  }
+
+  static getInstance(): LectureProfessorsMiddleware {
+    return LectureProfessorsMiddleware.instance;
   }
 
   private async lectureRecalcScore(lecture: subject_lecture) {

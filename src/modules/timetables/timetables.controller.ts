@@ -8,6 +8,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
+import { Public } from 'src/common/decorators/skip-auth.decorator';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import {
   AddLectureDto,
@@ -59,11 +60,31 @@ export class TimetablesController {
     return null;
   }
 
+  // @Post()
+  // async createTimetable(
+  //   @Body() timeTableBody: TimetableCreateDto,
+  //   @GetUser() user: session_userprofile,
+  // ) {
+  //   const timeTable = await this.timetablesService.createTimetable(
+  //     timeTableBody,
+  //     user,
+  //   );
+  //   return toJsonTimetable(timeTable);
+  // }
+  @Public()
   @Post()
-  async createTimetable(
-    @Body() timeTableBody: TimetableCreateDto,
-    @GetUser() user: session_userprofile,
-  ) {
+  async createTimetable(@Body() timeTableBody: TimetableCreateDto) {
+    const user: session_userprofile = {
+      id: 8693,
+      student_id: '20200377',
+      sid: '1',
+      department_id: 1,
+      email: 'test',
+      date_joined: new Date(),
+      first_name: 'ji',
+      last_name: 'ung',
+      refresh_token: null,
+    };
     const timeTable = await this.timetablesService.createTimetable(
       timeTableBody,
       user,

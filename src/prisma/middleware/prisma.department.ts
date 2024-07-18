@@ -1,28 +1,38 @@
-import { Prisma } from '@prisma/client';
 import { IPrismaMiddleware } from 'src/common/interfaces/IPrismaMiddleware';
 import { PrismaService } from '../prisma.service';
 
 export class DepartmentMiddleware
-  implements IPrismaMiddleware.IPrismaMiddleware<false>
+  implements IPrismaMiddleware.IPrismaMiddleware
 {
   private static instance: DepartmentMiddleware;
+  private prisma: PrismaService;
 
-  constructor(private prisma: PrismaService) {}
+  constructor(prisma: PrismaService) {
+    this.prisma = prisma;
+  }
 
-  async execute(
-    params: Prisma.MiddlewareParams,
+  async preExecute(): Promise<boolean> {
+    return true;
+  }
+
+  async postExecute(
+    operations: IPrismaMiddleware.operationType,
+    args: any,
     result: any,
   ): Promise<boolean> {
-    if (params.action === 'create') {
+    if (operations === 'create') {
       //todo: cache delete
     }
     return true;
   }
 
-  static getInstance(prisma: PrismaService): DepartmentMiddleware {
-    if (!this.instance) {
-      this.instance = new DepartmentMiddleware(prisma);
+  static initialize(prisma: PrismaService) {
+    if (!DepartmentMiddleware.instance) {
+      DepartmentMiddleware.instance = new DepartmentMiddleware(prisma);
     }
-    return this.instance;
+  }
+
+  static getInstance(): DepartmentMiddleware {
+    return DepartmentMiddleware.instance;
   }
 }

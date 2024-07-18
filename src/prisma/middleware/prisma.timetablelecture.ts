@@ -1,17 +1,23 @@
-import { Prisma } from '@prisma/client';
 import { IPrismaMiddleware } from 'src/common/interfaces/IPrismaMiddleware';
 import { PrismaService } from '../prisma.service';
 
 export class TimetableLectureMiddleware
-  implements IPrismaMiddleware.IPrismaMiddleware<true>
+  implements IPrismaMiddleware.IPrismaMiddleware
 {
   private static instance: TimetableLectureMiddleware;
+  private prisma: PrismaService;
 
-  constructor(private prisma: PrismaService) {}
-  async execute(params: Prisma.MiddlewareParams): Promise<boolean> {
-    if (params.action === 'create') {
-      const timetableId = params.args.data.timetable_id;
-      const lectureId = params.args.data.lecture_id;
+  constructor(prisma: PrismaService) {
+    this.prisma = prisma;
+  }
+
+  async preExecute(
+    operations: IPrismaMiddleware.operationType,
+    args: any,
+  ): Promise<boolean> {
+    if (operations === 'create') {
+      const timetableId = args?.data?.timetable_id;
+      const lectureId = args?.data?.lecture_id;
       const userId: number | undefined = (
         await this.prisma.timetable_timetable.findUnique({
           where: { id: timetableId },
@@ -24,9 +30,11 @@ export class TimetableLectureMiddleware
         throw new Error('Could not decrease num_people');
       }
       throw new Error("can't find user");
-    } else if (params.action === 'delete') {
-      const timetableId = params.args.where.timetable_id;
-      const lectureId = params.args.where.lecture_id;
+    } else if (operations === 'createMany') {
+      return true;
+    } else if (operations === 'delete') {
+      const timetableId = args?.where?.timetable_id; // todo : args에 where이 들거가나?
+      const lectureId = args?.where?.lecture_id;
       const userId: number | undefined = (
         await this.prisma.timetable_timetable.findUnique({
           where: { id: timetableId },
@@ -39,8 +47,8 @@ export class TimetableLectureMiddleware
         throw new Error('Could not decrease num_people');
       }
       throw new Error("can't find user");
-    } else if (params.action === 'deleteMany') {
-      const timetableId = params.args.where.timetable_id;
+    } else if (operations === 'deleteMany') {
+      const timetableId = args?.where?.timetable_id;
       const lectures = await this.prisma.timetable_timetable_lectures.findMany({
         where: {
           timetable_id: timetableId,
@@ -53,23 +61,28 @@ export class TimetableLectureMiddleware
         })
       )?.user_id;
       if (userId !== undefined) {
-        for (const lecture of lectures) {
-          const res = await this.decreaseNumPeople(lecture.lecture_id, userId);
-          if (!res) throw new Error('Could not decrease num_people');
-        }
+        const res = await this.decreaseNumPeopleBatch(lectures, userId);
+        if (!res) throw new Error('Could not decrease num_people');
         return true;
       }
     }
     return true;
   }
 
-  public static getInstance(
-    prisma: PrismaService,
-  ): IPrismaMiddleware.IPrismaMiddleware<false> {
-    if (!this.instance) {
-      this.instance = new TimetableLectureMiddleware(prisma);
+  async postExecute(): Promise<boolean> {
+    return true;
+  }
+
+  static initialize(prisma: PrismaService) {
+    if (!TimetableLectureMiddleware.instance) {
+      TimetableLectureMiddleware.instance = new TimetableLectureMiddleware(
+        prisma,
+      );
     }
-    return this.instance;
+  }
+
+  static getInstance(): TimetableLectureMiddleware {
+    return TimetableLectureMiddleware.instance;
   }
 
   private async increaseNumPeople(lectureId: number, userId: number) {
@@ -116,6 +129,44 @@ export class TimetableLectureMiddleware
         },
       });
     }
+    return true;
+  }
+
+  private async decreaseNumPeopleBatch(
+    lectures: { lecture_id: number }[],
+    userId: number,
+  ) {
+    const lectureIds = lectures.map((lecture) => lecture.lecture_id);
+    const lectureCounts =
+      await this.prisma.timetable_timetable_lectures.groupBy({
+        by: ['lecture_id'],
+        where: {
+          lecture_id: {
+            in: lectureIds,
+          },
+          timetable_timetable: {
+            user_id: userId,
+          },
+        },
+        _count: {
+          lecture_id: true,
+        },
+      });
+    const oneCountLeucters = lectureCounts
+      .filter((count) => count._count.lecture_id === 1)
+      .map((count) => count.lecture_id);
+    await this.prisma.subject_lecture.updateMany({
+      where: {
+        id: {
+          in: oneCountLeucters,
+        },
+      },
+      data: {
+        num_people: {
+          decrement: 1,
+        },
+      },
+    });
     return true;
   }
 }

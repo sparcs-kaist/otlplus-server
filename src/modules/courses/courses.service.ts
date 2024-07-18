@@ -139,4 +139,8 @@ export class CoursesService {
   async readCourse(userId: number, courseId: number) {
     await this.courseRepository.readCourse(userId, courseId);
   }
+
+  // async testCourse(){
+  //   return await this.courseRepository.testCourse();
+  // }
 }
