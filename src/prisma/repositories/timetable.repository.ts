@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, PrismaClient, session_userprofile } from '@prisma/client';
-import { ETimetable } from 'src/common/entities/ETimetabls';
 import { ELecture } from 'src/common/entities/ELecture';
 import { ETimetable } from 'src/common/entities/ETimetable';
 import { PrismaService } from '../prisma.service';
