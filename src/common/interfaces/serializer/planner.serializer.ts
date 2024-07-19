@@ -1,4 +1,4 @@
-import { PlannerDetails } from 'src/common/schemaTypes/types';
+import { EPlanners } from 'src/common/entities/EPlanners';
 import { PlannerResponseDto } from '../dto/planner/planner.response.dto';
 import {
   toJsonArbitraryItem,
@@ -11,7 +11,9 @@ import {
   toJsonMajorTrack,
 } from './track.serializer';
 
-export const toJsonPlanner = (planner: PlannerDetails): PlannerResponseDto => {
+export const toJsonPlanner = (
+  planner: EPlanners.Details,
+): PlannerResponseDto => {
   return {
     id: planner.id,
     start_year: planner.start_year,

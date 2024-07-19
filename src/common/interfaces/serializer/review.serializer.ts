@@ -1,12 +1,12 @@
 import { session_userprofile } from '@prisma/client';
+import { EReview } from 'src/common/entities/EReview';
 import { getRepresentativeLecture } from 'src/common/utils/lecture.utils';
-import { ReviewDetails } from '../../schemaTypes/types';
 import { ReviewResponseDto } from './../dto/reviews/review.response.dto';
 import { toJsonCourse } from './course.serializer';
 import { toJsonLecture } from './lecture.serializer';
 
 export const toJsonReview = (
-  review: ReviewDetails,
+  review: EReview.Details,
   user?: session_userprofile,
 ): ReviewResponseDto => {
   const representativeLecture = getRepresentativeLecture(review.course.lecture);

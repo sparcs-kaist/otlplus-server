@@ -1,8 +1,4 @@
-import {
-  AdditionalTrackDetails,
-  GeneralTrackBasic,
-  MajorTrackDetails,
-} from 'src/common/schemaTypes/types';
+import { ETrack } from 'src/common/entities/ETrack';
 import { AddtionalTrackTypeNarrower } from '../constants/additional.track.response.dto';
 import { AdditionalTrackResponseDto } from '../dto/track/additional.response.dto';
 import { GeneralTrackResponseDto } from '../dto/track/general.response.dto';
@@ -10,7 +6,7 @@ import { MajorTrackResponseDto } from '../dto/track/major.response.dto';
 import { toJsonDepartment } from './department.serializer';
 
 export const toJsonGeneralTrack = (
-  generalTrack: GeneralTrackBasic,
+  generalTrack: ETrack.General,
 ): GeneralTrackResponseDto => {
   return {
     id: generalTrack.id,
@@ -31,7 +27,7 @@ export const toJsonGeneralTrack = (
 };
 
 export const toJsonMajorTrack = (
-  majorTrack: MajorTrackDetails,
+  majorTrack: ETrack.Major,
 ): MajorTrackResponseDto => {
   return {
     id: majorTrack.id,
@@ -45,7 +41,7 @@ export const toJsonMajorTrack = (
 };
 
 export const toJsonAdditionalTrack = (
-  additionalTrack: AdditionalTrackDetails,
+  additionalTrack: ETrack.Additional,
 ): AdditionalTrackResponseDto => {
   const type = AddtionalTrackTypeNarrower(additionalTrack.type);
 

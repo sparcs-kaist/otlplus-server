@@ -13,9 +13,8 @@ import { PrismaService } from '../prisma.service';
 export class ReviewMiddleware {
   constructor(
     @Inject(forwardRef(() => PrismaService))
-    private readonly prisma: PrismaService, //private readonly courseRepository: CourseRepository, //private readonly lectureRepository: LectureRepository,
-  ) //private readonly professorRepositiry: ProfessorRepositiry,
-  {}
+    private readonly prisma: PrismaService,
+  ) {}
 
   async lectureRecalcScore(lecture: subject_lecture) {
     const professors = await this.prisma.subject_professor.findMany({

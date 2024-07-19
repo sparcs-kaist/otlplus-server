@@ -1,3 +1,3 @@
-import { SemesterBasic } from '../../../schemaTypes/types';
+import { ESemester } from 'src/common/entities/ESemester';
 
-export type SemesterResponseDto = Omit<SemesterBasic, 'id'>;
+export type SemesterResponseDto = Omit<ESemester.Basic, 'id'>;

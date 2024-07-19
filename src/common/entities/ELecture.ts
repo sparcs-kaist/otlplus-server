@@ -21,4 +21,10 @@ export namespace ELecture {
     },
   });
   export type Details = Prisma.subject_lectureGetPayload<typeof Details>;
+
+  export function isDetails(
+    lecture: ELecture.Extended | ELecture.Details,
+  ): lecture is ELecture.Details {
+    return 'subject_classtime' in lecture && 'subject_examtime' in lecture;
+  }
 }

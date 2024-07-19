@@ -1,13 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, PrismaClient, session_userprofile } from '@prisma/client';
-import {
-  LectureDetails,
-  TimeTableBasic,
-  TimeTableDetails,
-  timeTableDetails,
-} from '../../common/schemaTypes/types';
+import { ELecture } from 'src/common/entities/ELecture';
+import { ETimetable } from 'src/common/entities/ETimetable';
 import { PrismaService } from '../prisma.service';
-import { ETimetable } from 'src/common/entities/ETimetabls';
 
 @Injectable()
 export class TimetableRepository {
@@ -22,13 +17,13 @@ export class TimetableRepository {
       skip?: number;
       take?: number;
     },
-  ): Promise<TimeTableDetails[]> {
+  ): Promise<ETimetable.Details[]> {
     const skip = paginationAndSorting?.skip;
     const take = paginationAndSorting?.take;
     const orderBy = paginationAndSorting?.orderBy;
 
     return await this.prisma.timetable_timetable.findMany({
-      include: timeTableDetails.include,
+      include: ETimetable.Details.include,
       where: {
         year: year ?? undefined,
         semester: semester ?? undefined,
@@ -49,7 +44,7 @@ export class TimetableRepository {
       skip?: number;
       take?: number;
     },
-  ): Promise<TimeTableBasic[]> {
+  ): Promise<ETimetable.Basic[]> {
     const skip = paginationAndSorting.skip;
     const take = paginationAndSorting.take;
     const orderBy = paginationAndSorting.orderBy;
@@ -71,8 +66,8 @@ export class TimetableRepository {
     year: number,
     semester: number,
     arrangeOrder: number,
-    lectures: LectureDetails[],
-  ): Promise<TimeTableDetails> {
+    lectures: ELecture.Details[],
+  ): Promise<ETimetable.Details> {
     return await this.prisma.timetable_timetable.create({
       data: {
         user_id: user.id,
@@ -89,7 +84,7 @@ export class TimetableRepository {
           },
         },
       },
-      include: timeTableDetails.include,
+      include: ETimetable.Details.include,
     });
   }
 
@@ -110,9 +105,9 @@ export class TimetableRepository {
     });
   }
 
-  async getTimeTableById(timeTableId: number): Promise<TimeTableDetails> {
+  async getTimeTableById(timeTableId: number): Promise<ETimetable.Details> {
     return await this.prisma.timetable_timetable.findUniqueOrThrow({
-      include: timeTableDetails.include,
+      include: ETimetable.Details.include,
       where: {
         id: timeTableId,
       },
