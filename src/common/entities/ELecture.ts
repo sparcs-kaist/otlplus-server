@@ -21,6 +21,7 @@ export namespace ELecture {
     typeof WithClasstime
   >;
 
+  // TODO: usage of UserTaken seems to be equal to WithClasstime. Check if it's necessary.
   export const UserTaken = Prisma.validator<Prisma.subject_lectureArgs>()({
     include: {
       subject_classtime: true,
