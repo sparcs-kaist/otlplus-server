@@ -1,11 +1,5 @@
 import { IsString } from 'class-validator';
-import { DepartmentResponseDto } from './dto/department/department.response.dto';
 import { IDepartment } from './IDepartment';
-import {
-  CourseResponseDto,
-  CourseResponseDtoNested,
-} from './dto/course/course.response.dto';
-import { ProfessorResponseDto } from './dto/professor/professor.response.dto';
 import { IProfessor } from './IProfessor';
 
 export namespace ICourse {
@@ -29,7 +23,7 @@ export namespace ICourse {
     title_no_space: string;
   }
 
-  export interface Response {
+  export interface ForPlanner {
     id: number;
     old_code: string;
     department: IDepartment.Basic;
@@ -45,9 +39,9 @@ export namespace ICourse {
     num_labs: number;
   }
 
-  export interface DetailResponse extends Response {
-    related_courses_prior?: Response[];
-    related_courses_posterior?: Response[];
+  export interface DetailForPlanner extends ForPlanner {
+    related_courses_prior?: ForPlanner[];
+    related_courses_posterior?: ForPlanner[];
     professors?: IProfessor.Basic[];
     grade?: number;
     load?: number;

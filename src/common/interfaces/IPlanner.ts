@@ -1,9 +1,9 @@
-import { ICourse } from './ICourse';
-import { ILecture } from './ILecture';
-import { IDepartment } from './IDepartment';
-import { PlannerItemType, PlannerItemTypeEnum } from './constants/planner';
 import { Type } from 'class-transformer';
-import { IsIn, IsInt, IsNumber, IsString } from 'class-validator';
+import { IsIn, IsInt, IsString } from 'class-validator';
+import { ICourse } from './ICourse';
+import { IDepartment } from './IDepartment';
+import { ILecture } from './ILecture';
+import { PlannerItemType, PlannerItemTypeEnum } from './constants/planner';
 import { DepartmentResponseDto } from './dto/department/department.response.dto';
 
 export namespace IPlanner {
@@ -85,12 +85,12 @@ export namespace IPlanner {
     export interface Future extends Basic {
       year: number;
       semester: number;
-      course: ICourse.Response;
+      course: ICourse.ForPlanner;
     }
 
     export interface Taken extends Basic {
       lecture: ILecture.Response;
-      course: ICourse.Response;
+      course: ICourse.ForPlanner;
     }
 
     export interface Arbitrary extends Basic {

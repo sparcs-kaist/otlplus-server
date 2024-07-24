@@ -24,7 +24,7 @@ export const toJsonReview = (
     isLiked = false;
   }
 
-  const courseResult = toJsonCourse<true>(
+  const courseResult = toJsonCourse(
     review.course,
     representativeLecture,
     professorRaw,

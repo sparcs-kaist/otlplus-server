@@ -4,10 +4,9 @@ import {
   subject_professor,
 } from '@prisma/client';
 import { ECourse } from 'src/common/entities/ECourse';
-import { NESTED } from '../../schemaTypes/types';
+import { NESTED } from 'src/common/schemaTypes/types';
 import { applyOrder } from '../../utils/search.utils';
 import { ICourse } from '../ICourse';
-import { CourseResponseDtoNested } from '../dto/course/course.response.dto';
 import { ProfessorResponseDto } from '../dto/professor/professor.response.dto';
 import { toJsonDepartment } from './department.serializer';
 import { toJsonProfessor } from './professor.serializer';
@@ -37,20 +36,20 @@ export function toJsonCourseBasic(course: subject_course): ICourse.Basic {
 export function toJsonCourseRelated(course: subject_course): ICourse.Related {
   return {
     ...toJsonCourseBasic(course),
-    related_courses_prior: [],
+    related_courses_prior: [], // TODO: related courses 비어있는게 맞는지 확인
     related_courses_posterior: [],
   };
 }
 
-export function toJsonCourse<T>(
+export function toJsonCourse<T extends boolean>(
   course: T extends NESTED
     ? Omit<ECourse.Details, 'subject_course_professors'>
     : ECourse.Details,
   lecture: subject_lecture,
   professor: subject_professor[],
-  nested: T extends NESTED ? true : false,
-): CourseResponseDtoNested {
-  let result = {
+  nested: T,
+): T extends NESTED ? ICourse.ForPlanner : ICourse.DetailForPlanner {
+  let result: ICourse.ForPlanner = {
     id: course.id,
     old_code: course.old_code,
     department: toJsonDepartment(course.subject_department, true),
