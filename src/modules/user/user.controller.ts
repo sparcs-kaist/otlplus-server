@@ -1,13 +1,13 @@
 import { Controller, Get, HttpException, Param, Query } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
-import { CourseResponseDtoNested } from 'src/common/interfaces/dto/course/course.response.dto';
+import { ICourse } from 'src/common/interfaces';
 import {
   ReviewLikedQueryDto,
   UserTakenCoursesQueryDto,
 } from 'src/common/interfaces/dto/user/user.request.dto';
-import { UserService } from './user.service';
 import { ReviewResponseDto } from '../../common/interfaces/dto/reviews/review.response.dto';
+import { UserService } from './user.service';
 
 @Controller('api/users')
 export class UserController {
@@ -18,7 +18,7 @@ export class UserController {
     @Query() query: UserTakenCoursesQueryDto,
     @Param('user_id') userId: number,
     @GetUser() user: session_userprofile,
-  ): Promise<(CourseResponseDtoNested & { userspecific_is_read: boolean })[]> {
+  ): Promise<ICourse.DetailForPlannerWithIsRead[]> {
     if (userId === user.id) {
       return await this.userService.getUserTakenCourses(query, user);
     } else {

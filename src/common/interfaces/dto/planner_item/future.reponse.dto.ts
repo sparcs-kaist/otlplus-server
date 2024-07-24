@@ -1,4 +1,4 @@
-import { CourseResponseDto } from '../course/course.response.dto';
+import { ICourse } from '../../ICourse';
 
 export interface FuturePlannerItemResponseDto {
   id: number;
@@ -6,5 +6,5 @@ export interface FuturePlannerItemResponseDto {
   is_excluded: boolean;
   year: number;
   semester: number;
-  course: CourseResponseDto;
+  course: ICourse.ForPlanner;
 }

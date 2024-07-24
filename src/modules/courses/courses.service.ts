@@ -5,7 +5,6 @@ import { ICourse } from 'src/common/interfaces';
 import { CourseReviewQueryDto } from 'src/common/interfaces/dto/course/course.review.request.dto';
 import { toJsonLecture } from 'src/common/interfaces/serializer/lecture.serializer';
 import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
-import { CourseResponseDtoNested } from '../../common/interfaces/dto/course/course.response.dto';
 import { toJsonCourse } from '../../common/interfaces/serializer/course.serializer';
 import { getRepresentativeLecture } from '../../common/utils/lecture.utils';
 import { CourseRepository } from './../../prisma/repositories/course.repository';
@@ -17,7 +16,7 @@ export class CoursesService {
   public async getCourses(
     query: ICourse.Query,
     user: session_userprofile,
-  ): Promise<(CourseResponseDtoNested & { userspecific_is_read: boolean })[]> {
+  ): Promise<ICourse.DetailForPlannerWithIsRead[]> {
     const queryResult = await this.courseRepository.getCourses(query);
     return Promise.all(
       queryResult.map(async (course) => {

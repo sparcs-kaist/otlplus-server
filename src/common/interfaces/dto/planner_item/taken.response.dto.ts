@@ -1,4 +1,4 @@
-import { CourseResponseDto } from '../course/course.response.dto';
+import { ICourse } from '../../ICourse';
 import { LectureResponseDto } from '../lecture/lecture.response.dto';
 
 export interface TakenPlannerItemResponseDto {
@@ -6,5 +6,5 @@ export interface TakenPlannerItemResponseDto {
   item_type: 'TAKEN';
   is_excluded: boolean;
   lecture: LectureResponseDto;
-  course: CourseResponseDto;
+  course: ICourse.ForPlanner;
 }

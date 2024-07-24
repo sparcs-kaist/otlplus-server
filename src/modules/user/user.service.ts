@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
-import { CourseResponseDtoNested } from 'src/common/interfaces/dto/course/course.response.dto';
+import { ICourse } from 'src/common/interfaces';
 import {
   ReviewLikedQueryDto,
   UserTakenCoursesQueryDto,
@@ -8,6 +8,7 @@ import {
 import { ProfileDto } from 'src/common/interfaces/dto/user/user.response.dto';
 import { toJsonCourse } from 'src/common/interfaces/serializer/course.serializer';
 import { ResearchLecture } from '../../common/interfaces/constants/lecture';
+import { ReviewResponseDto } from '../../common/interfaces/dto/reviews/review.response.dto';
 import { toJsonDepartment } from '../../common/interfaces/serializer/department.serializer';
 import { toJsonLecture } from '../../common/interfaces/serializer/lecture.serializer';
 import { toJsonReview } from '../../common/interfaces/serializer/review.serializer';
@@ -17,7 +18,6 @@ import { LectureRepository } from '../../prisma/repositories/lecture.repository'
 import { ReviewsRepository } from '../../prisma/repositories/review.repository';
 import { UserRepository } from '../../prisma/repositories/user.repository';
 import { CourseRepository } from './../../prisma/repositories/course.repository';
-import { ReviewResponseDto } from '../../common/interfaces/dto/reviews/review.response.dto';
 
 @Injectable()
 export class UserService {
@@ -94,7 +94,7 @@ export class UserService {
   async getUserTakenCourses(
     query: UserTakenCoursesQueryDto,
     user: session_userprofile,
-  ): Promise<(CourseResponseDtoNested & { userspecific_is_read: boolean })[]> {
+  ): Promise<ICourse.DetailForPlannerWithIsRead[]> {
     const DEFAULT_ORDER = ['old_code'];
     const takenLectures = await this.lectureRepository.getTakenLectures(user);
     const takenLecturesId = takenLectures.map((lecture) => lecture.id);

@@ -50,6 +50,10 @@ export namespace ICourse {
     speech?: number;
   }
 
+  export interface DetailForPlannerWithIsRead extends DetailForPlanner {
+    userspecific_is_read: boolean;
+  }
+
   export interface Related extends Basic {
     related_courses_prior: Basic[];
     related_courses_posterior: Basic[];

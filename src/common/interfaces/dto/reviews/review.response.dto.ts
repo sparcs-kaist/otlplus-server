@@ -1,10 +1,10 @@
-import { CourseResponseDto } from '../course/course.response.dto';
+import { ICourse } from '../../ICourse';
 import { LectureResponseDto } from '../lecture/lecture.response.dto';
 
 export interface ReviewResponseDto {
   id: number;
 
-  course: CourseResponseDto;
+  course: ICourse.ForPlanner;
 
   lecture: LectureResponseDto;
 
