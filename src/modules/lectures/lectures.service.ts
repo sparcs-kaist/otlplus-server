@@ -109,7 +109,7 @@ export class LecturesService {
     return await this.LectureRepository.getLectureByIds(ids);
   }
 
-  async getLectureAutocomplete(dto: ILecture.AutocompleteDto) {
+  async getLectureAutocomplete(dto: ILecture.AutocompleteQuery) {
     const candidate = await this.LectureRepository.getLectureAutocomplete(dto);
     if (!candidate) return dto.keyword;
     return this.findAutocompleteFromCandidate(candidate, dto.keyword);

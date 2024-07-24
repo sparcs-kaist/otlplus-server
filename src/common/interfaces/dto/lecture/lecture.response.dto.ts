@@ -1,5 +1,4 @@
-import { ClasstimeDto } from './classtime.response.dto';
-import { ExamtimeDto } from './examtime.response.dto';
+import { ILecture } from '../../ILecture';
 
 export interface NestedLectureResponseDto {
   id: number;
@@ -35,6 +34,6 @@ export interface LectureResponseDto extends NestedLectureResponseDto {
   grade?: number;
   load?: number;
   speech?: number;
-  classtimes?: ClasstimeDto;
-  examtimes?: ExamtimeDto;
+  classtimes?: ILecture.Classtime;
+  examtimes?: ILecture.ExamTime;
 }

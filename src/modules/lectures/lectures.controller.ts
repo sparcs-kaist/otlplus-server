@@ -19,7 +19,7 @@ export class LecturesController {
 
   @Public()
   @Get('autocomplete')
-  async getLectureAutocomplete(@Query() query: ILecture.AutocompleteDto) {
+  async getLectureAutocomplete(@Query() query: ILecture.AutocompleteQuery) {
     return await this.LectureService.getLectureAutocomplete(query);
   }
 

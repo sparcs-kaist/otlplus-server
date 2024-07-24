@@ -266,7 +266,7 @@ export class LectureRepository {
     year,
     semester,
     keyword,
-  }: ILecture.AutocompleteDto): Promise<ELecture.Extended | null> {
+  }: ILecture.AutocompleteQuery): Promise<ELecture.Extended | null> {
     const candidate = await this.prisma.subject_lecture.findFirst({
       where: {
         year,

@@ -1,22 +1,28 @@
 import { Type } from 'class-transformer';
 import { IsInt, IsString } from 'class-validator';
-import { ClasstimeDto } from './dto/lecture/classtime.response.dto';
-import { ExamtimeDto } from './dto/lecture/examtime.response.dto';
 import { ITimetable } from './ITimetable';
 
 export namespace ILecture {
-  export class AutocompleteDto {
-    @IsInt()
-    @Type(() => Number)
-    year!: number;
-
-    @IsInt()
-    @Type(() => Number)
-    semester!: number;
-
-    @IsString()
-    keyword!: string;
+  export interface Classtime {
+    building_code: string;
+    room_name: string;
+    classroom: string;
+    classroom_en: string;
+    classroom_short: string;
+    classroom_short_en: string;
+    day: number;
+    begin: number;
+    end: number;
   }
+
+  export interface ExamTime {
+    day: number;
+    str: string;
+    str_en: string;
+    begin: number;
+    end: number;
+  }
+
   export interface Basic {
     id: number;
     code: string;
@@ -96,7 +102,20 @@ export namespace ILecture {
     grade?: number;
     load?: number;
     speech?: number;
-    classtimes?: ClasstimeDto;
-    examtimes?: ExamtimeDto;
+    classtimes?: Classtime;
+    examtimes?: ExamTime;
+  }
+
+  export class AutocompleteQuery {
+    @IsInt()
+    @Type(() => Number)
+    year!: number;
+
+    @IsInt()
+    @Type(() => Number)
+    semester!: number;
+
+    @IsString()
+    keyword!: string;
   }
 }
