@@ -6,5 +6,5 @@ export interface FuturePlannerItemResponseDto {
   is_excluded: boolean;
   year: number;
   semester: number;
-  course: ICourse.ForPlanner;
+  course: ICourse.Basic;
 }

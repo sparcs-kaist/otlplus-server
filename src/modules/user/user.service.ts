@@ -97,7 +97,7 @@ export class UserService {
   async getUserTakenCourses(
     query: UserTakenCoursesQueryDto,
     user: session_userprofile,
-  ): Promise<ICourse.DetailForPlannerWithIsRead[]> {
+  ): Promise<ICourse.DetailWithIsRead[]> {
     const DEFAULT_ORDER = ['old_code'];
     const takenLectures = await this.lectureRepository.getTakenLectures(user);
     const takenLecturesId = takenLectures.map((lecture) => lecture.id);

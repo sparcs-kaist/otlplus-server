@@ -6,5 +6,5 @@ export interface TakenPlannerItemResponseDto {
   item_type: 'TAKEN';
   is_excluded: boolean;
   lecture: LectureResponseDto;
-  course: ICourse.ForPlanner;
+  course: ICourse.Basic;
 }

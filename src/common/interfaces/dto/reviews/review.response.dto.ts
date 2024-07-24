@@ -4,7 +4,7 @@ import { LectureResponseDto } from '../lecture/lecture.response.dto';
 export interface ReviewResponseDto {
   id: number;
 
-  course: ICourse.ForPlanner;
+  course: ICourse.Basic;
 
   lecture: LectureResponseDto;
 

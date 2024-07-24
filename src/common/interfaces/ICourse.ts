@@ -8,6 +8,35 @@ export namespace ICourse {
   export interface Basic {
     id: number;
     old_code: string;
+    department: IDepartment.Basic;
+    type: string;
+    type_en: string;
+    title: string;
+    title_en: string;
+    summary: string;
+    review_total_weight: number;
+    credit: number;
+    credit_au: number;
+    num_classes: number;
+    num_labs: number;
+  }
+
+  export interface Detail extends Basic {
+    related_courses_prior?: Basic[];
+    related_courses_posterior?: Basic[];
+    professors?: IProfessor.Basic[];
+    grade?: number;
+    load?: number;
+    speech?: number;
+  }
+
+  export interface DetailWithIsRead extends Detail {
+    userspecific_is_read: boolean;
+  }
+
+  export interface FeedBasic {
+    id: number;
+    old_code: string;
     department_id: number;
     type: string;
     type_en: string;
@@ -25,38 +54,9 @@ export namespace ICourse {
     title_no_space: string;
   }
 
-  export interface ForPlanner {
-    id: number;
-    old_code: string;
-    department: IDepartment.Basic;
-    type: string;
-    type_en: string;
-    title: string;
-    title_en: string;
-    summary: string;
-    review_total_weight: number;
-    credit: number;
-    credit_au: number;
-    num_classes: number;
-    num_labs: number;
-  }
-
-  export interface DetailForPlanner extends ForPlanner {
-    related_courses_prior?: ForPlanner[];
-    related_courses_posterior?: ForPlanner[];
-    professors?: IProfessor.Basic[];
-    grade?: number;
-    load?: number;
-    speech?: number;
-  }
-
-  export interface DetailForPlannerWithIsRead extends DetailForPlanner {
-    userspecific_is_read: boolean;
-  }
-
-  export interface Related extends Basic {
-    related_courses_prior: Basic[];
-    related_courses_posterior: Basic[];
+  export interface FeedRelated extends FeedBasic {
+    related_courses_prior: FeedBasic[];
+    related_courses_posterior: FeedBasic[];
   }
 
   export class AutocompleteQuery {

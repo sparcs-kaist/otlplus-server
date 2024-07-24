@@ -25,7 +25,7 @@ export namespace IFeed {
   }
 
   export interface RelatedCourse extends Basic {
-    course: ICourse.Related;
+    course: ICourse.FeedRelated;
   }
 
   export interface RankedReview extends Basic {

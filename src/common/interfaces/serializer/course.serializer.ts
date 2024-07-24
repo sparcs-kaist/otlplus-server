@@ -11,7 +11,7 @@ import { ProfessorResponseDto } from '../dto/professor/professor.response.dto';
 import { toJsonDepartment } from './department.serializer';
 import { toJsonProfessor } from './professor.serializer';
 
-export function toJsonCourseBasic(course: subject_course): ICourse.Basic {
+export function toJsonCourseBasic(course: subject_course): ICourse.FeedBasic {
   return {
     id: course.id,
     old_code: course.old_code,
@@ -33,7 +33,9 @@ export function toJsonCourseBasic(course: subject_course): ICourse.Basic {
   };
 }
 
-export function toJsonCourseRelated(course: subject_course): ICourse.Related {
+export function toJsonCourseRelated(
+  course: subject_course,
+): ICourse.FeedRelated {
   return {
     ...toJsonCourseBasic(course),
     related_courses_prior: [], // TODO: related courses 비어있는게 맞는지 확인
@@ -48,8 +50,8 @@ export function toJsonCourse<T extends boolean>(
   lecture: subject_lecture,
   professor: subject_professor[],
   nested: T,
-): T extends NESTED ? ICourse.ForPlanner : ICourse.DetailForPlanner {
-  let result: ICourse.ForPlanner = {
+): T extends NESTED ? ICourse.Basic : ICourse.Detail {
+  let result: ICourse.Basic = {
     id: course.id,
     old_code: course.old_code,
     department: toJsonDepartment(course.subject_department, true),
@@ -88,8 +90,8 @@ export function toJsonCourse<T extends boolean>(
 }
 
 export function addIsRead(
-  course: ICourse.DetailForPlanner,
+  course: ICourse.Detail,
   isRead: boolean,
-): ICourse.DetailForPlannerWithIsRead {
+): ICourse.DetailWithIsRead {
   return Object.assign(course, { userspecific_is_read: isRead });
 }

@@ -85,12 +85,12 @@ export namespace IPlanner {
     export interface Future extends Basic {
       year: number;
       semester: number;
-      course: ICourse.ForPlanner;
+      course: ICourse.Basic;
     }
 
     export interface Taken extends Basic {
       lecture: ILecture.Response;
-      course: ICourse.ForPlanner;
+      course: ICourse.Basic;
     }
 
     export interface Arbitrary extends Basic {

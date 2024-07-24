@@ -19,7 +19,7 @@ export class CoursesService {
   public async getCourses(
     query: ICourse.Query,
     user: session_userprofile,
-  ): Promise<ICourse.DetailForPlannerWithIsRead[]> {
+  ): Promise<ICourse.DetailWithIsRead[]> {
     const queryResult = await this.courseRepository.getCourses(query);
     return Promise.all(
       queryResult.map(async (course) => {

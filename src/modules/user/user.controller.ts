@@ -18,7 +18,7 @@ export class UserController {
     @Query() query: UserTakenCoursesQueryDto,
     @Param('user_id') userId: number,
     @GetUser() user: session_userprofile,
-  ): Promise<ICourse.DetailForPlannerWithIsRead[]> {
+  ): Promise<ICourse.DetailWithIsRead[]> {
     if (userId === user.id) {
       return await this.userService.getUserTakenCourses(query, user);
     } else {

@@ -18,7 +18,7 @@ export namespace IReview {
   export interface Basic {
     id: number;
 
-    course: ICourse.Basic;
+    course: ICourse.FeedBasic;
 
     lecture: LectureResponseDto;
 
