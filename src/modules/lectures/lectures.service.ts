@@ -22,12 +22,12 @@ export class LecturesService {
 
   public async getLectureByFilter(
     query: LectureQueryDto,
-  ): Promise<ILecture.DetailedResponse[]> {
+  ): Promise<ILecture.Detail[]> {
     const queryResult = await this.LectureRepository.filterByRequest(query);
     return queryResult.map((lecture) => toJsonLectureDetail(lecture));
   }
 
-  public async getLectureById(id: number): Promise<ILecture.DetailedResponse> {
+  public async getLectureById(id: number): Promise<ILecture.Detail> {
     const queryResult = await this.LectureRepository.getLectureById(id);
     return toJsonLectureDetail(queryResult);
   }

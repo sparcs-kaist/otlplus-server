@@ -6,7 +6,7 @@ export interface ReviewResponseDto {
 
   course: ICourse.Basic;
 
-  lecture: ILecture.Response;
+  lecture: ILecture.Basic;
 
   content: string;
 

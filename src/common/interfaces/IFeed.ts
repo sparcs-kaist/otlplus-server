@@ -21,7 +21,7 @@ export namespace IFeed {
   }
 
   export interface ReviewWrite extends Basic {
-    lecture: ILecture.Response;
+    lecture: ILecture.Basic;
   }
 
   export interface RelatedCourse extends Basic {

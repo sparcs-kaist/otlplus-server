@@ -2,6 +2,6 @@ import { ILecture } from '../../ILecture';
 
 export interface TimetableResponseDto {
   id: number;
-  lectures: ILecture.DetailedResponse[];
+  lectures: ILecture.Detail[];
   arrange_order: number;
 }

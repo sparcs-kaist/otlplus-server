@@ -5,6 +5,6 @@ export interface TakenPlannerItemResponseDto {
   id: number;
   item_type: 'TAKEN';
   is_excluded: boolean;
-  lecture: ILecture.DetailedResponse;
+  lecture: ILecture.Detail;
   course: ICourse.Basic;
 }

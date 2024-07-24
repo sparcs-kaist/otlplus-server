@@ -1,5 +1,5 @@
 import { ILecture } from '../../ILecture';
 
 export interface WishlistWithLecturesResponseDto {
-  lectures: ILecture.Response[];
+  lectures: ILecture.Basic[];
 }

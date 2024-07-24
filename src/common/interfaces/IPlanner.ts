@@ -88,7 +88,7 @@ export namespace IPlanner {
     }
 
     export interface Taken extends Basic {
-      lecture: ILecture.Response;
+      lecture: ILecture.Basic;
       course: ICourse.Basic;
     }
 

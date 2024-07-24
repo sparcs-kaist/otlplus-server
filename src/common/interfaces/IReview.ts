@@ -20,7 +20,7 @@ export namespace IReview {
 
     course: ICourse.FeedBasic;
 
-    lecture: ILecture.DetailedResponse;
+    lecture: ILecture.Detail;
 
     content: string;
 

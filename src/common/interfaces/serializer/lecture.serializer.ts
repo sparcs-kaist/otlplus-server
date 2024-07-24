@@ -5,9 +5,7 @@ import { toJsonClasstime } from './classtime.serializer';
 import { toJsonExamtime } from './examtime.serializer';
 import { toJsonProfessors } from './professor.serializer';
 
-export function toJsonLectureBasic(
-  lecture: ELecture.Extended,
-): ILecture.Response {
+export function toJsonLectureBasic(lecture: ELecture.Extended): ILecture.Basic {
   const professors = lecture.subject_lecture_professors.map((x) => x.professor);
   const ordered_professors = applyOrder(professors, ['professor_name']);
 
@@ -46,7 +44,7 @@ export function toJsonLectureBasic(
 
 export function toJsonLectureDetail(
   lecture: ELecture.Details,
-): ILecture.DetailedResponse {
+): ILecture.Detail {
   const basic = toJsonLectureBasic(lecture);
   if (!ELecture.isDetails(lecture))
     throw new Error("Lecture is not of type 'ELecture.Details'");

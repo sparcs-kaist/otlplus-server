@@ -12,7 +12,7 @@ export interface ProfileDto {
   majors: IDepartment.Basic[];
   departments: IDepartment.Basic[];
   favorite_departments: IDepartment.Basic[];
-  review_writable_lectures: ILecture.DetailedResponse[];
-  my_timetable_lectures: ILecture.DetailedResponse[];
+  review_writable_lectures: ILecture.Detail[];
+  my_timetable_lectures: ILecture.Detail[];
   reviews: ReviewResponseDto[];
 }
