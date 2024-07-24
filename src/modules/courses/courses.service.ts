@@ -2,7 +2,6 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { ECourse } from 'src/common/entities/ECourse';
 import { ICourse } from 'src/common/interfaces';
-import { CourseReviewQueryDto } from 'src/common/interfaces/dto/course/course.review.request.dto';
 import { toJsonLecture } from 'src/common/interfaces/serializer/lecture.serializer';
 import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
 import {
@@ -79,7 +78,7 @@ export class CoursesService {
   }
 
   public async getReviewsByCourseId(
-    query: CourseReviewQueryDto,
+    query: ICourse.ReviewQuery,
     id: number,
     user: session_userprofile,
   ) {

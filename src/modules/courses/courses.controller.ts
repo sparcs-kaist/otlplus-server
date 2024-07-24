@@ -3,7 +3,6 @@ import { session_userprofile } from '@prisma/client';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { Public } from 'src/common/decorators/skip-auth.decorator';
 import { ICourse } from 'src/common/interfaces';
-import { CourseReviewQueryDto } from 'src/common/interfaces/dto/course/course.review.request.dto';
 import { CoursesService } from './courses.service';
 
 @Controller('api/courses')
@@ -45,7 +44,7 @@ export class CourseController {
   @Get(':id/reviews')
   @Public()
   async getReviewByCourseId(
-    @Query() query: CourseReviewQueryDto,
+    @Query() query: ICourse.ReviewQuery,
     @Param('id') id: number,
     @GetUser() user: session_userprofile,
   ) {

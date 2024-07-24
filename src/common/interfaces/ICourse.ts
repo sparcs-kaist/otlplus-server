@@ -116,4 +116,22 @@ export namespace ICourse {
     @Transform(({ value }) => parseInt(value))
     limit?: number;
   }
+
+  export class ReviewQuery {
+    @IsOptional()
+    @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+    @IsArray()
+    @IsString({ each: true })
+    order?: string[];
+
+    @IsOptional()
+    @IsNumber()
+    @Transform(({ value }) => parseInt(value))
+    offset?: number;
+
+    @IsOptional()
+    @IsNumber()
+    @Transform(({ value }) => parseInt(value))
+    limit?: number;
+  }
 }
