@@ -4,7 +4,6 @@ import {
   subject_professor,
 } from '@prisma/client';
 import { ECourse } from 'src/common/entities/ECourse';
-import { NESTED } from 'src/common/schemaTypes/types';
 import { applyOrder } from '../../utils/search.utils';
 import { ICourse } from '../ICourse';
 import { ProfessorResponseDto } from '../dto/professor/professor.response.dto';
@@ -41,15 +40,11 @@ export function toJsonFeedRelated(course: subject_course): ICourse.FeedRelated {
   };
 }
 
-export function toJsonCourse<T extends boolean>(
-  course: T extends NESTED
-    ? Omit<ECourse.Details, 'subject_course_professors'>
-    : ECourse.Details,
+export function toJsonCourseBasic(
+  course: Omit<ECourse.Details, 'subject_course_professors'>,
   lecture: subject_lecture,
-  professor: subject_professor[],
-  nested: T,
-): T extends NESTED ? ICourse.Basic : ICourse.Detail {
-  let result: ICourse.Basic = {
+): ICourse.Basic {
+  return {
     id: course.id,
     old_code: course.old_code,
     department: toJsonDepartment(course.subject_department, true),
@@ -64,11 +59,14 @@ export function toJsonCourse<T extends boolean>(
     num_classes: lecture.num_classes ?? 0,
     num_labs: lecture.num_labs ?? 0,
   };
+}
 
-  if (nested) {
-    return result;
-  }
-
+export function toJsonCourseDetail(
+  course: ECourse.Details,
+  lecture: subject_lecture,
+  professor: subject_professor[],
+): ICourse.Detail {
+  const basic = toJsonCourseBasic(course, lecture);
   const professorJson: ProfessorResponseDto[] = toJsonProfessors(
     professor,
     true,
@@ -76,15 +74,15 @@ export function toJsonCourse<T extends boolean>(
   const professorSorted = applyOrder<ProfessorResponseDto>(professorJson, [
     'name',
   ]);
-  result = Object.assign(result, {
+  return {
+    ...basic,
     related_courses_prior: [],
     related_courses_posterior: [],
     professors: professorSorted,
     grade: course.grade,
     load: course.load,
     speech: course.speech,
-  });
-  return result;
+  };
 }
 
 export function addIsRead(

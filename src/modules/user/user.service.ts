@@ -8,7 +8,7 @@ import {
 import { ProfileDto } from 'src/common/interfaces/dto/user/user.response.dto';
 import {
   addIsRead,
-  toJsonCourse,
+  toJsonCourseDetail,
 } from 'src/common/interfaces/serializer/course.serializer';
 import { ResearchLecture } from '../../common/interfaces/constants/lecture';
 import { ReviewResponseDto } from '../../common/interfaces/dto/reviews/review.response.dto';
@@ -111,11 +111,10 @@ export class UserService {
         const professorRaw = course.subject_course_professors.map(
           (x) => x.professor,
         );
-        const result = toJsonCourse<false>(
+        const result = toJsonCourseDetail(
           course,
           representativeLecture,
           professorRaw,
-          false,
         );
 
         return addIsRead(

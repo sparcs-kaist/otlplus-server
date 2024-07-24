@@ -22,12 +22,12 @@ export namespace ICourse {
   }
 
   export interface Detail extends Basic {
-    related_courses_prior?: Basic[];
-    related_courses_posterior?: Basic[];
-    professors?: IProfessor.Basic[];
-    grade?: number;
-    load?: number;
-    speech?: number;
+    related_courses_prior: Basic[];
+    related_courses_posterior: Basic[];
+    professors: IProfessor.Basic[];
+    grade: number;
+    load: number;
+    speech: number;
   }
 
   export interface DetailWithIsRead extends Detail {

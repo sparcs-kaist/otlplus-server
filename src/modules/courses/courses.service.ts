@@ -6,7 +6,7 @@ import { toJsonLectureDetail } from 'src/common/interfaces/serializer/lecture.se
 import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
 import {
   addIsRead,
-  toJsonCourse,
+  toJsonCourseDetail,
 } from '../../common/interfaces/serializer/course.serializer';
 import { getRepresentativeLecture } from '../../common/utils/lecture.utils';
 import { CourseRepository } from './../../prisma/repositories/course.repository';
@@ -26,11 +26,10 @@ export class CoursesService {
         const professorRaw = course.subject_course_professors.map(
           (x) => x.professor,
         );
-        const result = toJsonCourse<false>(
+        const result = toJsonCourseDetail(
           course,
           representativeLecture,
           professorRaw,
-          false,
         );
 
         const userspecific_is_read = user
@@ -51,11 +50,10 @@ export class CoursesService {
     const professorRaw = course.subject_course_professors.map(
       (x) => x.professor,
     );
-    const result = toJsonCourse(
+    const result = toJsonCourseDetail(
       course,
       representativeLecture,
       professorRaw,
-      false,
     );
 
     const userspecific_is_read = user

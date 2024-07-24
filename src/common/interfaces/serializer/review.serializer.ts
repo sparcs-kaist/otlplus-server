@@ -2,7 +2,7 @@ import { session_userprofile } from '@prisma/client';
 import { EReview } from 'src/common/entities/EReview';
 import { getRepresentativeLecture } from 'src/common/utils/lecture.utils';
 import { ReviewResponseDto } from './../dto/reviews/review.response.dto';
-import { toJsonCourse } from './course.serializer';
+import { toJsonCourseBasic } from './course.serializer';
 import { toJsonLectureBasic } from './lecture.serializer';
 
 export const toJsonReview = (
@@ -10,9 +10,7 @@ export const toJsonReview = (
   user?: session_userprofile,
 ): ReviewResponseDto => {
   const representativeLecture = getRepresentativeLecture(review.course.lecture);
-  const professorRaw = review.course.subject_course_professors.map(
-    (x) => x.professor,
-  );
+
   let isLiked = true;
   if (!user || !review.review_reviewvote) {
     isLiked = false;
@@ -24,12 +22,7 @@ export const toJsonReview = (
     isLiked = false;
   }
 
-  const courseResult = toJsonCourse(
-    review.course,
-    representativeLecture,
-    professorRaw,
-    true,
-  );
+  const courseResult = toJsonCourseBasic(review.course, representativeLecture);
 
   const result = {
     id: review.id,
