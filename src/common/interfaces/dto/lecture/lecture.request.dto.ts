@@ -1,8 +1,8 @@
 import { Transform } from 'class-transformer';
 import { IsArray, IsNumber, IsOptional } from 'class-validator';
-import { CourseQueryDto } from '../course/course.request.dto';
+import { ICourse } from '../../ICourse';
 
-export class LectureQueryDto extends CourseQueryDto {
+export class LectureQueryDto extends ICourse.Query {
   @IsOptional()
   @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
   @Transform(({ value }) => value.map(parseInt))

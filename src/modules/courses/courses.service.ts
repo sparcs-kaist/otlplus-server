@@ -2,7 +2,6 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { ECourse } from 'src/common/entities/ECourse';
 import { ICourse } from 'src/common/interfaces';
-import { CourseQueryDto } from 'src/common/interfaces/dto/course/course.request.dto';
 import { CourseReviewQueryDto } from 'src/common/interfaces/dto/course/course.review.request.dto';
 import { toJsonLecture } from 'src/common/interfaces/serializer/lecture.serializer';
 import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
@@ -16,7 +15,7 @@ export class CoursesService {
   constructor(private readonly courseRepository: CourseRepository) {}
 
   public async getCourses(
-    query: CourseQueryDto,
+    query: ICourse.Query,
     user: session_userprofile,
   ): Promise<(CourseResponseDtoNested & { userspecific_is_read: boolean })[]> {
     const queryResult = await this.courseRepository.getCourses(query);

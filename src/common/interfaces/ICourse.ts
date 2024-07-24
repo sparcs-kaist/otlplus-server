@@ -1,6 +1,8 @@
-import { IsString } from 'class-validator';
 import { IDepartment } from './IDepartment';
 import { IProfessor } from './IProfessor';
+
+import { Transform } from 'class-transformer';
+import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export namespace ICourse {
   export interface Basic {
@@ -56,5 +58,58 @@ export namespace ICourse {
   export class AutocompleteQuery {
     @IsString()
     keyword!: string;
+  }
+
+  export class Query {
+    @IsOptional()
+    @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+    @IsArray()
+    @IsString({ each: true })
+    department?: string[];
+
+    @IsOptional()
+    @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+    @IsArray()
+    @IsString({ each: true })
+    type?: string[];
+
+    @IsOptional()
+    @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+    @IsArray()
+    //@todo: @Transform()
+    @IsString({ each: true })
+    level?: string[];
+
+    @IsOptional()
+    @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+    @IsArray()
+    @IsString({ each: true })
+    group?: string[];
+
+    @IsOptional()
+    @IsString()
+    keyword?: string;
+
+    @IsOptional()
+    @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+    @IsArray()
+    @IsString({ each: true })
+    term?: string[];
+
+    @IsOptional()
+    @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+    @IsArray()
+    @IsString({ each: true })
+    order?: string[];
+
+    @IsOptional()
+    @IsNumber()
+    @Transform(({ value }) => parseInt(value))
+    offset?: number;
+
+    @IsOptional()
+    @IsNumber()
+    @Transform(({ value }) => parseInt(value))
+    limit?: number;
   }
 }
