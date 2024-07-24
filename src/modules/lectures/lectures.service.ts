@@ -4,7 +4,6 @@ import { ELecture } from 'src/common/entities/ELecture';
 import { EReview } from 'src/common/entities/EReview';
 import { ILecture } from 'src/common/interfaces/ILecture';
 import { IReview } from 'src/common/interfaces/IReview';
-import { LectureQueryDto } from 'src/common/interfaces/dto/lecture/lecture.request.dto';
 import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
 import { toJsonLectureDetail } from 'src/common/interfaces/serializer/lecture.serializer';
 import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
@@ -21,7 +20,7 @@ export class LecturesService {
   ) {}
 
   public async getLectureByFilter(
-    query: LectureQueryDto,
+    query: ILecture.Query,
   ): Promise<ILecture.Detail[]> {
     const queryResult = await this.LectureRepository.filterByRequest(query);
     return queryResult.map((lecture) => toJsonLectureDetail(lecture));

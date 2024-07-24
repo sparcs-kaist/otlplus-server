@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { Prisma, session_userprofile } from '@prisma/client';
 import { ELecture } from 'src/common/entities/ELecture';
 import { ILecture } from 'src/common/interfaces/ILecture';
-import { LectureQueryDto } from 'src/common/interfaces/dto/lecture/lecture.request.dto';
 import { applyOffset, applyOrder } from 'src/common/utils/search.utils';
 import { groupBy } from '../../common/utils/method.utils';
 import { PrismaService } from '../prisma.service';
@@ -43,7 +42,7 @@ export class LectureRepository {
     });
   }
 
-  async filterByRequest(query: LectureQueryDto): Promise<ELecture.Details[]> {
+  async filterByRequest(query: ILecture.Query): Promise<ELecture.Details[]> {
     const DEFAULT_LIMIT = 300;
     const DEFAULT_ORDER = ['year', 'semester', 'old_code', 'class_no'];
     const researchTypes = [

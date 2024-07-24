@@ -1,6 +1,10 @@
 import { Type } from 'class-transformer';
 import { IsInt, IsString } from 'class-validator';
+import { ICourse } from './ICourse';
 import { IProfessor } from './IProfessor';
+
+import { Transform } from 'class-transformer';
+import { IsArray, IsNumber, IsOptional } from 'class-validator';
 
 export namespace ILecture {
   export interface Classtime {
@@ -60,6 +64,43 @@ export namespace ILecture {
     speech: number;
     classtimes: Classtime[];
     examtimes: ExamTime[];
+  }
+
+  export class Query extends ICourse.Query {
+    @IsOptional()
+    @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+    @Transform(({ value }) => value.map(parseInt))
+    @IsArray()
+    @IsNumber({}, { each: true })
+    year?: number[];
+
+    @IsOptional()
+    @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+    @Transform(({ value }) => value.map(parseInt))
+    @IsArray()
+    @IsNumber({}, { each: true })
+    semester?: number[];
+
+    @IsOptional()
+    @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+    @Transform(({ value }) => value.map(parseInt))
+    @IsArray()
+    @IsNumber({}, { each: true })
+    day?: number[];
+
+    @IsOptional()
+    @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+    @Transform(({ value }) => value.map(parseInt))
+    @IsArray()
+    @IsNumber({}, { each: true })
+    begin?: number[];
+
+    @IsOptional()
+    @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+    @Transform(({ value }) => value.map(parseInt))
+    @IsArray()
+    @IsNumber({}, { each: true })
+    end?: number[];
   }
 
   export class AutocompleteQuery {

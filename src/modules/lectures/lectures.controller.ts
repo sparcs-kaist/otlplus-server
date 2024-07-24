@@ -4,7 +4,6 @@ import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { Public } from 'src/common/decorators/skip-auth.decorator';
 import { ILecture } from 'src/common/interfaces/ILecture';
 import { IReview } from 'src/common/interfaces/IReview';
-import { LectureQueryDto } from 'src/common/interfaces/dto/lecture/lecture.request.dto';
 import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
 import { LecturesService } from './lectures.service';
 
@@ -13,7 +12,7 @@ export class LecturesController {
   constructor(private readonly LectureService: LecturesService) {}
 
   @Get()
-  async getLectures(@Query() query: LectureQueryDto) {
+  async getLectures(@Query() query: ILecture.Query) {
     return await this.LectureService.getLectureByFilter(query);
   }
 
