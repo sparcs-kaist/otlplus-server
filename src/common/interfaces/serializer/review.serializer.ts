@@ -3,7 +3,7 @@ import { EReview } from 'src/common/entities/EReview';
 import { getRepresentativeLecture } from 'src/common/utils/lecture.utils';
 import { ReviewResponseDto } from './../dto/reviews/review.response.dto';
 import { toJsonCourse } from './course.serializer';
-import { toJsonLecture } from './lecture.serializer';
+import { toJsonLectureBasic } from './lecture.serializer';
 
 export const toJsonReview = (
   review: EReview.Details,
@@ -34,7 +34,7 @@ export const toJsonReview = (
   const result = {
     id: review.id,
     course: courseResult,
-    lecture: toJsonLecture<true>(review.lecture, true),
+    lecture: toJsonLectureBasic(review.lecture),
     content: review.is_deleted
       ? '관리자에 의해 삭제된 코멘트입니다.'
       : review.content,

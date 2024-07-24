@@ -12,7 +12,7 @@ import {
   _PROHIBITED_FIELD_PATTERN,
 } from '../decorators/validators.decorator';
 import { ICourse } from './ICourse';
-import { LectureResponseDto } from './dto/lecture/lecture.response.dto';
+import { ILecture } from './ILecture';
 
 export namespace IReview {
   export interface Basic {
@@ -20,7 +20,7 @@ export namespace IReview {
 
     course: ICourse.FeedBasic;
 
-    lecture: LectureResponseDto;
+    lecture: ILecture.DetailedResponse;
 
     content: string;
 

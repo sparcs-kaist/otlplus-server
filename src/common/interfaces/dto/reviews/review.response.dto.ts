@@ -1,12 +1,12 @@
 import { ICourse } from '../../ICourse';
-import { LectureResponseDto } from '../lecture/lecture.response.dto';
+import { ILecture } from '../../ILecture';
 
 export interface ReviewResponseDto {
   id: number;
 
   course: ICourse.Basic;
 
-  lecture: LectureResponseDto;
+  lecture: ILecture.Response;
 
   content: string;
 

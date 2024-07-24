@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsInt, IsString } from 'class-validator';
+import { IProfessor } from './IProfessor';
 import { ITimetable } from './ITimetable';
 
 export namespace ILecture {
@@ -96,14 +97,15 @@ export namespace ILecture {
     class_title: string;
     class_title_en: string;
     review_total_weight: number;
+    professors: IProfessor.Basic[];
   }
 
   export interface DetailedResponse extends Response {
-    grade?: number;
-    load?: number;
-    speech?: number;
-    classtimes?: Classtime;
-    examtimes?: ExamTime;
+    grade: number;
+    load: number;
+    speech: number;
+    classtimes: Classtime[];
+    examtimes: ExamTime[];
   }
 
   export class AutocompleteQuery {

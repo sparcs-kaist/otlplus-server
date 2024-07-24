@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { ECourse } from 'src/common/entities/ECourse';
 import { ICourse } from 'src/common/interfaces';
-import { toJsonLecture } from 'src/common/interfaces/serializer/lecture.serializer';
+import { toJsonLectureDetail } from 'src/common/interfaces/serializer/lecture.serializer';
 import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
 import {
   addIsRead,
@@ -74,7 +74,7 @@ export class CoursesService {
       throw new NotFoundException();
     }
 
-    return lectures.map((lecture) => toJsonLecture<false>(lecture, false));
+    return lectures.map((lecture) => toJsonLectureDetail(lecture));
   }
 
   public async getReviewsByCourseId(

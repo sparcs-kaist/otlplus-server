@@ -1,10 +1,10 @@
 import { ICourse } from '../../ICourse';
-import { LectureResponseDto } from '../lecture/lecture.response.dto';
+import { ILecture } from '../../ILecture';
 
 export interface TakenPlannerItemResponseDto {
   id: number;
   item_type: 'TAKEN';
   is_excluded: boolean;
-  lecture: LectureResponseDto;
+  lecture: ILecture.DetailedResponse;
   course: ICourse.Basic;
 }

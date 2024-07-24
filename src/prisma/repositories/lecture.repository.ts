@@ -321,7 +321,7 @@ export class LectureRepository {
     userId: number,
     year: number,
     semester: number,
-  ): Promise<ILecture.Basic[]> {
+  ): Promise<ELecture.UserTaken[]> {
     const lectures =
       await this.prisma.session_userprofile_taken_lectures.findMany({
         where: {
@@ -333,12 +333,7 @@ export class LectureRepository {
           },
         },
         include: {
-          lecture: {
-            include: {
-              subject_classtime: true,
-              subject_department: true,
-            },
-          },
+          lecture: ELecture.UserTaken,
         },
       });
 

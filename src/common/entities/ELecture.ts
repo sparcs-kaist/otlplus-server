@@ -12,6 +12,14 @@ export namespace ELecture {
   });
   export type Extended = Prisma.subject_lectureGetPayload<typeof Extended>;
 
+  export const UserTaken = Prisma.validator<Prisma.subject_lectureArgs>()({
+    include: {
+      subject_classtime: true,
+      subject_department: true,
+    },
+  });
+  export type UserTaken = Prisma.subject_lectureGetPayload<typeof UserTaken>;
+
   export const Details = Prisma.validator<Prisma.subject_lectureArgs>()({
     include: {
       subject_department: true,

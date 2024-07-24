@@ -1,5 +1,5 @@
 import { IDepartment } from '../../IDepartment';
-import { LectureResponseDto } from '../lecture/lecture.response.dto';
+import { ILecture } from '../../ILecture';
 import { ReviewResponseDto } from '../reviews/review.response.dto';
 
 export interface ProfileDto {
@@ -12,7 +12,7 @@ export interface ProfileDto {
   majors: IDepartment.Basic[];
   departments: IDepartment.Basic[];
   favorite_departments: IDepartment.Basic[];
-  review_writable_lectures: LectureResponseDto[];
-  my_timetable_lectures: LectureResponseDto[];
+  review_writable_lectures: ILecture.DetailedResponse[];
+  my_timetable_lectures: ILecture.DetailedResponse[];
   reviews: ReviewResponseDto[];
 }

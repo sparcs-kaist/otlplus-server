@@ -1,5 +1,5 @@
-import { NestedLectureResponseDto } from '../lecture/lecture.response.dto';
+import { ILecture } from '../../ILecture';
 
 export interface WishlistWithLecturesResponseDto {
-  lectures: NestedLectureResponseDto[];
+  lectures: ILecture.Response[];
 }

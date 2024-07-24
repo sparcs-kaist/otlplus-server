@@ -4,7 +4,7 @@ import { IPlanner } from '../IPlanner';
 import { PlannerItemType } from '../constants/planner';
 import { toJsonCourse } from './course.serializer';
 import { toJsonDepartment } from './department.serializer';
-import { toJsonLecture } from './lecture.serializer';
+import { toJsonLectureDetail } from './lecture.serializer';
 
 export function toJsonPlannerItem<IT extends PlannerItemType>(
   item:
@@ -31,7 +31,7 @@ export const toJsonTakenItem = (
     id: taken_item.id,
     item_type: 'TAKEN',
     is_excluded: taken_item.is_excluded,
-    lecture: toJsonLecture(taken_item.subject_lecture, false),
+    lecture: toJsonLectureDetail(taken_item.subject_lecture),
     course: toJsonCourse(
       taken_item.subject_lecture.course,
       taken_item.subject_lecture,

@@ -5,9 +5,8 @@ import { EReview } from 'src/common/entities/EReview';
 import { ILecture } from 'src/common/interfaces/ILecture';
 import { IReview } from 'src/common/interfaces/IReview';
 import { LectureQueryDto } from 'src/common/interfaces/dto/lecture/lecture.request.dto';
-import { LectureResponseDto } from 'src/common/interfaces/dto/lecture/lecture.response.dto';
 import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
-import { toJsonLecture } from 'src/common/interfaces/serializer/lecture.serializer';
+import { toJsonLectureDetail } from 'src/common/interfaces/serializer/lecture.serializer';
 import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
@@ -23,14 +22,14 @@ export class LecturesService {
 
   public async getLectureByFilter(
     query: LectureQueryDto,
-  ): Promise<LectureResponseDto[]> {
+  ): Promise<ILecture.DetailedResponse[]> {
     const queryResult = await this.LectureRepository.filterByRequest(query);
-    return queryResult.map((lecture) => toJsonLecture<false>(lecture, false));
+    return queryResult.map((lecture) => toJsonLectureDetail(lecture));
   }
 
-  public async getLectureById(id: number): Promise<LectureResponseDto> {
+  public async getLectureById(id: number): Promise<ILecture.DetailedResponse> {
     const queryResult = await this.LectureRepository.getLectureById(id);
-    return toJsonLecture<false>(queryResult, false);
+    return toJsonLectureDetail(queryResult);
   }
 
   public async getLectureReviews(

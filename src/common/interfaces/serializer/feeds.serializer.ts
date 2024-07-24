@@ -4,7 +4,7 @@ import { IFeed } from '../IFeed';
 import { FeedType } from '../constants/feed';
 import { toJsonFeedRelated } from './course.serializer';
 import { toJsonDepartment } from './department.serializer';
-import { toJsonLecture } from './lecture.serializer';
+import { toJsonLectureBasic } from './lecture.serializer';
 import { toJsonReview } from './review.serializer';
 
 export const toJsonFeedDetails = (
@@ -35,8 +35,8 @@ export const toJsonFeedDetails = (
       type: FeedType.ReviewWrite,
       date: feed.date,
       priority: feed.priority,
-      lecture: toJsonLecture(feed.subject_lecture, true),
-    };
+      lecture: toJsonLectureBasic(feed.subject_lecture),
+    } as IFeed.ReviewWrite;
   } else if (EFeed.isRelatedCourse(feed)) {
     return {
       type: FeedType.RelatedCourse,

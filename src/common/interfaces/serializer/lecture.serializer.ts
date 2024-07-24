@@ -1,16 +1,17 @@
 import { ELecture } from 'src/common/entities/ELecture';
 import { applyOrder } from 'src/common/utils/search.utils';
-import { NESTED } from '../../schemaTypes/types';
-import { LectureResponseDto } from '../dto/lecture/lecture.response.dto';
+import { ILecture } from '../ILecture';
 import { toJsonClasstime } from './classtime.serializer';
 import { toJsonExamtime } from './examtime.serializer';
-import { toJsonProfessor } from './professor.serializer';
+import { toJsonProfessors } from './professor.serializer';
 
-export function toJsonLecture<T extends boolean>(
-  lecture: T extends NESTED ? ELecture.Extended : ELecture.Details,
-  nested: T,
-): LectureResponseDto {
-  let result = {
+export function toJsonLectureBasic(
+  lecture: ELecture.Extended,
+): ILecture.Response {
+  const professors = lecture.subject_lecture_professors.map((x) => x.professor);
+  const ordered_professors = applyOrder(professors, ['professor_name']);
+
+  return {
     id: lecture.id,
     title: lecture.title,
     title_en: lecture.title_en,
@@ -39,22 +40,18 @@ export function toJsonLecture<T extends boolean>(
     class_title: lecture.class_title ?? '',
     class_title_en: lecture.class_title_en ?? '',
     review_total_weight: lecture.review_total_weight,
+    professors: toJsonProfessors(ordered_professors),
   };
+}
 
-  const professors = lecture.subject_lecture_professors.map((x) => x.professor);
-  const ordered_professors = applyOrder(professors, ['professor_name']);
-  result = Object.assign(result, {
-    professors: toJsonProfessor(ordered_professors),
-  });
-
-  if (nested) {
-    return result;
-  }
-
+export function toJsonLectureDetail(
+  lecture: ELecture.Details,
+): ILecture.DetailedResponse {
+  const basic = toJsonLectureBasic(lecture);
   if (!ELecture.isDetails(lecture))
     throw new Error("Lecture is not of type 'ELecture.Details'");
 
-  result = Object.assign(result, {
+  return Object.assign(basic, {
     grade: lecture.grade,
     load: lecture.load,
     speech: lecture.speech,
@@ -65,5 +62,4 @@ export function toJsonLecture<T extends boolean>(
       toJsonExamtime(examtime),
     ),
   });
-  return result;
 }

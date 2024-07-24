@@ -9,7 +9,7 @@ import { applyOrder } from '../../utils/search.utils';
 import { ICourse } from '../ICourse';
 import { ProfessorResponseDto } from '../dto/professor/professor.response.dto';
 import { toJsonDepartment } from './department.serializer';
-import { toJsonProfessor } from './professor.serializer';
+import { toJsonProfessors } from './professor.serializer';
 
 export function toJsonFeedBasic(course: subject_course): ICourse.FeedBasic {
   return {
@@ -69,7 +69,7 @@ export function toJsonCourse<T extends boolean>(
     return result;
   }
 
-  const professorJson: ProfessorResponseDto[] = toJsonProfessor(
+  const professorJson: ProfessorResponseDto[] = toJsonProfessors(
     professor,
     true,
   );

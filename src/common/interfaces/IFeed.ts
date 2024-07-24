@@ -1,7 +1,7 @@
 import { IsDateString } from 'class-validator';
 import { ICourse } from './ICourse';
 import { IDepartment } from './IDepartment';
-import { NestedLectureResponseDto } from './dto/lecture/lecture.response.dto';
+import { ILecture } from './ILecture';
 import { ReviewResponseDto } from './dto/reviews/review.response.dto';
 
 export namespace IFeed {
@@ -21,7 +21,7 @@ export namespace IFeed {
   }
 
   export interface ReviewWrite extends Basic {
-    lecture: NestedLectureResponseDto;
+    lecture: ILecture.Response;
   }
 
   export interface RelatedCourse extends Basic {

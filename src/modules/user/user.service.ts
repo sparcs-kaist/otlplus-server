@@ -13,7 +13,7 @@ import {
 import { ResearchLecture } from '../../common/interfaces/constants/lecture';
 import { ReviewResponseDto } from '../../common/interfaces/dto/reviews/review.response.dto';
 import { toJsonDepartment } from '../../common/interfaces/serializer/department.serializer';
-import { toJsonLecture } from '../../common/interfaces/serializer/lecture.serializer';
+import { toJsonLectureDetail } from '../../common/interfaces/serializer/lecture.serializer';
 import { toJsonReview } from '../../common/interfaces/serializer/review.serializer';
 import { getRepresentativeLecture } from '../../common/utils/lecture.utils';
 import { DepartmentRepository } from '../../prisma/repositories/department.repository';
@@ -85,10 +85,10 @@ export class UserService {
         toJsonDepartment(department),
       ),
       review_writable_lectures: reviewWritableLectures.map((lecture) =>
-        toJsonLecture<false>(lecture, false),
+        toJsonLectureDetail(lecture),
       ),
       my_timetable_lectures: timeTableLectures.map((lecture) =>
-        toJsonLecture<false>(lecture, false),
+        toJsonLectureDetail(lecture),
       ),
       reviews: writtenReviews.map((review) => toJsonReview(review)),
     };

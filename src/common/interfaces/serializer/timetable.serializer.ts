@@ -1,7 +1,7 @@
 import { ELecture } from 'src/common/entities/ELecture';
 import { ETimetable } from 'src/common/entities/ETimetable';
 import { TimetableResponseDto } from '../dto/timetable/timetable.response.dto';
-import { toJsonLecture } from './lecture.serializer';
+import { toJsonLectureDetail } from './lecture.serializer';
 
 export const toJsonTimetable = (
   timetable: ETimetable.Details | ETimetable.Basic,
@@ -16,9 +16,7 @@ export const toJsonTimetable = (
   }
   return {
     id: timetable.id,
-    lectures: lecturesList.map((lecture) =>
-      toJsonLecture<false>(lecture, false),
-    ),
+    lectures: lecturesList.map((lecture) => toJsonLectureDetail(lecture)),
     arrange_order: timetable.arrange_order,
   };
 };
