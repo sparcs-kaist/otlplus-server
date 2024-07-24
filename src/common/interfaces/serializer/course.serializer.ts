@@ -11,7 +11,7 @@ import { ProfessorResponseDto } from '../dto/professor/professor.response.dto';
 import { toJsonDepartment } from './department.serializer';
 import { toJsonProfessor } from './professor.serializer';
 
-export function toJsonCourseBasic(course: subject_course): ICourse.FeedBasic {
+export function toJsonFeedBasic(course: subject_course): ICourse.FeedBasic {
   return {
     id: course.id,
     old_code: course.old_code,
@@ -33,11 +33,9 @@ export function toJsonCourseBasic(course: subject_course): ICourse.FeedBasic {
   };
 }
 
-export function toJsonCourseRelated(
-  course: subject_course,
-): ICourse.FeedRelated {
+export function toJsonFeedRelated(course: subject_course): ICourse.FeedRelated {
   return {
-    ...toJsonCourseBasic(course),
+    ...toJsonFeedBasic(course),
     related_courses_prior: [], // TODO: related courses 비어있는게 맞는지 확인
     related_courses_posterior: [],
   };
