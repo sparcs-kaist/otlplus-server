@@ -405,7 +405,7 @@ export class CourseRepository {
 
   async getCourseAutocomplete({
     keyword,
-  }: ICourse.AutocompleteDto): Promise<ECourse.Extended | null> {
+  }: ICourse.AutocompleteQuery): Promise<ECourse.Extended | null> {
     const candidate = await this.prisma.subject_course.findFirst({
       where: {
         OR: [

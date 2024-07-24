@@ -22,7 +22,7 @@ export class CourseController {
   }
 
   @Get('autocomplete')
-  async getCourseAutocomplete(@Query() query: ICourse.AutocompleteDto) {
+  async getCourseAutocomplete(@Query() query: ICourse.AutocompleteQuery) {
     return await this.coursesService.getCourseAutocomplete(query);
   }
 

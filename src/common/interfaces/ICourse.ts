@@ -53,7 +53,7 @@ export namespace ICourse {
     related_courses_posterior: Basic[];
   }
 
-  export class AutocompleteDto {
+  export class AutocompleteQuery {
     @IsString()
     keyword!: string;
   }

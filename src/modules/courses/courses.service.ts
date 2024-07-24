@@ -102,7 +102,7 @@ export class CoursesService {
     return reviews.map((review) => toJsonReview(review, user));
   }
 
-  async getCourseAutocomplete(dto: ICourse.AutocompleteDto) {
+  async getCourseAutocomplete(dto: ICourse.AutocompleteQuery) {
     const candidate = await this.courseRepository.getCourseAutocomplete(dto);
     if (!candidate) return dto.keyword;
     return this.findAutocompleteFromCandidate(candidate, dto.keyword);
