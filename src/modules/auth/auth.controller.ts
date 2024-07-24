@@ -1,9 +1,9 @@
 import { Controller, Get, Query, Req, Res, Session } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { ESSOUser } from 'src/common/entities/ESSOUser';
 import { IAuth } from 'src/common/interfaces';
 import { Public } from '../../common/decorators/skip-auth.decorator';
-import { SSOUser } from '../../common/interfaces/dto/auth/sso.dto';
 import { ProfileDto } from '../../common/interfaces/dto/user/user.response.dto';
 import settings from '../../settings';
 import { UserService } from '../user/user.service';
@@ -59,7 +59,9 @@ export class AuthController {
     if (!stateBefore || stateBefore != state) {
       response.redirect('/error/invalid-login');
     }
-    const ssoProfile: SSOUser = await this.ssoClient.get_user_info(code);
+    const ssoProfile: ESSOUser.SSOUser = await this.ssoClient.get_user_info(
+      code,
+    );
     const {
       accessToken,
       accessTokenOptions,
