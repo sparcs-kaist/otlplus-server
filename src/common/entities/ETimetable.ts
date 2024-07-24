@@ -19,11 +19,7 @@ export namespace ETimetable {
   export const WithLectureClasstimes =
     Prisma.validator<Prisma.timetable_timetable_lecturesArgs>()({
       include: {
-        subject_lecture: {
-          include: {
-            subject_classtime: true,
-          },
-        },
+        subject_lecture: ELecture.WithClasstime,
       },
     });
 

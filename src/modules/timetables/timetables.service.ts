@@ -5,7 +5,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
-import { ILecture } from 'src/common/interfaces';
+import { ELecture } from 'src/common/entities/ELecture';
 import {
   AddLectureDto,
   ReorderTimetableDto,
@@ -258,7 +258,9 @@ export class TimetablesService {
     });
   }
 
-  public getTimetableType(lectures: ILecture.Basic[]): '5days' | '7days' {
+  public getTimetableType(
+    lectures: ELecture.WithClasstime[],
+  ): '5days' | '7days' {
     return lectures.some((lecture) =>
       lecture.subject_classtime.some((classtime) => classtime.day >= 5),
     )
@@ -272,7 +274,7 @@ export class TimetablesService {
     year: number,
     semester: number,
     user: session_userprofile,
-  ): Promise<ILecture.Basic[]> {
+  ): Promise<ELecture.WithClasstime[]> {
     if (!user) {
       throw new HttpException(
         'User profile is required',

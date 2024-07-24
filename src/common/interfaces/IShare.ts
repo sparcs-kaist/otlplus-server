@@ -1,5 +1,5 @@
 import { CanvasRenderingContext2D } from 'canvas';
-import { ILecture } from './ILecture';
+import { ELecture } from '../entities/ELecture';
 
 export namespace IShare {
   export interface RoundedRectangleOptions {
@@ -37,7 +37,7 @@ export namespace IShare {
   }
 
   export interface drawTimetableDatas {
-    lectures: ILecture.Basic[];
+    lectures: ELecture.UserTaken[];
     timetableType: string;
     semesterName: string;
     isEnglish: boolean;

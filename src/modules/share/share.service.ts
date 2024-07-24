@@ -7,7 +7,7 @@ import {
   registerFont,
 } from 'canvas';
 import { join } from 'path';
-import { ILecture } from 'src/common/interfaces';
+import { ELecture } from 'src/common/entities/ELecture';
 import { TimetableImageQueryDto } from 'src/common/interfaces/dto/share/share.request.dto';
 import { SemesterRepository } from 'src/prisma/repositories/semester.repository';
 import { LecturesService } from '../lectures/lectures.service';
@@ -49,7 +49,7 @@ interface DrawTileOptions {
 }
 
 interface DrawTimetableDatas {
-  lectures: ILecture.Basic[];
+  lectures: ELecture.WithClasstime[];
   timetableType: string;
   semesterName: string;
   isEnglish: boolean;
