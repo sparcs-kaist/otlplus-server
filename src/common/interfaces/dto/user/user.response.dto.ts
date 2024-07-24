@@ -1,4 +1,4 @@
-import { DepartmentResponseDto } from '../department/department.response.dto';
+import { IDepartment } from '../../IDepartment';
 import { LectureResponseDto } from '../lecture/lecture.response.dto';
 import { ReviewResponseDto } from '../reviews/review.response.dto';
 
@@ -8,10 +8,10 @@ export interface ProfileDto {
   student_id: string;
   firstName: string;
   lastName: string;
-  department: DepartmentResponseDto | null;
-  majors: DepartmentResponseDto[];
-  departments: DepartmentResponseDto[];
-  favorite_departments: DepartmentResponseDto[];
+  department: IDepartment.Basic | null;
+  majors: IDepartment.Basic[];
+  departments: IDepartment.Basic[];
+  favorite_departments: IDepartment.Basic[];
   review_writable_lectures: LectureResponseDto[];
   my_timetable_lectures: LectureResponseDto[];
   reviews: ReviewResponseDto[];

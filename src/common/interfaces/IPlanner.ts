@@ -4,7 +4,6 @@ import { ICourse } from './ICourse';
 import { IDepartment } from './IDepartment';
 import { ILecture } from './ILecture';
 import { PlannerItemType, PlannerItemTypeEnum } from './constants/planner';
-import { DepartmentResponseDto } from './dto/department/department.response.dto';
 
 export namespace IPlanner {
   export interface ArbitraryPlannerItemResponseDto {
@@ -13,7 +12,7 @@ export namespace IPlanner {
     is_excluded: boolean;
     year: number;
     semester: number;
-    department: DepartmentResponseDto | null;
+    department: IDepartment.Basic | null;
     type: string;
     type_en: string;
     credit: number;

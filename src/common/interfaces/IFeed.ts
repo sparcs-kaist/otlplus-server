@@ -1,6 +1,6 @@
 import { IsDateString } from 'class-validator';
 import { ICourse } from './ICourse';
-import { DepartmentResponseDto } from './dto/department/department.response.dto';
+import { IDepartment } from './IDepartment';
 import { NestedLectureResponseDto } from './dto/lecture/lecture.response.dto';
 import { ReviewResponseDto } from './dto/reviews/review.response.dto';
 
@@ -17,7 +17,7 @@ export namespace IFeed {
 
   export interface FamousMajorReview extends Basic {
     reviews: ReviewResponseDto[];
-    department: DepartmentResponseDto;
+    department: IDepartment.Basic;
   }
 
   export interface ReviewWrite extends Basic {

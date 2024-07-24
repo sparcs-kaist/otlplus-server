@@ -1,10 +1,10 @@
 import { subject_department } from '@prisma/client';
-import { DepartmentResponseDto } from '../dto/department/department.response.dto';
+import { IDepartment } from '../IDepartment';
 
 export const toJsonDepartment = (
   department: subject_department,
   nested = false,
-): DepartmentResponseDto => {
+): IDepartment.Basic => {
   return {
     id: department.id,
     name: department.name,

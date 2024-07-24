@@ -1,4 +1,4 @@
-import { DepartmentResponseDto } from '../department/department.response.dto';
+import { IDepartment } from '../../IDepartment';
 
 export interface ArbitraryPlannerItemResponseDto {
   id: number;
@@ -6,7 +6,7 @@ export interface ArbitraryPlannerItemResponseDto {
   is_excluded: boolean;
   year: number;
   semester: number;
-  department: DepartmentResponseDto | null;
+  department: IDepartment.Basic | null;
   type: string;
   type_en: string;
   credit: number;
