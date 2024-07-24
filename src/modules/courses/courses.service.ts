@@ -5,7 +5,10 @@ import { ICourse } from 'src/common/interfaces';
 import { CourseReviewQueryDto } from 'src/common/interfaces/dto/course/course.review.request.dto';
 import { toJsonLecture } from 'src/common/interfaces/serializer/lecture.serializer';
 import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
-import { toJsonCourse } from '../../common/interfaces/serializer/course.serializer';
+import {
+  addIsRead,
+  toJsonCourse,
+} from '../../common/interfaces/serializer/course.serializer';
 import { getRepresentativeLecture } from '../../common/utils/lecture.utils';
 import { CourseRepository } from './../../prisma/repositories/course.repository';
 
@@ -35,9 +38,7 @@ export class CoursesService {
           ? await this.courseRepository.isUserSpecificRead(course.id, user.id)
           : false;
 
-        return Object.assign(result, {
-          userspecific_is_read,
-        });
+        return addIsRead(result, userspecific_is_read);
       }),
     );
   }
@@ -62,9 +63,7 @@ export class CoursesService {
       ? await this.courseRepository.isUserSpecificRead(course.id, user.id)
       : false;
 
-    return Object.assign(result, {
-      userspecific_is_read,
-    });
+    return addIsRead(result, userspecific_is_read);
   }
 
   public async getLecturesByCourseId(query: { order: string[] }, id: number) {

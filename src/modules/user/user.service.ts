@@ -6,7 +6,10 @@ import {
   UserTakenCoursesQueryDto,
 } from 'src/common/interfaces/dto/user/user.request.dto';
 import { ProfileDto } from 'src/common/interfaces/dto/user/user.response.dto';
-import { toJsonCourse } from 'src/common/interfaces/serializer/course.serializer';
+import {
+  addIsRead,
+  toJsonCourse,
+} from 'src/common/interfaces/serializer/course.serializer';
 import { ResearchLecture } from '../../common/interfaces/constants/lecture';
 import { ReviewResponseDto } from '../../common/interfaces/dto/reviews/review.response.dto';
 import { toJsonDepartment } from '../../common/interfaces/serializer/department.serializer';
@@ -115,12 +118,10 @@ export class UserService {
           false,
         );
 
-        return Object.assign(result, {
-          userspecific_is_read: await this.courseRepository.isUserSpecificRead(
-            course.id,
-            user.id,
-          ),
-        });
+        return addIsRead(
+          result,
+          await this.courseRepository.isUserSpecificRead(course.id, user.id),
+        );
       }),
     );
   }

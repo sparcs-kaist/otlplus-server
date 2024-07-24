@@ -86,3 +86,10 @@ export function toJsonCourse<T extends boolean>(
   });
   return result;
 }
+
+export function addIsRead(
+  course: ICourse.DetailForPlanner,
+  isRead: boolean,
+): ICourse.DetailForPlannerWithIsRead {
+  return Object.assign(course, { userspecific_is_read: isRead });
+}
