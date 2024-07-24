@@ -86,29 +86,6 @@ export class TimetableRepository {
       },
       include: ETimetable.Details.include,
     });
-    // const timetable = await this.prisma.timetable_timetable.create({
-    //   data: {
-    //     user_id: user.id,
-    //     year: year,
-    //     semester: semester,
-    //     arrange_order: arrangeOrder,
-    //   },
-    //   include: timeTableDetails.include,
-    // });
-    // await Promise.all(
-    //   lectures.map(async (lecture) => {
-    //     await this.prisma.timetable_timetable_lectures.create({
-    //       data: {
-    //         timetable_id: timetable.id,
-    //         lecture_id: lecture.id,
-    //       },
-    //     });
-    //   }),
-    // );
-    // return await this.prisma.timetable_timetable.findUniqueOrThrow({
-    //   where: { id: timetable.id },
-    //   include: timeTableDetails.include,
-    // });
   }
 
   async getTimeTableBasicById(timeTableId: number) {

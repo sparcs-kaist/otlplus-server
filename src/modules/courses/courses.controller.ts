@@ -60,10 +60,4 @@ export class CourseController {
   ) {
     await this.coursesService.readCourse(user.id, id);
   }
-
-  // @Public()
-  // @Get('test/course')
-  // async testCourse(){
-  //   return await this.coursesService.testCourse();
-  // }
 }

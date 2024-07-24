@@ -16,7 +16,10 @@ export class ReviewMiddleware implements IPrismaMiddleware.IPrismaMiddleware {
     this.prisma = prisma;
   }
 
-  async preExecute(): Promise<boolean> {
+  async preExecute(
+    operations: IPrismaMiddleware.operationType,
+    args: any,
+  ): Promise<boolean> {
     return true;
   }
 

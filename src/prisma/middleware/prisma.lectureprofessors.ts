@@ -13,7 +13,10 @@ export class LectureProfessorsMiddleware
     this.prisma = prisma;
   }
 
-  async preExecute(): Promise<boolean> {
+  async preExecute(
+    operations: IPrismaMiddleware.operationType,
+    args: any,
+  ): Promise<boolean> {
     return true;
   }
 
@@ -22,14 +25,11 @@ export class LectureProfessorsMiddleware
     args: any,
     result: any,
   ): Promise<boolean> {
-    if (operations === 'create') {
-      const lectureId = result.lecture_id;
-      const lecture = await this.prisma.subject_lecture.findUniqueOrThrow({
-        where: { id: lectureId },
-      });
-      await this.lectureRecalcScore(lecture);
-      return true;
-    } else if (operations === 'delete' || operations === 'deleteMany') {
+    if (
+      operations === 'create' ||
+      operations === 'delete' ||
+      operations === 'deleteMany'
+    ) {
       const lectureId = result.lecture_id;
       const lecture = await this.prisma.subject_lecture.findUniqueOrThrow({
         where: { id: lectureId },

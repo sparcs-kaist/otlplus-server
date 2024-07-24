@@ -9,12 +9,6 @@ export const signalExtension = Prisma.defineExtension((client) => {
     query: {
       $allModels: {
         async $allOperations({ model, operation, args, query }) {
-          console.log(model);
-          console.log(operation);
-          console.log('args');
-          console.log(args);
-          console.log(query.toString());
-
           const signal = mediator(model);
           if (signal) {
             const preExecute = await signal.preExecute(operation, args);

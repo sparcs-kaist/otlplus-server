@@ -17,6 +17,14 @@ export class TimetableMiddleware
     operations: IPrismaMiddleware.operationType,
     args: any,
   ): Promise<boolean> {
+    return true;
+  }
+
+  async postExecute(
+    operations: IPrismaMiddleware.operationType,
+    args: any,
+    result: any,
+  ): Promise<boolean> {
     if (operations === 'delete') {
       const timetableId = args.where.id;
       const lectures = await this.prisma.timetable_timetable_lectures.findMany({
@@ -24,14 +32,10 @@ export class TimetableMiddleware
           timetable_id: timetableId,
         },
       });
-      const res = await this.decreaseNumPeopleBatch(lectures, timetableId);
+      const res = await this.countNumPeopleBatch(lectures);
       if (!res) throw new Error('Could not decrease num_people');
       return true;
     }
-    return true;
-  }
-
-  async postExecute(): Promise<boolean> {
     return true;
   }
 
@@ -45,71 +49,31 @@ export class TimetableMiddleware
     return TimetableMiddleware.instance;
   }
 
-  private async decreaseNumPeopleBatch(
-    lectures: { lecture_id: number }[],
-    userId: number,
+  private async countNumPeopleBatch(
+    lectures: { id: number; timetable_id: number; lecture_id: number }[],
   ) {
     const lectureIds = lectures.map((lecture) => lecture.lecture_id);
-    const lectureCounts =
-      await this.prisma.timetable_timetable_lectures.groupBy({
-        by: ['lecture_id'],
-        where: {
-          lecture_id: {
-            in: lectureIds,
-          },
-          timetable_timetable: {
-            user_id: userId,
-          },
-        },
-        _count: {
-          lecture_id: true,
-        },
-      });
-    const oneCountLectures = lectureCounts
-      .filter((count) => count._count.lecture_id === 1)
-      .map((count) => count.lecture_id);
-    const numPeople = await this.getNumpeople(oneCountLectures);
     Promise.all(
-      numPeople.map(async (count) => {
-        await this.prisma.subject_lecture.update({
-          where: {
-            id: count.lectureId,
-          },
-          data: {
-            num_people: count.userCount - 1,
-          },
+      lectureIds.map(async (id) => {
+        await this.prisma.$transaction(async (prisma) => {
+          await prisma.subject_lecture.update({
+            where: { id: id },
+            data: {
+              num_people: await prisma.timetable_timetable.count({
+                distinct: ['user_id'],
+                where: {
+                  timetable_timetable_lectures: {
+                    some: {
+                      lecture_id: id,
+                    },
+                  },
+                },
+              }),
+            },
+          });
         });
       }),
     );
     return true;
-  }
-
-  async getNumpeople(lectureIds: number[]) {
-    const timetables = await this.prisma.timetable_timetable_lectures.findMany({
-      where: {
-        lecture_id: {
-          in: lectureIds,
-        },
-      },
-      include: {
-        timetable_timetable: true,
-      },
-    });
-    const userCount: UserCount = timetables.reduce((acc, t) => {
-      const { lecture_id, timetable_timetable } = t;
-      if (!acc[lecture_id]) {
-        acc[lecture_id] = new Set();
-      }
-      acc[lecture_id].add(timetable_timetable.user_id);
-      return acc;
-    }, {} as UserCount);
-
-    return Object.keys(userCount).map((lecture_id) => {
-      const lectureId = Number(lecture_id);
-      return {
-        lectureId: lectureId,
-        userCount: userCount[lectureId].size,
-      };
-    });
   }
 }

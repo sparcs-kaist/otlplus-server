@@ -9,7 +9,10 @@ export class CourseMiddleware implements IPrismaMiddleware.IPrismaMiddleware {
     this.prisma = prisma;
   }
 
-  async preExecute(): Promise<boolean> {
+  async preExecute(
+    operations: IPrismaMiddleware.operationType,
+    args: any,
+  ): Promise<boolean> {
     return true;
   }
 
@@ -18,21 +21,6 @@ export class CourseMiddleware implements IPrismaMiddleware.IPrismaMiddleware {
     args: any,
     result: any,
   ): Promise<boolean> {
-    // for test
-    // console.log(`course operations:${operations}`);
-    // console.log(`course args:${JSON.stringify(args, null, 2)}`);
-    // console.log(`course result:${JSON.stringify(result, null, 2)}`);
-    // if(operations === 'findFirst'){
-    //   const test =await this.prisma.review_review.findFirst(
-    //     {
-    //       where: {
-    //         id: 2890
-    //       }
-    //     }
-    //   );
-    //   console.log(test);
-    // }
-    // test end
     if (operations === 'create') {
       //todo: cache delete
     }
