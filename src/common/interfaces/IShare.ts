@@ -82,5 +82,4 @@ export namespace IShare {
     @IsOptional()
     language?: string;
   }
-
 }
