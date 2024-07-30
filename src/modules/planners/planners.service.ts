@@ -8,7 +8,6 @@ import {
 } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { IPlanner } from 'src/common/interfaces/IPlanner';
-import { PlannerResponseDto } from 'src/common/interfaces/dto/planner/planner.response.dto';
 import {
   toJsonArbitraryItem,
   toJsonFutureItem,
@@ -47,7 +46,7 @@ export class PlannersService {
   public async postPlanner(
     body: IPlanner.Body,
     user: session_userprofile,
-  ): Promise<PlannerResponseDto> {
+  ): Promise<IPlanner.Response> {
     const relatedPlanner = await this.getRelatedPlanner(user);
     const arrangeOrder =
       relatedPlanner.length == 0
@@ -147,7 +146,7 @@ export class PlannersService {
     plannerId: number,
     removeItem: IPlanner.RemoveItemBody,
     user: session_userprofile,
-  ): Promise<PlannerResponseDto> {
+  ): Promise<IPlanner.Response> {
     switch (removeItem.item_type) {
       case 'TAKEN':
         throw new BadRequestException(
@@ -223,7 +222,7 @@ export class PlannersService {
     plannerId: number,
     order: number,
     user: session_userprofile,
-  ): Promise<PlannerResponseDto> {
+  ): Promise<IPlanner.Response> {
     const planner = await this.PlannerRepository.getPlannerById(
       user,
       plannerId,

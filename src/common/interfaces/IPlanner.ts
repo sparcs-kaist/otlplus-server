@@ -16,6 +16,7 @@ import {
 import { ICourse } from './ICourse';
 import { IDepartment } from './IDepartment';
 import { ILecture } from './ILecture';
+import { AdditionalTrackType } from './constants/additional.track.response.dto';
 import { PlannerItemType, PlannerItemTypeEnum } from './constants/planner';
 
 export namespace IPlanner {
@@ -93,19 +94,6 @@ export namespace IPlanner {
     is_excluded?: boolean;
   }
 
-  export interface ArbitraryPlannerItemResponseDto {
-    id: number;
-    item_type: 'ARBITRARY';
-    is_excluded: boolean;
-    year: number;
-    semester: number;
-    department: IDepartment.Basic | null;
-    type: string;
-    type_en: string;
-    credit: number;
-    credit_au: number;
-  }
-
   export class FuturePlannerItemDto {
     @IsInt()
     @Type(() => Number)
@@ -149,6 +137,46 @@ export namespace IPlanner {
     @Type(() => Number)
     credit_au!: number;
   }
+
+  export namespace ITrack {
+    export interface Additional {
+      id: number;
+      start_year: number;
+      end_year: number;
+      type: AdditionalTrackType;
+      department: IDepartment.Basic | null;
+      major_required: number;
+      major_elective: number;
+    }
+
+    export interface General {
+      id: number;
+      start_year: number;
+      end_year: number;
+      is_foreign: boolean;
+      total_credit: number;
+      total_au: number;
+      basic_required: number;
+      basic_elective: number;
+      thesis_study: number;
+      thesis_study_doublemajor: number;
+      general_required_credit: number;
+      general_required_au: number;
+      humanities: number;
+      humanities_doublemajor: number;
+    }
+
+    export interface Major {
+      id: number;
+      start_year: number;
+      end_year: number;
+      department: IDepartment.Basic;
+      basic_elective_doublemajor: number;
+      major_required: number;
+      major_elective: number;
+    }
+  }
+
   export namespace IItem {
     export type IMutate<IT = PlannerItemType> =
       IT extends PlannerItemTypeEnum.Taken
@@ -169,17 +197,20 @@ export namespace IPlanner {
     }
 
     export interface Future extends Basic {
+      item_type: 'FUTURE';
       year: number;
       semester: number;
       course: ICourse.Basic;
     }
 
     export interface Taken extends Basic {
+      item_type: 'TAKEN';
       lecture: ILecture.Basic;
       course: ICourse.Basic;
     }
 
     export interface Arbitrary extends Basic {
+      item_type: 'ARBITRARY';
       year: number;
       semester: number;
       department: IDepartment.Basic | null;
@@ -188,5 +219,18 @@ export namespace IPlanner {
       credit: number;
       credit_au: number;
     }
+  }
+
+  export interface Response {
+    id: number;
+    start_year: number;
+    end_year: number;
+    general_track: ITrack.General;
+    major_track: ITrack.Major;
+    additional_tracks: ITrack.Additional[];
+    taken_items: IItem.Taken[];
+    future_items: IItem.Future[];
+    arbitrary_items: IItem.Arbitrary[];
+    arrange_order: number;
   }
 }

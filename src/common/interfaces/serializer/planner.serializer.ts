@@ -1,5 +1,5 @@
 import { EPlanners } from 'src/common/entities/EPlanners';
-import { PlannerResponseDto } from '../dto/planner/planner.response.dto';
+import { IPlanner } from '../IPlanner';
 import {
   toJsonArbitraryItem,
   toJsonFutureItem,
@@ -13,7 +13,7 @@ import {
 
 export const toJsonPlanner = (
   planner: EPlanners.Details,
-): PlannerResponseDto => {
+): IPlanner.Response => {
   return {
     id: planner.id,
     start_year: planner.start_year,

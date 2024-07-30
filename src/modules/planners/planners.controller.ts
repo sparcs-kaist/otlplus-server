@@ -10,7 +10,6 @@ import {
 import { session_userprofile } from '@prisma/client';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { IPlanner } from 'src/common/interfaces/IPlanner';
-import { PlannerResponseDto } from 'src/common/interfaces/dto/planner/planner.response.dto';
 import { toJsonPlannerItem } from '../../common/interfaces/serializer/planner.item.serializer';
 import { PlannersService } from './planners.service';
 
@@ -67,7 +66,7 @@ export class PlannersController {
     @Body() removeItem: IPlanner.RemoveItemBody,
     @Param('plannerId') plannerId: number,
     @GetUser() user: session_userprofile,
-  ): Promise<PlannerResponseDto> {
+  ): Promise<IPlanner.Response> {
     return await this.plannersService.removePlannerItem(
       plannerId,
       removeItem,
@@ -99,7 +98,7 @@ export class PlannersController {
     @Body() reorder: IPlanner.ReorderBody,
     @Param('plannerId') plannerId: number,
     @GetUser() user: session_userprofile,
-  ): Promise<PlannerResponseDto> {
+  ): Promise<IPlanner.Response> {
     return await this.plannersService.reorderPlanner(
       plannerId,
       reorder.arrange_order,
