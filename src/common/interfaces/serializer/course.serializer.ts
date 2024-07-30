@@ -6,7 +6,7 @@ import {
 import { ECourse } from 'src/common/entities/ECourse';
 import { applyOrder } from '../../utils/search.utils';
 import { ICourse } from '../ICourse';
-import { ProfessorResponseDto } from '../dto/professor/professor.response.dto';
+import { IProfessor } from '../IProfessor';
 import { toJsonDepartment } from './department.serializer';
 import { toJsonProfessors } from './professor.serializer';
 
@@ -67,13 +67,8 @@ export function toJsonCourseDetail(
   professor: subject_professor[],
 ): ICourse.Detail {
   const basic = toJsonCourseBasic(course, lecture);
-  const professorJson: ProfessorResponseDto[] = toJsonProfessors(
-    professor,
-    true,
-  );
-  const professorSorted = applyOrder<ProfessorResponseDto>(professorJson, [
-    'name',
-  ]);
+  const professorJson: IProfessor.Basic[] = toJsonProfessors(professor, true);
+  const professorSorted = applyOrder<IProfessor.Basic>(professorJson, ['name']);
   return {
     ...basic,
     related_courses_prior: [],
