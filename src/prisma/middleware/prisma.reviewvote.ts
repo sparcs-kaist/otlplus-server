@@ -49,13 +49,20 @@ export class ReviewVoteMiddleware
   }
 
   private async reviewRecalcLike(reviewVote: review_reviewvote) {
-    const count = await this.prisma.review_reviewvote.count({
-      where: { review_id: reviewVote.review_id },
-    });
-    await this.prisma.review_review.update({
-      where: { id: reviewVote.review_id },
-      data: { like: count },
-    });
+    await this.prisma.$transaction(
+      async (tx) => {
+        const count = await tx.review_reviewvote.count({
+          where: { review_id: reviewVote.review_id },
+        });
+        await tx.review_review.update({
+          where: { id: reviewVote.review_id },
+          data: { like: count },
+        });
+      },
+      {
+        isolationLevel: 'Serializable',
+      },
+    );
   }
 
   private async reviewVoteSavedMiddleware(result: any) {
