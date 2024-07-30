@@ -2,11 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { ICourse } from 'src/common/interfaces';
 import { IReview } from 'src/common/interfaces/IReview';
-import {
-  ReviewLikedQueryDto,
-  UserTakenCoursesQueryDto,
-} from 'src/common/interfaces/dto/user/user.request.dto';
-import { ProfileDto } from 'src/common/interfaces/dto/user/user.response.dto';
+import { IUser } from 'src/common/interfaces/IUser';
 import {
   addIsRead,
   toJsonCourseDetail,
@@ -39,7 +35,7 @@ export class UserService {
     }
   }
 
-  public async getProfile(user: session_userprofile): Promise<ProfileDto> {
+  public async getProfile(user: session_userprofile): Promise<IUser.Profile> {
     const [
       department,
       favoriteDepartments,
@@ -95,7 +91,7 @@ export class UserService {
   }
 
   async getUserTakenCourses(
-    query: UserTakenCoursesQueryDto,
+    query: IUser.TakenCoursesQueryDto,
     user: session_userprofile,
   ): Promise<ICourse.DetailWithIsRead[]> {
     const DEFAULT_ORDER = ['old_code'];
@@ -128,7 +124,7 @@ export class UserService {
   async getUserLikedReviews(
     user: session_userprofile,
     userId: number,
-    query: ReviewLikedQueryDto,
+    query: IUser.ReviewLikedQueryDto,
   ): Promise<(IReview.Basic & { userspecific_is_liked: boolean })[]> {
     const MAX_LIMIT = 300;
     const DEFAULT_ORDER = ['-written_datetime', '-id'];

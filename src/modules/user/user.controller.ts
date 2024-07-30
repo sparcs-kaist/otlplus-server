@@ -3,10 +3,7 @@ import { session_userprofile } from '@prisma/client';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { ICourse } from 'src/common/interfaces';
 import { IReview } from 'src/common/interfaces/IReview';
-import {
-  ReviewLikedQueryDto,
-  UserTakenCoursesQueryDto,
-} from 'src/common/interfaces/dto/user/user.request.dto';
+import { IUser } from 'src/common/interfaces/IUser';
 import { UserService } from './user.service';
 
 @Controller('api/users')
@@ -15,7 +12,7 @@ export class UserController {
 
   @Get(':user_id/taken-courses')
   async getUserTakenCourses(
-    @Query() query: UserTakenCoursesQueryDto,
+    @Query() query: IUser.TakenCoursesQueryDto,
     @Param('user_id') userId: number,
     @GetUser() user: session_userprofile,
   ): Promise<ICourse.DetailWithIsRead[]> {
@@ -28,7 +25,7 @@ export class UserController {
 
   @Get(':user_id/liked-reviews')
   async getUserLikedReviews(
-    @Query() query: ReviewLikedQueryDto,
+    @Query() query: IUser.ReviewLikedQueryDto,
     @Param('user_id') userId: number,
     @GetUser() user: session_userprofile,
   ): Promise<(IReview.Basic & { userspecific_is_liked: boolean })[]> {

@@ -1,12 +1,12 @@
 import { ELecture } from 'src/common/entities/ELecture';
 import { ETimetable } from 'src/common/entities/ETimetable';
-import { TimetableResponseDto } from '../dto/timetable/timetable.response.dto';
+import { ITimetable } from '../ITimetable';
 import { toJsonLectureDetail } from './lecture.serializer';
 
 export const toJsonTimetable = (
   timetable: ETimetable.Details | ETimetable.Basic,
   lectures?: ELecture.Details[],
-): TimetableResponseDto => {
+): ITimetable.Response => {
   const lecturesList =
     'timetable_timetable_lectures' in timetable
       ? timetable.timetable_timetable_lectures.map((x) => x.subject_lecture)

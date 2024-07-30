@@ -3,8 +3,8 @@ import { session_userprofile } from '@prisma/client';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { ESSOUser } from 'src/common/entities/ESSOUser';
 import { IAuth } from 'src/common/interfaces';
+import { IUser } from 'src/common/interfaces/IUser';
 import { Public } from '../../common/decorators/skip-auth.decorator';
-import { ProfileDto } from '../../common/interfaces/dto/user/user.response.dto';
 import settings from '../../settings';
 import { UserService } from '../user/user.service';
 import { AuthService } from './auth.service';
@@ -84,7 +84,7 @@ export class AuthController {
   @Get('info')
   async getUserProfile(
     @GetUser() user: session_userprofile,
-  ): Promise<ProfileDto> {
+  ): Promise<IUser.Profile> {
     /*
     @Todo
     implement userSerializer, before that, we'd like to architect the dto types

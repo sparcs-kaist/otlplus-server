@@ -6,12 +6,7 @@ import {
 } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { ELecture } from 'src/common/entities/ELecture';
-import {
-  AddLectureDto,
-  ReorderTimetableDto,
-  TimetableCreateDto,
-  TimetableQueryDto,
-} from '../../common/interfaces/dto/timetable/timetable.request.dto';
+import { ITimetable } from 'src/common/interfaces';
 import {
   orderFilter,
   validateYearAndSemester,
@@ -30,7 +25,7 @@ export class TimetablesService {
     private readonly semesterRepository: SemesterRepository,
   ) {}
 
-  async getTimetables(query: TimetableQueryDto, user: session_userprofile) {
+  async getTimetables(query: ITimetable.QueryDto, user: session_userprofile) {
     const { year, semester, order, offset, limit } = query;
 
     const orderBy = orderFilter(order);
@@ -54,7 +49,7 @@ export class TimetablesService {
   }
 
   async createTimetable(
-    timeTableBody: TimetableCreateDto,
+    timeTableBody: ITimetable.CreateDto,
     user: session_userprofile,
   ) {
     const { year, semester } = timeTableBody;
@@ -101,7 +96,10 @@ export class TimetablesService {
     );
   }
 
-  async addLectureToTimetable(timeTableId: number, body: AddLectureDto) {
+  async addLectureToTimetable(
+    timeTableId: number,
+    body: ITimetable.AddLectureDto,
+  ) {
     const lectureId = body.lecture;
     const lecture = await this.lectureRepository.getLectureBasicById(lectureId);
     const timetable = await this.timetableRepository.getTimeTableBasicById(
@@ -128,7 +126,10 @@ export class TimetablesService {
     return await this.timetableRepository.getTimeTableById(timeTableId);
   }
 
-  async removeLectureFromTimetable(timeTableId: number, body: AddLectureDto) {
+  async removeLectureFromTimetable(
+    timeTableId: number,
+    body: ITimetable.AddLectureDto,
+  ) {
     const lectureId = body.lecture;
     const lecture = await this.lectureRepository.getLectureBasicById(lectureId);
     const timetable = await this.timetableRepository.getTimeTableBasicById(
@@ -187,7 +188,7 @@ export class TimetablesService {
   async reorderTimetable(
     user: session_userprofile,
     timetableId: number,
-    body: ReorderTimetableDto,
+    body: ITimetable.ReorderTimetableDto,
   ) {
     return await this.prismaService.$transaction(async (tx) => {
       const { arrange_order: targetArrangeOrder } = body;
