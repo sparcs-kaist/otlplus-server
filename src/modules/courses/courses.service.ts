@@ -10,11 +10,13 @@ import {
 } from '../../common/interfaces/serializer/course.serializer';
 import { getRepresentativeLecture } from '../../common/utils/lecture.utils';
 import { CourseRepository } from './../../prisma/repositories/course.repository';
+import { Transactional } from '@nestjs-cls/transactional';
 
 @Injectable()
 export class CoursesService {
   constructor(private readonly courseRepository: CourseRepository) {}
 
+  @Transactional()
   public async getCourses(
     query: ICourse.Query,
     user: session_userprofile,

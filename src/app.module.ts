@@ -25,6 +25,10 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ShareModule } from './modules/share/share.module';
 import { AuthConfig } from './modules/auth/auth.config';
 import { AuthGuard } from './modules/auth/guard/auth.guard';
+import { ClsModule } from 'nestjs-cls';
+import { ClsPluginTransactional } from '@nestjs-cls/transactional';
+import { PrismaService } from '@src/prisma/prisma.service';
+import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
 
 @Module({
   imports: [
@@ -46,6 +50,18 @@ import { AuthGuard } from './modules/auth/guard/auth.guard';
     PlannersModule,
     TracksModule,
     ShareModule,
+    ClsModule.forRoot({
+      global: true,
+      middleware: { mount: true },
+      plugins: [
+        new ClsPluginTransactional({
+          imports: [PrismaModule],
+          adapter: new TransactionalAdapterPrisma({
+            prismaInjectionToken: PrismaService,
+          }),
+        }),
+      ],
+    }),
   ],
   controllers: [AppController],
   providers: [

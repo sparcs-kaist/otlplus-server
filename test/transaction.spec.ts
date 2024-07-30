@@ -5,6 +5,8 @@ import { PrismaService } from '../src/prisma/prisma.service';
 import { TranManager } from '../src/prisma/transactionManager';
 import { CourseRepository } from '../src/prisma/repositories/course.repository';
 import { ECourse } from '@src/common/entities/ECourse';
+import { CoursesService } from '@src/modules/courses/courses.service';
+import { session_userprofile } from '@prisma/client';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -20,6 +22,7 @@ describe('AppController (e2e)', () => {
 
   it('/session/info (GET)', async () => {
     const courseRepository = app.get(CourseRepository);
+    console.log('transaction test with tranManager');
 
     await TranManager.transaction(async () => {
       await courseRepository.getCourseById(10);
@@ -28,6 +31,7 @@ describe('AppController (e2e)', () => {
   }, 10000);
 
   it('$transaction', async () => {
+    console.log('transaction test with prismaService');
     const prismaService = app.get(PrismaService);
     await prismaService.$transaction(async (tx) => {
       await tx.subject_course.findUnique({
@@ -44,4 +48,17 @@ describe('AppController (e2e)', () => {
       });
     });
   }, 10000);
+
+  it('transaction test with cls', async () => {
+    console.log('transaction test with cls');
+    const prismaService = app.get(PrismaService);
+    const coursesService = app.get(CoursesService);
+    const user: session_userprofile =
+      (await prismaService.session_userprofile.findUnique({
+        where: {
+          id: 13933,
+        },
+      })) as session_userprofile;
+    const courses = await coursesService.getCourses({ keyword: '기계' }, user);
+  });
 });
