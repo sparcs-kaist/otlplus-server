@@ -1,4 +1,6 @@
 import { CanvasRenderingContext2D } from 'canvas';
+import { Type } from 'class-transformer';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 import { ELecture } from '../entities/ELecture';
 
 export namespace IShare {
@@ -43,5 +45,23 @@ export namespace IShare {
     isEnglish: boolean;
     semesterFontSize: number;
     tileFontSize: number;
+  }
+
+  export class TimetableImageQueryDto {
+    @Type(() => Number)
+    @IsNumber()
+    timetable!: number;
+
+    @Type(() => Number)
+    @IsNumber()
+    year!: number;
+
+    @Type(() => Number)
+    @IsNumber()
+    semester!: number;
+
+    @IsString()
+    @IsOptional()
+    language?: string;
   }
 }

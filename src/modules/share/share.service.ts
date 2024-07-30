@@ -8,7 +8,7 @@ import {
 } from 'canvas';
 import { join } from 'path';
 import { ELecture } from 'src/common/entities/ELecture';
-import { TimetableImageQueryDto } from 'src/common/interfaces/dto/share/share.request.dto';
+import { IShare } from 'src/common/interfaces';
 import { SemesterRepository } from 'src/prisma/repositories/semester.repository';
 import { LecturesService } from '../lectures/lectures.service';
 import { SemestersService } from '../semesters/semesters.service';
@@ -306,7 +306,7 @@ export class ShareService {
   }
 
   async createTimetableImage(
-    query: TimetableImageQueryDto,
+    query: IShare.TimetableImageQueryDto,
     user: session_userprofile,
   ): Promise<Buffer> {
     const lectures = await this.timetablesService.getTimetableEntries(

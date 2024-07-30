@@ -1,7 +1,7 @@
 import { Controller, Get, Query, Res } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { Response } from 'express';
-import { TimetableImageQueryDto } from 'src/common/interfaces/dto/share/share.request.dto';
+import { IShare } from 'src/common/interfaces';
 import { TimetableRepository } from 'src/prisma/repositories/timetable.repository';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { ShareService } from './share.service';
@@ -15,7 +15,7 @@ export class ShareController {
 
   @Get('timetable/image')
   async getTimetableImage(
-    @Query() query: TimetableImageQueryDto,
+    @Query() query: IShare.TimetableImageQueryDto,
     @GetUser() user: session_userprofile,
     @Res() res: Response,
   ) {
