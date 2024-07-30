@@ -80,6 +80,12 @@ import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-pr
       },
       inject: [AuthConfig],
     },
+    {
+      provide: APP_GUARD,
+      useFactory: () => {
+        const env = process.env.NODE_ENV;
+      },
+    },
     JwtCookieGuard,
     MockAuthGuard,
     AppService,
