@@ -39,7 +39,24 @@ const getPrismaConfig = (): PrismaClientOptions => {
       },
     },
     errorFormat: 'pretty',
-    log: ['query', 'info', 'warn'],
+    log: [
+      {
+        emit: 'event',
+        level: 'query',
+      },
+      {
+        emit: 'stdout',
+        level: 'error',
+      },
+      {
+        emit: 'stdout',
+        level: 'info',
+      },
+      {
+        emit: 'stdout',
+        level: 'warn',
+      },
+    ],
   };
 };
 

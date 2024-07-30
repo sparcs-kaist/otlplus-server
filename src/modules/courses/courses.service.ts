@@ -43,6 +43,16 @@ export class CoursesService {
     );
   }
 
+  @Transactional()
+  public async getCourseByIds(ids: number[], user: session_userprofile) {
+    return await Promise.all(
+      ids.map(async (id) => {
+        return this.courseRepository.getCourseById(id);
+      }),
+    );
+  }
+
+  @Transactional()
   public async getCourseById(id: number, user: session_userprofile) {
     const course = await this.courseRepository.getCourseById(id);
     if (!course) {
