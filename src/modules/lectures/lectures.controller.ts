@@ -4,7 +4,6 @@ import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { Public } from 'src/common/decorators/skip-auth.decorator';
 import { ILecture } from 'src/common/interfaces/ILecture';
 import { IReview } from 'src/common/interfaces/IReview';
-import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
 import { LecturesService } from './lectures.service';
 
 @Controller('api/lectures')
@@ -34,7 +33,7 @@ export class LecturesController {
     @Param('lectureId') lectureId: number,
     @GetUser() user: session_userprofile,
     // TODO: Consider using IReview.Basic
-  ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })[]> {
+  ): Promise<(IReview.Basic & { userspecific_is_liked: boolean })[]> {
     return await this.LectureService.getLectureReviews(user, lectureId, query);
   }
 
@@ -45,7 +44,7 @@ export class LecturesController {
     @Param('lectureId') lectureId: number,
     @GetUser() user: session_userprofile,
     // TODO: Consider using IReview.Basic
-  ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })[]> {
+  ): Promise<(IReview.Basic & { userspecific_is_liked: boolean })[]> {
     return await this.LectureService.getLectureRelatedReviews(
       user,
       lectureId,

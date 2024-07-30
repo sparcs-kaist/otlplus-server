@@ -1,6 +1,6 @@
 import { IDepartment } from '../../IDepartment';
 import { ILecture } from '../../ILecture';
-import { ReviewResponseDto } from '../reviews/review.response.dto';
+import { IReview } from '../../IReview';
 
 export interface ProfileDto {
   id: number;
@@ -14,5 +14,5 @@ export interface ProfileDto {
   favorite_departments: IDepartment.Basic[];
   review_writable_lectures: ILecture.Detail[];
   my_timetable_lectures: ILecture.Detail[];
-  reviews: ReviewResponseDto[];
+  reviews: IReview.Basic[];
 }

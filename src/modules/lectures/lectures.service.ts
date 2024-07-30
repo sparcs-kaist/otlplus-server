@@ -4,7 +4,6 @@ import { ELecture } from 'src/common/entities/ELecture';
 import { EReview } from 'src/common/entities/EReview';
 import { ILecture } from 'src/common/interfaces/ILecture';
 import { IReview } from 'src/common/interfaces/IReview';
-import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
 import { toJsonLectureDetail } from 'src/common/interfaces/serializer/lecture.serializer';
 import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -35,7 +34,7 @@ export class LecturesService {
     user: session_userprofile,
     lectureId: number,
     query: IReview.LectureReviewsQueryDto,
-  ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })[]> {
+  ): Promise<(IReview.Basic & { userspecific_is_liked: boolean })[]> {
     const MAX_LIMIT = 100;
     const DEFAULT_ORDER = ['-written_datetime', '-id'];
     const reviews = await this.reviewsRepository.getReviewsOfLecture(
@@ -70,7 +69,7 @@ export class LecturesService {
     user: session_userprofile,
     lectureId: number,
     query: IReview.LectureReviewsQueryDto,
-  ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })[]> {
+  ): Promise<(IReview.Basic & { userspecific_is_liked: boolean })[]> {
     const DEFAULT_LIMIT = 100;
     const DEFAULT_ORDER = ['-written_datetime', '-id'];
 

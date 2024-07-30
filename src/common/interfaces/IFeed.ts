@@ -2,7 +2,7 @@ import { IsDateString } from 'class-validator';
 import { ICourse } from './ICourse';
 import { IDepartment } from './IDepartment';
 import { ILecture } from './ILecture';
-import { ReviewResponseDto } from './dto/reviews/review.response.dto';
+import { IReview } from './IReview';
 
 export namespace IFeed {
   export interface Basic {
@@ -12,11 +12,11 @@ export namespace IFeed {
   }
 
   export interface FamousHumanityReview extends Basic {
-    reviews: ReviewResponseDto[];
+    reviews: IReview.Basic[];
   }
 
   export interface FamousMajorReview extends Basic {
-    reviews: ReviewResponseDto[];
+    reviews: IReview.Basic[];
     department: IDepartment.Basic;
   }
 
@@ -29,7 +29,7 @@ export namespace IFeed {
   }
 
   export interface RankedReview extends Basic {
-    reviews: ReviewResponseDto[];
+    reviews: IReview.Basic[];
   }
 
   export type Details =

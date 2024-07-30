@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { ICourse } from 'src/common/interfaces';
+import { IReview } from 'src/common/interfaces/IReview';
 import {
   ReviewLikedQueryDto,
   UserTakenCoursesQueryDto,
@@ -11,7 +12,6 @@ import {
   toJsonCourseDetail,
 } from 'src/common/interfaces/serializer/course.serializer';
 import { ResearchLecture } from '../../common/interfaces/constants/lecture';
-import { ReviewResponseDto } from '../../common/interfaces/dto/reviews/review.response.dto';
 import { toJsonDepartment } from '../../common/interfaces/serializer/department.serializer';
 import { toJsonLectureDetail } from '../../common/interfaces/serializer/lecture.serializer';
 import { toJsonReview } from '../../common/interfaces/serializer/review.serializer';
@@ -129,7 +129,7 @@ export class UserService {
     user: session_userprofile,
     userId: number,
     query: ReviewLikedQueryDto,
-  ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })[]> {
+  ): Promise<(IReview.Basic & { userspecific_is_liked: boolean })[]> {
     const MAX_LIMIT = 300;
     const DEFAULT_ORDER = ['-written_datetime', '-id'];
 
