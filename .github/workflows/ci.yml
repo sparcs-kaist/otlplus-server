@@ -40,7 +40,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --force
       - name: Check lint
         run: npm run lint:check
 
@@ -57,7 +57,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --force
       - name: Copy env file
         run: cp ./env/.env.example ./env/.env.local
       - name: Generate PrismaClient
