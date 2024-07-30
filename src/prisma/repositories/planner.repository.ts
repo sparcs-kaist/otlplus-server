@@ -1,11 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { ELecture } from 'src/common/entities/ELecture';
-import {
-  PlannerBodyDto,
-  PlannerQueryDto,
-  PlannerUpdateItemDto,
-} from 'src/common/interfaces/dto/planner/planner.request.dto';
+import { IPlanner } from 'src/common/interfaces/IPlanner';
 import { orderFilter } from 'src/common/utils/search.utils';
 import { EPlanners } from '../../common/entities/EPlanners';
 import { PlannerItemType } from '../../common/interfaces/constants/planner';
@@ -16,7 +12,7 @@ export class PlannerRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   public async getPlannerByUser(
-    query: PlannerQueryDto,
+    query: IPlanner.Query,
     user: session_userprofile,
   ): Promise<EPlanners.Details[]> {
     return await this.prisma.planner_planner.findMany({
@@ -41,7 +37,7 @@ export class PlannerRepository {
   }
 
   public async createPlanner(
-    body: PlannerBodyDto,
+    body: IPlanner.Body,
     arrange_order: number,
     user: session_userprofile,
   ): Promise<EPlanners.Details> {
@@ -374,7 +370,7 @@ export class PlannerRepository {
   async updatePlannerItem(
     item_type: string,
     item: number,
-    updatedFields: Pick<PlannerUpdateItemDto, 'semester' | 'is_excluded'>,
+    updatedFields: Pick<IPlanner.UpdateItemBody, 'semester' | 'is_excluded'>,
   ): Promise<
     | EPlanners.EItems.Taken.Details
     | EPlanners.EItems.Future.Extended

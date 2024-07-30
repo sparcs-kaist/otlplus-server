@@ -8,12 +8,6 @@ import {
 } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { IPlanner } from 'src/common/interfaces/IPlanner';
-import {
-  PlannerBodyDto,
-  PlannerQueryDto,
-  PlannerRemoveItemDto,
-  PlannerUpdateItemDto,
-} from 'src/common/interfaces/dto/planner/planner.request.dto';
 import { PlannerResponseDto } from 'src/common/interfaces/dto/planner/planner.response.dto';
 import {
   toJsonArbitraryItem,
@@ -36,7 +30,7 @@ export class PlannersService {
   ) {}
 
   public async getPlannerByUser(
-    query: PlannerQueryDto,
+    query: IPlanner.Query,
     user: session_userprofile,
   ) {
     const queryResult = await this.PlannerRepository.getPlannerByUser(
@@ -51,7 +45,7 @@ export class PlannersService {
   }
 
   public async postPlanner(
-    body: PlannerBodyDto,
+    body: IPlanner.Body,
     user: session_userprofile,
   ): Promise<PlannerResponseDto> {
     const relatedPlanner = await this.getRelatedPlanner(user);
@@ -151,7 +145,7 @@ export class PlannersService {
 
   public async removePlannerItem(
     plannerId: number,
-    removeItem: PlannerRemoveItemDto,
+    removeItem: IPlanner.RemoveItemBody,
     user: session_userprofile,
   ): Promise<PlannerResponseDto> {
     switch (removeItem.item_type) {
@@ -265,7 +259,7 @@ export class PlannersService {
 
   async updatePlannerItem(
     plannerId: number,
-    updateItemDto: PlannerUpdateItemDto,
+    updateItemDto: IPlanner.UpdateItemBody,
   ): Promise<
     | EPlanners.EItems.Taken.Details
     | EPlanners.EItems.Future.Extended

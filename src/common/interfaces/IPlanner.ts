@@ -1,11 +1,98 @@
-import { Type } from 'class-transformer';
-import { IsIn, IsInt, IsString } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import {
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsIn,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+import {
+  OrderDefaultValidator,
+  _PROHIBITED_FIELD_PATTERN,
+} from '../decorators/validators.decorator';
 import { ICourse } from './ICourse';
 import { IDepartment } from './IDepartment';
 import { ILecture } from './ILecture';
 import { PlannerItemType, PlannerItemTypeEnum } from './constants/planner';
 
 export namespace IPlanner {
+  export class Query {
+    @IsOptional()
+    @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+    @IsArray()
+    @IsString({ each: true })
+    @OrderDefaultValidator(_PROHIBITED_FIELD_PATTERN)
+    order?: string[];
+
+    @IsOptional()
+    @IsNumber()
+    @Type(() => Number)
+    offset?: number;
+
+    @IsOptional()
+    @IsNumber()
+    @Type(() => Number)
+    limit?: number;
+  }
+
+  export class Body {
+    @IsInt()
+    start_year!: number;
+    @IsInt()
+    end_year!: number;
+    @IsInt()
+    general_track!: number;
+    @IsInt()
+    major_track!: number;
+    @IsOptional()
+    @IsArray()
+    @IsInt({ each: true })
+    additional_tracks?: number[];
+    @IsOptional()
+    @IsBoolean()
+    should_update_taken_semesters?: boolean;
+    @IsArray()
+    @IsInt({ each: true })
+    taken_items_to_copy!: number[];
+    @IsArray()
+    @IsInt({ each: true })
+    future_items_to_copy!: number[];
+    @IsArray()
+    @IsInt({ each: true })
+    arbitrary_items_to_copy!: number[];
+  }
+
+  export class RemoveItemBody {
+    @IsInt()
+    item!: number;
+    @IsEnum(['TAKEN', 'FUTURE', 'ARBITRARY'])
+    item_type!: 'TAKEN' | 'FUTURE' | 'ARBITRARY';
+  }
+
+  export class ReorderBody {
+    @IsInt()
+    arrange_order!: number;
+  }
+
+  export class UpdateItemBody {
+    @IsInt()
+    item!: number;
+
+    @IsEnum(PlannerItemType)
+    item_type!: PlannerItemType;
+
+    @IsInt()
+    @IsOptional()
+    semester?: number;
+
+    @IsBoolean()
+    @IsOptional()
+    is_excluded?: boolean;
+  }
+
   export interface ArbitraryPlannerItemResponseDto {
     id: number;
     item_type: 'ARBITRARY';
