@@ -7,6 +7,10 @@ import { UserService } from '../user/user.service';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtCookieStrategy } from './strategy/jwt-cookie.strategy';
+import { AuthChain } from './auth.chain';
+import { IsPublicCommand } from './command/isPublic.command';
+import { JwtCommand } from './command/jwt.command';
+import { SidCommand } from './command/sid.command';
 
 @Module({
   imports: [
@@ -15,7 +19,16 @@ import { JwtCookieStrategy } from './strategy/jwt-cookie.strategy';
     JwtModule.register({}),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtCookieStrategy, UserService, UserRepository],
+  providers: [
+    AuthService,
+    JwtCookieStrategy,
+    UserService,
+    UserRepository,
+    AuthChain,
+    IsPublicCommand,
+    JwtCommand,
+    SidCommand,
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}

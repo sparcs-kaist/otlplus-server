@@ -52,6 +52,12 @@ import { ShareModule } from './modules/share/share.module';
       useClass:
         process.env.NODE_ENV === 'production' ? JwtCookieGuard : MockAuthGuard,
     },
+    {
+      provide: APP_GUARD,
+      useFactory: () => {
+        const env = process.env.NODE_ENV;
+      },
+    },
     JwtCookieGuard,
     MockAuthGuard,
     AppService,
