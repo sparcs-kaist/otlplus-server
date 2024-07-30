@@ -3,7 +3,8 @@ import {
   subject_lecture,
   subject_professor,
 } from '@prisma/client';
-import { CourseDetails, NESTED } from '../../schemaTypes/types';
+import { ECourse } from 'src/common/entities/ECourse';
+import { NESTED } from '../../schemaTypes/types';
 import { applyOrder } from '../../utils/search.utils';
 import { ICourse } from '../ICourse';
 import { CourseResponseDtoNested } from '../dto/course/course.response.dto';
@@ -43,8 +44,8 @@ export function toJsonCourseRelated(course: subject_course): ICourse.Related {
 
 export function toJsonCourse<T>(
   course: T extends NESTED
-    ? Omit<CourseDetails, 'subject_course_professors'>
-    : CourseDetails,
+    ? Omit<ECourse.Details, 'subject_course_professors'>
+    : ECourse.Details,
   lecture: subject_lecture,
   professor: subject_professor[],
   nested: T extends NESTED ? true : false,

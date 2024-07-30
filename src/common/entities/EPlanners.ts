@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
-import { ELecture } from './ELecture';
 import { ECourse } from './ECourse';
+import { ELecture } from './ELecture';
+import { ETrack } from './ETrack';
 
 export namespace EPlanners {
   export namespace EItems {
@@ -94,4 +95,24 @@ export namespace EPlanners {
       >;
     }
   }
+
+  export const Basic = Prisma.validator<Prisma.planner_plannerArgs>()({});
+  export type Basic = Prisma.planner_plannerGetPayload<typeof Basic>;
+
+  export const Details = Prisma.validator<Prisma.planner_plannerArgs>()({
+    include: {
+      planner_planner_additional_tracks: {
+        include: {
+          graduation_additionaltrack: ETrack.Additional,
+        },
+      },
+      graduation_generaltrack: true,
+      graduation_majortrack: ETrack.Major,
+      planner_takenplanneritem: EPlanners.EItems.Taken.Details,
+      planner_arbitraryplanneritem: EPlanners.EItems.Arbitrary.Extended,
+      planner_futureplanneritem: EPlanners.EItems.Future.Extended,
+    },
+  });
+
+  export type Details = Prisma.planner_plannerGetPayload<typeof Details>;
 }

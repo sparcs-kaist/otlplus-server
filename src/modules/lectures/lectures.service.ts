@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { ELecture } from 'src/common/entities/ELecture';
+import { EReview } from 'src/common/entities/EReview';
 import { ILecture } from 'src/common/interfaces/ILecture';
 import { IReview } from 'src/common/interfaces/IReview';
 import { LectureQueryDto } from 'src/common/interfaces/dto/lecture/lecture.request.dto';
@@ -10,7 +11,6 @@ import { toJsonLecture } from 'src/common/interfaces/serializer/lecture.serializ
 import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
-import { LectureDetails, ReviewDetails } from '../../common/schemaTypes/types';
 import { LectureRepository } from './../../prisma/repositories/lecture.repository';
 
 @Injectable()
@@ -77,7 +77,7 @@ export class LecturesService {
     const DEFAULT_ORDER = ['-written_datetime', '-id'];
 
     const lecture = await this.LectureRepository.getLectureById(lectureId);
-    const reviews: ReviewDetails[] =
+    const reviews: EReview.Details[] =
       await this.reviewsRepository.getRelatedReviewsOfLecture(
         query.order ?? DEFAULT_ORDER,
         query.offset ?? 0,
@@ -105,7 +105,7 @@ export class LecturesService {
     );
   }
 
-  public async getLecturesByIds(ids: number[]): Promise<LectureDetails[]> {
+  public async getLecturesByIds(ids: number[]): Promise<ELecture.Details[]> {
     return await this.LectureRepository.getLectureByIds(ids);
   }
 

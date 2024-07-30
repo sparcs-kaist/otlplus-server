@@ -5,20 +5,18 @@ import {
   session_userprofile,
   subject_department,
 } from '@prisma/client';
+import { ELecture } from 'src/common/entities/ELecture';
 import { EReview } from 'src/common/entities/EReview';
 import { orderFilter } from 'src/common/utils/search.utils';
-import {
-  LectureDetails,
-  ReviewDetails,
-  reviewDetails,
-} from '../../common/schemaTypes/types';
 import { PrismaService } from '../prisma.service';
 
 @Injectable()
 export class ReviewsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findReviewByUser(user: session_userprofile): Promise<ReviewDetails[]> {
+  async findReviewByUser(
+    user: session_userprofile,
+  ): Promise<EReview.Details[]> {
     const reviews = await this.prisma.review_review.findMany({
       where: { writer_id: user.id },
       include: {
@@ -44,7 +42,7 @@ export class ReviewsRepository {
     return reviews;
   }
 
-  async getReviewById(reviewId: number): Promise<ReviewDetails | null> {
+  async getReviewById(reviewId: number): Promise<EReview.Details | null> {
     return await this.prisma.review_review.findUnique({
       where: { id: reviewId },
       include: {
@@ -86,7 +84,7 @@ export class ReviewsRepository {
     limit: number,
     lectureYear?: number,
     lectureSemester?: number,
-  ): Promise<ReviewDetails[]> {
+  ): Promise<EReview.Details[]> {
     let lectureFilter: object = {};
     const orderFilter: { [key: string]: string }[] = [];
     if (lectureYear) {
@@ -170,8 +168,8 @@ export class ReviewsRepository {
     order: string[],
     offset: number,
     limit: number,
-    lecture: LectureDetails,
-  ): Promise<ReviewDetails[]> {
+    lecture: ELecture.Details,
+  ): Promise<EReview.Details[]> {
     return await this.prisma.review_review.findMany({
       ...EReview.Details,
       where: {
@@ -225,7 +223,7 @@ export class ReviewsRepository {
     order: string[],
     offset: number,
     limit: number,
-  ): Promise<ReviewDetails[]> {
+  ): Promise<EReview.Details[]> {
     const likedReviews = await this.prisma.review_review.findMany({
       where: {
         review_reviewvote: {
@@ -234,7 +232,7 @@ export class ReviewsRepository {
           },
         },
       },
-      include: reviewDetails.include,
+      include: EReview.Details.include,
       take: limit,
       skip: offset,
       orderBy: orderFilter(order),
@@ -286,7 +284,7 @@ export class ReviewsRepository {
     load: number,
     speech: number,
     writerId: number,
-  ): Promise<ReviewDetails> {
+  ): Promise<EReview.Details> {
     return await this.prisma.review_review.upsert({
       where: {
         writer_id_lecture_id: { writer_id: writerId, lecture_id: lectureId },
@@ -332,7 +330,7 @@ export class ReviewsRepository {
     grade?: number,
     load?: number,
     speech?: number,
-  ): Promise<ReviewDetails> {
+  ): Promise<EReview.Details> {
     return await this.prisma.review_review.update({
       where: {
         id: reviewId,
@@ -367,7 +365,7 @@ export class ReviewsRepository {
 
   public async getTopLikedReviews(n: number) {
     return await this.prisma.review_review.findMany({
-      include: reviewDetails.include,
+      include: EReview.Details.include,
       orderBy: {
         like: 'desc',
       },

@@ -1,17 +1,13 @@
+import { ELecture } from 'src/common/entities/ELecture';
 import { applyOrder } from 'src/common/utils/search.utils';
-import {
-  LectureDetails,
-  LectureExtended,
-  NESTED,
-  isLectureDetails,
-} from '../../schemaTypes/types';
+import { NESTED } from '../../schemaTypes/types';
 import { LectureResponseDto } from '../dto/lecture/lecture.response.dto';
 import { toJsonClasstime } from './classtime.serializer';
 import { toJsonExamtime } from './examtime.serializer';
 import { toJsonProfessor } from './professor.serializer';
 
 export function toJsonLecture<T extends boolean>(
-  lecture: T extends NESTED ? LectureExtended : LectureDetails,
+  lecture: T extends NESTED ? ELecture.Extended : ELecture.Details,
   nested: T,
 ): LectureResponseDto {
   let result = {
@@ -55,8 +51,8 @@ export function toJsonLecture<T extends boolean>(
     return result;
   }
 
-  if (!isLectureDetails(lecture))
-    throw new Error("Lecture is not of type 'LectureDetails'");
+  if (!ELecture.isDetails(lecture))
+    throw new Error("Lecture is not of type 'ELecture.Details'");
 
   result = Object.assign(result, {
     grade: lecture.grade,

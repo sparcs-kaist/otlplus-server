@@ -1,8 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  WishlistWithLectures,
-  wishlistWithLectures,
-} from 'src/common/schemaTypes/types';
+import { EWishlist } from 'src/common/entities/EWishlist';
 import { PrismaService } from '../prisma.service';
 
 @Injectable()
@@ -14,7 +11,7 @@ export class WishlistRepository {
       where: { user_id: userId },
       create: { user_id: userId },
       update: {},
-      include: wishlistWithLectures.include,
+      include: EWishlist.WithLectures.include,
     });
   }
 
@@ -55,10 +52,10 @@ export class WishlistRepository {
 
   async getWishlistWithLectures(
     wishlistId: number,
-  ): Promise<WishlistWithLectures | null> {
+  ): Promise<EWishlist.WithLectures | null> {
     return await this.prisma.timetable_wishlist.findUnique({
       where: { id: wishlistId },
-      include: wishlistWithLectures.include,
+      include: EWishlist.WithLectures.include,
     });
   }
 }
