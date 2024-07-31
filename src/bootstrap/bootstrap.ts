@@ -6,6 +6,7 @@ import { Server } from 'http';
 import { AppModule } from '../app.module';
 import { PrismaService } from '../prisma/prisma.service';
 import settings from '../settings';
+import { SwaggerModule } from '@nestjs/swagger';
 // import { AuthGuard, MockAuthGuard } from '../../common/guards/auth.guard'
 import morgan = require('morgan');
 
@@ -59,6 +60,12 @@ async function bootstrap() {
       },
     }),
   );
+
+  const document = SwaggerModule.createDocument(
+    app,
+    settings().getSwaggerConfig(),
+  );
+  SwaggerModule.setup('docs', app, document);
 
   const prismaService = app.get(PrismaService);
   await prismaService.enableShutdownHooks(app);
