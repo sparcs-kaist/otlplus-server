@@ -19,5 +19,10 @@
     "noImplicitAny": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": false
-  }
+  },
+  "plugins": [
+    {
+      "name": "@nestjs/swagger/plugin"
+    }
+  ]
 }

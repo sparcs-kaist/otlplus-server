@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import { PrismaClientOptions } from 'prisma/prisma-client/runtime';
 import { dotEnvOptions } from './dotenv-options';
+import { DocumentBuilder } from '@nestjs/swagger';
 
 dotenv.config(dotEnvOptions);
 console.log(`NODE_ENV environment: ${process.env.NODE_ENV}`);
@@ -15,6 +16,7 @@ export default () => {
     getSsoConfig: () => getSsoConfig(),
     getCorsConfig: () => getCorsConfig(),
     getVersion: () => getVersion(),
+    getSwaggerConfig: () => getSwaggerConfig(),
   };
 };
 
@@ -76,4 +78,13 @@ const getSsoConfig = (): any => {
 
 const getVersion = () => {
   return String(process.env.npm_package_version);
+};
+
+const getSwaggerConfig = () => {
+  const config = new DocumentBuilder()
+    .setTitle('OTLPlus-server')
+    .setDescription('The OTL-server API description')
+    .setVersion('1.0')
+    .build();
+  return config;
 };
