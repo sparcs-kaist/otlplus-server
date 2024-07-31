@@ -1,7 +1,10 @@
 import { Controller, Get, Query, Res } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { Response } from 'express';
-import { TimetableImageQueryDto } from 'src/common/interfaces/dto/share/share.request.dto';
+import {
+  TimetableIcalQueryDto,
+  TimetableImageQueryDto,
+} from 'src/common/interfaces/dto/share/share.request.dto';
 import { TimetableRepository } from 'src/prisma/repositories/timetable.repository';
 import { GetUser } from '../../common/decorators/get-user.decorator';
 import { ShareService } from './share.service';
@@ -25,5 +28,16 @@ export class ShareController {
     );
     res.setHeader('Content-Type', 'image/png');
     res.send(imageBuffer);
+  }
+
+  @Get('timetable/ical')
+  async getTimetableIcal(
+    @Query() query: TimetableIcalQueryDto,
+    @GetUser() user: session_userprofile,
+    @Res() res: Response,
+  ) {
+    const calendar = await this.shareService.createTimetableIcal(query, user);
+    res.setHeader('Content-Type', 'text/calendar');
+    res.send(calendar.toString());
   }
 }
