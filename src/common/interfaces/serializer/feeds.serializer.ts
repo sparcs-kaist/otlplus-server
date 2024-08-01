@@ -36,7 +36,7 @@ export const toJsonFeedDetails = (
       date: feed.date,
       priority: feed.priority,
       lecture: toJsonLectureBasic(feed.subject_lecture),
-    } as IFeed.ReviewWrite;
+    };
   } else if (EFeed.isRelatedCourse(feed)) {
     return {
       type: FeedType.RelatedCourse,
