@@ -42,7 +42,7 @@ export class LectureRepository {
     });
   }
 
-  async filterByRequest(query: ILecture.Query): Promise<ELecture.Details[]> {
+  async filterByRequest(query: ILecture.QueryDto): Promise<ELecture.Details[]> {
     const DEFAULT_LIMIT = 300;
     const DEFAULT_ORDER = ['year', 'semester', 'old_code', 'class_no'];
     const researchTypes = [
@@ -265,7 +265,7 @@ export class LectureRepository {
     year,
     semester,
     keyword,
-  }: ILecture.AutocompleteQuery): Promise<ELecture.Extended | null> {
+  }: ILecture.AutocompleteQueryDto): Promise<ELecture.Extended | null> {
     const candidate = await this.prisma.subject_lecture.findFirst({
       where: {
         year,

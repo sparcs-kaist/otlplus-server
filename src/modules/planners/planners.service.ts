@@ -29,7 +29,7 @@ export class PlannersService {
   ) {}
 
   public async getPlannerByUser(
-    query: IPlanner.Query,
+    query: IPlanner.QueryDto,
     user: session_userprofile,
   ) {
     const queryResult = await this.PlannerRepository.getPlannerByUser(
@@ -44,9 +44,9 @@ export class PlannersService {
   }
 
   public async postPlanner(
-    body: IPlanner.Body,
+    body: IPlanner.CreateBodyDto,
     user: session_userprofile,
-  ): Promise<IPlanner.Response> {
+  ): Promise<IPlanner.Detail> {
     const relatedPlanner = await this.getRelatedPlanner(user);
     const arrangeOrder =
       relatedPlanner.length == 0
@@ -144,9 +144,9 @@ export class PlannersService {
 
   public async removePlannerItem(
     plannerId: number,
-    removeItem: IPlanner.RemoveItemBody,
+    removeItem: IPlanner.RemoveItemBodyDto,
     user: session_userprofile,
-  ): Promise<IPlanner.Response> {
+  ): Promise<IPlanner.Detail> {
     switch (removeItem.item_type) {
       case 'TAKEN':
         throw new BadRequestException(
@@ -222,7 +222,7 @@ export class PlannersService {
     plannerId: number,
     order: number,
     user: session_userprofile,
-  ): Promise<IPlanner.Response> {
+  ): Promise<IPlanner.Detail> {
     const planner = await this.PlannerRepository.getPlannerById(
       user,
       plannerId,
@@ -258,7 +258,7 @@ export class PlannersService {
 
   async updatePlannerItem(
     plannerId: number,
-    updateItemDto: IPlanner.UpdateItemBody,
+    updateItemDto: IPlanner.UpdateItemBodyDto,
   ): Promise<
     | EPlanners.EItems.Taken.Details
     | EPlanners.EItems.Future.Extended

@@ -11,13 +11,13 @@ export class LecturesController {
   constructor(private readonly LectureService: LecturesService) {}
 
   @Get()
-  async getLectures(@Query() query: ILecture.Query) {
+  async getLectures(@Query() query: ILecture.QueryDto) {
     return await this.LectureService.getLectureByFilter(query);
   }
 
   @Public()
   @Get('autocomplete')
-  async getLectureAutocomplete(@Query() query: ILecture.AutocompleteQuery) {
+  async getLectureAutocomplete(@Query() query: ILecture.AutocompleteQueryDto) {
     return await this.LectureService.getLectureAutocomplete(query);
   }
 

@@ -19,7 +19,7 @@ export class PlannersController {
 
   @Get()
   async getPlanners(
-    @Query() query: IPlanner.Query,
+    @Query() query: IPlanner.QueryDto,
     @Param('id') id: number,
     @GetUser() user: session_userprofile,
   ) {
@@ -32,7 +32,7 @@ export class PlannersController {
 
   @Post()
   async postPlanner(
-    @Body() planner: IPlanner.Body,
+    @Body() planner: IPlanner.CreateBodyDto,
     @Param('id') id: number,
     @GetUser() user: session_userprofile,
   ) {
@@ -63,10 +63,10 @@ export class PlannersController {
 
   @Post(':plannerId/remove-item')
   async removePlanner(
-    @Body() removeItem: IPlanner.RemoveItemBody,
+    @Body() removeItem: IPlanner.RemoveItemBodyDto,
     @Param('plannerId') plannerId: number,
     @GetUser() user: session_userprofile,
-  ): Promise<IPlanner.Response> {
+  ): Promise<IPlanner.Detail> {
     return await this.plannersService.removePlannerItem(
       plannerId,
       removeItem,
@@ -95,10 +95,10 @@ export class PlannersController {
 
   @Post(':plannerId/reorder')
   async reorderPlanner(
-    @Body() reorder: IPlanner.ReorderBody,
+    @Body() reorder: IPlanner.ReorderBodyDto,
     @Param('plannerId') plannerId: number,
     @GetUser() user: session_userprofile,
-  ): Promise<IPlanner.Response> {
+  ): Promise<IPlanner.Detail> {
     return await this.plannersService.reorderPlanner(
       plannerId,
       reorder.arrange_order,
@@ -111,7 +111,7 @@ export class PlannersController {
     @Param('id') userId: number,
     @Param('plannerId') plannerId: number,
     @GetUser() user: session_userprofile,
-    @Body() updateItemDto: IPlanner.UpdateItemBody,
+    @Body() updateItemDto: IPlanner.UpdateItemBodyDto,
   ) {
     if (userId !== user.id) {
       throw new UnauthorizedException();

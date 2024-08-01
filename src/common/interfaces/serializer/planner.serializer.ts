@@ -11,9 +11,7 @@ import {
   toJsonMajorTrack,
 } from './track.serializer';
 
-export const toJsonPlanner = (
-  planner: EPlanners.Details,
-): IPlanner.Response => {
+export const toJsonPlanner = (planner: EPlanners.Details): IPlanner.Detail => {
   return {
     id: planner.id,
     start_year: planner.start_year,

@@ -19,7 +19,7 @@ export class LecturesService {
   ) {}
 
   public async getLectureByFilter(
-    query: ILecture.Query,
+    query: ILecture.QueryDto,
   ): Promise<ILecture.Detail[]> {
     const queryResult = await this.LectureRepository.filterByRequest(query);
     return queryResult.map((lecture) => toJsonLectureDetail(lecture));
@@ -106,7 +106,7 @@ export class LecturesService {
     return await this.LectureRepository.getLectureByIds(ids);
   }
 
-  async getLectureAutocomplete(dto: ILecture.AutocompleteQuery) {
+  async getLectureAutocomplete(dto: ILecture.AutocompleteQueryDto) {
     const candidate = await this.LectureRepository.getLectureAutocomplete(dto);
     if (!candidate) return dto.keyword;
     return this.findAutocompleteFromCandidate(candidate, dto.keyword);

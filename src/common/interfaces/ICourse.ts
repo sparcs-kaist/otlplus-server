@@ -59,7 +59,7 @@ export namespace ICourse {
     related_courses_posterior: FeedBasic[];
   }
 
-  export class AutocompleteQuery {
+  export class AutocompleteQueryDto {
     @IsString()
     keyword!: string;
   }
@@ -117,7 +117,7 @@ export namespace ICourse {
     limit?: number;
   }
 
-  export class ReviewQuery {
+  export class ReviewQueryDto {
     @IsOptional()
     @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
     @IsArray()

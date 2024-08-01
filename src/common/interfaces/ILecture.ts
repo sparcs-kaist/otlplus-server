@@ -112,7 +112,7 @@ export namespace ILecture {
     examtimes: ExamTime[];
   }
 
-  export class Query extends ICourse.Query {
+  export class QueryDto extends ICourse.Query {
     @IsOptional()
     @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
     @Transform(({ value }) => value.map(parseInt))
@@ -149,7 +149,7 @@ export namespace ILecture {
     end?: number[];
   }
 
-  export class AutocompleteQuery {
+  export class AutocompleteQueryDto {
     @IsInt()
     @Type(() => Number)
     year!: number;

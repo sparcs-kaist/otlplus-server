@@ -86,7 +86,7 @@ export class CourseRepository {
   }
 
   public async getReviewsByCourseId(
-    query: ICourse.ReviewQuery,
+    query: ICourse.ReviewQueryDto,
     id: number,
   ): Promise<EReview.Details[]> {
     const review = await this.prisma.review_review.findMany({
@@ -404,7 +404,7 @@ export class CourseRepository {
 
   async getCourseAutocomplete({
     keyword,
-  }: ICourse.AutocompleteQuery): Promise<ECourse.Extended | null> {
+  }: ICourse.AutocompleteQueryDto): Promise<ECourse.Extended | null> {
     const candidate = await this.prisma.subject_course.findFirst({
       where: {
         OR: [

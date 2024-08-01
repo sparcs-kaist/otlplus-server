@@ -12,7 +12,7 @@ export class PlannerRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   public async getPlannerByUser(
-    query: IPlanner.Query,
+    query: IPlanner.QueryDto,
     user: session_userprofile,
   ): Promise<EPlanners.Details[]> {
     return await this.prisma.planner_planner.findMany({
@@ -37,7 +37,7 @@ export class PlannerRepository {
   }
 
   public async createPlanner(
-    body: IPlanner.Body,
+    body: IPlanner.CreateBodyDto,
     arrange_order: number,
     user: session_userprofile,
   ): Promise<EPlanners.Details> {
@@ -370,7 +370,7 @@ export class PlannerRepository {
   async updatePlannerItem(
     item_type: string,
     item: number,
-    updatedFields: Pick<IPlanner.UpdateItemBody, 'semester' | 'is_excluded'>,
+    updatedFields: Pick<IPlanner.UpdateItemBodyDto, 'semester' | 'is_excluded'>,
   ): Promise<
     | EPlanners.EItems.Taken.Details
     | EPlanners.EItems.Future.Extended

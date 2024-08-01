@@ -20,7 +20,7 @@ export class CourseController {
   }
 
   @Get('autocomplete')
-  async getCourseAutocomplete(@Query() query: ICourse.AutocompleteQuery) {
+  async getCourseAutocomplete(@Query() query: ICourse.AutocompleteQueryDto) {
     return await this.coursesService.getCourseAutocomplete(query);
   }
 
@@ -44,7 +44,7 @@ export class CourseController {
   @Get(':id/reviews')
   @Public()
   async getReviewByCourseId(
-    @Query() query: ICourse.ReviewQuery,
+    @Query() query: ICourse.ReviewQueryDto,
     @Param('id') id: number,
     @GetUser() user: session_userprofile,
   ) {
