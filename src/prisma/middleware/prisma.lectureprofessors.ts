@@ -1,15 +1,12 @@
-import {
-  review_review,
-  subject_course,
-  subject_lecture,
-  subject_professor,
-} from '@prisma/client';
+import { review_review, subject_lecture } from '@prisma/client';
 import { IPrismaMiddleware } from 'src/common/interfaces/IPrismaMiddleware';
 import { IReview } from 'src/common/interfaces/IReview';
 import { PrismaService } from '../prisma.service';
 
-export class ReviewMiddleware implements IPrismaMiddleware.IPrismaMiddleware {
-  private static instance: ReviewMiddleware;
+export class LectureProfessorsMiddleware
+  implements IPrismaMiddleware.IPrismaMiddleware
+{
+  private static instance: LectureProfessorsMiddleware;
   private prisma: PrismaService;
 
   constructor(prisma: PrismaService) {
@@ -30,26 +27,29 @@ export class ReviewMiddleware implements IPrismaMiddleware.IPrismaMiddleware {
   ): Promise<boolean> {
     if (
       operations === 'create' ||
-      operations === 'update' ||
-      operations === 'upsert'
+      operations === 'delete' ||
+      operations === 'deleteMany'
     ) {
-      await this.reviewSavedMiddleware(result, operations);
-      return true;
-    } else if (operations === 'delete') {
-      await this.reviewDeletedMiddleware(result);
+      const lectureId = result.lecture_id;
+      const lecture = await this.prisma.subject_lecture.findUniqueOrThrow({
+        where: { id: lectureId },
+      });
+      await this.lectureRecalcScore(lecture);
       return true;
     }
     return true;
   }
 
   static initialize(prisma: PrismaService) {
-    if (!ReviewMiddleware.instance) {
-      ReviewMiddleware.instance = new ReviewMiddleware(prisma);
+    if (!LectureProfessorsMiddleware.instance) {
+      LectureProfessorsMiddleware.instance = new LectureProfessorsMiddleware(
+        prisma,
+      );
     }
   }
 
-  static getInstance(): ReviewMiddleware {
-    return ReviewMiddleware.instance;
+  static getInstance(): LectureProfessorsMiddleware {
+    return LectureProfessorsMiddleware.instance;
   }
 
   private async lectureRecalcScore(lecture: subject_lecture) {
@@ -163,116 +163,5 @@ export class ReviewMiddleware implements IPrismaMiddleware.IPrismaMiddleware {
     ).year;
     const yearDiff = baseYear > lectureYear ? baseYear - lectureYear : 0;
     return (Math.sqrt(review.like) + 2) * 0.85 ** yearDiff;
-  }
-
-  private async courseRecalcScore(course: subject_course) {
-    const reviews = await this.prisma.review_review.findMany({
-      where: {
-        lecture: {
-          course: {
-            id: course.id,
-          },
-        },
-      },
-    });
-    const grades = await this.lectureCalcAverage(reviews);
-    await this.prisma.subject_course.update({
-      where: { id: course.id },
-      data: {
-        review_total_weight: grades.totalWeight,
-        grade_sum: grades.sums.gradeSum,
-        load_sum: grades.sums.loadSum,
-        speech_sum: grades.sums.speechSum,
-        grade: grades.avgs.grade,
-        load: grades.avgs.load,
-        speech: grades.avgs.speech,
-      },
-    });
-  }
-
-  private async professorRecalcScore(professor: subject_professor) {
-    const reviews = await this.prisma.review_review.findMany({
-      where: {
-        lecture: {
-          subject_lecture_professors: {
-            some: {
-              professor: {
-                id: professor.id,
-              },
-            },
-          },
-        },
-      },
-    });
-    const grades = await this.lectureCalcAverage(reviews);
-    await this.prisma.subject_professor.update({
-      where: { id: professor.id },
-      data: {
-        review_total_weight: grades.totalWeight,
-        grade_sum: grades.sums.gradeSum,
-        load_sum: grades.sums.loadSum,
-        speech_sum: grades.sums.speechSum,
-        grade: grades.avgs.grade,
-        load: grades.avgs.load,
-        speech: grades.avgs.speech,
-      },
-    });
-  }
-
-  private async recalcRelatedScore(review: review_review) {
-    const course = await this.prisma.subject_course.findUnique({
-      where: { id: review.course_id },
-    });
-
-    const professors = await this.prisma.subject_professor.findMany({
-      where: {
-        subject_lecture_professors: {
-          some: { lecture: { id: review.lecture_id } },
-        },
-      },
-    });
-
-    const professorsId = professors.map((result) => result.id);
-
-    const lectures = await this.prisma.subject_lecture.findMany({
-      where: {
-        course_id: review.course_id,
-        subject_lecture_professors: {
-          some: { professor: { id: { in: professorsId } } },
-        },
-      },
-    });
-    if (course) {
-      await this.courseRecalcScore(course);
-    }
-    await Promise.all(
-      lectures.map(async (lecture) => await this.lectureRecalcScore(lecture)),
-    );
-    await Promise.all(
-      professors.map(
-        async (professor) => await this.professorRecalcScore(professor),
-      ),
-    );
-  }
-
-  private async reviewSavedMiddleware(result: any, action: string) {
-    await this.recalcRelatedScore(result);
-    if (action === 'create') {
-      const course = await result.course;
-      await this.prisma.subject_course.update({
-        where: {
-          id: course.id,
-        },
-        data: {
-          latest_written_datetime: result.written_datetime,
-        },
-      });
-    } else {
-      //todo: caches
-    }
-  }
-
-  private async reviewDeletedMiddleware(result: any) {
-    await this.recalcRelatedScore(result);
   }
 }
