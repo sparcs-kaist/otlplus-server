@@ -3,8 +3,6 @@ import { session_userprofile } from '@prisma/client';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { Public } from 'src/common/decorators/skip-auth.decorator';
 import { ICourse } from 'src/common/interfaces';
-import { CourseReviewQueryDto } from 'src/common/interfaces/dto/course/course.review.request.dto';
-import { CourseQueryDto } from '../../common/interfaces/dto/course/course.request.dto';
 import { CoursesService } from './courses.service';
 
 @Controller('api/courses')
@@ -14,7 +12,7 @@ export class CourseController {
   @Public()
   @Get()
   async getCourses(
-    @Query() query: CourseQueryDto,
+    @Query() query: ICourse.Query,
     @GetUser() user: session_userprofile,
   ) {
     const courses = await this.coursesService.getCourses(query, user);
@@ -22,7 +20,7 @@ export class CourseController {
   }
 
   @Get('autocomplete')
-  async getCourseAutocomplete(@Query() query: ICourse.AutocompleteDto) {
+  async getCourseAutocomplete(@Query() query: ICourse.AutocompleteQueryDto) {
     return await this.coursesService.getCourseAutocomplete(query);
   }
 
@@ -46,7 +44,7 @@ export class CourseController {
   @Get(':id/reviews')
   @Public()
   async getReviewByCourseId(
-    @Query() query: CourseReviewQueryDto,
+    @Query() query: ICourse.ReviewQueryDto,
     @Param('id') id: number,
     @GetUser() user: session_userprofile,
   ) {

@@ -1,13 +1,10 @@
 import { Controller, Get, HttpException, Param, Query } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
-import { CourseResponseDtoNested } from 'src/common/interfaces/dto/course/course.response.dto';
-import {
-  ReviewLikedQueryDto,
-  UserTakenCoursesQueryDto,
-} from 'src/common/interfaces/dto/user/user.request.dto';
+import { ICourse } from 'src/common/interfaces';
+import { IReview } from 'src/common/interfaces/IReview';
+import { IUser } from 'src/common/interfaces/IUser';
 import { UserService } from './user.service';
-import { ReviewResponseDto } from '../../common/interfaces/dto/reviews/review.response.dto';
 
 @Controller('api/users')
 export class UserController {
@@ -15,10 +12,10 @@ export class UserController {
 
   @Get(':user_id/taken-courses')
   async getUserTakenCourses(
-    @Query() query: UserTakenCoursesQueryDto,
+    @Query() query: IUser.TakenCoursesQueryDto,
     @Param('user_id') userId: number,
     @GetUser() user: session_userprofile,
-  ): Promise<(CourseResponseDtoNested & { userspecific_is_read: boolean })[]> {
+  ): Promise<ICourse.DetailWithIsRead[]> {
     if (userId === user.id) {
       return await this.userService.getUserTakenCourses(query, user);
     } else {
@@ -28,10 +25,10 @@ export class UserController {
 
   @Get(':user_id/liked-reviews')
   async getUserLikedReviews(
-    @Query() query: ReviewLikedQueryDto,
+    @Query() query: IUser.ReviewLikedQueryDto,
     @Param('user_id') userId: number,
     @GetUser() user: session_userprofile,
-  ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })[]> {
+  ): Promise<(IReview.Basic & { userspecific_is_liked: boolean })[]> {
     if (userId === user.id) {
       return await this.userService.getUserLikedReviews(user, userId, query);
     } else {

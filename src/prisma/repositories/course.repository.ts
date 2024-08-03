@@ -4,7 +4,6 @@ import { ECourse } from 'src/common/entities/ECourse';
 import { ELecture } from 'src/common/entities/ELecture';
 import { EReview } from 'src/common/entities/EReview';
 import { ICourse } from 'src/common/interfaces';
-import { CourseReviewQueryDto } from 'src/common/interfaces/dto/course/course.review.request.dto';
 import {
   applyOffset,
   applyOrder,
@@ -87,7 +86,7 @@ export class CourseRepository {
   }
 
   public async getReviewsByCourseId(
-    query: CourseReviewQueryDto,
+    query: ICourse.ReviewQueryDto,
     id: number,
   ): Promise<EReview.Details[]> {
     const review = await this.prisma.review_review.findMany({
@@ -405,7 +404,7 @@ export class CourseRepository {
 
   async getCourseAutocomplete({
     keyword,
-  }: ICourse.AutocompleteDto): Promise<ECourse.Extended | null> {
+  }: ICourse.AutocompleteQueryDto): Promise<ECourse.Extended | null> {
     const candidate = await this.prisma.subject_course.findFirst({
       where: {
         OR: [

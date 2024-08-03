@@ -5,13 +5,8 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
-import { ILecture } from 'src/common/interfaces';
-import {
-  AddLectureDto,
-  ReorderTimetableDto,
-  TimetableCreateDto,
-  TimetableQueryDto,
-} from '../../common/interfaces/dto/timetable/timetable.request.dto';
+import { ELecture } from 'src/common/entities/ELecture';
+import { ITimetable } from 'src/common/interfaces';
 import {
   orderFilter,
   validateYearAndSemester,
@@ -30,7 +25,7 @@ export class TimetablesService {
     private readonly semesterRepository: SemesterRepository,
   ) {}
 
-  async getTimetables(query: TimetableQueryDto, user: session_userprofile) {
+  async getTimetables(query: ITimetable.QueryDto, user: session_userprofile) {
     const { year, semester, order, offset, limit } = query;
 
     const orderBy = orderFilter(order);
@@ -54,7 +49,7 @@ export class TimetablesService {
   }
 
   async createTimetable(
-    timeTableBody: TimetableCreateDto,
+    timeTableBody: ITimetable.CreateDto,
     user: session_userprofile,
   ) {
     const { year, semester } = timeTableBody;
@@ -101,7 +96,10 @@ export class TimetablesService {
     );
   }
 
-  async addLectureToTimetable(timeTableId: number, body: AddLectureDto) {
+  async addLectureToTimetable(
+    timeTableId: number,
+    body: ITimetable.AddLectureDto,
+  ) {
     const lectureId = body.lecture;
     const lecture = await this.lectureRepository.getLectureBasicById(lectureId);
     const timetable = await this.timetableRepository.getTimeTableBasicById(
@@ -128,7 +126,10 @@ export class TimetablesService {
     return await this.timetableRepository.getTimeTableById(timeTableId);
   }
 
-  async removeLectureFromTimetable(timeTableId: number, body: AddLectureDto) {
+  async removeLectureFromTimetable(
+    timeTableId: number,
+    body: ITimetable.AddLectureDto,
+  ) {
     const lectureId = body.lecture;
     const lecture = await this.lectureRepository.getLectureBasicById(lectureId);
     const timetable = await this.timetableRepository.getTimeTableBasicById(
@@ -187,7 +188,7 @@ export class TimetablesService {
   async reorderTimetable(
     user: session_userprofile,
     timetableId: number,
-    body: ReorderTimetableDto,
+    body: ITimetable.ReorderTimetableDto,
   ) {
     return await this.prismaService.$transaction(async (tx) => {
       const { arrange_order: targetArrangeOrder } = body;
@@ -258,7 +259,9 @@ export class TimetablesService {
     });
   }
 
-  public getTimetableType(lectures: ILecture.Basic[]): '5days' | '7days' {
+  public getTimetableType(
+    lectures: ELecture.WithClasstime[],
+  ): '5days' | '7days' {
     return lectures.some((lecture) =>
       lecture.subject_classtime.some((classtime) => classtime.day >= 5),
     )
@@ -272,7 +275,7 @@ export class TimetablesService {
     year: number,
     semester: number,
     user: session_userprofile,
-  ): Promise<ILecture.Basic[]> {
+  ): Promise<ELecture.WithClasstime[]> {
     if (!user) {
       throw new HttpException(
         'User profile is required',

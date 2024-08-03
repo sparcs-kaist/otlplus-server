@@ -2,9 +2,9 @@ import { session_userprofile } from '@prisma/client';
 import { EFeed } from 'src/common/entities/EFeed';
 import { IFeed } from '../IFeed';
 import { FeedType } from '../constants/feed';
-import { toJsonCourseRelated } from './course.serializer';
+import { toJsonFeedRelated } from './course.serializer';
 import { toJsonDepartment } from './department.serializer';
-import { toJsonLecture } from './lecture.serializer';
+import { toJsonLectureBasic } from './lecture.serializer';
 import { toJsonReview } from './review.serializer';
 
 export const toJsonFeedDetails = (
@@ -35,14 +35,14 @@ export const toJsonFeedDetails = (
       type: FeedType.ReviewWrite,
       date: feed.date,
       priority: feed.priority,
-      lecture: toJsonLecture(feed.subject_lecture, true),
+      lecture: toJsonLectureBasic(feed.subject_lecture),
     };
   } else if (EFeed.isRelatedCourse(feed)) {
     return {
       type: FeedType.RelatedCourse,
       date: feed.date,
       priority: feed.priority,
-      course: toJsonCourseRelated(feed.subject_course),
+      course: toJsonFeedRelated(feed.subject_course),
     };
   } else if (EFeed.isRankedReview(feed)) {
     return {

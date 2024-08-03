@@ -1,8 +1,8 @@
 import { IsDateString } from 'class-validator';
 import { ICourse } from './ICourse';
-import { DepartmentResponseDto } from './dto/department/department.response.dto';
-import { NestedLectureResponseDto } from './dto/lecture/lecture.response.dto';
-import { ReviewResponseDto } from './dto/reviews/review.response.dto';
+import { IDepartment } from './IDepartment';
+import { ILecture } from './ILecture';
+import { IReview } from './IReview';
 
 export namespace IFeed {
   export interface Basic {
@@ -12,24 +12,24 @@ export namespace IFeed {
   }
 
   export interface FamousHumanityReview extends Basic {
-    reviews: ReviewResponseDto[];
+    reviews: IReview.Basic[];
   }
 
   export interface FamousMajorReview extends Basic {
-    reviews: ReviewResponseDto[];
-    department: DepartmentResponseDto;
+    reviews: IReview.Basic[];
+    department: IDepartment.Basic;
   }
 
   export interface ReviewWrite extends Basic {
-    lecture: NestedLectureResponseDto;
+    lecture: ILecture.Basic;
   }
 
   export interface RelatedCourse extends Basic {
-    course: ICourse.Related;
+    course: ICourse.FeedRelated;
   }
 
   export interface RankedReview extends Basic {
-    reviews: ReviewResponseDto[];
+    reviews: IReview.Basic[];
   }
 
   export type Details =

@@ -1,7 +1,10 @@
 import { subject_classtime } from '@prisma/client';
 import { getTimeNumeric } from 'src/common/utils/time.utils';
+import { ILecture } from '../ILecture';
 
-export const toJsonClasstime = (classtime: subject_classtime) => {
+export const toJsonClasstime = (
+  classtime: subject_classtime,
+): ILecture.Classtime => {
   const classroomInfo = getClassroomStrs(classtime);
   return Object.assign(classroomInfo, {
     day: classtime.day,

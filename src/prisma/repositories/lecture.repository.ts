@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { Prisma, session_userprofile } from '@prisma/client';
 import { ELecture } from 'src/common/entities/ELecture';
 import { ILecture } from 'src/common/interfaces/ILecture';
-import { LectureQueryDto } from 'src/common/interfaces/dto/lecture/lecture.request.dto';
 import { applyOffset, applyOrder } from 'src/common/utils/search.utils';
 import { groupBy } from '../../common/utils/method.utils';
 import { PrismaService } from '../prisma.service';
@@ -43,7 +42,7 @@ export class LectureRepository {
     });
   }
 
-  async filterByRequest(query: LectureQueryDto): Promise<ELecture.Details[]> {
+  async filterByRequest(query: ILecture.QueryDto): Promise<ELecture.Details[]> {
     const DEFAULT_LIMIT = 300;
     const DEFAULT_ORDER = ['year', 'semester', 'old_code', 'class_no'];
     const researchTypes = [
@@ -266,7 +265,7 @@ export class LectureRepository {
     year,
     semester,
     keyword,
-  }: ILecture.AutocompleteDto): Promise<ELecture.Extended | null> {
+  }: ILecture.AutocompleteQueryDto): Promise<ELecture.Extended | null> {
     const candidate = await this.prisma.subject_lecture.findFirst({
       where: {
         year,
@@ -321,7 +320,7 @@ export class LectureRepository {
     userId: number,
     year: number,
     semester: number,
-  ): Promise<ILecture.Basic[]> {
+  ): Promise<ELecture.UserTaken[]> {
     const lectures =
       await this.prisma.session_userprofile_taken_lectures.findMany({
         where: {
@@ -333,12 +332,7 @@ export class LectureRepository {
           },
         },
         include: {
-          lecture: {
-            include: {
-              subject_classtime: true,
-              subject_department: true,
-            },
-          },
+          lecture: ELecture.UserTaken,
         },
       });
 

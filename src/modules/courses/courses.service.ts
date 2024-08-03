@@ -2,12 +2,12 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { ECourse } from 'src/common/entities/ECourse';
 import { ICourse } from 'src/common/interfaces';
-import { CourseQueryDto } from 'src/common/interfaces/dto/course/course.request.dto';
-import { CourseReviewQueryDto } from 'src/common/interfaces/dto/course/course.review.request.dto';
-import { toJsonLecture } from 'src/common/interfaces/serializer/lecture.serializer';
+import { toJsonLectureDetail } from 'src/common/interfaces/serializer/lecture.serializer';
 import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
-import { CourseResponseDtoNested } from '../../common/interfaces/dto/course/course.response.dto';
-import { toJsonCourse } from '../../common/interfaces/serializer/course.serializer';
+import {
+  addIsRead,
+  toJsonCourseDetail,
+} from '../../common/interfaces/serializer/course.serializer';
 import { getRepresentativeLecture } from '../../common/utils/lecture.utils';
 import { CourseRepository } from './../../prisma/repositories/course.repository';
 
@@ -16,9 +16,9 @@ export class CoursesService {
   constructor(private readonly courseRepository: CourseRepository) {}
 
   public async getCourses(
-    query: CourseQueryDto,
+    query: ICourse.Query,
     user: session_userprofile,
-  ): Promise<(CourseResponseDtoNested & { userspecific_is_read: boolean })[]> {
+  ): Promise<ICourse.DetailWithIsRead[]> {
     const queryResult = await this.courseRepository.getCourses(query);
     return Promise.all(
       queryResult.map(async (course) => {
@@ -26,20 +26,17 @@ export class CoursesService {
         const professorRaw = course.subject_course_professors.map(
           (x) => x.professor,
         );
-        const result = toJsonCourse<false>(
+        const result = toJsonCourseDetail(
           course,
           representativeLecture,
           professorRaw,
-          false,
         );
 
         const userspecific_is_read = user
           ? await this.courseRepository.isUserSpecificRead(course.id, user.id)
           : false;
 
-        return Object.assign(result, {
-          userspecific_is_read,
-        });
+        return addIsRead(result, userspecific_is_read);
       }),
     );
   }
@@ -53,20 +50,17 @@ export class CoursesService {
     const professorRaw = course.subject_course_professors.map(
       (x) => x.professor,
     );
-    const result = toJsonCourse(
+    const result = toJsonCourseDetail(
       course,
       representativeLecture,
       professorRaw,
-      false,
     );
 
     const userspecific_is_read = user
       ? await this.courseRepository.isUserSpecificRead(course.id, user.id)
       : false;
 
-    return Object.assign(result, {
-      userspecific_is_read,
-    });
+    return addIsRead(result, userspecific_is_read);
   }
 
   public async getLecturesByCourseId(query: { order: string[] }, id: number) {
@@ -78,11 +72,11 @@ export class CoursesService {
       throw new NotFoundException();
     }
 
-    return lectures.map((lecture) => toJsonLecture<false>(lecture, false));
+    return lectures.map((lecture) => toJsonLectureDetail(lecture));
   }
 
   public async getReviewsByCourseId(
-    query: CourseReviewQueryDto,
+    query: ICourse.ReviewQueryDto,
     id: number,
     user: session_userprofile,
   ) {
@@ -102,7 +96,7 @@ export class CoursesService {
     return reviews.map((review) => toJsonReview(review, user));
   }
 
-  async getCourseAutocomplete(dto: ICourse.AutocompleteDto) {
+  async getCourseAutocomplete(dto: ICourse.AutocompleteQueryDto) {
     const candidate = await this.courseRepository.getCourseAutocomplete(dto);
     if (!candidate) return dto.keyword;
     return this.findAutocompleteFromCandidate(candidate, dto.keyword);

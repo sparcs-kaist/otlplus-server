@@ -1,11 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
-import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
-import {
-  ReviewCreateDto,
-  ReviewQueryDto,
-  ReviewUpdateDto,
-} from 'src/common/interfaces/dto/reviews/reviews.request.dto';
+import { IReview } from 'src/common/interfaces/IReview';
 import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
 import { LectureRepository } from 'src/prisma/repositories/lecture.repository';
 import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
@@ -20,7 +15,7 @@ export class ReviewsService {
   async getReviewById(
     reviewId: number,
     user: session_userprofile,
-  ): Promise<ReviewResponseDto & { userspecific_is_liked: boolean }> {
+  ): Promise<IReview.Basic & { userspecific_is_liked: boolean }> {
     const review = await this.reviewsRepository.getReviewById(reviewId);
     if (review == undefined) throw new HttpException("Can't find review", 404);
     const result = toJsonReview(review);
@@ -39,9 +34,9 @@ export class ReviewsService {
     }
   }
   async getReviews(
-    reviewsParam: ReviewQueryDto,
+    reviewsParam: IReview.QueryDto,
     user: session_userprofile,
-  ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })[]> {
+  ): Promise<(IReview.Basic & { userspecific_is_liked: boolean })[]> {
     const MAX_LIMIT = 50;
     const DEFAULT_ORDER = ['-written_datetime', '-id'];
     const reviews = await this.reviewsRepository.getReviews(
@@ -82,9 +77,9 @@ export class ReviewsService {
   }
 
   async createReviews(
-    reviewsBody: ReviewCreateDto,
+    reviewsBody: IReview.CreateDto,
     user: session_userprofile,
-  ): Promise<ReviewResponseDto & { userspecific_is_liked: boolean }> {
+  ): Promise<IReview.Basic & { userspecific_is_liked: boolean }> {
     const reviewWritableLectures =
       await this.lectureRepository.findReviewWritableLectures(user, new Date());
     const reviewLecture = reviewWritableLectures.find((lecture) => {
@@ -120,8 +115,8 @@ export class ReviewsService {
   async updateReviewById(
     reviewId: number,
     user: session_userprofile,
-    reviewBody: ReviewUpdateDto,
-  ): Promise<ReviewResponseDto & { userspecific_is_liked: boolean }> {
+    reviewBody: IReview.UpdateDto,
+  ): Promise<IReview.Basic & { userspecific_is_liked: boolean }> {
     const review = await this.reviewsRepository.getReviewById(reviewId);
     if (!review) throw new HttpException("Can't find review", 404);
     if (review.writer_id !== user.id)
