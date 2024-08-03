@@ -14,6 +14,8 @@ import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { Public } from 'src/common/decorators/skip-auth.decorator';
 import { IReview } from 'src/common/interfaces/IReview';
 import { ReviewsService } from './reviews.service';
+import { EReview } from '../../common/entities/EReview';
+import EReviewVote = EReview.EReviewVote;
 
 @Controller('api/reviews')
 export class ReviewsController {
@@ -78,13 +80,13 @@ export class ReviewsController {
   async likeReviewInstance(
     @Param('reviewId') reviewId: number,
     @GetUser() user: session_userprofile,
-  ) {
+  ): Promise<EReviewVote.Basic> {
     const reviewVote = await this.reviewsService.findReviewVote(reviewId, user);
     if (reviewVote) {
       throw new HttpException('Already Liked', HttpStatus.BAD_REQUEST);
     } else {
-      await this.reviewsService.createReviewVote(reviewId, user);
-      return null;
+      const result = await this.reviewsService.createReviewVote(reviewId, user);
+      return result;
     }
   }
 }

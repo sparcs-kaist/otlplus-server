@@ -34,7 +34,7 @@ export class AuthController {
     @Query('social_login') social_login: string,
     @Req() req: IAuth.Request,
     @Res() res: IAuth.Response,
-  ) {
+  ): void {
     if (req.user) {
       return res.redirect(next ?? '/');
     }
@@ -54,7 +54,7 @@ export class AuthController {
     @Query('code') code: string,
     @Session() session: Record<string, any>,
     @Res() response: IAuth.Response,
-  ) {
+  ): Promise<void> {
     const stateBefore = session['sso_state'];
     if (!stateBefore || stateBefore != state) {
       response.redirect('/error/invalid-login');
@@ -95,7 +95,10 @@ export class AuthController {
 
   @Public()
   @Get('/')
-  async home(@Req() req: IAuth.Request, @Res() res: IAuth.Response) {
+  async home(
+    @Req() req: IAuth.Request,
+    @Res() res: IAuth.Response,
+  ): Promise<void> {
     return res.redirect('/session/login');
   }
 
@@ -106,7 +109,7 @@ export class AuthController {
     @Res() res: IAuth.Response,
     @Query('next') next: string,
     @GetUser() user: session_userprofile,
-  ) {
+  ): Promise<void> {
     const webURL = process.env.WEB_URL;
     if (user) {
       const sid = user.sid;

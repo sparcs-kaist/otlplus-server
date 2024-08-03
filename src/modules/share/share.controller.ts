@@ -18,7 +18,7 @@ export class ShareController {
     @Query() query: IShare.TimetableImageQueryDto,
     @GetUser() user: session_userprofile,
     @Res() res: Response,
-  ) {
+  ): Promise<void> {
     const imageBuffer = await this.shareService.createTimetableImage(
       query,
       user,
@@ -32,7 +32,7 @@ export class ShareController {
     @Query() query: IShare.TimetableIcalQueryDto,
     @GetUser() user: session_userprofile,
     @Res() res: Response,
-  ) {
+  ): Promise<void> {
     const calendar = await this.shareService.createTimetableIcal(query, user);
     res.setHeader('Content-Type', 'text/calendar');
     res.send(calendar.toString());

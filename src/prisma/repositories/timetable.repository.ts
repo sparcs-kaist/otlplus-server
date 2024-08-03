@@ -142,7 +142,10 @@ export class TimetableRepository {
     });
   }
 
-  async updateOrder(id: number, arrange_order: number) {
+  async updateOrder(
+    id: number,
+    arrange_order: number,
+  ): Promise<ETimetable.Basic> {
     return await this.prisma.timetable_timetable.update({
       where: {
         id: id,
