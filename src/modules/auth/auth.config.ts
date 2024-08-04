@@ -7,6 +7,7 @@ import { SidCommand } from './command/sid.command';
 import { IsPublicCommand } from './command/isPublic.command';
 import { AuthChain } from './auth.chain';
 
+@Injectable()
 export class AuthConfig {
   constructor(
     private authChain: AuthChain,
@@ -21,11 +22,12 @@ export class AuthConfig {
     if (env == 'prod') return this.getProdGuardConfig();
     else return this.getLocalGuardConfig();
   }
+
   private getLocalGuardConfig = () => {
     return this.authChain
+      .register(this.isPublicCommand)
       .register(this.sidCommand)
-      .register(this.jwtCommand)
-      .register(this.isPublicCommand);
+      .register(this.jwtCommand);
   };
 
   private getDevGuardConfig = () => {

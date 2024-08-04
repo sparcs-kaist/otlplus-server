@@ -11,6 +11,7 @@ import { AuthChain } from './auth.chain';
 import { IsPublicCommand } from './command/isPublic.command';
 import { JwtCommand } from './command/jwt.command';
 import { SidCommand } from './command/sid.command';
+import { AuthConfig } from './auth.config';
 
 @Module({
   imports: [
@@ -28,7 +29,8 @@ import { SidCommand } from './command/sid.command';
     IsPublicCommand,
     JwtCommand,
     SidCommand,
+    AuthConfig,
   ],
-  exports: [AuthService],
+  exports: [AuthService, AuthConfig, AuthChain],
 })
 export class AuthModule {}

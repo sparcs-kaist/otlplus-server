@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthService } from '../auth.service';
-import { AuthCommand } from '../auth.command';
+import { AuthCommand, AuthResult } from '../auth.command';
 
 @Injectable()
 export class SidCommand implements AuthCommand {
@@ -18,20 +18,22 @@ export class SidCommand implements AuthCommand {
 
   public async next(
     context: ExecutionContext,
-    prevResult: boolean,
-  ): Promise<[boolean, boolean]> {
+    prevResult: AuthResult,
+  ): Promise<AuthResult> {
     const request = context.switchToHttp().getRequest<Request>();
     const response = context.switchToHttp().getResponse<Response>();
     const sid = request.cookies['auth-cookie'];
     if (sid) {
       const user = await this.authService.findBySid(sid);
       if (!user) {
-        return Promise.resolve([prevResult, false]);
+        return Promise.resolve(prevResult);
       }
       request['user'] = user;
-      return Promise.resolve([true, true]);
+      prevResult.authentication = true;
+      prevResult.authorization = true;
+      return Promise.resolve(prevResult);
     } else {
-      return Promise.resolve([prevResult, false]);
+      return Promise.resolve(prevResult);
     }
   }
 }

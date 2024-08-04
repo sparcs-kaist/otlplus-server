@@ -1,7 +1,7 @@
 import { ExecutionContext, Injectable } from '@nestjs/common';
 import { IS_PUBLIC_KEY } from '../../../common/decorators/skip-auth.decorator';
 import { Reflector } from '@nestjs/core';
-import { AuthCommand } from '../auth.command';
+import { AuthCommand, AuthResult } from '../auth.command';
 
 @Injectable()
 export class IsPublicCommand implements AuthCommand {
@@ -9,16 +9,17 @@ export class IsPublicCommand implements AuthCommand {
 
   public next(
     context: ExecutionContext,
-    prevResult: boolean,
-  ): Promise<[boolean, boolean]> {
+    prevResult: AuthResult,
+  ): Promise<AuthResult> {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
 
     if (isPublic) {
-      return Promise.resolve([true, true]);
+      prevResult.isPublic = true;
+      return Promise.resolve(prevResult);
     }
-    return Promise.resolve([prevResult, false]);
+    return Promise.resolve(prevResult);
   }
 }

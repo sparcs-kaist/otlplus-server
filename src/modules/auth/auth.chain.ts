@@ -1,13 +1,15 @@
 import {
   ExecutionContext,
+  ForbiddenException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { AuthCommand } from './auth.command';
+import { AuthCommand, AuthResult } from './auth.command';
 
 @Injectable()
 export class AuthChain {
-  constructor(private readonly authChain: AuthCommand[]) {
+  private authChain: AuthCommand[];
+  constructor() {
     this.authChain = [];
   }
 
@@ -17,19 +19,31 @@ export class AuthChain {
   }
 
   public async execute(context: ExecutionContext) {
-    let result = false;
-    let skip = false;
+    let result = {
+      authorization: false,
+      authentication: false,
+      isPublic: false,
+    };
     for (const command of this.authChain) {
+      console.log(result);
       try {
-        [result, skip] = await command.next(context, result);
-        if (skip) break;
+        result = await command.next(context, result);
+        console.log(result, command.constructor.name);
       } catch (e) {
         console.log(e);
         console.log(command.constructor.name);
-        throw new UnauthorizedException();
+        throw e;
       }
     }
-    if (!result) return false;
-    return true;
+    return this.handleException(result);
+  }
+
+  private async handleException(result: AuthResult) {
+    if (result.isPublic) return true;
+    else {
+      if (!result.authentication) throw new UnauthorizedException();
+      if (!result.authorization) throw new ForbiddenException();
+      return true;
+    }
   }
 }

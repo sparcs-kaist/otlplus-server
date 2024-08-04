@@ -12,7 +12,7 @@ import settings from '../../../settings';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from '../auth.service';
 import { JwtService } from '@nestjs/jwt';
-import { AuthCommand } from '../auth.command';
+import { AuthCommand, AuthResult } from '../auth.command';
 
 @Injectable()
 export class JwtCommand implements AuthCommand {
@@ -24,8 +24,8 @@ export class JwtCommand implements AuthCommand {
 
   public async next(
     context: ExecutionContext,
-    prevResult: boolean,
-  ): Promise<[boolean, boolean]> {
+    prevResult: AuthResult,
+  ): Promise<AuthResult> {
     const request = context.switchToHttp().getRequest<Request>();
     const response = context.switchToHttp().getResponse<Response>();
     const accessToken = this.extractTokenFromCookie(request, 'accessToken');
@@ -37,7 +37,9 @@ export class JwtCommand implements AuthCommand {
       });
       const user = this.authService.findBySid(payload.sid);
       request['user'] = user;
-      return [true, false];
+      prevResult.authentication = true;
+      prevResult.authorization = true;
+      return prevResult;
     } catch (e: any) {
       if (e.message === 'jwt expired') {
         try {
@@ -45,7 +47,9 @@ export class JwtCommand implements AuthCommand {
             request,
             'refreshToken',
           );
+          console.log('reach here');
           if (!refreshToken) throw new UnauthorizedException();
+          console.log('not reach here');
           const payload = await this.jwtService.verify(refreshToken, {
             secret: settings().getJwtConfig().secret,
           });
@@ -67,14 +71,17 @@ export class JwtCommand implements AuthCommand {
             }
             request.res.cookie('accessToken', accessToken, accessTokenOptions);
             request['user'] = user;
-            return [true, false];
+            prevResult.authentication = true;
+            prevResult.authorization = true;
+            return prevResult;
           }
-          return [prevResult, false];
+          return prevResult;
         } catch (e) {
-          return [prevResult, false];
+          console.error(e);
+          return prevResult;
         }
       }
-      return [prevResult, false];
+      return prevResult;
     }
   }
 

@@ -20,7 +20,7 @@ export default () => {
 
 const getCorsConfig = () => {
   const { NODE_ENV } = process.env;
-  if (NODE_ENV === 'local') {
+  if (NODE_ENV === 'prod') {
     return {
       origin: 'http://localhost:5173',
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
