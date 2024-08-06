@@ -9,6 +9,7 @@ import { AuthCommand, AuthResult } from './auth.command';
 @Injectable()
 export class AuthChain {
   private authChain: AuthCommand[];
+
   constructor() {
     this.authChain = [];
   }
@@ -25,15 +26,7 @@ export class AuthChain {
       isPublic: false,
     };
     for (const command of this.authChain) {
-      console.log(result);
-      try {
-        result = await command.next(context, result);
-        console.log(result, command.constructor.name);
-      } catch (e) {
-        console.log(e);
-        console.log(command.constructor.name);
-        throw e;
-      }
+      result = await command.next(context, result);
     }
     return this.handleException(result);
   }

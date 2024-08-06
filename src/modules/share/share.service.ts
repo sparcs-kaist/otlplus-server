@@ -66,7 +66,7 @@ interface DrawTimetableDatas {
 @Injectable()
 export class ShareService {
   private readonly file_path =
-    process.env.NODE_ENV === 'prod'
+    process.env.NODE_ENV === 'local'
       ? 'static/'
       : '/var/www/otlplus-server/static/';
 
