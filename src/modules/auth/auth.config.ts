@@ -20,7 +20,7 @@ export class AuthConfig {
     if (env == 'local') return this.getLocalGuardConfig();
     if (env == 'dev') return this.getDevGuardConfig();
     if (env == 'prod') return this.getProdGuardConfig();
-    else return this.getLocalGuardConfig();
+    else return this.getProdGuardConfig();
   }
 
   private getLocalGuardConfig = () => {

@@ -58,7 +58,7 @@ import { AuthGuard } from './modules/auth/guard/auth.guard';
       provide: APP_GUARD,
       useFactory: async (authConfig: AuthConfig) => {
         const env =
-          process.env.NODE_ENV === undefined ? 'local' : process.env.NODE_ENV;
+          process.env.NODE_ENV === undefined ? 'prod' : process.env.NODE_ENV;
         const authChain = await authConfig.config(env);
         return new AuthGuard(authChain);
       },
