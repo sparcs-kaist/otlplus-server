@@ -41,6 +41,7 @@ export class MockAuthGuard implements CanActivate {
         if (!accessToken) throw new Error('jwt expired');
         const payload = await this.jwtService.verify(accessToken, {
           secret: settings().getJwtConfig().secret,
+          ignoreExpiration: false,
         });
         const user = this.authService.findBySid(payload.sid);
         request['user'] = user;
@@ -55,6 +56,7 @@ export class MockAuthGuard implements CanActivate {
             if (!refreshToken) throw new UnauthorizedException();
             const payload = await this.jwtService.verify(refreshToken, {
               secret: settings().getJwtConfig().secret,
+              ignoreExpiration: false,
             });
             const user = await this.authService.findBySid(payload.sid);
             if (!user) {
