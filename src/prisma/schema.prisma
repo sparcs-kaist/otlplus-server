@@ -224,15 +224,12 @@ model review_majorbestreview {
 model review_review {
   id                                         Int                                          @id @default(autoincrement())
   course_id                                  Int
-  course                                     subject_course                               @relation(fields: [course_id], references: [id], onDelete: Restrict)
   lecture_id                                 Int
-  lecture                                    subject_lecture                              @relation(fields: [lecture_id], references: [id], onDelete: Restrict)
   content                                    String                                       @db.MediumText
   grade                                      Int                                          @default(0) @db.SmallInt
   load                                       Int                                          @default(0) @db.SmallInt
   speech                                     Int                                          @default(0) @db.SmallInt
   writer_id                                  Int?
-  writer                                     session_userprofile?                         @relation(fields: [writer_id], references: [id], onUpdate: Restrict)
   writer_label                               String                                       @db.VarChar(200)
   updated_datetime                           DateTime                                     @db.DateTime(0)
   like                                       Int                                          @default(0)
@@ -240,28 +237,37 @@ model review_review {
   written_datetime                           DateTime?                                    @db.DateTime(0)
   main_famoushumanityreviewdailyfeed_reviews main_famoushumanityreviewdailyfeed_reviews[]
   main_famousmajorreviewdailyfeed_reviews    main_famousmajorreviewdailyfeed_reviews[]
+  course                                     subject_course                               @relation(fields: [course_id], references: [id])
+  lecture                                    subject_lecture                              @relation(fields: [lecture_id], references: [id])
+  writer                                     session_userprofile?                         @relation(fields: [writer_id], references: [id])
   review_reviewvote                          review_reviewvote[]
 
   @@unique([writer_id, lecture_id], map: "review_comment_writer_id_af700a5d_uniq")
   @@index([written_datetime], map: "review_comment_e5e30a4a")
+  @@index([course_id], map: "review_review_course_id_fkey")
+  @@index([lecture_id], map: "review_review_lecture_id_fkey")
 }
 
 model review_reviewvote {
   id               Int                  @id @default(autoincrement())
   review_id        Int
-  review           review_review        @relation(fields: [review_id], references: [id], onDelete: Cascade)
   userprofile_id   Int?
-  userprofile      session_userprofile? @relation(fields: [userprofile_id], references: [id], onDelete: SetNull)
   created_datetime DateTime?            @db.DateTime(6)
+  review           review_review        @relation(fields: [review_id], references: [id], onDelete: Cascade)
+  userprofile      session_userprofile? @relation(fields: [userprofile_id], references: [id])
 
   @@unique([review_id, userprofile_id], map: "review_commentvote_comment_id_e4594aea_uniq")
   @@index([created_datetime], map: "review_reviewvote_created_datetime_450f85e2")
+  @@index([userprofile_id], map: "review_reviewvote_userprofile_id_fkey")
 }
 
 model session_userprofile {
   id                                    Int                                        @id @default(autoincrement())
+  user_id                               Int                                        @unique(map: "session_userprofile_user_id_09dd6af1_uniq")
   student_id                            String                                     @db.VarChar(10)
   sid                                   String                                     @db.VarChar(30)
+  language                              String                                     @db.VarChar(15)
+  portal_check                          Int?                                       @default(0)
   department_id                         Int?
   email                                 String?                                    @db.VarChar(255)
   date_joined                           DateTime                                   @db.DateTime(0)
@@ -273,6 +279,7 @@ model session_userprofile {
   main_reviewwritedailyuserfeed         main_reviewwritedailyuserfeed[]
   planner_planner                       planner_planner[]
   reviews                               review_review[]
+  reviewvote                            review_reviewvote[]
   department                            subject_department?                        @relation(fields: [department_id], references: [id], onUpdate: Restrict)
   favorite_departments                  session_userprofile_favorite_departments[]
   session_userprofile_majors            session_userprofile_majors[]
@@ -283,7 +290,6 @@ model session_userprofile {
   support_rate                          support_rate[]
   timetable_timetable                   timetable_timetable[]
   timetable_wishlist                    timetable_wishlist?
-  reviewvote                            review_reviewvote[]
 
   @@index([department_id], map: "session_userprofile_department_id_fkey")
 }
@@ -291,9 +297,9 @@ model session_userprofile {
 model session_userprofile_favorite_departments {
   id             Int                 @id @default(autoincrement())
   userprofile_id Int
-  userprofile    session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
   department_id  Int
   department     subject_department  @relation(fields: [department_id], references: [id], onUpdate: Restrict)
+  userprofile    session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
 
   @@unique([userprofile_id, department_id], map: "userprofile_id")
   @@index([department_id], map: "session_userprofile_favorite_departments_department_id_fkey")
@@ -335,9 +341,9 @@ model session_userprofile_specialized_major {
 model session_userprofile_taken_lectures {
   id             Int                 @id @default(autoincrement())
   userprofile_id Int
-  userprofile    session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
   lecture_id     Int
   lecture        subject_lecture     @relation(fields: [lecture_id], references: [id], onUpdate: Restrict)
+  userprofile    session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
 
   @@unique([userprofile_id, lecture_id], map: "userprofile_id")
   @@index([lecture_id], map: "session_userprofile_taken_lectures_lecture_id_fkey")
@@ -377,21 +383,24 @@ model subject_course {
   load                                                                                                             Float
   speech                                                                                                           Float
   latest_written_datetime                                                                                          DateTime?                                  @db.DateTime(0)
-  title_en_no_space                                                                                                String                                     @db.VarChar(200)
-  title_no_space                                                                                                   String                                     @db.VarChar(100)
+  title_no_space                                                                                                   String?                                    @db.VarChar(100)
+  title_en_no_space                                                                                                String?                                    @db.VarChar(200)
   main_relatedcoursedailyuserfeed                                                                                  main_relatedcoursedailyuserfeed[]
   planner_futureplanneritem                                                                                        planner_futureplanneritem[]
+  review                                                                                                           review_review[]
   subject_department                                                                                               subject_department                         @relation(fields: [department_id], references: [id], onUpdate: Restrict)
+  subject_course_professors                                                                                        subject_course_professors[]
   subject_course_related_courses_posterior_subject_course_related_courses_posterior_from_course_idTosubject_course subject_course_related_courses_posterior[] @relation("subject_course_related_courses_posterior_from_course_idTosubject_course")
   subject_course_related_courses_posterior_subject_course_related_courses_posterior_to_course_idTosubject_course   subject_course_related_courses_posterior[] @relation("subject_course_related_courses_posterior_to_course_idTosubject_course")
   subject_course_related_courses_prior_subject_course_related_courses_prior_from_course_idTosubject_course         subject_course_related_courses_prior[]     @relation("subject_course_related_courses_prior_from_course_idTosubject_course")
   subject_course_related_courses_prior_subject_course_related_courses_prior_to_course_idTosubject_course           subject_course_related_courses_prior[]     @relation("subject_course_related_courses_prior_to_course_idTosubject_course")
   subject_courseuser                                                                                               subject_courseuser[]
-  subject_course_professors                                                                                        subject_course_professors[]
   lecture                                                                                                          subject_lecture[]
-  review                                                                                                           review_review[]
 
   @@index([department_id], map: "subject_course_department_id_fkey")
+  @@index([title_en_no_space], map: "subject_course_title_en_no_space_index")
+  @@index([title], map: "subject_course_title_index")
+  @@index([title_no_space], map: "subject_course_title_no_space_index")
 }
 
 model subject_course_professors {
@@ -402,6 +411,7 @@ model subject_course_professors {
   professor    subject_professor @relation(fields: [professor_id], references: [id], onUpdate: Restrict)
 
   @@unique([course_id, professor_id], map: "course_id")
+  @@index([professor_id], map: "subject_course_professors_professor_id_fkey")
 }
 
 model subject_course_related_courses_posterior {
@@ -476,7 +486,6 @@ model subject_lecture {
   year                            Int
   semester                        Int                                  @db.SmallInt
   department_id                   Int
-  subject_department              subject_department                   @relation(fields: [department_id], references: [id], onUpdate: Restrict)
   class_no                        String                               @db.VarChar(4)
   title                           String                               @db.VarChar(100)
   title_en                        String                               @db.VarChar(200)
@@ -484,8 +493,6 @@ model subject_lecture {
   type_en                         String                               @db.VarChar(36)
   audience                        Int
   credit                          Int
-  title_en_no_space               String                               @db.VarChar(200)
-  title_no_space                  String                               @db.VarChar(100)
   num_classes                     Int
   num_labs                        Int
   credit_au                       Int
@@ -494,7 +501,6 @@ model subject_lecture {
   is_english                      Boolean
   deleted                         Boolean
   course_id                       Int
-  course                          subject_course                       @relation(fields: [course_id], references: [id], onUpdate: Restrict)
   grade_sum                       Float
   load_sum                        Float
   speech_sum                      Float
@@ -506,30 +512,38 @@ model subject_lecture {
   class_title_en                  String?                              @db.VarChar(100)
   common_title                    String?                              @db.VarChar(100)
   common_title_en                 String?                              @db.VarChar(100)
+  title_no_space                  String?                              @db.VarChar(100)
+  title_en_no_space               String?                              @db.VarChar(200)
   main_reviewwritedailyuserfeed   main_reviewwritedailyuserfeed[]
   planner_takenplanneritem        planner_takenplanneritem[]
+  review                          review_review[]
   students                        session_userprofile_taken_lectures[]
   subject_classtime               subject_classtime[]
   subject_examtime                subject_examtime[]
+  course                          subject_course                       @relation(fields: [course_id], references: [id], onUpdate: Restrict)
+  subject_department              subject_department                   @relation(fields: [department_id], references: [id], onUpdate: Restrict)
+  subject_lecture_professors      subject_lecture_professors[]
   timetable_oldtimetable_lectures timetable_oldtimetable_lectures[]
   timetable_timetable_lectures    timetable_timetable_lectures[]
   timetable_wishlist_lectures     timetable_wishlist_lectures[]
-  subject_lecture_professors      subject_lecture_professors[]
-  review                          review_review[]
 
   @@index([deleted], map: "subject_lecture_deleted_bedc6156_uniq")
   @@index([type_en], map: "subject_lecture_type_en_45ee2d3a_uniq")
+  @@index([course_id], map: "subject_lecture_course_id_fkey")
+  @@index([department_id], map: "subject_lecture_department_id_fkey")
+  @@index([title_en_no_space], map: "subject_lecture_title_en_no_space_index")
+  @@index([title_no_space], map: "subject_lecture_title_no_space_index")
 }
 
 model subject_lecture_professors {
-  id           Int @id @default(autoincrement())
+  id           Int               @id @default(autoincrement())
   lecture_id   Int
   professor_id Int
-
-  lecture   subject_lecture   @relation(fields: [lecture_id], references: [id], onUpdate: Restrict)
-  professor subject_professor @relation(fields: [professor_id], references: [id], onUpdate: Restrict)
+  lecture      subject_lecture   @relation(fields: [lecture_id], references: [id], onUpdate: Restrict)
+  professor    subject_professor @relation(fields: [professor_id], references: [id], onUpdate: Restrict)
 
   @@unique([lecture_id, professor_id], map: "lecture_id")
+  @@index([professor_id], map: "subject_lecture_professors_professor_id_fkey")
 }
 
 model subject_professor {
@@ -720,7 +734,7 @@ model planner_arbitraryplanneritem {
   is_excluded        Boolean
   year               Int
   semester           Int
-  type               String              @db.VarChar(12)
+  type               String?             @db.VarChar(12)
   type_en            String              @db.VarChar(36)
   credit             Int
   credit_au          Int
@@ -796,4 +810,12 @@ model planner_takenplanneritem {
 
   @@unique([planner_id, lecture_id], map: "planner_takenplanneritem_planner_id_lecture_id_4b39b432_uniq")
   @@index([lecture_id], map: "planner_takenplanner_lecture_id_9b2d30d8_fk_subject_l")
+}
+
+model subject_professor_course_list {
+  id           Int @id @default(autoincrement())
+  professor_id Int
+  course_id    Int
+
+  @@unique([professor_id, course_id], map: "professor_id")
 }
