@@ -32,9 +32,9 @@ export class AuthConfig {
 
   private getDevGuardConfig = () => {
     return this.authChain
+      .register(this.isPublicCommand)
       .register(this.sidCommand)
-      .register(this.jwtCommand)
-      .register(this.isPublicCommand);
+      .register(this.jwtCommand);
   };
 
   private getProdGuardConfig = () => {

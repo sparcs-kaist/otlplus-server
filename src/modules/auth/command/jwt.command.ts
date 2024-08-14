@@ -34,6 +34,7 @@ export class JwtCommand implements AuthCommand {
       if (!accessToken) throw new Error('jwt expired');
       const payload = await this.jwtService.verify(accessToken, {
         secret: settings().getJwtConfig().secret,
+        ignoreExpiration: false,
       });
       const user = this.authService.findBySid(payload.sid);
       request['user'] = user;
@@ -47,11 +48,10 @@ export class JwtCommand implements AuthCommand {
             request,
             'refreshToken',
           );
-          console.log('reach here');
           if (!refreshToken) throw new UnauthorizedException();
-          console.log('not reach here');
           const payload = await this.jwtService.verify(refreshToken, {
             secret: settings().getJwtConfig().secret,
+            ignoreExpiration: false,
           });
           const user = await this.authService.findBySid(payload.sid);
           if (!user) {
@@ -77,7 +77,7 @@ export class JwtCommand implements AuthCommand {
           }
           return prevResult;
         } catch (e) {
-          console.error(e);
+          console.error('error');
           return prevResult;
         }
       }
