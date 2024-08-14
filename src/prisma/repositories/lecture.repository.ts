@@ -294,28 +294,6 @@ export class LectureRepository {
     return candidate;
   }
 
-  async getProfessorsByLectureId(lectureId: number) {
-    return await this.prisma.subject_lecture.findUnique({
-      where: { id: lectureId },
-      include: {
-        subject_lecture_professors: {
-          include: {
-            professor: true,
-          },
-        },
-      },
-    });
-  }
-
-  async getClassroomByLectureId(lectureId: number) {
-    return await this.prisma.subject_lecture.findUnique({
-      where: { id: lectureId },
-      include: {
-        subject_classtime: true,
-      },
-    });
-  }
-
   async getUserLecturesByYearSemester(
     userId: number,
     year: number,
@@ -337,5 +315,23 @@ export class LectureRepository {
       });
 
     return lectures.map((result) => result.lecture);
+  }
+
+  async getLectureDetailsForTimetable(lectureIds: number[]) {
+    return await this.prisma.subject_lecture.findMany({
+      where: {
+        id: {
+          in: lectureIds,
+        },
+      },
+      include: {
+        subject_lecture_professors: {
+          include: {
+            professor: true,
+          },
+        },
+        subject_classtime: true, // Include classtime details if needed
+      },
+    });
   }
 }
