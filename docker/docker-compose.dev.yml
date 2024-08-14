@@ -9,6 +9,7 @@ services:
     build:
       context: ..
       dockerfile: ./docker/Dockerfile.server
+    image: otlplus-server-nest
     restart: always
     tty: true
     ports:
