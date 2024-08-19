@@ -38,7 +38,7 @@ interface TextOptions {
   font: string;
   fontSize: number;
   color: string;
-  align?: 'right' | 'left' | 'center'; // Optional parameter
+  align?: 'right' | 'left' | 'center';
 }
 
 interface DrawTileOptions {
@@ -72,7 +72,7 @@ export class ShareService {
 
   constructor(
     private readonly semesterRepository: SemesterRepository,
-    private readonly lecturesService: LecturesService, // LecturesService 추가
+    private readonly lecturesService: LecturesService,
     private readonly semestersService: SemestersService,
     private readonly timetablesService: TimetablesService,
   ) {
@@ -134,7 +134,7 @@ export class ShareService {
   }
 
   private drawText(options: TextOptions) {
-    const { ctx, x, y, text, font, fontSize, color, align = 'left' } = options; // Default alignment to 'left'
+    const { ctx, x, y, text, font, fontSize, color, align = 'left' } = options;
     ctx.fillStyle = color;
     ctx.font = `${fontSize}px '${font}'`;
     ctx.textAlign = align ? align : 'left';
@@ -175,9 +175,8 @@ export class ShareService {
       ...slicedProfessor,
     ].slice(0, 3);
 
-    // Calculate total height for text
     textTotalHeight = slices.reduce((total, slice, index) => {
-      if (slice === '') return total + 2; // space between sections
+      if (slice === '') return total + 2;
       return total + fontSize;
     }, 0);
 
@@ -194,11 +193,11 @@ export class ShareService {
           font,
           fontSize,
           color:
-            'rgba(0, 0, 0, ' + (index < slicedTitle.length ? 0.8 : 0.5) + ')', // Adjust opacity
+            'rgba(0, 0, 0, ' + (index < slicedTitle.length ? 0.8 : 0.5) + ')',
         });
         offsetY += fontSize + 5;
       } else {
-        offsetY += 2; // Adding space between sections
+        offsetY += 2;
       }
     });
   }
@@ -214,6 +213,14 @@ export class ShareService {
       semesterFontSize,
       tileFontSize,
     } = drawTimetableData;
+
+    const lectureIds = lectures.map((lecture) => lecture.id);
+    const lectureDetailsMap =
+      await this.lecturesService.getLectureDetailsForTimetable(
+        lectureIds,
+        isEnglish,
+      );
+
     const TIMETABLE_CELL_COLORS = [
       '#F2CECE',
       '#F4B3AE',
@@ -242,7 +249,6 @@ export class ShareService {
     const ctx = canvas.getContext('2d');
     ctx.drawImage(baseImage, 0, 0);
 
-    // Draw semester name
     this.drawText({
       ctx,
       x: timetableType === '5days' ? 952 : 1302,
@@ -254,12 +260,11 @@ export class ShareService {
       align: 'right',
     });
 
-    // Draw lectures
     for (const lecture of lectures) {
       const color = TIMETABLE_CELL_COLORS[lecture.course_id % 16];
+      const lectureDetail = lectureDetailsMap.get(lecture.id);
 
       for (const classtime of lecture.subject_classtime) {
-        // Time and position calculations
         const { day, begin, end } = classtime;
         const beginNumber = begin.getUTCHours() * 60 + begin.getUTCMinutes();
         const endNumber = end.getUTCHours() * 60 + end.getUTCMinutes();
@@ -271,7 +276,6 @@ export class ShareService {
           ((endNumber - beginNumber) * 4) / 3 - 7,
         ];
 
-        // Draw each lecture tile
         this.drawRoundedRectangle({
           ctx,
           x,
@@ -282,17 +286,6 @@ export class ShareService {
           color,
         });
 
-        const professorShortStr =
-          await this.lecturesService.getProfessorShortStr(
-            lecture.id,
-            isEnglish,
-          );
-        const classroomShortStr =
-          await this.lecturesService.getClassroomShortStr(
-            lecture.id,
-            isEnglish,
-          );
-
         this.drawTile({
           ctx,
           x: x + 12,
@@ -300,8 +293,8 @@ export class ShareService {
           width: width - 24,
           height: height - 16,
           title: isEnglish ? lecture.title_en : lecture.title,
-          professor: professorShortStr,
-          location: classroomShortStr,
+          professor: lectureDetail?.professorText || '',
+          location: lectureDetail?.classroomShortStr || '',
           font: 'NotoSansKR',
           fontSize: tileFontSize,
         });
@@ -337,7 +330,6 @@ export class ShareService {
       isEnglish ? 'en' : 'kr',
     );
 
-    // 데이터 전처리 로직
     const drawTimetableData = {
       lectures,
       timetableType,
@@ -364,12 +356,17 @@ export class ShareService {
       timezone: 'Asia/Seoul',
     });
 
+    const lectureIds = lectures.map((lecture) => lecture.id);
+    const lectureDetailsMap =
+      await this.lecturesService.getLectureDetailsForTimetable(
+        lectureIds,
+        isEnglish,
+      );
+
     for (const lecture of lectures) {
       for (const classtime of lecture.subject_classtime) {
-        const classroomShortStr = await this.lecturesService.getClassroomStr(
-          lecture.id,
-          isEnglish,
-        );
+        const classroomShortStr =
+          lectureDetailsMap.get(lecture.id)?.classroomShortStr || 'Unknown';
 
         const semesterBeginning = moment.tz(
           semesterObject.beginning,

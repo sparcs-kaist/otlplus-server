@@ -269,7 +269,6 @@ export class TimetablesService {
       : '5days';
   }
 
-  // Make sure to adjust other methods that use lectures to match the type
   public async getTimetableEntries(
     timetableId: number,
     year: number,
