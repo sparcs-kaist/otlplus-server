@@ -142,6 +142,7 @@ export class CoursesService {
     }
   }
 
+  @Transactional()
   async readCourse(userId: number, courseId: number) {
     await this.courseRepository.readCourse(userId, courseId);
   }
