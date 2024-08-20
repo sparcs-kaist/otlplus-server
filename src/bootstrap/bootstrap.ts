@@ -61,7 +61,7 @@ async function bootstrap() {
   );
 
   const prismaService = app.get(PrismaService);
-  await prismaService.enableShutdownHooks(app);
+  // await prismaService.enableShutdownHooks(app);
   return app.listen(8000);
 }
 
