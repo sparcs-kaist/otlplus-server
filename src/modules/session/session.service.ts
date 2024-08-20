@@ -8,9 +8,6 @@ export class SessionService {
 
   @Transactional()
   async changeFavoriteDepartments(userId: number, departmentIds: number[]) {
-    return await this.userRepository.changeFavoriteDepartments(
-      userId,
-      departmentIds,
-    );
+    return this.userRepository.changeFavoriteDepartments(userId, departmentIds);
   }
 }
