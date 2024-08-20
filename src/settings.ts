@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
-import { PrismaClientOptions } from 'prisma/prisma-client/runtime';
 import { dotEnvOptions } from './dotenv-options';
+import { Prisma } from '@prisma/client';
 
 dotenv.config(dotEnvOptions);
 console.log(`NODE_ENV environment: ${process.env.NODE_ENV}`);
@@ -31,7 +31,7 @@ const getCorsConfig = () => {
   }
 };
 
-const getPrismaConfig = (): PrismaClientOptions => {
+const getPrismaConfig = (): Prisma.PrismaClientOptions => {
   return {
     datasources: {
       db: {
@@ -60,7 +60,7 @@ const getPrismaConfig = (): PrismaClientOptions => {
   };
 };
 
-const getReplicatedPrismaConfig = (): PrismaClientOptions => {
+const getReplicatedPrismaConfig = (): Prisma.PrismaClientOptions => {
   return {};
 };
 
