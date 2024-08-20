@@ -8,6 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import settings from '../settings';
 // import { AuthGuard, MockAuthGuard } from '../../common/guards/auth.guard'
 import morgan = require('morgan');
+import * as process from 'node:process';
 
 let cachedServer: Server;
 
@@ -60,8 +61,8 @@ async function bootstrap() {
     }),
   );
 
-  const prismaService = app.get(PrismaService);
-  // await prismaService.enableShutdownHooks(app);
+  // const prismaService = app.get(PrismaService);
+  app.enableShutdownHooks();
   return app.listen(8000);
 }
 
