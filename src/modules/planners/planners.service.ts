@@ -18,6 +18,7 @@ import { LectureRepository } from 'src/prisma/repositories/lecture.repository';
 import { PlannerRepository } from 'src/prisma/repositories/planner.repository';
 import { EPlanners } from '../../common/entities/EPlanners';
 import { CourseRepository } from './../../prisma/repositories/course.repository';
+import { Transactional } from '@nestjs-cls/transactional';
 
 @Injectable()
 export class PlannersService {
@@ -43,6 +44,7 @@ export class PlannersService {
     return await this.PlannerRepository.getRelatedPlanner(user);
   }
 
+  @Transactional()
   public async postPlanner(
     body: IPlanner.CreateBodyDto,
     user: session_userprofile,
@@ -115,6 +117,7 @@ export class PlannersService {
     return toJsonPlanner(planner);
   }
 
+  @Transactional()
   async addArbitraryItem(
     plannerId: number,
     body: IPlanner.AddArbitraryItemDto,
@@ -142,6 +145,7 @@ export class PlannersService {
     return toJsonArbitraryItem(arbitraryItem);
   }
 
+  @Transactional()
   public async removePlannerItem(
     plannerId: number,
     removeItem: IPlanner.RemoveItemBodyDto,
@@ -190,6 +194,7 @@ export class PlannersService {
     return toJsonPlanner(planner);
   }
 
+  @Transactional()
   async createFuturePlannerItem(
     plannerId: number,
     year: number,
@@ -218,6 +223,7 @@ export class PlannersService {
     return toJsonFutureItem(item);
   }
 
+  @Transactional()
   public async reorderPlanner(
     plannerId: number,
     order: number,
@@ -256,6 +262,7 @@ export class PlannersService {
     return toJsonPlanner(updated);
   }
 
+  @Transactional()
   async updatePlannerItem(
     plannerId: number,
     updateItemDto: IPlanner.UpdateItemBodyDto,

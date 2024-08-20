@@ -10,11 +10,13 @@ import {
 } from '../../common/interfaces/serializer/course.serializer';
 import { getRepresentativeLecture } from '../../common/utils/lecture.utils';
 import { CourseRepository } from './../../prisma/repositories/course.repository';
+import { Transactional } from '@nestjs-cls/transactional';
 
 @Injectable()
 export class CoursesService {
   constructor(private readonly courseRepository: CourseRepository) {}
 
+  @Transactional()
   public async getCourses(
     query: ICourse.Query,
     user: session_userprofile,
@@ -41,6 +43,14 @@ export class CoursesService {
     );
   }
 
+  @Transactional()
+  public async getCourseByIds(ids: number[], user: session_userprofile) {
+    return Promise.all(
+      ids.map((id) => this.courseRepository.getCourseById(id)),
+    );
+  }
+
+  @Transactional()
   public async getCourseById(id: number, user: session_userprofile) {
     const course = await this.courseRepository.getCourseById(id);
     if (!course) {
@@ -130,6 +140,7 @@ export class CoursesService {
     }
   }
 
+  @Transactional()
   async readCourse(userId: number, courseId: number) {
     await this.courseRepository.readCourse(userId, courseId);
   }

@@ -6,6 +6,7 @@ import {
 import { IWishlist } from 'src/common/interfaces/IWishlist';
 import { LectureRepository } from 'src/prisma/repositories/lecture.repository';
 import { WishlistRepository } from 'src/prisma/repositories/wishlist.repository';
+import { Transactional } from '@nestjs-cls/transactional';
 
 @Injectable()
 export class WishlistService {
@@ -18,6 +19,7 @@ export class WishlistService {
     return await this.wishlistRepository.getOrCreateWishlist(userId);
   }
 
+  @Transactional()
   async addLecture(userId: number, body: IWishlist.AddLectureDto) {
     const wishlist = await this.wishlistRepository.getOrCreateWishlist(userId);
 
@@ -42,6 +44,7 @@ export class WishlistService {
     return updatedWishlist;
   }
 
+  @Transactional()
   async removeLecture(userId: number, body: IWishlist.RemoveLectureDto) {
     const wishlist = await this.wishlistRepository.getOrCreateWishlist(userId);
 
