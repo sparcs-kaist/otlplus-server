@@ -114,7 +114,7 @@ export class TimetableLectureMiddleware
               where: {
                 timetable_timetable_lectures: {
                   some: {
-                    lecture_id: 16155,
+                    lecture_id: lectureId,
                   },
                 },
               },
@@ -142,7 +142,7 @@ export class TimetableLectureMiddleware
                   where: {
                     timetable_timetable_lectures: {
                       some: {
-                        lecture_id: 16155,
+                        lecture_id: id,
                       },
                     },
                   },
