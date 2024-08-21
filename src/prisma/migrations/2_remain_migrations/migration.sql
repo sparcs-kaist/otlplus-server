@@ -91,3 +91,15 @@ ALTER TABLE `review_review` ADD CONSTRAINT `review_review_writer_id_fkey` FOREIG
 
 ALTER TABLE `support_rate`
 MODIFY `created_datetime` DATETIME(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0);
+
+CREATE INDEX `subject_course_title_no_space_index`
+ON `subject_course`(`title_no_space` ASC);
+CREATE INDEX `subject_course_title_en_no_space_index`
+ON `subject_course`(`title_en_no_space` ASC);
+
+
+
+CREATE INDEX `subject_lecture_title_no_space_index`
+ON `subject_lecture`(`title_no_space` ASC);
+CREATE INDEX `subject_lecture_title_en_no_space_index`
+ON `subject_lecture`(`title_en_no_space` ASC);
