@@ -12,17 +12,24 @@ while getopts "e:" opt; do
     e)
       NODE_ENV=$OPTARG
       echo "NODE_ENV: $NODE_ENV"
-      if [ "$NODE_ENV" == "prod" ]; then
-         docker-compose -f docker/docker-compose.prod.yml up -d
-      elif [ "$NODE_ENV" == "dev" ]; then
-          docker-compose -f docker/docker-compose.dev.yml up -d
-      elif [ "$NODE_ENV" == "local" ]; then
-          docker-compose -f docker/docker-compose.local.yml up -d
+      if [[ "$NODE_ENV" = "prod" ]]; then
+         COMPOSE_FILE="docker/docker-compose.prod.yml"
+      elif [[ "$NODE_ENV" = "dev" ]]; then
+          COMPOSE_FILE="docker/docker-compose.dev.yml"
+      elif [[ "$NODE_ENV" = "local" ]]; then
+          COMPOSE_FILE="docker/docker-compose.local.yml"
       else
         echo "Invalid environment: $NODE_ENV" 1>&2
         usage
         exit 1
       fi
+
+      if [[ ! -f "$COMPOSE_FILE" ]]; then
+        echo "Error: Compose file does not exist: $COMPOSE_FILE" 1>&2
+        exit 1
+      fi
+
+      docker-compose -f "$COMPOSE_FILE" up -d
       ;;
     \?)
       echo "Invalid option: -$OPTARG" 1>&2
