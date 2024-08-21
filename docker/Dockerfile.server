@@ -6,7 +6,7 @@ RUN mkdir -p /var/www/otlplus-server
 WORKDIR /var/www/otlplus-server
 
 COPY package*.json ./
-RUN npm install
+RUN npm install --force
 
 COPY . .
 RUN npm run client:generate
