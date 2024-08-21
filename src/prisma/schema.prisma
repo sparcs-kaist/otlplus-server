@@ -263,10 +263,10 @@ model review_reviewvote {
 
 model session_userprofile {
   id                                    Int                                        @id @default(autoincrement())
-  user_id                               Int                                        @unique(map: "session_userprofile_user_id_09dd6af1_uniq")
+  user_id                               Int?                                       @unique(map: "session_userprofile_user_id_09dd6af1_uniq")
   student_id                            String                                     @db.VarChar(10)
   sid                                   String                                     @db.VarChar(30)
-  language                              String                                     @db.VarChar(15)
+  language                              String?                                    @db.VarChar(15)
   portal_check                          Int?                                       @default(0)
   department_id                         Int?
   email                                 String?                                    @db.VarChar(255)
@@ -383,8 +383,8 @@ model subject_course {
   load                                                                                                             Float
   speech                                                                                                           Float
   latest_written_datetime                                                                                          DateTime?                                  @db.DateTime(0)
-  title_no_space                                                                                                   String?                                    @db.VarChar(100)
-  title_en_no_space                                                                                                String?                                    @db.VarChar(200)
+  title_no_space                                                                                                   String                                     @db.VarChar(100)
+  title_en_no_space                                                                                                String                                     @db.VarChar(200)
   main_relatedcoursedailyuserfeed                                                                                  main_relatedcoursedailyuserfeed[]
   planner_futureplanneritem                                                                                        planner_futureplanneritem[]
   review                                                                                                           review_review[]
@@ -401,6 +401,7 @@ model subject_course {
   @@index([title_en_no_space], map: "subject_course_title_en_no_space_index")
   @@index([title], map: "subject_course_title_index")
   @@index([title_no_space], map: "subject_course_title_no_space_index")
+  @@index([title_en], map: "subject_course_title_en_index")
 }
 
 model subject_course_professors {
@@ -512,8 +513,8 @@ model subject_lecture {
   class_title_en                  String?                              @db.VarChar(100)
   common_title                    String?                              @db.VarChar(100)
   common_title_en                 String?                              @db.VarChar(100)
-  title_no_space                  String?                              @db.VarChar(100)
-  title_en_no_space               String?                              @db.VarChar(200)
+  title_no_space                  String                               @db.VarChar(100)
+  title_en_no_space               String                               @db.VarChar(200)
   main_reviewwritedailyuserfeed   main_reviewwritedailyuserfeed[]
   planner_takenplanneritem        planner_takenplanneritem[]
   review                          review_review[]
@@ -533,6 +534,8 @@ model subject_lecture {
   @@index([department_id], map: "subject_lecture_department_id_fkey")
   @@index([title_en_no_space], map: "subject_lecture_title_en_no_space_index")
   @@index([title_no_space], map: "subject_lecture_title_no_space_index")
+  @@index([title_en], map: "subject_lecture_title_en_index")
+  @@index([title], map: "subject_lecture_title_index")
 }
 
 model subject_lecture_professors {
@@ -734,7 +737,7 @@ model planner_arbitraryplanneritem {
   is_excluded        Boolean
   year               Int
   semester           Int
-  type               String?             @db.VarChar(12)
+  type               String              @db.VarChar(12)
   type_en            String              @db.VarChar(36)
   credit             Int
   credit_au          Int
