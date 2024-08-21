@@ -20,7 +20,7 @@ export default () => {
 
 const getCorsConfig = () => {
   const { NODE_ENV } = process.env;
-  if (NODE_ENV === 'local') {
+  if (NODE_ENV === 'prod') {
     return {
       origin: 'https://otl.kaist.ac.kr:5173',
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -29,8 +29,9 @@ const getCorsConfig = () => {
       optionsSuccessStatus: 204,
     };
   } else if (NODE_ENV === 'dev') {
+    console.log('dev');
     return {
-      origin: 'http://3.37.146.183:5173',
+      origin: 'http://3.37.146.183',
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
       credentials: true,
       preflightContinue: false,
