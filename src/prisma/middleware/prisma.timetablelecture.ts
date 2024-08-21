@@ -108,18 +108,19 @@ export class TimetableLectureMiddleware
       await prisma.subject_lecture.update({
         where: { id: lectureId },
         data: {
-          num_people: (
-            await prisma.timetable_timetable.findMany({
-              distinct: ['user_id'],
-              where: {
-                timetable_timetable_lectures: {
-                  some: {
-                    lecture_id: lectureId,
+          num_people:
+            (
+              await prisma.timetable_timetable.findMany({
+                distinct: ['user_id'],
+                where: {
+                  timetable_timetable_lectures: {
+                    some: {
+                      lecture_id: lectureId,
+                    },
                   },
                 },
-              },
-            })
-          ).length,
+              })
+            )?.length ?? 0,
         },
       });
     });
@@ -136,18 +137,19 @@ export class TimetableLectureMiddleware
           await prisma.subject_lecture.update({
             where: { id: id },
             data: {
-              num_people: (
-                await prisma.timetable_timetable.findMany({
-                  distinct: ['user_id'],
-                  where: {
-                    timetable_timetable_lectures: {
-                      some: {
-                        lecture_id: id,
+              num_people:
+                (
+                  await prisma.timetable_timetable.findMany({
+                    distinct: ['user_id'],
+                    where: {
+                      timetable_timetable_lectures: {
+                        some: {
+                          lecture_id: id,
+                        },
                       },
                     },
-                  },
-                })
-              ).length,
+                  })
+                )?.length ?? 0,
             },
           });
         });

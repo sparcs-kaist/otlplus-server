@@ -41,18 +41,19 @@ describe('AppController (e2e)', () => {
 
   it('distinct count', async () => {
     const prisma = app.get(PrismaService);
-    const result = (
-      await prisma.timetable_timetable.findMany({
-        distinct: ['user_id'],
-        where: {
-          timetable_timetable_lectures: {
-            some: {
-              lecture_id: 16155,
+    const result =
+      (
+        await prisma.timetable_timetable.findMany({
+          distinct: ['user_id'],
+          where: {
+            timetable_timetable_lectures: {
+              some: {
+                lecture_id: 16155,
+              },
             },
           },
-        },
-      })
-    ).length;
+        })
+      )?.length ?? 0;
     console.log(result);
   });
 });
