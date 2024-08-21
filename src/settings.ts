@@ -15,6 +15,7 @@ export default () => {
     getSsoConfig: () => getSsoConfig(),
     getCorsConfig: () => getCorsConfig(),
     getVersion: () => getVersion(),
+    getStaticConfig: () => staticConfig(),
   };
 };
 
@@ -105,4 +106,13 @@ const getSsoConfig = (): any => {
 
 const getVersion = () => {
   return String(process.env.npm_package_version);
+};
+
+const staticConfig = (): any => {
+  return {
+    file_path:
+      process.env.DOCKER_DEPLOY === 'true'
+        ? '/var/www/otlplus-server/static/'
+        : 'static/',
+  };
 };
