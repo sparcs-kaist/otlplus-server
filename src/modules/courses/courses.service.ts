@@ -2,23 +2,25 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { ECourse } from 'src/common/entities/ECourse';
 import { ICourse } from 'src/common/interfaces';
-import { CourseQueryDto } from 'src/common/interfaces/dto/course/course.request.dto';
-import { CourseReviewQueryDto } from 'src/common/interfaces/dto/course/course.review.request.dto';
-import { toJsonLecture } from 'src/common/interfaces/serializer/lecture.serializer';
+import { toJsonLectureDetail } from 'src/common/interfaces/serializer/lecture.serializer';
 import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
-import { CourseResponseDtoNested } from '../../common/interfaces/dto/course/course.response.dto';
-import { toJsonCourse } from '../../common/interfaces/serializer/course.serializer';
+import {
+  addIsRead,
+  toJsonCourseDetail,
+} from '../../common/interfaces/serializer/course.serializer';
 import { getRepresentativeLecture } from '../../common/utils/lecture.utils';
 import { CourseRepository } from './../../prisma/repositories/course.repository';
+import { IReview } from '../../common/interfaces/IReview';
+import ECourseUser = ECourse.ECourseUser;
 
 @Injectable()
 export class CoursesService {
   constructor(private readonly courseRepository: CourseRepository) {}
 
   public async getCourses(
-    query: CourseQueryDto,
+    query: ICourse.Query,
     user: session_userprofile,
-  ): Promise<(CourseResponseDtoNested & { userspecific_is_read: boolean })[]> {
+  ): Promise<ICourse.DetailWithIsRead[]> {
     const queryResult = await this.courseRepository.getCourses(query);
     return Promise.all(
       queryResult.map(async (course) => {
@@ -26,20 +28,17 @@ export class CoursesService {
         const professorRaw = course.subject_course_professors.map(
           (x) => x.professor,
         );
-        const result = toJsonCourse<false>(
+        const result = toJsonCourseDetail(
           course,
           representativeLecture,
           professorRaw,
-          false,
         );
 
         const userspecific_is_read = user
           ? await this.courseRepository.isUserSpecificRead(course.id, user.id)
           : false;
 
-        return Object.assign(result, {
-          userspecific_is_read,
-        });
+        return addIsRead(result, userspecific_is_read);
       }),
     );
   }
@@ -53,20 +52,17 @@ export class CoursesService {
     const professorRaw = course.subject_course_professors.map(
       (x) => x.professor,
     );
-    const result = toJsonCourse(
+    const result = toJsonCourseDetail(
       course,
       representativeLecture,
       professorRaw,
-      false,
     );
 
     const userspecific_is_read = user
       ? await this.courseRepository.isUserSpecificRead(course.id, user.id)
       : false;
 
-    return Object.assign(result, {
-      userspecific_is_read,
-    });
+    return addIsRead(result, userspecific_is_read);
   }
 
   public async getLecturesByCourseId(query: { order: string[] }, id: number) {
@@ -78,14 +74,14 @@ export class CoursesService {
       throw new NotFoundException();
     }
 
-    return lectures.map((lecture) => toJsonLecture<false>(lecture, false));
+    return lectures.map((lecture) => toJsonLectureDetail(lecture));
   }
 
   public async getReviewsByCourseId(
-    query: CourseReviewQueryDto,
+    query: ICourse.ReviewQueryDto,
     id: number,
     user: session_userprofile,
-  ) {
+  ): Promise<IReview.Basic[]> {
     query.limit = query.limit ?? 100;
     query.offset = query.offset ?? 0;
     query.order = query.order ?? [
@@ -102,7 +98,9 @@ export class CoursesService {
     return reviews.map((review) => toJsonReview(review, user));
   }
 
-  async getCourseAutocomplete(dto: ICourse.AutocompleteDto) {
+  async getCourseAutocomplete(
+    dto: ICourse.AutocompleteQueryDto,
+  ): Promise<string | undefined> {
     const candidate = await this.courseRepository.getCourseAutocomplete(dto);
     if (!candidate) return dto.keyword;
     return this.findAutocompleteFromCandidate(candidate, dto.keyword);
@@ -111,7 +109,7 @@ export class CoursesService {
   private findAutocompleteFromCandidate(
     candidate: ECourse.Extended,
     keyword: string,
-  ) {
+  ): string | undefined {
     const keywordLower = keyword.toLowerCase();
     if (candidate.subject_department.name.startsWith(keyword))
       return candidate.subject_department.name;
@@ -136,7 +134,10 @@ export class CoursesService {
     }
   }
 
-  async readCourse(userId: number, courseId: number) {
-    await this.courseRepository.readCourse(userId, courseId);
+  async readCourse(
+    userId: number,
+    courseId: number,
+  ): Promise<ECourseUser.Basic> {
+    return await this.courseRepository.readCourse(userId, courseId);
   }
 }

@@ -5,6 +5,8 @@ import { ISession } from 'src/common/interfaces/ISession';
 import { toJsonDepartment } from 'src/common/interfaces/serializer/department.serializer';
 import { DepartmentsService } from '../departments/departments.service';
 import { SessionService } from './session.service';
+import { IDepartment } from '../../common/interfaces/IDepartment';
+import { EUser } from '../../common/entities/EUser';
 
 @Controller('session')
 export class SessionController {
@@ -14,7 +16,7 @@ export class SessionController {
   ) {}
 
   @Get('department-options')
-  async departmentOptions() {
+  async departmentOptions(): Promise<IDepartment.Basic[][]> {
     const { undergraduate, recent, other } =
       await this.departmentsService.getDepartmentOptions();
     return [
@@ -28,8 +30,11 @@ export class SessionController {
   async favoriteDepartments(
     @Body() body: ISession.FavoriteDepartmentsDto,
     @GetUser() user: session_userprofile,
-  ) {
+  ): Promise<EUser.Basic> {
     const departmentIds = body.fav_department.map((id) => parseInt(id));
-    await this.sessionService.changeFavoriteDepartments(user.id, departmentIds);
+    return await this.sessionService.changeFavoriteDepartments(
+      user.id,
+      departmentIds,
+    );
   }
 }

@@ -4,8 +4,6 @@ import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { Public } from 'src/common/decorators/skip-auth.decorator';
 import { ILecture } from 'src/common/interfaces/ILecture';
 import { IReview } from 'src/common/interfaces/IReview';
-import { LectureQueryDto } from 'src/common/interfaces/dto/lecture/lecture.request.dto';
-import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
 import { LecturesService } from './lectures.service';
 
 @Controller('api/lectures')
@@ -13,18 +11,22 @@ export class LecturesController {
   constructor(private readonly LectureService: LecturesService) {}
 
   @Get()
-  async getLectures(@Query() query: LectureQueryDto) {
+  async getLectures(
+    @Query() query: ILecture.QueryDto,
+  ): Promise<ILecture.Detail[]> {
     return await this.LectureService.getLectureByFilter(query);
   }
 
   @Public()
   @Get('autocomplete')
-  async getLectureAutocomplete(@Query() query: ILecture.AutocompleteDto) {
+  async getLectureAutocomplete(
+    @Query() query: ILecture.AutocompleteQueryDto,
+  ): Promise<string | undefined> {
     return await this.LectureService.getLectureAutocomplete(query);
   }
 
   @Get(':id')
-  async getLectureById(@Param('id') id: number) {
+  async getLectureById(@Param('id') id: number): Promise<ILecture.Detail> {
     return await this.LectureService.getLectureById(id);
   }
 
@@ -34,8 +36,7 @@ export class LecturesController {
     @Query() query: IReview.LectureReviewsQueryDto,
     @Param('lectureId') lectureId: number,
     @GetUser() user: session_userprofile,
-    // TODO: Consider using IReview.Basic
-  ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })[]> {
+  ): Promise<(IReview.Basic & { userspecific_is_liked: boolean })[]> {
     return await this.LectureService.getLectureReviews(user, lectureId, query);
   }
 
@@ -45,8 +46,7 @@ export class LecturesController {
     @Query() query: IReview.LectureReviewsQueryDto,
     @Param('lectureId') lectureId: number,
     @GetUser() user: session_userprofile,
-    // TODO: Consider using IReview.Basic
-  ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })[]> {
+  ): Promise<(IReview.Basic & { userspecific_is_liked: boolean })[]> {
     return await this.LectureService.getLectureRelatedReviews(
       user,
       lectureId,

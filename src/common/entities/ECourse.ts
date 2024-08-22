@@ -19,4 +19,9 @@ export namespace ECourse {
     },
   });
   export type Details = Prisma.subject_courseGetPayload<typeof Details>;
+
+  export namespace ECourseUser {
+    export const Basic = Prisma.validator<Prisma.subject_courseuserArgs>()({});
+    export type Basic = Prisma.subject_courseuserGetPayload<typeof Basic>;
+  }
 }

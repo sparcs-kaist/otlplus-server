@@ -4,10 +4,7 @@ import { ELecture } from 'src/common/entities/ELecture';
 import { EReview } from 'src/common/entities/EReview';
 import { ILecture } from 'src/common/interfaces/ILecture';
 import { IReview } from 'src/common/interfaces/IReview';
-import { LectureQueryDto } from 'src/common/interfaces/dto/lecture/lecture.request.dto';
-import { LectureResponseDto } from 'src/common/interfaces/dto/lecture/lecture.response.dto';
-import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
-import { toJsonLecture } from 'src/common/interfaces/serializer/lecture.serializer';
+import { toJsonLectureDetail } from 'src/common/interfaces/serializer/lecture.serializer';
 import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
@@ -22,22 +19,22 @@ export class LecturesService {
   ) {}
 
   public async getLectureByFilter(
-    query: LectureQueryDto,
-  ): Promise<LectureResponseDto[]> {
+    query: ILecture.QueryDto,
+  ): Promise<ILecture.Detail[]> {
     const queryResult = await this.LectureRepository.filterByRequest(query);
-    return queryResult.map((lecture) => toJsonLecture<false>(lecture, false));
+    return queryResult.map((lecture) => toJsonLectureDetail(lecture));
   }
 
-  public async getLectureById(id: number): Promise<LectureResponseDto> {
+  public async getLectureById(id: number): Promise<ILecture.Detail> {
     const queryResult = await this.LectureRepository.getLectureById(id);
-    return toJsonLecture<false>(queryResult, false);
+    return toJsonLectureDetail(queryResult);
   }
 
   public async getLectureReviews(
     user: session_userprofile,
     lectureId: number,
     query: IReview.LectureReviewsQueryDto,
-  ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })[]> {
+  ): Promise<(IReview.Basic & { userspecific_is_liked: boolean })[]> {
     const MAX_LIMIT = 100;
     const DEFAULT_ORDER = ['-written_datetime', '-id'];
     const reviews = await this.reviewsRepository.getReviewsOfLecture(
@@ -72,7 +69,7 @@ export class LecturesService {
     user: session_userprofile,
     lectureId: number,
     query: IReview.LectureReviewsQueryDto,
-  ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })[]> {
+  ): Promise<(IReview.Basic & { userspecific_is_liked: boolean })[]> {
     const DEFAULT_LIMIT = 100;
     const DEFAULT_ORDER = ['-written_datetime', '-id'];
 
@@ -109,7 +106,7 @@ export class LecturesService {
     return await this.LectureRepository.getLectureByIds(ids);
   }
 
-  async getLectureAutocomplete(dto: ILecture.AutocompleteDto) {
+  async getLectureAutocomplete(dto: ILecture.AutocompleteQueryDto) {
     const candidate = await this.LectureRepository.getLectureAutocomplete(dto);
     if (!candidate) return dto.keyword;
     return this.findAutocompleteFromCandidate(candidate, dto.keyword);

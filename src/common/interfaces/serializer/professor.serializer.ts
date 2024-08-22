@@ -1,10 +1,10 @@
 import { subject_professor } from '@prisma/client';
-import { ProfessorResponseDto } from '../dto/professor/professor.response.dto';
+import { IProfessor } from '../IProfessor';
 
-export const toJsonProfessor = (
+export const toJsonProfessors = (
   professors: subject_professor[],
   nested = false,
-): ProfessorResponseDto[] => {
+): IProfessor.Basic[] => {
   const result = professors.map((professor) => {
     return {
       name: professor.professor_name,

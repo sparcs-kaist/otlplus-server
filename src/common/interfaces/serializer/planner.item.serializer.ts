@@ -2,9 +2,9 @@ import { BadRequestException } from '@nestjs/common';
 import { EPlanners } from '../../entities/EPlanners';
 import { IPlanner } from '../IPlanner';
 import { PlannerItemType } from '../constants/planner';
-import { toJsonCourse } from './course.serializer';
+import { toJsonCourseDetail } from './course.serializer';
 import { toJsonDepartment } from './department.serializer';
-import { toJsonLecture } from './lecture.serializer';
+import { toJsonLectureDetail } from './lecture.serializer';
 
 export function toJsonPlannerItem<IT extends PlannerItemType>(
   item:
@@ -31,14 +31,13 @@ export const toJsonTakenItem = (
     id: taken_item.id,
     item_type: 'TAKEN',
     is_excluded: taken_item.is_excluded,
-    lecture: toJsonLecture(taken_item.subject_lecture, false),
-    course: toJsonCourse(
+    lecture: toJsonLectureDetail(taken_item.subject_lecture),
+    course: toJsonCourseDetail(
       taken_item.subject_lecture.course,
       taken_item.subject_lecture,
       taken_item.subject_lecture.course.subject_course_professors.map(
         (x) => x.professor,
       ),
-      false,
     ),
   };
 };
@@ -72,13 +71,12 @@ export const toJsonFutureItem = (
     is_excluded: future_item.is_excluded,
     year: future_item.year,
     semester: future_item.semester,
-    course: toJsonCourse(
+    course: toJsonCourseDetail(
       future_item.subject_course,
       future_item.subject_course.lecture[0],
       future_item.subject_course.subject_course_professors.map(
         (x) => x.professor,
       ),
-      false,
     ),
   };
 };

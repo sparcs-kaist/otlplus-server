@@ -10,16 +10,8 @@ import {
 import { session_userprofile } from '@prisma/client';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { IPlanner } from 'src/common/interfaces/IPlanner';
-import {
-  PlannerBodyDto,
-  PlannerQueryDto,
-  PlannerRemoveItemDto,
-  PlannerReorderDto,
-  PlannerUpdateItemDto,
-} from 'src/common/interfaces/dto/planner/planner.request.dto';
-import { PlannerResponseDto } from 'src/common/interfaces/dto/planner/planner.response.dto';
-import { PlannersService } from './planners.service';
 import { toJsonPlannerItem } from '../../common/interfaces/serializer/planner.item.serializer';
+import { PlannersService } from './planners.service';
 
 @Controller('api/users/:id/planners')
 export class PlannersController {
@@ -27,10 +19,10 @@ export class PlannersController {
 
   @Get()
   async getPlanners(
-    @Query() query: PlannerQueryDto,
+    @Query() query: IPlanner.QueryDto,
     @Param('id') id: number,
     @GetUser() user: session_userprofile,
-  ) {
+  ): Promise<IPlanner.Detail[]> {
     if (id !== user.id) {
       throw new UnauthorizedException();
     }
@@ -40,10 +32,10 @@ export class PlannersController {
 
   @Post()
   async postPlanner(
-    @Body() planner: PlannerBodyDto,
+    @Body() planner: IPlanner.CreateBodyDto,
     @Param('id') id: number,
     @GetUser() user: session_userprofile,
-  ) {
+  ): Promise<IPlanner.Detail> {
     if (id !== user.id) {
       throw new UnauthorizedException();
     }
@@ -58,7 +50,7 @@ export class PlannersController {
     @Param('plannerId') plannerId: number,
     @Body() item: IPlanner.AddArbitraryItemDto,
     @GetUser() user: session_userprofile,
-  ) {
+  ): Promise<IPlanner.IItem.Arbitrary> {
     if (id !== user.id) throw new UnauthorizedException();
 
     const newPlanner = await this.plannersService.addArbitraryItem(
@@ -71,10 +63,10 @@ export class PlannersController {
 
   @Post(':plannerId/remove-item')
   async removePlanner(
-    @Body() removeItem: PlannerRemoveItemDto,
+    @Body() removeItem: IPlanner.RemoveItemBodyDto,
     @Param('plannerId') plannerId: number,
     @GetUser() user: session_userprofile,
-  ): Promise<PlannerResponseDto> {
+  ): Promise<IPlanner.Detail> {
     return await this.plannersService.removePlannerItem(
       plannerId,
       removeItem,
@@ -88,7 +80,7 @@ export class PlannersController {
     @Param('id') userId: number,
     @Param('plannerId') plannerId: number,
     @GetUser() user: session_userprofile,
-  ) {
+  ): Promise<IPlanner.IItem.Future> {
     if (userId !== user.id) {
       throw new UnauthorizedException();
     }
@@ -103,10 +95,10 @@ export class PlannersController {
 
   @Post(':plannerId/reorder')
   async reorderPlanner(
-    @Body() reorder: PlannerReorderDto,
+    @Body() reorder: IPlanner.ReorderBodyDto,
     @Param('plannerId') plannerId: number,
     @GetUser() user: session_userprofile,
-  ): Promise<PlannerResponseDto> {
+  ): Promise<IPlanner.Detail> {
     return await this.plannersService.reorderPlanner(
       plannerId,
       reorder.arrange_order,
@@ -119,8 +111,8 @@ export class PlannersController {
     @Param('id') userId: number,
     @Param('plannerId') plannerId: number,
     @GetUser() user: session_userprofile,
-    @Body() updateItemDto: PlannerUpdateItemDto,
-  ) {
+    @Body() updateItemDto: IPlanner.UpdateItemBodyDto,
+  ): Promise<IPlanner.IItem.IMutate> {
     if (userId !== user.id) {
       throw new UnauthorizedException();
     }

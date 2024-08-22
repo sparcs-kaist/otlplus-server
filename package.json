@@ -53,7 +53,6 @@
     "@types/sharp": "^0.32.0",
     "axios": "^1.4.0",
     "bcrypt": "^5.1.0",
-    "cached-prisma": "^1.2.1",
     "canvas": "^2.11.2",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
@@ -69,7 +68,8 @@
     "prisma": "4.16.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^7.2.0"
+    "rxjs": "^7.2.0",
+    "ts-morph": "^23.0.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",

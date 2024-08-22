@@ -9,13 +9,6 @@ import {
 import { session_userprofile } from '@prisma/client';
 import { IPlanner } from 'src/common/interfaces/IPlanner';
 import {
-  PlannerBodyDto,
-  PlannerQueryDto,
-  PlannerRemoveItemDto,
-  PlannerUpdateItemDto,
-} from 'src/common/interfaces/dto/planner/planner.request.dto';
-import { PlannerResponseDto } from 'src/common/interfaces/dto/planner/planner.response.dto';
-import {
   toJsonArbitraryItem,
   toJsonFutureItem,
 } from 'src/common/interfaces/serializer/planner.item.serializer';
@@ -36,7 +29,7 @@ export class PlannersService {
   ) {}
 
   public async getPlannerByUser(
-    query: PlannerQueryDto,
+    query: IPlanner.QueryDto,
     user: session_userprofile,
   ) {
     const queryResult = await this.PlannerRepository.getPlannerByUser(
@@ -51,9 +44,9 @@ export class PlannersService {
   }
 
   public async postPlanner(
-    body: PlannerBodyDto,
+    body: IPlanner.CreateBodyDto,
     user: session_userprofile,
-  ): Promise<PlannerResponseDto> {
+  ): Promise<IPlanner.Detail> {
     const relatedPlanner = await this.getRelatedPlanner(user);
     const arrangeOrder =
       relatedPlanner.length == 0
@@ -126,7 +119,7 @@ export class PlannersService {
     plannerId: number,
     body: IPlanner.AddArbitraryItemDto,
     user: session_userprofile,
-  ) {
+  ): Promise<IPlanner.IItem.Arbitrary> {
     const planner = await this.PlannerRepository.getBasicPlannerById(plannerId);
     if (!planner) throw new NotFoundException();
     if (planner.user_id !== user.id) throw new UnauthorizedException();
@@ -151,9 +144,9 @@ export class PlannersService {
 
   public async removePlannerItem(
     plannerId: number,
-    removeItem: PlannerRemoveItemDto,
+    removeItem: IPlanner.RemoveItemBodyDto,
     user: session_userprofile,
-  ): Promise<PlannerResponseDto> {
+  ): Promise<IPlanner.Detail> {
     switch (removeItem.item_type) {
       case 'TAKEN':
         throw new BadRequestException(
@@ -229,7 +222,7 @@ export class PlannersService {
     plannerId: number,
     order: number,
     user: session_userprofile,
-  ): Promise<PlannerResponseDto> {
+  ): Promise<IPlanner.Detail> {
     const planner = await this.PlannerRepository.getPlannerById(
       user,
       plannerId,
@@ -265,7 +258,7 @@ export class PlannersService {
 
   async updatePlannerItem(
     plannerId: number,
-    updateItemDto: PlannerUpdateItemDto,
+    updateItemDto: IPlanner.UpdateItemBodyDto,
   ): Promise<
     | EPlanners.EItems.Taken.Details
     | EPlanners.EItems.Future.Extended

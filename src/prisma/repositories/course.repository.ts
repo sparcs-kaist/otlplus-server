@@ -4,13 +4,13 @@ import { ECourse } from 'src/common/entities/ECourse';
 import { ELecture } from 'src/common/entities/ELecture';
 import { EReview } from 'src/common/entities/EReview';
 import { ICourse } from 'src/common/interfaces';
-import { CourseReviewQueryDto } from 'src/common/interfaces/dto/course/course.review.request.dto';
 import {
   applyOffset,
   applyOrder,
   orderFilter,
 } from 'src/common/utils/search.utils';
 import { PrismaService } from '../prisma.service';
+import ECourseUser = ECourse.ECourseUser;
 
 @Injectable()
 export class CourseRepository {
@@ -87,7 +87,7 @@ export class CourseRepository {
   }
 
   public async getReviewsByCourseId(
-    query: CourseReviewQueryDto,
+    query: ICourse.ReviewQueryDto,
     id: number,
   ): Promise<EReview.Details[]> {
     const review = await this.prisma.review_review.findMany({
@@ -405,7 +405,7 @@ export class CourseRepository {
 
   async getCourseAutocomplete({
     keyword,
-  }: ICourse.AutocompleteDto): Promise<ECourse.Extended | null> {
+  }: ICourse.AutocompleteQueryDto): Promise<ECourse.Extended | null> {
     const candidate = await this.prisma.subject_course.findFirst({
       where: {
         OR: [
@@ -433,7 +433,10 @@ export class CourseRepository {
     return candidate;
   }
 
-  async readCourse(userId: number, courseId: number) {
+  async readCourse(
+    userId: number,
+    courseId: number,
+  ): Promise<ECourseUser.Basic> {
     const now = new Date();
     return await this.prisma.subject_courseuser.upsert({
       create: {

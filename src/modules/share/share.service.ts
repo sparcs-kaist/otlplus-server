@@ -13,11 +13,8 @@ import ical, {
 } from 'ical-generator';
 import moment from 'moment-timezone';
 import { join } from 'path';
-import { ILecture } from 'src/common/interfaces';
-import {
-  TimetableIcalQueryDto,
-  TimetableImageQueryDto,
-} from 'src/common/interfaces/dto/share/share.request.dto';
+import { ELecture } from 'src/common/entities/ELecture';
+import { ILecture, IShare } from 'src/common/interfaces';
 import { SemesterRepository } from 'src/prisma/repositories/semester.repository';
 import { LecturesService } from '../lectures/lectures.service';
 import { SemestersService } from '../semesters/semesters.service';
@@ -58,7 +55,7 @@ interface DrawTileOptions {
 }
 
 interface DrawTimetableDatas {
-  lectures: ILecture.Basic[];
+  lectures: ELecture.WithClasstime[];
   timetableType: string;
   semesterName: string;
   isEnglish: boolean;
@@ -315,7 +312,7 @@ export class ShareService {
   }
 
   async createTimetableImage(
-    query: TimetableImageQueryDto,
+    query: IShare.TimetableImageQueryDto,
     user: session_userprofile,
   ): Promise<Buffer> {
     const lectures = await this.timetablesService.getTimetableEntries(
@@ -355,7 +352,7 @@ export class ShareService {
 
   private async timetableIcal(timetableIcalData: {
     name: string;
-    lectures: ILecture.Basic[];
+    lectures: ILecture.Raw[];
     semesterObject: subject_semester;
     isEnglish: boolean;
   }): Promise<ICalCalendar> {
@@ -430,7 +427,7 @@ export class ShareService {
   }
 
   async createTimetableIcal(
-    query: TimetableIcalQueryDto,
+    query: IShare.TimetableIcalQueryDto,
     user: session_userprofile,
   ): Promise<ICalCalendar> {
     const lectures = await this.timetablesService.getTimetableEntries(

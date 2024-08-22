@@ -1,15 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
-import { CourseResponseDtoNested } from 'src/common/interfaces/dto/course/course.response.dto';
+import { ICourse } from 'src/common/interfaces';
+import { IReview } from 'src/common/interfaces/IReview';
+import { IUser } from 'src/common/interfaces/IUser';
 import {
-  ReviewLikedQueryDto,
-  UserTakenCoursesQueryDto,
-} from 'src/common/interfaces/dto/user/user.request.dto';
-import { ProfileDto } from 'src/common/interfaces/dto/user/user.response.dto';
-import { toJsonCourse } from 'src/common/interfaces/serializer/course.serializer';
+  addIsRead,
+  toJsonCourseDetail,
+} from 'src/common/interfaces/serializer/course.serializer';
 import { ResearchLecture } from '../../common/interfaces/constants/lecture';
 import { toJsonDepartment } from '../../common/interfaces/serializer/department.serializer';
-import { toJsonLecture } from '../../common/interfaces/serializer/lecture.serializer';
+import { toJsonLectureDetail } from '../../common/interfaces/serializer/lecture.serializer';
 import { toJsonReview } from '../../common/interfaces/serializer/review.serializer';
 import { getRepresentativeLecture } from '../../common/utils/lecture.utils';
 import { DepartmentRepository } from '../../prisma/repositories/department.repository';
@@ -17,7 +17,6 @@ import { LectureRepository } from '../../prisma/repositories/lecture.repository'
 import { ReviewsRepository } from '../../prisma/repositories/review.repository';
 import { UserRepository } from '../../prisma/repositories/user.repository';
 import { CourseRepository } from './../../prisma/repositories/course.repository';
-import { ReviewResponseDto } from '../../common/interfaces/dto/reviews/review.response.dto';
 
 @Injectable()
 export class UserService {
@@ -36,7 +35,7 @@ export class UserService {
     }
   }
 
-  public async getProfile(user: session_userprofile): Promise<ProfileDto> {
+  public async getProfile(user: session_userprofile): Promise<IUser.Profile> {
     const [
       department,
       favoriteDepartments,
@@ -82,19 +81,19 @@ export class UserService {
         toJsonDepartment(department),
       ),
       review_writable_lectures: reviewWritableLectures.map((lecture) =>
-        toJsonLecture<false>(lecture, false),
+        toJsonLectureDetail(lecture),
       ),
       my_timetable_lectures: timeTableLectures.map((lecture) =>
-        toJsonLecture<false>(lecture, false),
+        toJsonLectureDetail(lecture),
       ),
       reviews: writtenReviews.map((review) => toJsonReview(review)),
     };
   }
 
   async getUserTakenCourses(
-    query: UserTakenCoursesQueryDto,
+    query: IUser.TakenCoursesQueryDto,
     user: session_userprofile,
-  ): Promise<(CourseResponseDtoNested & { userspecific_is_read: boolean })[]> {
+  ): Promise<ICourse.DetailWithIsRead[]> {
     const DEFAULT_ORDER = ['old_code'];
     const takenLectures = await this.lectureRepository.getTakenLectures(user);
     const takenLecturesId = takenLectures.map((lecture) => lecture.id);
@@ -108,19 +107,16 @@ export class UserService {
         const professorRaw = course.subject_course_professors.map(
           (x) => x.professor,
         );
-        const result = toJsonCourse<false>(
+        const result = toJsonCourseDetail(
           course,
           representativeLecture,
           professorRaw,
-          false,
         );
 
-        return Object.assign(result, {
-          userspecific_is_read: await this.courseRepository.isUserSpecificRead(
-            course.id,
-            user.id,
-          ),
-        });
+        return addIsRead(
+          result,
+          await this.courseRepository.isUserSpecificRead(course.id, user.id),
+        );
       }),
     );
   }
@@ -128,8 +124,8 @@ export class UserService {
   async getUserLikedReviews(
     user: session_userprofile,
     userId: number,
-    query: ReviewLikedQueryDto,
-  ): Promise<(ReviewResponseDto & { userspecific_is_liked: boolean })[]> {
+    query: IUser.ReviewLikedQueryDto,
+  ): Promise<(IReview.Basic & { userspecific_is_liked: boolean })[]> {
     const MAX_LIMIT = 300;
     const DEFAULT_ORDER = ['-written_datetime', '-id'];
 

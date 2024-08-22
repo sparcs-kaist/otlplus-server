@@ -1,10 +1,10 @@
 import { Controller, Get, Query, Req, Res, Session } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { ESSOUser } from 'src/common/entities/ESSOUser';
 import { IAuth } from 'src/common/interfaces';
+import { IUser } from 'src/common/interfaces/IUser';
 import { Public } from '../../common/decorators/skip-auth.decorator';
-import { SSOUser } from '../../common/interfaces/dto/auth/sso.dto';
-import { ProfileDto } from '../../common/interfaces/dto/user/user.response.dto';
 import settings from '../../settings';
 import { UserService } from '../user/user.service';
 import { AuthService } from './auth.service';
@@ -34,7 +34,7 @@ export class AuthController {
     @Query('social_login') social_login: string,
     @Req() req: IAuth.Request,
     @Res() res: IAuth.Response,
-  ) {
+  ): void {
     if (req.user) {
       return res.redirect(next ?? '/');
     }
@@ -54,12 +54,14 @@ export class AuthController {
     @Query('code') code: string,
     @Session() session: Record<string, any>,
     @Res() response: IAuth.Response,
-  ) {
+  ): Promise<void> {
     const stateBefore = session['sso_state'];
     if (!stateBefore || stateBefore != state) {
       response.redirect('/error/invalid-login');
     }
-    const ssoProfile: SSOUser = await this.ssoClient.get_user_info(code);
+    const ssoProfile: ESSOUser.SSOUser = await this.ssoClient.get_user_info(
+      code,
+    );
     const {
       accessToken,
       accessTokenOptions,
@@ -82,7 +84,7 @@ export class AuthController {
   @Get('info')
   async getUserProfile(
     @GetUser() user: session_userprofile,
-  ): Promise<ProfileDto> {
+  ): Promise<IUser.Profile> {
     /*
     @Todo
     implement userSerializer, before that, we'd like to architect the dto types
@@ -93,7 +95,10 @@ export class AuthController {
 
   @Public()
   @Get('/')
-  async home(@Req() req: IAuth.Request, @Res() res: IAuth.Response) {
+  async home(
+    @Req() req: IAuth.Request,
+    @Res() res: IAuth.Response,
+  ): Promise<void> {
     return res.redirect('/session/login');
   }
 
@@ -104,7 +109,7 @@ export class AuthController {
     @Res() res: IAuth.Response,
     @Query('next') next: string,
     @GetUser() user: session_userprofile,
-  ) {
+  ): Promise<void> {
     const webURL = process.env.WEB_URL;
     if (user) {
       const sid = user.sid;

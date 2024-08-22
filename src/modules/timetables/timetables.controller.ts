@@ -8,16 +8,12 @@ import {
   Query,
 } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
+import { ITimetable } from 'src/common/interfaces';
 import { GetUser } from '../../common/decorators/get-user.decorator';
-import {
-  AddLectureDto,
-  ReorderTimetableDto,
-  TimetableCreateDto,
-  TimetableQueryDto,
-} from '../../common/interfaces/dto/timetable/timetable.request.dto';
 import { toJsonTimetable } from '../../common/interfaces/serializer/timetable.serializer';
 import { LecturesService } from '../lectures/lectures.service';
 import { TimetablesService } from './timetables.service';
+import { ETimetable } from '../../common/entities/ETimetable';
 
 @Controller('/api/users/:userId/timetables')
 export class TimetablesController {
@@ -29,9 +25,9 @@ export class TimetablesController {
   @Get()
   async getTimetables(
     @Param('userId') userId: number,
-    @Query() query: TimetableQueryDto,
+    @Query() query: ITimetable.QueryDto,
     @GetUser() user: session_userprofile,
-  ) {
+  ): Promise<ITimetable.Response[]> {
     const timeTableList = await this.timetablesService.getTimetables(
       query,
       user,
@@ -44,7 +40,7 @@ export class TimetablesController {
     @Param('userId') userId: number,
     @Param('timetableId') timetableId: number,
     @GetUser() user: session_userprofile,
-  ) {
+  ): Promise<ITimetable.Response> {
     const timeTable = await this.timetablesService.getTimetable(timetableId);
     return toJsonTimetable(timeTable);
   }
@@ -54,16 +50,15 @@ export class TimetablesController {
     @Param('userId') userId: number,
     @Param('timetableId') timetableId: number,
     @GetUser() user: session_userprofile,
-  ) {
-    await this.timetablesService.deleteTimetable(user, timetableId);
-    return null;
+  ): Promise<ETimetable.Basic[]> {
+    return await this.timetablesService.deleteTimetable(user, timetableId);
   }
 
   @Post()
   async createTimetable(
-    @Body() timeTableBody: TimetableCreateDto,
+    @Body() timeTableBody: ITimetable.CreateDto,
     @GetUser() user: session_userprofile,
-  ) {
+  ): Promise<ITimetable.Response> {
     const timeTable = await this.timetablesService.createTimetable(
       timeTableBody,
       user,
@@ -74,8 +69,8 @@ export class TimetablesController {
   @Post('/:timetableId/add-lecture')
   async addLectureToTimetable(
     @Param('timetableId') timetableId: number,
-    @Body() body: AddLectureDto,
-  ) {
+    @Body() body: ITimetable.AddLectureDto,
+  ): Promise<ITimetable.Response> {
     const timeTable = await this.timetablesService.addLectureToTimetable(
       timetableId,
       body,
@@ -86,8 +81,8 @@ export class TimetablesController {
   @Post('/:timetableId/remove-lecture')
   async removeLectureFromTimetable(
     @Param('timetableId') timetableId: number,
-    @Body() body: AddLectureDto,
-  ) {
+    @Body() body: ITimetable.AddLectureDto,
+  ): Promise<ITimetable.Response> {
     const timeTable = await this.timetablesService.removeLectureFromTimetable(
       timetableId,
       body,
@@ -104,9 +99,9 @@ export class TimetablesController {
      */
     @Param('userId') userId: number,
     @Param('timetableId') timetableId: number,
-    @Body() body: ReorderTimetableDto,
+    @Body() body: ITimetable.ReorderTimetableDto,
     @GetUser() user: session_userprofile,
-  ) {
+  ): Promise<ITimetable.Response> {
     const timeTable = await this.timetablesService.reorderTimetable(
       user,
       timetableId,

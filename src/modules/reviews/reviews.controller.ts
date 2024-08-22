@@ -12,13 +12,10 @@ import {
 import { session_userprofile } from '@prisma/client';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { Public } from 'src/common/decorators/skip-auth.decorator';
-import { ReviewResponseDto } from 'src/common/interfaces/dto/reviews/review.response.dto';
-import {
-  ReviewCreateDto,
-  ReviewQueryDto,
-  ReviewUpdateDto,
-} from 'src/common/interfaces/dto/reviews/reviews.request.dto';
+import { IReview } from 'src/common/interfaces/IReview';
 import { ReviewsService } from './reviews.service';
+import { EReview } from '../../common/entities/EReview';
+import EReviewVote = EReview.EReviewVote;
 
 @Controller('api/reviews')
 export class ReviewsController {
@@ -26,11 +23,9 @@ export class ReviewsController {
   @Public()
   @Get()
   async getReviews(
-    @Query() reviewsParam: ReviewQueryDto,
+    @Query() reviewsParam: IReview.QueryDto,
     @GetUser() user: session_userprofile,
-  ): Promise<
-    (ReviewResponseDto & { userspecific_is_liked: boolean })[] | number
-  > {
+  ): Promise<(IReview.Basic & { userspecific_is_liked: boolean })[] | number> {
     if (reviewsParam.response_type === 'count') {
       const reviewsCount = await this.reviewsService.getReviewsCount(
         reviewsParam.lecture_year,
@@ -44,9 +39,9 @@ export class ReviewsController {
 
   @Post()
   async createReviews(
-    @Body() reviewsBody: ReviewCreateDto,
+    @Body() reviewsBody: IReview.CreateDto,
     @GetUser() user: session_userprofile,
-  ): Promise<ReviewResponseDto & { userspecific_is_liked: boolean }> {
+  ): Promise<IReview.Basic & { userspecific_is_liked: boolean }> {
     if (user) {
       const result = await this.reviewsService.createReviews(reviewsBody, user);
       return result;
@@ -60,16 +55,16 @@ export class ReviewsController {
   async getReviewInstance(
     @Param('reviewId') reviewId: number,
     @GetUser() user: session_userprofile,
-  ): Promise<ReviewResponseDto & { userspecific_is_liked: boolean }> {
+  ): Promise<IReview.Basic & { userspecific_is_liked: boolean }> {
     return await this.reviewsService.getReviewById(reviewId, user);
   }
 
   @Patch(':reviewId')
   async updateReviewInstance(
-    @Body() reviewsBody: ReviewUpdateDto,
+    @Body() reviewsBody: IReview.UpdateDto,
     @Param('reviewId') reviewId: number,
     @GetUser() user: session_userprofile,
-  ): Promise<ReviewResponseDto & { userspecific_is_liked: boolean }> {
+  ): Promise<IReview.Basic & { userspecific_is_liked: boolean }> {
     if (user) {
       return await this.reviewsService.updateReviewById(
         reviewId,
@@ -85,13 +80,13 @@ export class ReviewsController {
   async likeReviewInstance(
     @Param('reviewId') reviewId: number,
     @GetUser() user: session_userprofile,
-  ) {
+  ): Promise<EReviewVote.Basic> {
     const reviewVote = await this.reviewsService.findReviewVote(reviewId, user);
     if (reviewVote) {
       throw new HttpException('Already Liked', HttpStatus.BAD_REQUEST);
     } else {
-      await this.reviewsService.createReviewVote(reviewId, user);
-      return null;
+      const result = await this.reviewsService.createReviewVote(reviewId, user);
+      return result;
     }
   }
 }

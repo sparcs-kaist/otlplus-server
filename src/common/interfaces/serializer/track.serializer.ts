@@ -1,13 +1,11 @@
 import { ETrack } from 'src/common/entities/ETrack';
+import { IPlanner } from '../IPlanner';
 import { AddtionalTrackTypeNarrower } from '../constants/additional.track.response.dto';
-import { AdditionalTrackResponseDto } from '../dto/track/additional.response.dto';
-import { GeneralTrackResponseDto } from '../dto/track/general.response.dto';
-import { MajorTrackResponseDto } from '../dto/track/major.response.dto';
 import { toJsonDepartment } from './department.serializer';
 
 export const toJsonGeneralTrack = (
   generalTrack: ETrack.General,
-): GeneralTrackResponseDto => {
+): IPlanner.ITrack.General => {
   return {
     id: generalTrack.id,
     start_year: generalTrack.start_year,
@@ -28,7 +26,7 @@ export const toJsonGeneralTrack = (
 
 export const toJsonMajorTrack = (
   majorTrack: ETrack.Major,
-): MajorTrackResponseDto => {
+): IPlanner.ITrack.Major => {
   return {
     id: majorTrack.id,
     start_year: majorTrack.start_year,
@@ -42,7 +40,7 @@ export const toJsonMajorTrack = (
 
 export const toJsonAdditionalTrack = (
   additionalTrack: ETrack.Additional,
-): AdditionalTrackResponseDto => {
+): IPlanner.ITrack.Additional => {
   const type = AddtionalTrackTypeNarrower(additionalTrack.type);
 
   if (type instanceof Error) {

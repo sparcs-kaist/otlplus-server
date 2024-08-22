@@ -1,18 +1,16 @@
 import { session_userprofile } from '@prisma/client';
 import { EReview } from 'src/common/entities/EReview';
 import { getRepresentativeLecture } from 'src/common/utils/lecture.utils';
-import { ReviewResponseDto } from './../dto/reviews/review.response.dto';
-import { toJsonCourse } from './course.serializer';
-import { toJsonLecture } from './lecture.serializer';
+import { IReview } from '../IReview';
+import { toJsonCourseBasic } from './course.serializer';
+import { toJsonLectureBasic } from './lecture.serializer';
 
 export const toJsonReview = (
   review: EReview.Details,
   user?: session_userprofile,
-): ReviewResponseDto => {
+): IReview.Basic => {
   const representativeLecture = getRepresentativeLecture(review.course.lecture);
-  const professorRaw = review.course.subject_course_professors.map(
-    (x) => x.professor,
-  );
+
   let isLiked = true;
   if (!user || !review.review_reviewvote) {
     isLiked = false;
@@ -24,17 +22,12 @@ export const toJsonReview = (
     isLiked = false;
   }
 
-  const courseResult = toJsonCourse<true>(
-    review.course,
-    representativeLecture,
-    professorRaw,
-    true,
-  );
+  const courseResult = toJsonCourseBasic(review.course, representativeLecture);
 
   const result = {
     id: review.id,
     course: courseResult,
-    lecture: toJsonLecture<true>(review.lecture, true),
+    lecture: toJsonLectureBasic(review.lecture),
     content: review.is_deleted
       ? '관리자에 의해 삭제된 코멘트입니다.'
       : review.content,
