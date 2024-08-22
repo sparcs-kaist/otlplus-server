@@ -19,7 +19,7 @@ jobs:
           port: ${{ secrets.REMOTE_SSH_PORT_DEV }} # 접속포트
           passphrase: ${{ secrets.REMOTE_PASSPHRASE_DEV }}
           script: | # 실행할 스크립트
-            cd /otlplus-nest-server
+            cd otlplus-nest-server
             git pull origin dev
             sudo docker stop otlplus-server-nest-dev
             sudo docker rm otlplus-server-nest-dev
