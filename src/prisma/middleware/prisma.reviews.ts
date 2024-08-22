@@ -1,23 +1,58 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import {
   review_review,
-  review_reviewvote,
   subject_course,
   subject_lecture,
   subject_professor,
 } from '@prisma/client';
+import { IPrismaMiddleware } from 'src/common/interfaces/IPrismaMiddleware';
 import { IReview } from 'src/common/interfaces/IReview';
 import { PrismaService } from '../prisma.service';
 
-@Injectable()
-export class ReviewMiddleware {
-  constructor(
-    @Inject(forwardRef(() => PrismaService))
-    private readonly prisma: PrismaService, //private readonly courseRepository: CourseRepository, //private readonly lectureRepository: LectureRepository,
-  ) //private readonly professorRepositiry: ProfessorRepositiry,
-  {}
+export class ReviewMiddleware implements IPrismaMiddleware.IPrismaMiddleware {
+  private static instance: ReviewMiddleware;
+  private prisma: PrismaService;
 
-  async lectureRecalcScore(lecture: subject_lecture) {
+  constructor(prisma: PrismaService) {
+    this.prisma = prisma;
+  }
+
+  async preExecute(
+    operations: IPrismaMiddleware.operationType,
+    args: any,
+  ): Promise<boolean> {
+    return true;
+  }
+
+  async postExecute(
+    operations: IPrismaMiddleware.operationType,
+    args: any,
+    result: any,
+  ): Promise<boolean> {
+    if (
+      operations === 'create' ||
+      operations === 'update' ||
+      operations === 'upsert'
+    ) {
+      await this.reviewSavedMiddleware(result, operations);
+      return true;
+    } else if (operations === 'delete') {
+      await this.reviewDeletedMiddleware(result);
+      return true;
+    }
+    return true;
+  }
+
+  static initialize(prisma: PrismaService) {
+    if (!ReviewMiddleware.instance) {
+      ReviewMiddleware.instance = new ReviewMiddleware(prisma);
+    }
+  }
+
+  static getInstance(): ReviewMiddleware {
+    return ReviewMiddleware.instance;
+  }
+
+  private async lectureRecalcScore(lecture: subject_lecture) {
     const professors = await this.prisma.subject_professor.findMany({
       where: {
         subject_lecture_professors: {
@@ -63,7 +98,7 @@ export class ReviewMiddleware {
     });
   }
 
-  async lectureCalcAverage(
+  private async lectureCalcAverage(
     reviews: review_review[],
   ): Promise<IReview.reCalcScoreReturn> {
     const nonzeroReviews = reviews.filter(
@@ -116,22 +151,21 @@ export class ReviewMiddleware {
     };
   }
 
-  async lectureGetWeight(review: review_review): Promise<number> {
+  private async lectureGetWeight(review: review_review): Promise<number> {
     const baseYear = new Date().getFullYear();
-    const lectureYear: number =
-      (
-        await this.prisma.subject_lecture.findUnique({
-          where: { id: review.id },
-          select: {
-            year: true,
-          },
-        })
-      )?.year ?? 0; // todo: 확인 필요.
+    const lectureYear: number = (
+      await this.prisma.subject_lecture.findUniqueOrThrow({
+        where: { id: review.id },
+        select: {
+          year: true,
+        },
+      })
+    ).year;
     const yearDiff = baseYear > lectureYear ? baseYear - lectureYear : 0;
     return (Math.sqrt(review.like) + 2) * 0.85 ** yearDiff;
   }
 
-  async courseRecalcScore(course: subject_course) {
+  private async courseRecalcScore(course: subject_course) {
     const reviews = await this.prisma.review_review.findMany({
       where: {
         lecture: {
@@ -156,7 +190,7 @@ export class ReviewMiddleware {
     });
   }
 
-  async professorRecalcScore(professor: subject_professor) {
+  private async professorRecalcScore(professor: subject_professor) {
     const reviews = await this.prisma.review_review.findMany({
       where: {
         lecture: {
@@ -185,7 +219,7 @@ export class ReviewMiddleware {
     });
   }
 
-  async recalcRelatedScore(review: review_review) {
+  private async recalcRelatedScore(review: review_review) {
     const course = await this.prisma.subject_course.findUnique({
       where: { id: review.course_id },
     });
@@ -210,7 +244,7 @@ export class ReviewMiddleware {
     });
     if (course) {
       await this.courseRecalcScore(course);
-    } // todo: 문제가 없나..?
+    }
     await Promise.all(
       lectures.map(async (lecture) => await this.lectureRecalcScore(lecture)),
     );
@@ -220,17 +254,9 @@ export class ReviewMiddleware {
       ),
     );
   }
-  async reviewRecalcLike(reviewVote: review_reviewvote) {
-    const count = await this.prisma.review_reviewvote.count({
-      where: { review_id: reviewVote.review_id },
-    });
-    await this.prisma.review_review.update({
-      where: { id: reviewVote.review_id },
-      data: { like: count },
-    });
-  }
-  async reviewSavedMiddleware(result: any, action: string) {
-    await this.recalcRelatedScore(result); //내가 여기 왜 result를 넣었을까
+
+  private async reviewSavedMiddleware(result: any, action: string) {
+    await this.recalcRelatedScore(result);
     if (action === 'create') {
       const course = await result.course;
       await this.prisma.subject_course.update({
@@ -246,17 +272,7 @@ export class ReviewMiddleware {
     }
   }
 
-  async reviewDeletedMiddleware(result: any) {
+  private async reviewDeletedMiddleware(result: any) {
     await this.recalcRelatedScore(result);
-  }
-
-  async reviewVoteSavedMiddleware(result: any) {
-    //reviewvote와 관련된 함수들은 무조건 review를 include해서 반환하도록 하면 안되는건가?
-    await this.reviewRecalcLike(result);
-  }
-
-  async reviewVoteDeletedMiddleware(result: any) {
-    //그냥 reviewvote와 관련된 함수들은 무조건 review를 include해서 반환하도록 하면 안되는건가?
-    await this.reviewRecalcLike(result);
   }
 }

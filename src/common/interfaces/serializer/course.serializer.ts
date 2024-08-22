@@ -3,15 +3,14 @@ import {
   subject_lecture,
   subject_professor,
 } from '@prisma/client';
-import { CourseDetails, NESTED } from '../../schemaTypes/types';
+import { ECourse } from 'src/common/entities/ECourse';
 import { applyOrder } from '../../utils/search.utils';
 import { ICourse } from '../ICourse';
-import { CourseResponseDtoNested } from '../dto/course/course.response.dto';
-import { ProfessorResponseDto } from '../dto/professor/professor.response.dto';
+import { IProfessor } from '../IProfessor';
 import { toJsonDepartment } from './department.serializer';
-import { toJsonProfessor } from './professor.serializer';
+import { toJsonProfessors } from './professor.serializer';
 
-export function toJsonCourseBasic(course: subject_course): ICourse.Basic {
+export function toJsonFeedBasic(course: subject_course): ICourse.FeedBasic {
   return {
     id: course.id,
     old_code: course.old_code,
@@ -33,23 +32,19 @@ export function toJsonCourseBasic(course: subject_course): ICourse.Basic {
   };
 }
 
-export function toJsonCourseRelated(course: subject_course): ICourse.Related {
+export function toJsonFeedRelated(course: subject_course): ICourse.FeedRelated {
   return {
-    ...toJsonCourseBasic(course),
-    related_courses_prior: [],
+    ...toJsonFeedBasic(course),
+    related_courses_prior: [], // TODO: related courses 비어있는게 맞는지 확인
     related_courses_posterior: [],
   };
 }
 
-export function toJsonCourse<T>(
-  course: T extends NESTED
-    ? Omit<CourseDetails, 'subject_course_professors'>
-    : CourseDetails,
+export function toJsonCourseBasic(
+  course: Omit<ECourse.Details, 'subject_course_professors'>,
   lecture: subject_lecture,
-  professor: subject_professor[],
-  nested: T extends NESTED ? true : false,
-): CourseResponseDtoNested {
-  let result = {
+): ICourse.Basic {
+  return {
     id: course.id,
     old_code: course.old_code,
     department: toJsonDepartment(course.subject_department, true),
@@ -64,25 +59,30 @@ export function toJsonCourse<T>(
     num_classes: lecture.num_classes ?? 0,
     num_labs: lecture.num_labs ?? 0,
   };
+}
 
-  if (nested) {
-    return result;
-  }
-
-  const professorJson: ProfessorResponseDto[] = toJsonProfessor(
-    professor,
-    true,
-  );
-  const professorSorted = applyOrder<ProfessorResponseDto>(professorJson, [
-    'name',
-  ]);
-  result = Object.assign(result, {
+export function toJsonCourseDetail(
+  course: ECourse.Details,
+  lecture: subject_lecture,
+  professor: subject_professor[],
+): ICourse.Detail {
+  const basic = toJsonCourseBasic(course, lecture);
+  const professorJson: IProfessor.Basic[] = toJsonProfessors(professor, true);
+  const professorSorted = applyOrder<IProfessor.Basic>(professorJson, ['name']);
+  return {
+    ...basic,
     related_courses_prior: [],
     related_courses_posterior: [],
     professors: professorSorted,
     grade: course.grade,
     load: course.load,
     speech: course.speech,
-  });
-  return result;
+  };
+}
+
+export function addIsRead(
+  course: ICourse.Detail,
+  isRead: boolean,
+): ICourse.DetailWithIsRead {
+  return Object.assign(course, { userspecific_is_read: isRead });
 }

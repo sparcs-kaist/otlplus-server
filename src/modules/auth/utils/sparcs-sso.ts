@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import * as crypto from 'crypto';
 import * as querystring from 'querystring';
-import { SSOUser } from '../../../common/interfaces/dto/auth/sso.dto';
+import { ESSOUser } from 'src/common/entities/ESSOUser';
 
 // CONVERT SPARCS SSO V2 Client Version 1.1 TO TYPESCRIPT
 // VALID ONLY AFTER ----(NOT VALID) ----
@@ -94,7 +94,7 @@ export class Client {
     return true;
   }
 
-  private async _post_data(url: any, data: any): Promise<SSOUser> {
+  private async _post_data(url: any, data: any): Promise<ESSOUser.SSOUser> {
     /**
      *@SSO
      *querystring.stringify(data)인지 .toString('utf8')붙여야 하는지 확인 필요
@@ -117,7 +117,7 @@ export class Client {
       result.kaist_info = result.kaist_info
         ? JSON.parse(result.kaist_info)
         : {};
-      return result as SSOUser;
+      return result as ESSOUser.SSOUser;
     } catch (e) {
       console.error(e);
       throw new Error('INVALID_OBJECT');
@@ -146,7 +146,7 @@ export class Client {
     return { url, state };
   }
 
-  public async get_user_info(code: string): Promise<SSOUser> {
+  public async get_user_info(code: string): Promise<ESSOUser.SSOUser> {
     /*
     Exchange a code to user information
     :param code: the code that given by SPARCS SSO server

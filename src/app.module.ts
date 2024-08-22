@@ -23,6 +23,12 @@ import { UserModule } from './modules/user/user.module';
 import { WishlistModule } from './modules/wishlist/wishlist.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ShareModule } from './modules/share/share.module';
+import { AuthConfig } from './modules/auth/auth.config';
+import { AuthGuard } from './modules/auth/guard/auth.guard';
+import { ClsModule } from 'nestjs-cls';
+import { ClsPluginTransactional } from '@nestjs-cls/transactional';
+import { PrismaService } from '@src/prisma/prisma.service';
+import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
 
 @Module({
   imports: [
@@ -44,13 +50,41 @@ import { ShareModule } from './modules/share/share.module';
     PlannersModule,
     TracksModule,
     ShareModule,
+    ClsModule.forRoot({
+      global: true,
+      middleware: { mount: true },
+      plugins: [
+        new ClsPluginTransactional({
+          imports: [PrismaModule],
+          adapter: new TransactionalAdapterPrisma({
+            prismaInjectionToken: PrismaService,
+          }),
+        }),
+      ],
+    }),
   ],
   controllers: [AppController],
   providers: [
+    // {
+    //   provide: APP_GUARD,
+    //   useClass:
+    //     process.env.NODE_ENV === 'production' ? JwtCookieGuard : MockAuthGuard,
+    // },
     {
       provide: APP_GUARD,
-      useClass:
-        process.env.NODE_ENV === 'production' ? JwtCookieGuard : MockAuthGuard,
+      useFactory: async (authConfig: AuthConfig) => {
+        const env =
+          process.env.NODE_ENV === undefined ? 'prod' : process.env.NODE_ENV;
+        const authChain = await authConfig.config(env);
+        return new AuthGuard(authChain);
+      },
+      inject: [AuthConfig],
+    },
+    {
+      provide: APP_GUARD,
+      useFactory: () => {
+        const env = process.env.NODE_ENV;
+      },
     },
     JwtCookieGuard,
     MockAuthGuard,

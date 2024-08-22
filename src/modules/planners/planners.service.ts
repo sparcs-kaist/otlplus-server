@@ -1,30 +1,24 @@
 import {
   BadRequestException,
+  HttpException,
+  HttpStatus,
   Injectable,
   NotFoundException,
   UnauthorizedException,
-  HttpException,
-  HttpStatus,
 } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { IPlanner } from 'src/common/interfaces/IPlanner';
 import {
-  PlannerBodyDto,
-  PlannerQueryDto,
-  PlannerUpdateItemDto,
-  PlannerRemoveItemDto,
-} from 'src/common/interfaces/dto/planner/planner.request.dto';
-import { PlannerResponseDto } from 'src/common/interfaces/dto/planner/planner.response.dto';
-import { FuturePlannerItemResponseDto } from 'src/common/interfaces/dto/planner_item/future.reponse.dto';
-import { toJsonFutureItem } from 'src/common/interfaces/serializer/planner.item.serializer';
-import { toJsonArbitraryItem } from 'src/common/interfaces/serializer/planner.item.serializer';
+  toJsonArbitraryItem,
+  toJsonFutureItem,
+} from 'src/common/interfaces/serializer/planner.item.serializer';
 import { toJsonPlanner } from 'src/common/interfaces/serializer/planner.serializer';
-import { FuturePlannerItem } from 'src/common/schemaTypes/types';
 import { DepartmentRepository } from 'src/prisma/repositories/department.repository';
 import { LectureRepository } from 'src/prisma/repositories/lecture.repository';
 import { PlannerRepository } from 'src/prisma/repositories/planner.repository';
-import { CourseRepository } from './../../prisma/repositories/course.repository';
 import { EPlanners } from '../../common/entities/EPlanners';
+import { CourseRepository } from './../../prisma/repositories/course.repository';
+import { Transactional } from '@nestjs-cls/transactional';
 
 @Injectable()
 export class PlannersService {
@@ -36,7 +30,7 @@ export class PlannersService {
   ) {}
 
   public async getPlannerByUser(
-    query: PlannerQueryDto,
+    query: IPlanner.QueryDto,
     user: session_userprofile,
   ) {
     const queryResult = await this.PlannerRepository.getPlannerByUser(
@@ -50,10 +44,11 @@ export class PlannersService {
     return await this.PlannerRepository.getRelatedPlanner(user);
   }
 
+  @Transactional()
   public async postPlanner(
-    body: PlannerBodyDto,
+    body: IPlanner.CreateBodyDto,
     user: session_userprofile,
-  ): Promise<PlannerResponseDto> {
+  ): Promise<IPlanner.Detail> {
     const relatedPlanner = await this.getRelatedPlanner(user);
     const arrangeOrder =
       relatedPlanner.length == 0
@@ -122,6 +117,7 @@ export class PlannersService {
     return toJsonPlanner(planner);
   }
 
+  @Transactional()
   async addArbitraryItem(
     plannerId: number,
     body: IPlanner.AddArbitraryItemDto,
@@ -149,11 +145,12 @@ export class PlannersService {
     return toJsonArbitraryItem(arbitraryItem);
   }
 
+  @Transactional()
   public async removePlannerItem(
     plannerId: number,
-    removeItem: PlannerRemoveItemDto,
+    removeItem: IPlanner.RemoveItemBodyDto,
     user: session_userprofile,
-  ): Promise<PlannerResponseDto> {
+  ): Promise<IPlanner.Detail> {
     switch (removeItem.item_type) {
       case 'TAKEN':
         throw new BadRequestException(
@@ -197,6 +194,7 @@ export class PlannersService {
     return toJsonPlanner(planner);
   }
 
+  @Transactional()
   async createFuturePlannerItem(
     plannerId: number,
     year: number,
@@ -215,7 +213,7 @@ export class PlannersService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const item: FuturePlannerItem =
+    const item: EPlanners.EItems.Future.Extended =
       await this.PlannerRepository.createPlannerItem(
         plannerId,
         year,
@@ -225,11 +223,12 @@ export class PlannersService {
     return toJsonFutureItem(item);
   }
 
+  @Transactional()
   public async reorderPlanner(
     plannerId: number,
     order: number,
     user: session_userprofile,
-  ): Promise<PlannerResponseDto> {
+  ): Promise<IPlanner.Detail> {
     const planner = await this.PlannerRepository.getPlannerById(
       user,
       plannerId,
@@ -263,9 +262,10 @@ export class PlannersService {
     return toJsonPlanner(updated);
   }
 
+  @Transactional()
   async updatePlannerItem(
     plannerId: number,
-    updateItemDto: PlannerUpdateItemDto,
+    updateItemDto: IPlanner.UpdateItemBodyDto,
   ): Promise<
     | EPlanners.EItems.Taken.Details
     | EPlanners.EItems.Future.Extended

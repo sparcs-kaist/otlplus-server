@@ -1,20 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { ECourse } from 'src/common/entities/ECourse';
+import { ELecture } from 'src/common/entities/ELecture';
 import { EReview } from 'src/common/entities/EReview';
 import { ICourse } from 'src/common/interfaces';
-import { CourseReviewQueryDto } from 'src/common/interfaces/dto/course/course.review.request.dto';
 import {
   applyOffset,
   applyOrder,
   orderFilter,
 } from 'src/common/utils/search.utils';
-import {
-  CourseDetails,
-  LectureDetails,
-  courseDetails,
-} from '../../common/schemaTypes/types';
 import { PrismaService } from '../prisma.service';
-import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CourseRepository {
@@ -52,9 +47,9 @@ export class CourseRepository {
     'TS',
   ];
 
-  public async getCourseById(id: number): Promise<CourseDetails | null> {
+  public async getCourseById(id: number): Promise<ECourse.Details | null> {
     return await this.prisma.subject_course.findUnique({
-      include: courseDetails.include,
+      include: ECourse.Details.include,
       where: {
         id: id,
       },
@@ -64,7 +59,7 @@ export class CourseRepository {
   public async getLecturesByCourseId(
     query: { order: string[] },
     id: number,
-  ): Promise<LectureDetails[]> {
+  ): Promise<ELecture.Details[]> {
     const course = await this.prisma.subject_course.findUnique({
       include: {
         lecture: {
@@ -84,14 +79,14 @@ export class CourseRepository {
       ? course.lecture.filter((lecture) => !lecture.deleted)
       : [];
     const order = query.order ? query.order : ['year', 'semester', 'class_no'];
-    return applyOrder<LectureDetails>(
+    return applyOrder<ELecture.Details>(
       filteredLecture,
-      order as (keyof LectureDetails)[],
+      order as (keyof ELecture.Details)[],
     );
   }
 
   public async getReviewsByCourseId(
-    query: CourseReviewQueryDto,
+    query: ICourse.ReviewQueryDto,
     id: number,
   ): Promise<EReview.Details[]> {
     const review = await this.prisma.review_review.findMany({
@@ -104,7 +99,7 @@ export class CourseRepository {
     return review;
   }
 
-  public async getCourses(query: any): Promise<CourseDetails[]> {
+  public async getCourses(query: any): Promise<ECourse.Details[]> {
     const DEFAULT_LIMIT = 150;
     const DEFAULT_ORDER = ['old_code'];
 
@@ -133,23 +128,23 @@ export class CourseRepository {
     ].filter((filter): filter is object => filter !== null);
 
     const queryResult = await this.prisma.subject_course.findMany({
-      include: courseDetails.include,
+      include: ECourse.Details.include,
       where: {
         AND: filterList,
       },
       take: limit ?? DEFAULT_LIMIT,
     });
-    const levelFilteredResult = this.levelFilter<CourseDetails>(
+    const levelFilteredResult = this.levelFilter<ECourse.Details>(
       queryResult,
       level,
     );
 
     // Apply Ordering and Offset
-    const orderedResult = applyOrder<CourseDetails>(
+    const orderedResult = applyOrder<ECourse.Details>(
       levelFilteredResult,
       order ?? DEFAULT_ORDER,
     );
-    return applyOffset<CourseDetails>(orderedResult, offset ?? 0);
+    return applyOffset<ECourse.Details>(orderedResult, offset ?? 0);
   }
 
   public departmentFilter(department_names?: string[]): object | null {
@@ -348,7 +343,7 @@ export class CourseRepository {
     };
   }
 
-  public levelFilter<T extends CourseDetails | LectureDetails>(
+  public levelFilter<T extends ECourse.Details | ELecture.Details>(
     queryResult: T[],
     levels?: string[],
   ): T[] {
@@ -375,7 +370,7 @@ export class CourseRepository {
   async getUserTakenCourses(
     takenLecturesId: number[],
     order: string[],
-  ): Promise<CourseDetails[]> {
+  ): Promise<ECourse.Details[]> {
     const orderFilter: { [key: string]: string }[] = [];
     order.forEach((orderList) => {
       const orderDict: { [key: string]: string } = {};
@@ -409,7 +404,7 @@ export class CourseRepository {
 
   async getCourseAutocomplete({
     keyword,
-  }: ICourse.AutocompleteDto): Promise<ECourse.Extended | null> {
+  }: ICourse.AutocompleteQueryDto): Promise<ECourse.Extended | null> {
     const candidate = await this.prisma.subject_course.findFirst({
       where: {
         OR: [

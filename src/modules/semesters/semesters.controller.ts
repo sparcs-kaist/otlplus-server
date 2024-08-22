@@ -1,5 +1,5 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { SemesterQueryDto } from '../../common/interfaces/dto/semester/semester.request.dto';
+import { ISemester } from 'src/common/interfaces/ISemester';
 import { toJsonSemester } from '../../common/interfaces/serializer/semester.serializer';
 import { SemestersService } from './semesters.service';
 
@@ -8,7 +8,7 @@ export class SemestersController {
   constructor(private readonly semestersService: SemestersService) {}
 
   @Get()
-  async getSemesters(@Query() query: SemesterQueryDto) {
+  async getSemesters(@Query() query: ISemester.QueryDto) {
     const semesters = await this.semestersService.getSemesters(query);
     return semesters.map((semester) => toJsonSemester(semester));
   }

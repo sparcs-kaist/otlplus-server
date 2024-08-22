@@ -1,5 +1,7 @@
 import { CanvasRenderingContext2D } from 'canvas';
-import { ILecture } from './ILecture';
+import { Type } from 'class-transformer';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { ELecture } from '../entities/ELecture';
 
 export namespace IShare {
   export interface RoundedRectangleOptions {
@@ -37,11 +39,47 @@ export namespace IShare {
   }
 
   export interface drawTimetableDatas {
-    lectures: ILecture.Basic[];
+    lectures: ELecture.UserTaken[];
     timetableType: string;
     semesterName: string;
     isEnglish: boolean;
     semesterFontSize: number;
     tileFontSize: number;
+  }
+
+  export class TimetableImageQueryDto {
+    @Type(() => Number)
+    @IsNumber()
+    timetable!: number;
+
+    @Type(() => Number)
+    @IsNumber()
+    year!: number;
+
+    @Type(() => Number)
+    @IsNumber()
+    semester!: number;
+
+    @IsString()
+    @IsOptional()
+    language?: string;
+  }
+
+  export class TimetableIcalQueryDto {
+    @Type(() => Number)
+    @IsNumber()
+    timetable!: number;
+
+    @Type(() => Number)
+    @IsNumber()
+    year!: number;
+
+    @Type(() => Number)
+    @IsNumber()
+    semester!: number;
+
+    @IsString()
+    @IsOptional()
+    language?: string;
   }
 }

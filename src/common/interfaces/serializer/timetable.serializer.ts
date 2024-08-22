@@ -1,15 +1,12 @@
-import {
-  LectureDetails,
-  TimeTableBasic,
-  TimeTableDetails,
-} from '../../schemaTypes/types';
-import { TimetableResponseDto } from '../dto/timetable/timetable.response.dto';
-import { toJsonLecture } from './lecture.serializer';
+import { ELecture } from 'src/common/entities/ELecture';
+import { ETimetable } from 'src/common/entities/ETimetable';
+import { ITimetable } from '../ITimetable';
+import { toJsonLectureDetail } from './lecture.serializer';
 
 export const toJsonTimetable = (
-  timetable: TimeTableDetails | TimeTableBasic,
-  lectures?: LectureDetails[],
-): TimetableResponseDto => {
+  timetable: ETimetable.Details | ETimetable.Basic,
+  lectures?: ELecture.Details[],
+): ITimetable.Response => {
   const lecturesList =
     'timetable_timetable_lectures' in timetable
       ? timetable.timetable_timetable_lectures.map((x) => x.subject_lecture)
@@ -19,9 +16,7 @@ export const toJsonTimetable = (
   }
   return {
     id: timetable.id,
-    lectures: lecturesList.map((lecture) =>
-      toJsonLecture<false>(lecture, false),
-    ),
+    lectures: lecturesList.map((lecture) => toJsonLectureDetail(lecture)),
     arrange_order: timetable.arrange_order,
   };
 };

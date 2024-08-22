@@ -1,29 +1,24 @@
-import {
-  ArbitraryPlannerItem,
-  FuturePlannerItem,
-  TakenPlannerItem,
-} from 'src/common/schemaTypes/types';
-import { ArbitraryPlannerItemResponseDto } from '../dto/planner_item/arbitrary.response.dto';
-import { FuturePlannerItemResponseDto } from '../dto/planner_item/future.reponse.dto';
-import { TakenPlannerItemResponseDto } from '../dto/planner_item/taken.response.dto';
-import { toJsonCourse } from './course.serializer';
-import { toJsonDepartment } from './department.serializer';
-import { toJsonLecture } from './lecture.serializer';
-import { IPlanner } from '../IPlanner';
-import { EPlanners } from '../../entities/EPlanners';
-import { PlannerItemType } from '../constants/planner';
 import { BadRequestException } from '@nestjs/common';
+import { EPlanners } from '../../entities/EPlanners';
+import { IPlanner } from '../IPlanner';
+import { PlannerItemType } from '../constants/planner';
+import { toJsonCourseDetail } from './course.serializer';
+import { toJsonDepartment } from './department.serializer';
+import { toJsonLectureDetail } from './lecture.serializer';
 
 export function toJsonPlannerItem<IT extends PlannerItemType>(
-  item: TakenPlannerItem | FuturePlannerItem | ArbitraryPlannerItem,
+  item:
+    | EPlanners.EItems.Taken.Details
+    | EPlanners.EItems.Future.Extended
+    | EPlanners.EItems.Arbitrary.Extended,
   item_type: IT,
 ): IPlanner.IItem.IMutate {
   if (item_type === PlannerItemType.Taken) {
-    return toJsonTakenItem(item as TakenPlannerItem);
+    return toJsonTakenItem(item as EPlanners.EItems.Taken.Details);
   } else if (item_type === PlannerItemType.Future) {
-    return toJsonFutureItem(item as FuturePlannerItem);
+    return toJsonFutureItem(item as EPlanners.EItems.Future.Extended);
   } else if (item_type === PlannerItemType.Arbitrary) {
-    return toJsonArbitraryItem(item as ArbitraryPlannerItem);
+    return toJsonArbitraryItem(item as EPlanners.EItems.Arbitrary.Extended);
   } else {
     throw new BadRequestException('Invalid Planner Item Type');
   }
@@ -36,14 +31,13 @@ export const toJsonTakenItem = (
     id: taken_item.id,
     item_type: 'TAKEN',
     is_excluded: taken_item.is_excluded,
-    lecture: toJsonLecture(taken_item.subject_lecture, false),
-    course: toJsonCourse(
+    lecture: toJsonLectureDetail(taken_item.subject_lecture),
+    course: toJsonCourseDetail(
       taken_item.subject_lecture.course,
       taken_item.subject_lecture,
       taken_item.subject_lecture.course.subject_course_professors.map(
         (x) => x.professor,
       ),
-      false,
     ),
   };
 };
@@ -77,13 +71,12 @@ export const toJsonFutureItem = (
     is_excluded: future_item.is_excluded,
     year: future_item.year,
     semester: future_item.semester,
-    course: toJsonCourse(
+    course: toJsonCourseDetail(
       future_item.subject_course,
       future_item.subject_course.lecture[0],
       future_item.subject_course.subject_course_professors.map(
         (x) => x.professor,
       ),
-      false,
     ),
   };
 };

@@ -1,43 +1,22 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
-import { EArbitraryPlannerItem } from 'src/common/entities/EArbitraryPlannerItem';
-import {
-  PlannerBodyDto,
-  PlannerQueryDto,
-  PlannerUpdateItemDto,
-} from 'src/common/interfaces/dto/planner/planner.request.dto';
-import {
-  ArbitraryPlannerItem,
-  FuturePlannerItem,
-  LectureDetails,
-  PlannerBasic,
-  PlannerDetails,
-  TakenPlannerItem,
-  arbitraryPlannerItem,
-  futurePlannerItem,
-  plannerDetails,
-  takenPlannerItem,
-} from 'src/common/schemaTypes/types';
+import { ELecture } from 'src/common/entities/ELecture';
+import { IPlanner } from 'src/common/interfaces/IPlanner';
 import { orderFilter } from 'src/common/utils/search.utils';
-import { PrismaService } from '../prisma.service';
-import { PlannerItemType } from '../../common/interfaces/constants/planner';
 import { EPlanners } from '../../common/entities/EPlanners';
-import EItems = EPlanners.EItems;
+import { PlannerItemType } from '../../common/interfaces/constants/planner';
+import { PrismaService } from '../prisma.service';
 
 @Injectable()
 export class PlannerRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   public async getPlannerByUser(
-    query: PlannerQueryDto,
+    query: IPlanner.QueryDto,
     user: session_userprofile,
-  ): Promise<PlannerDetails[]> {
+  ): Promise<EPlanners.Details[]> {
     return await this.prisma.planner_planner.findMany({
-      ...plannerDetails,
+      ...EPlanners.Details,
       where: {
         user_id: user.id,
       },
@@ -47,7 +26,9 @@ export class PlannerRepository {
     });
   }
 
-  public async getBasicPlannerById(id: number): Promise<PlannerBasic | null> {
+  public async getBasicPlannerById(
+    id: number,
+  ): Promise<EPlanners.Basic | null> {
     return await this.prisma.planner_planner.findUnique({
       where: {
         id: id,
@@ -56,12 +37,12 @@ export class PlannerRepository {
   }
 
   public async createPlanner(
-    body: PlannerBodyDto,
+    body: IPlanner.CreateBodyDto,
     arrange_order: number,
     user: session_userprofile,
-  ): Promise<PlannerDetails> {
+  ): Promise<EPlanners.Details> {
     return await this.prisma.planner_planner.create({
-      ...plannerDetails,
+      ...EPlanners.Details,
       data: {
         session_userprofile: {
           connect: {
@@ -99,9 +80,9 @@ export class PlannerRepository {
   public async getPlannerById(
     user: session_userprofile,
     id: number,
-  ): Promise<PlannerDetails | null> {
+  ): Promise<EPlanners.Details | null> {
     return this.prisma.planner_planner.findFirst({
-      ...plannerDetails,
+      ...EPlanners.Details,
       where: {
         user_id: user.id,
         id: id,
@@ -112,9 +93,9 @@ export class PlannerRepository {
   public async updateOrder(
     plannerId: number,
     order: number,
-  ): Promise<PlannerDetails> {
+  ): Promise<EPlanners.Details> {
     return await this.prisma.planner_planner.update({
-      ...plannerDetails,
+      ...EPlanners.Details,
       where: {
         id: plannerId,
       },
@@ -172,7 +153,7 @@ export class PlannerRepository {
 
   public async getRelatedPlanner(
     user: session_userprofile,
-  ): Promise<PlannerBasic[]> {
+  ): Promise<EPlanners.Basic[]> {
     return await this.prisma.planner_planner.findMany({
       where: {
         user_id: user.id,
@@ -186,11 +167,11 @@ export class PlannerRepository {
   public async getTakenPlannerItemById(
     user: session_userprofile,
     id: number,
-  ): Promise<TakenPlannerItem | null> {
+  ): Promise<EPlanners.EItems.Taken.Details | null> {
     const planner = await this.prisma.planner_planner.findMany({
       include: {
         planner_takenplanneritem: {
-          ...takenPlannerItem,
+          ...EPlanners.EItems.Taken.Details,
         },
       },
       where: {
@@ -207,8 +188,8 @@ export class PlannerRepository {
   }
 
   public async createTakenPlannerItem(
-    planner: PlannerBasic,
-    lecture: LectureDetails,
+    planner: EPlanners.Basic,
+    lecture: ELecture.Details,
     isExcluded: boolean = false,
   ) {
     return await this.prisma.planner_takenplanneritem.create({
@@ -230,11 +211,11 @@ export class PlannerRepository {
   public async getFuturePlannerItemById(
     user: session_userprofile,
     id: number,
-  ): Promise<FuturePlannerItem | null> {
+  ): Promise<EPlanners.EItems.Future.Extended | null> {
     const planner = await this.prisma.planner_planner.findMany({
       include: {
         planner_futureplanneritem: {
-          ...futurePlannerItem,
+          ...EPlanners.EItems.Future.Extended,
         },
       },
       where: {
@@ -251,8 +232,8 @@ export class PlannerRepository {
   }
 
   public async createFuturePlannerItem(
-    planner: PlannerBasic,
-    target_item: FuturePlannerItem,
+    planner: EPlanners.Basic,
+    target_item: EPlanners.EItems.Future.Extended,
   ) {
     return await this.prisma.planner_futureplanneritem.create({
       data: {
@@ -273,7 +254,9 @@ export class PlannerRepository {
     });
   }
 
-  public async deleteFuturePlannerItem(target_item: FuturePlannerItem) {
+  public async deleteFuturePlannerItem(
+    target_item: EPlanners.EItems.Future.Extended,
+  ) {
     return await this.prisma.planner_futureplanneritem.delete({
       where: {
         id: target_item.id,
@@ -284,11 +267,11 @@ export class PlannerRepository {
   public async getArbitraryPlannerItemById(
     user: session_userprofile,
     id: number,
-  ): Promise<ArbitraryPlannerItem | null> {
+  ): Promise<EPlanners.EItems.Arbitrary.Extended | null> {
     const planner = await this.prisma.planner_planner.findMany({
       include: {
         planner_arbitraryplanneritem: {
-          ...arbitraryPlannerItem,
+          ...EPlanners.EItems.Arbitrary.Extended,
         },
       },
       where: {
@@ -307,12 +290,12 @@ export class PlannerRepository {
   }
 
   public async createArbitraryPlannerItem(
-    planner: PlannerBasic,
+    planner: EPlanners.Basic,
     target_item: Omit<
-      ArbitraryPlannerItem,
+      EPlanners.EItems.Arbitrary.Extended,
       'id' | 'planner_id' | 'subject_department'
     >,
-  ): Promise<EArbitraryPlannerItem.Details> {
+  ): Promise<EPlanners.EItems.Arbitrary.Extended> {
     return await this.prisma.planner_arbitraryplanneritem.create({
       data: {
         planner_planner: {
@@ -335,11 +318,13 @@ export class PlannerRepository {
         credit: target_item.credit,
         credit_au: target_item.credit_au,
       },
-      include: EArbitraryPlannerItem.Details.include,
+      include: EPlanners.EItems.Arbitrary.Extended.include,
     });
   }
 
-  public async deleteArbitraryPlannerItem(target_item: ArbitraryPlannerItem) {
+  public async deleteArbitraryPlannerItem(
+    target_item: EPlanners.EItems.Arbitrary.Extended,
+  ) {
     return await this.prisma.planner_arbitraryplanneritem.delete({
       where: {
         id: target_item.id,
@@ -361,9 +346,9 @@ export class PlannerRepository {
     year: number,
     semester: number,
     courseId: number,
-  ): Promise<FuturePlannerItem> {
+  ): Promise<EPlanners.EItems.Future.Extended> {
     return await this.prisma.planner_futureplanneritem.create({
-      ...futurePlannerItem,
+      ...EPlanners.EItems.Future.Extended,
       data: {
         year: year,
         semester: semester,
@@ -385,7 +370,7 @@ export class PlannerRepository {
   async updatePlannerItem(
     item_type: string,
     item: number,
-    updatedFields: Pick<PlannerUpdateItemDto, 'semester' | 'is_excluded'>,
+    updatedFields: Pick<IPlanner.UpdateItemBodyDto, 'semester' | 'is_excluded'>,
   ): Promise<
     | EPlanners.EItems.Taken.Details
     | EPlanners.EItems.Future.Extended

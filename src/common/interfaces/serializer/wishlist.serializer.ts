@@ -1,13 +1,13 @@
-import { WishlistWithLectures } from '../../schemaTypes/types';
-import { WishlistWithLecturesResponseDto } from '../dto/wishlist/wishlist.response.dto';
-import { toJsonLecture } from './lecture.serializer';
+import { EWishlist } from 'src/common/entities/EWishlist';
+import { IWishlist } from '../IWishlist';
+import { toJsonLectureDetail } from './lecture.serializer';
 
 export const toJsonWishlist = (
-  wishlist: WishlistWithLectures,
-): WishlistWithLecturesResponseDto => {
+  wishlist: EWishlist.WithLectures,
+): IWishlist.WithLectures => {
   return {
     lectures: wishlist.timetable_wishlist_lectures.map((lecture) =>
-      toJsonLecture(lecture.subject_lecture, false),
+      toJsonLectureDetail(lecture.subject_lecture),
     ),
   };
 };

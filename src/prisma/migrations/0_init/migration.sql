@@ -1,5 +1,5 @@
 -- CreateTable
-create table _prisma_migrations (
+CREATE TABLE IF NOT EXISTS _prisma_migrations (
     id varchar(36) not null primary key, 
     checksum varchar(64) not null, 
     finished_at datetime(3) null, 
@@ -12,7 +12,7 @@ create table _prisma_migrations (
 
 
 -- CreateTable
-CREATE TABLE `auth_group` (
+CREATE TABLE IF NOT EXISTS `auth_group` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(150) NOT NULL,
 
@@ -21,7 +21,7 @@ CREATE TABLE `auth_group` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `auth_group_permissions` (
+CREATE TABLE IF NOT EXISTS `auth_group_permissions` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `group_id` INTEGER NOT NULL,
     `permission_id` INTEGER NOT NULL,
@@ -32,7 +32,7 @@ CREATE TABLE `auth_group_permissions` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `auth_permission` (
+CREATE TABLE IF NOT EXISTS `auth_permission` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(255) NOT NULL,
     `content_type_id` INTEGER NOT NULL,
@@ -43,7 +43,7 @@ CREATE TABLE `auth_permission` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `auth_user` (
+CREATE TABLE IF NOT EXISTS `auth_user` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `password` VARCHAR(128) NOT NULL,
     `last_login` DATETIME(0) NULL,
@@ -61,7 +61,7 @@ CREATE TABLE `auth_user` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `auth_user_groups` (
+CREATE TABLE IF NOT EXISTS `auth_user_groups` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `user_id` INTEGER NOT NULL,
     `group_id` INTEGER NOT NULL,
@@ -72,7 +72,7 @@ CREATE TABLE `auth_user_groups` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `auth_user_user_permissions` (
+CREATE TABLE IF NOT EXISTS `auth_user_user_permissions` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `user_id` INTEGER NOT NULL,
     `permission_id` INTEGER NOT NULL,
@@ -83,7 +83,7 @@ CREATE TABLE `auth_user_user_permissions` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `django_admin_log` (
+CREATE TABLE IF NOT EXISTS `django_admin_log` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `action_time` DATETIME(0) NOT NULL,
     `object_id` LONGTEXT NULL,
@@ -99,7 +99,7 @@ CREATE TABLE `django_admin_log` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `django_content_type` (
+CREATE TABLE IF NOT EXISTS `django_content_type` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `app_label` VARCHAR(100) NOT NULL,
     `model` VARCHAR(100) NOT NULL,
@@ -109,7 +109,7 @@ CREATE TABLE `django_content_type` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `django_migrations` (
+CREATE TABLE IF NOT EXISTS `django_migrations` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `app` VARCHAR(255) NOT NULL,
     `name` VARCHAR(255) NOT NULL,
@@ -119,7 +119,7 @@ CREATE TABLE `django_migrations` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `django_session` (
+CREATE TABLE IF NOT EXISTS `django_session` (
     `session_key` VARCHAR(40) NOT NULL,
     `session_data` LONGTEXT NOT NULL,
     `expire_date` DATETIME(0) NOT NULL,
@@ -129,7 +129,7 @@ CREATE TABLE `django_session` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `graduation_additionaltrack` (
+CREATE TABLE IF NOT EXISTS `graduation_additionaltrack` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `start_year` INTEGER NOT NULL,
     `end_year` INTEGER NOT NULL,
@@ -148,7 +148,7 @@ CREATE TABLE `graduation_additionaltrack` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `graduation_generaltrack` (
+CREATE TABLE IF NOT EXISTS `graduation_generaltrack` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `start_year` INTEGER NOT NULL,
     `end_year` INTEGER NOT NULL,
@@ -173,7 +173,7 @@ CREATE TABLE `graduation_generaltrack` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `graduation_majortrack` (
+CREATE TABLE IF NOT EXISTS `graduation_majortrack` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `start_year` INTEGER NOT NULL,
     `end_year` INTEGER NOT NULL,
@@ -191,7 +191,7 @@ CREATE TABLE `graduation_majortrack` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `main_famoushumanityreviewdailyfeed` (
+CREATE TABLE IF NOT EXISTS `main_famoushumanityreviewdailyfeed` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `date` DATE NOT NULL,
     `priority` DOUBLE NOT NULL,
@@ -202,7 +202,7 @@ CREATE TABLE `main_famoushumanityreviewdailyfeed` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `main_famoushumanityreviewdailyfeed_reviews` (
+CREATE TABLE IF NOT EXISTS `main_famoushumanityreviewdailyfeed_reviews` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `famoushumanityreviewdailyfeed_id` INTEGER NOT NULL,
     `review_id` INTEGER NOT NULL,
@@ -213,7 +213,7 @@ CREATE TABLE `main_famoushumanityreviewdailyfeed_reviews` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `main_famousmajorreviewdailyfeed` (
+CREATE TABLE IF NOT EXISTS `main_famousmajorreviewdailyfeed` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `date` DATE NOT NULL,
     `priority` DOUBLE NOT NULL,
@@ -226,7 +226,7 @@ CREATE TABLE `main_famousmajorreviewdailyfeed` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `main_famousmajorreviewdailyfeed_reviews` (
+CREATE TABLE IF NOT EXISTS `main_famousmajorreviewdailyfeed_reviews` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `famousmajorreviewdailyfeed_id` INTEGER NOT NULL,
     `review_id` INTEGER NOT NULL,
@@ -237,7 +237,7 @@ CREATE TABLE `main_famousmajorreviewdailyfeed_reviews` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `main_rankedreviewdailyfeed` (
+CREATE TABLE IF NOT EXISTS `main_rankedreviewdailyfeed` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `date` DATE NOT NULL,
     `priority` DOUBLE NOT NULL,
@@ -250,7 +250,7 @@ CREATE TABLE `main_rankedreviewdailyfeed` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `main_ratedailyuserfeed` (
+CREATE TABLE IF NOT EXISTS `main_ratedailyuserfeed` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `date` DATE NOT NULL,
     `priority` DOUBLE NOT NULL,
@@ -263,7 +263,7 @@ CREATE TABLE `main_ratedailyuserfeed` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `main_relatedcoursedailyuserfeed` (
+CREATE TABLE IF NOT EXISTS `main_relatedcoursedailyuserfeed` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `date` DATE NOT NULL,
     `priority` DOUBLE NOT NULL,
@@ -278,7 +278,7 @@ CREATE TABLE `main_relatedcoursedailyuserfeed` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `main_reviewwritedailyuserfeed` (
+CREATE TABLE IF NOT EXISTS `main_reviewwritedailyuserfeed` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `date` DATE NOT NULL,
     `priority` DOUBLE NOT NULL,
@@ -293,7 +293,7 @@ CREATE TABLE `main_reviewwritedailyuserfeed` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `planner_arbitraryplanneritem` (
+CREATE TABLE IF NOT EXISTS `planner_arbitraryplanneritem` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `is_excluded` BOOLEAN NOT NULL,
     `year` INTEGER NOT NULL,
@@ -313,7 +313,7 @@ CREATE TABLE `planner_arbitraryplanneritem` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `planner_futureplanneritem` (
+CREATE TABLE IF NOT EXISTS `planner_futureplanneritem` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `is_excluded` BOOLEAN NOT NULL,
     `year` INTEGER NOT NULL,
@@ -329,7 +329,7 @@ CREATE TABLE `planner_futureplanneritem` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `planner_planner` (
+CREATE TABLE IF NOT EXISTS `planner_planner` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `start_year` INTEGER NOT NULL,
     `end_year` INTEGER NOT NULL,
@@ -348,7 +348,7 @@ CREATE TABLE `planner_planner` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `planner_planner_additional_tracks` (
+CREATE TABLE IF NOT EXISTS `planner_planner_additional_tracks` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `planner_id` INTEGER NOT NULL,
     `additionaltrack_id` INTEGER NOT NULL,
@@ -359,7 +359,7 @@ CREATE TABLE `planner_planner_additional_tracks` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `planner_takenplanneritem` (
+CREATE TABLE IF NOT EXISTS `planner_takenplanneritem` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `is_excluded` BOOLEAN NOT NULL,
     `lecture_id` INTEGER NOT NULL,
@@ -371,21 +371,21 @@ CREATE TABLE `planner_takenplanneritem` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `review_humanitybestreview` (
+CREATE TABLE IF NOT EXISTS `review_humanitybestreview` (
     `review_id` INTEGER NOT NULL,
 
     PRIMARY KEY (`review_id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `review_majorbestreview` (
+CREATE TABLE IF NOT EXISTS `review_majorbestreview` (
     `review_id` INTEGER NOT NULL,
 
     PRIMARY KEY (`review_id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `review_review` (
+CREATE TABLE IF NOT EXISTS `review_review` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `course_id` INTEGER NOT NULL,
     `lecture_id` INTEGER NOT NULL,
@@ -406,7 +406,7 @@ CREATE TABLE `review_review` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `review_reviewvote` (
+CREATE TABLE IF NOT EXISTS `review_reviewvote` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `review_id` INTEGER NOT NULL,
     `userprofile_id` INTEGER NULL,
@@ -418,12 +418,12 @@ CREATE TABLE `review_reviewvote` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `session_userprofile` (
+CREATE TABLE IF NOT EXISTS `session_userprofile` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `user_id` INTEGER NOT NULL,
+    `user_id` INTEGER,
     `student_id` VARCHAR(10) NOT NULL,
     `sid` VARCHAR(30) NOT NULL,
-    `language` VARCHAR(15) NOT NULL,
+    `language` VARCHAR(15),
     `portal_check` INTEGER NULL DEFAULT 0,
     `department_id` INTEGER NULL,
     `email` VARCHAR(255) NULL,
@@ -433,7 +433,7 @@ CREATE TABLE `session_userprofile` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `session_userprofile_favorite_departments` (
+CREATE TABLE IF NOT EXISTS `session_userprofile_favorite_departments` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `userprofile_id` INTEGER NOT NULL,
     `department_id` INTEGER NOT NULL,
@@ -443,7 +443,7 @@ CREATE TABLE `session_userprofile_favorite_departments` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `session_userprofile_majors` (
+CREATE TABLE IF NOT EXISTS `session_userprofile_majors` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `userprofile_id` INTEGER NOT NULL,
     `department_id` INTEGER NOT NULL,
@@ -454,7 +454,7 @@ CREATE TABLE `session_userprofile_majors` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `session_userprofile_minors` (
+CREATE TABLE IF NOT EXISTS `session_userprofile_minors` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `userprofile_id` INTEGER NOT NULL,
     `department_id` INTEGER NOT NULL,
@@ -465,7 +465,7 @@ CREATE TABLE `session_userprofile_minors` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `session_userprofile_specialized_major` (
+CREATE TABLE IF NOT EXISTS `session_userprofile_specialized_major` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `userprofile_id` INTEGER NOT NULL,
     `department_id` INTEGER NOT NULL,
@@ -476,7 +476,7 @@ CREATE TABLE `session_userprofile_specialized_major` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `session_userprofile_taken_lectures` (
+CREATE TABLE IF NOT EXISTS `session_userprofile_taken_lectures` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `userprofile_id` INTEGER NOT NULL,
     `lecture_id` INTEGER NOT NULL,
@@ -486,7 +486,7 @@ CREATE TABLE `session_userprofile_taken_lectures` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `subject_classtime` (
+CREATE TABLE IF NOT EXISTS `subject_classtime` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `day` SMALLINT NOT NULL,
     `begin` TIME(0) NOT NULL,
@@ -504,7 +504,7 @@ CREATE TABLE `subject_classtime` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `subject_course` (
+CREATE TABLE IF NOT EXISTS `subject_course` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `old_code` VARCHAR(10) NOT NULL,
     `department_id` INTEGER NOT NULL,
@@ -512,6 +512,8 @@ CREATE TABLE `subject_course` (
     `type_en` VARCHAR(36) NOT NULL,
     `title` VARCHAR(100) NOT NULL,
     `title_en` VARCHAR(200) NOT NULL,
+    `title_no_space` VARCHAR(100) GENERATED ALWAYS AS (REGEXP_REPLACE(`title`, '\\s+', '')) STORED NOT NULL,
+    `title_en_no_space` VARCHAR(200) GENERATED ALWAYS AS (REGEXP_REPLACE(`title_en`, '\\s+', '')) STORED NOT NULL,
     `summury` VARCHAR(400) NOT NULL,
     `grade_sum` DOUBLE NOT NULL,
     `load_sum` DOUBLE NOT NULL,
@@ -526,7 +528,7 @@ CREATE TABLE `subject_course` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `subject_course_professors` (
+CREATE TABLE IF NOT EXISTS `subject_course_professors` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `course_id` INTEGER NOT NULL,
     `professor_id` INTEGER NOT NULL,
@@ -536,7 +538,7 @@ CREATE TABLE `subject_course_professors` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `subject_course_related_courses_posterior` (
+CREATE TABLE IF NOT EXISTS `subject_course_related_courses_posterior` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `from_course_id` INTEGER NOT NULL,
     `to_course_id` INTEGER NOT NULL,
@@ -547,7 +549,7 @@ CREATE TABLE `subject_course_related_courses_posterior` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `subject_course_related_courses_prior` (
+CREATE TABLE IF NOT EXISTS `subject_course_related_courses_prior` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `from_course_id` INTEGER NOT NULL,
     `to_course_id` INTEGER NOT NULL,
@@ -558,7 +560,7 @@ CREATE TABLE `subject_course_related_courses_prior` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `subject_courseuser` (
+CREATE TABLE IF NOT EXISTS `subject_courseuser` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `latest_read_datetime` DATETIME(0) NOT NULL,
     `course_id` INTEGER NOT NULL,
@@ -570,7 +572,7 @@ CREATE TABLE `subject_courseuser` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `subject_department` (
+CREATE TABLE IF NOT EXISTS `subject_department` (
     `id` INTEGER NOT NULL,
     `num_id` VARCHAR(4) NOT NULL,
     `code` VARCHAR(5) NOT NULL,
@@ -582,7 +584,7 @@ CREATE TABLE `subject_department` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `subject_examtime` (
+CREATE TABLE IF NOT EXISTS `subject_examtime` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `day` SMALLINT NOT NULL,
     `begin` TIME(0) NOT NULL,
@@ -594,7 +596,7 @@ CREATE TABLE `subject_examtime` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `subject_lecture` (
+CREATE TABLE IF NOT EXISTS `subject_lecture` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `code` VARCHAR(10) NOT NULL,
     `old_code` VARCHAR(10) NOT NULL,
@@ -604,6 +606,8 @@ CREATE TABLE `subject_lecture` (
     `class_no` VARCHAR(4) NOT NULL,
     `title` VARCHAR(100) NOT NULL,
     `title_en` VARCHAR(200) NOT NULL,
+    `title_no_space` VARCHAR(100) GENERATED ALWAYS AS (REGEXP_REPLACE(`title`, '\\s+', '')) STORED NOT NULL,
+    `title_en_no_space` VARCHAR(200) GENERATED ALWAYS AS (REGEXP_REPLACE(`title_en`, '\\s+', '')) STORED NOT NULL,
     `type` VARCHAR(12) NOT NULL,
     `type_en` VARCHAR(36) NOT NULL,
     `audience` INTEGER NOT NULL,
@@ -634,7 +638,7 @@ CREATE TABLE `subject_lecture` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `subject_lecture_professors` (
+CREATE TABLE IF NOT EXISTS `subject_lecture_professors` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `lecture_id` INTEGER NOT NULL,
     `professor_id` INTEGER NOT NULL,
@@ -644,7 +648,7 @@ CREATE TABLE `subject_lecture_professors` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `subject_professor` (
+CREATE TABLE IF NOT EXISTS `subject_professor` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `professor_name` VARCHAR(100) NOT NULL,
     `professor_name_en` VARCHAR(100) NULL,
@@ -662,7 +666,7 @@ CREATE TABLE `subject_professor` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `subject_professor_course_list` (
+CREATE TABLE IF NOT EXISTS `subject_professor_course_list` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `professor_id` INTEGER NOT NULL,
     `course_id` INTEGER NOT NULL,
@@ -672,7 +676,7 @@ CREATE TABLE `subject_professor_course_list` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `subject_semester` (
+CREATE TABLE IF NOT EXISTS `subject_semester` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `year` INTEGER NOT NULL,
     `semester` INTEGER NOT NULL,
@@ -693,7 +697,7 @@ CREATE TABLE `subject_semester` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `support_notice` (
+CREATE TABLE IF NOT EXISTS `support_notice` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `start_time` DATETIME(0) NOT NULL,
     `end_time` DATETIME(0) NOT NULL,
@@ -704,7 +708,7 @@ CREATE TABLE `support_notice` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `support_rate` (
+CREATE TABLE IF NOT EXISTS `support_rate` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `score` SMALLINT NOT NULL,
     `year` SMALLINT NOT NULL,
@@ -718,7 +722,7 @@ CREATE TABLE `support_rate` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `timetable_oldtimetable` (
+CREATE TABLE IF NOT EXISTS `timetable_oldtimetable` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `student_id` VARCHAR(10) NOT NULL,
     `year` INTEGER NULL,
@@ -729,7 +733,7 @@ CREATE TABLE `timetable_oldtimetable` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `timetable_oldtimetable_lectures` (
+CREATE TABLE IF NOT EXISTS `timetable_oldtimetable_lectures` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `oldtimetable_id` INTEGER NOT NULL,
     `lecture_id` INTEGER NOT NULL,
@@ -740,7 +744,7 @@ CREATE TABLE `timetable_oldtimetable_lectures` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `timetable_timetable` (
+CREATE TABLE IF NOT EXISTS `timetable_timetable` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `year` INTEGER NULL,
     `semester` SMALLINT NULL,
@@ -755,7 +759,7 @@ CREATE TABLE `timetable_timetable` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `timetable_timetable_lectures` (
+CREATE TABLE IF NOT EXISTS `timetable_timetable_lectures` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `timetable_id` INTEGER NOT NULL,
     `lecture_id` INTEGER NOT NULL,
@@ -766,7 +770,7 @@ CREATE TABLE `timetable_timetable_lectures` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `timetable_wishlist` (
+CREATE TABLE IF NOT EXISTS `timetable_wishlist` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `user_id` INTEGER NOT NULL,
 
@@ -775,7 +779,7 @@ CREATE TABLE `timetable_wishlist` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `timetable_wishlist_lectures` (
+CREATE TABLE IF NOT EXISTS `timetable_wishlist_lectures` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `wishlist_id` INTEGER NOT NULL,
     `lecture_id` INTEGER NOT NULL,
@@ -785,171 +789,656 @@ CREATE TABLE `timetable_wishlist_lectures` (
     PRIMARY KEY (`id` ASC)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- AddForeignKey
-ALTER TABLE `auth_group_permissions` ADD CONSTRAINT `auth_group__permission_id_1f49ccbbdc69d2fc_fk_auth_permission_id` FOREIGN KEY (`permission_id`) REFERENCES `auth_permission`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+-- Add Foreign Key constraints procedure
+DELIMITER $$
+
+CREATE PROCEDURE AddForeignKeyIfNotExists(
+    IN table_name VARCHAR(255),
+    IN constraint_name VARCHAR(255),
+    IN column_name VARCHAR(255),
+    IN ref_table_name VARCHAR(255),
+    IN ref_column_name VARCHAR(255),
+    IN on_delete_action VARCHAR(10),
+    IN on_update_action VARCHAR(10)
+)
+BEGIN
+    DECLARE schema_name VARCHAR(64);
+    DECLARE constraint_count INT;
+
+    SET schema_name = DATABASE();
+
+    SELECT COUNT(*) INTO constraint_count 
+    FROM information_schema.table_constraints 
+    WHERE CONSTRAINT_SCHEMA = schema_name
+    AND TABLE_NAME = table_name 
+    AND CONSTRAINT_NAME = constraint_name;
+
+    IF constraint_count=0 THEN
+        SET @sql = CONCAT(
+            'ALTER TABLE `', schema_name, '`.`', table_name, 
+            '` ADD CONSTRAINT `', constraint_name, 
+            '` FOREIGN KEY (`', column_name, 
+            '`) REFERENCES `', schema_name, '`.`', ref_table_name, '`(`', ref_column_name, '`) 
+            ON DELETE ', on_delete_action, 
+            ' ON UPDATE ', on_update_action
+        );
+
+        PREPARE stmt FROM @sql;
+        EXECUTE stmt;
+        DEALLOCATE PREPARE stmt;
+        SELECT CONCAT('Constraint ', constraint_name, ' added to table ', table_name);
+    ELSE
+        -- Print message if constraint already exists
+        SELECT CONCAT('Constraint ', constraint_name, ' already exists on table ', table_name);
+    END IF;
+END$$
+
+DELIMITER ;
+
 
 -- AddForeignKey
-ALTER TABLE `auth_group_permissions` ADD CONSTRAINT `auth_group_permission_group_id_689710a9a73b7457_fk_auth_group_id` FOREIGN KEY (`group_id`) REFERENCES `auth_group`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists('auth_group_permissions', 'auth_group__permission_id_1f49ccbbdc69d2fc_fk_auth_permission_id', 'permission_id', 'auth_permission', 'id', 'RESTRICT', 'RESTRICT');
+-- AddForeignKey
+CALL AddForeignKeyIfNotExists(
+    'auth_group_permissions', 
+    'auth_group_permission_group_id_689710a9a73b7457_fk_auth_group_id', 
+    'group_id', 
+    'auth_group', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `auth_permission` ADD CONSTRAINT `auth__content_type_id_508cf46651277a81_fk_django_content_type_id` FOREIGN KEY (`content_type_id`) REFERENCES `django_content_type`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'auth_permission', 
+    'auth__content_type_id_508cf46651277a81_fk_django_content_type_id', 
+    'content_type_id', 
+    'django_content_type', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `auth_user_groups` ADD CONSTRAINT `auth_user_groups_group_id_33ac548dcf5f8e37_fk_auth_group_id` FOREIGN KEY (`group_id`) REFERENCES `auth_group`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'auth_user_groups', 
+    'auth_user_groups_group_id_33ac548dcf5f8e37_fk_auth_group_id', 
+    'group_id', 
+    'auth_group', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `auth_user_groups` ADD CONSTRAINT `auth_user_groups_user_id_4b5ed4ffdb8fd9b0_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'auth_user_groups', 
+    'auth_user_groups_user_id_4b5ed4ffdb8fd9b0_fk_auth_user_id', 
+    'user_id', 
+    'auth_user', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `auth_user_user_permissions` ADD CONSTRAINT `auth_user_u_permission_id_384b62483d7071f0_fk_auth_permission_id` FOREIGN KEY (`permission_id`) REFERENCES `auth_permission`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'auth_user_user_permissions', 
+    'auth_user_u_permission_id_384b62483d7071f0_fk_auth_permission_id', 
+    'permission_id', 
+    'auth_permission', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `auth_user_user_permissions` ADD CONSTRAINT `auth_user_user_permissi_user_id_7f0938558328534a_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'auth_user_user_permissions', 
+    'auth_user_user_permissi_user_id_7f0938558328534a_fk_auth_user_id', 
+    'user_id', 
+    'auth_user', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `django_admin_log` ADD CONSTRAINT `djang_content_type_id_697914295151027a_fk_django_content_type_id` FOREIGN KEY (`content_type_id`) REFERENCES `django_content_type`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'django_admin_log', 
+    'djang_content_type_id_697914295151027a_fk_django_content_type_id', 
+    'content_type_id', 
+    'django_content_type', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `django_admin_log` ADD CONSTRAINT `django_admin_log_user_id_52fdd58701c5f563_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'django_admin_log', 
+    'django_admin_log_user_id_52fdd58701c5f563_fk_auth_user_id', 
+    'user_id', 
+    'auth_user', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `graduation_additionaltrack` ADD CONSTRAINT `graduation_additiona_department_id_788c5289_fk_subject_d` FOREIGN KEY (`department_id`) REFERENCES `subject_department`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'graduation_additionaltrack', 
+    'graduation_additiona_department_id_788c5289_fk_subject_d', 
+    'department_id', 
+    'subject_department', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `graduation_majortrack` ADD CONSTRAINT `graduation_majortrac_department_id_81bfc8fa_fk_subject_d` FOREIGN KEY (`department_id`) REFERENCES `subject_department`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'graduation_majortrack', 
+    'graduation_majortrac_department_id_81bfc8fa_fk_subject_d', 
+    'department_id', 
+    'subject_department', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `main_famoushumanityreviewdailyfeed_reviews` ADD CONSTRAINT `e567529fdfd543a96610b342fea2bb84` FOREIGN KEY (`famoushumanityreviewdailyfeed_id`) REFERENCES `main_famoushumanityreviewdailyfeed`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'main_famoushumanityreviewdailyfeed_reviews', 
+    'e567529fdfd543a96610b342fea2bb84', 
+    'famoushumanityreviewdailyfeed_id', 
+    'main_famoushumanityreviewdailyfeed', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `main_famoushumanityreviewdailyfeed_reviews` ADD CONSTRAINT `main_famoushumanityreview_review_id_f305d8aa_fk_review_review_id` FOREIGN KEY (`review_id`) REFERENCES `review_review`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'main_famoushumanityreviewdailyfeed_reviews', 
+    'main_famoushumanityreview_review_id_f305d8aa_fk_review_review_id', 
+    'review_id', 
+    'review_review', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `main_famousmajorreviewdailyfeed` ADD CONSTRAINT `main_famousmajorrevi_department_id_a0a5a3a5_fk_subject_d` FOREIGN KEY (`department_id`) REFERENCES `subject_department`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'main_famousmajorreviewdailyfeed', 
+    'main_famousmajorrevi_department_id_a0a5a3a5_fk_subject_d', 
+    'department_id', 
+    'subject_department', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `main_famousmajorreviewdailyfeed_reviews` ADD CONSTRAINT `D122ed8a8adef1dafa8cd66f142ebb40` FOREIGN KEY (`famousmajorreviewdailyfeed_id`) REFERENCES `main_famousmajorreviewdailyfeed`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'main_famousmajorreviewdailyfeed_reviews', 
+    'D122ed8a8adef1dafa8cd66f142ebb40', 
+    'famousmajorreviewdailyfeed_id', 
+    'main_famousmajorreviewdailyfeed', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `main_famousmajorreviewdailyfeed_reviews` ADD CONSTRAINT `main_famousmajorreviewdai_review_id_c0d3bbec_fk_review_review_id` FOREIGN KEY (`review_id`) REFERENCES `review_review`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'main_famousmajorreviewdailyfeed_reviews', 
+    'main_famousmajorreviewdai_review_id_c0d3bbec_fk_review_review_id', 
+    'review_id', 
+    'review_review', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `main_rankedreviewdailyfeed` ADD CONSTRAINT `main_rankedreviewdai_semester_id_f71e3a66_fk_subject_s` FOREIGN KEY (`semester_id`) REFERENCES `subject_semester`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'main_rankedreviewdailyfeed', 
+    'main_rankedreviewdai_semester_id_f71e3a66_fk_subject_s', 
+    'semester_id', 
+    'subject_semester', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `main_ratedailyuserfeed` ADD CONSTRAINT `main_ratedailyuserfe_user_id_31a534d5_fk_session_u` FOREIGN KEY (`user_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'main_ratedailyuserfeed', 
+    'main_ratedailyuserfe_user_id_31a534d5_fk_session_u', 
+    'user_id', 
+    'session_userprofile', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `main_relatedcoursedailyuserfeed` ADD CONSTRAINT `main_relatedcourseda_course_id_129fc5e2_fk_subject_c` FOREIGN KEY (`course_id`) REFERENCES `subject_course`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'main_relatedcoursedailyuserfeed', 
+    'main_relatedcourseda_course_id_129fc5e2_fk_subject_c', 
+    'course_id', 
+    'subject_course', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `main_relatedcoursedailyuserfeed` ADD CONSTRAINT `main_relatedcoursedai_user_id_a1be2390_fk_session_userprofile_id` FOREIGN KEY (`user_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'main_relatedcoursedailyuserfeed', 
+    'main_relatedcoursedai_user_id_a1be2390_fk_session_userprofile_id', 
+    'user_id', 
+    'session_userprofile', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `main_reviewwritedailyuserfeed` ADD CONSTRAINT `main_reviewwritedail_lecture_id_75ed0f87_fk_subject_l` FOREIGN KEY (`lecture_id`) REFERENCES `subject_lecture`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'main_reviewwritedailyuserfeed', 
+    'main_reviewwritedail_lecture_id_75ed0f87_fk_subject_l', 
+    'lecture_id', 
+    'subject_lecture', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `main_reviewwritedailyuserfeed` ADD CONSTRAINT `main_reviewwritedaily_user_id_9ffd0881_fk_session_userprofile_id` FOREIGN KEY (`user_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'main_reviewwritedailyuserfeed', 
+    'main_reviewwritedaily_user_id_9ffd0881_fk_session_userprofile_id', 
+    'user_id', 
+    'session_userprofile', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `planner_arbitraryplanneritem` ADD CONSTRAINT `planner_arbitrarypla_department_id_0dc7ce25_fk_subject_d` FOREIGN KEY (`department_id`) REFERENCES `subject_department`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'planner_arbitraryplanneritem', 
+    'planner_arbitrarypla_department_id_0dc7ce25_fk_subject_d', 
+    'department_id', 
+    'subject_department', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `planner_arbitraryplanneritem` ADD CONSTRAINT `planner_arbitrarypla_planner_id_d6069d2c_fk_planner_p` FOREIGN KEY (`planner_id`) REFERENCES `planner_planner`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'planner_arbitraryplanneritem', 
+    'planner_arbitrarypla_planner_id_d6069d2c_fk_planner_p', 
+    'planner_id', 
+    'planner_planner', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `planner_futureplanneritem` ADD CONSTRAINT `planner_futureplanne_course_id_b1a06444_fk_subject_c` FOREIGN KEY (`course_id`) REFERENCES `subject_course`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'planner_futureplanneritem', 
+    'planner_futureplanne_course_id_b1a06444_fk_subject_c', 
+    'course_id', 
+    'subject_course', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `planner_futureplanneritem` ADD CONSTRAINT `planner_futureplanne_planner_id_dfd70193_fk_planner_p` FOREIGN KEY (`planner_id`) REFERENCES `planner_planner`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'planner_futureplanneritem', 
+    'planner_futureplanne_planner_id_dfd70193_fk_planner_p', 
+    'planner_id', 
+    'planner_planner', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `planner_planner` ADD CONSTRAINT `planner_planner_general_track_id_6d607973_fk_graduatio` FOREIGN KEY (`general_track_id`) REFERENCES `graduation_generaltrack`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'planner_planner', 
+    'planner_planner_general_track_id_6d607973_fk_graduatio', 
+    'general_track_id', 
+    'graduation_generaltrack', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `planner_planner` ADD CONSTRAINT `planner_planner_major_track_id_9f7204bd_fk_graduatio` FOREIGN KEY (`major_track_id`) REFERENCES `graduation_majortrack`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'planner_planner', 
+    'planner_planner_major_track_id_9f7204bd_fk_graduatio', 
+    'major_track_id', 
+    'graduation_majortrack', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `planner_planner` ADD CONSTRAINT `planner_planner_user_id_17740247_fk_session_userprofile_id` FOREIGN KEY (`user_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'planner_planner', 
+    'planner_planner_user_id_17740247_fk_session_userprofile_id', 
+    'user_id', 
+    'session_userprofile', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `planner_planner_additional_tracks` ADD CONSTRAINT `planner_planner_addi_additionaltrack_id_c46b8c4e_fk_graduatio` FOREIGN KEY (`additionaltrack_id`) REFERENCES `graduation_additionaltrack`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'planner_planner_additional_tracks', 
+    'planner_planner_addi_additionaltrack_id_c46b8c4e_fk_graduatio', 
+    'additionaltrack_id', 
+    'graduation_additionaltrack', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `planner_planner_additional_tracks` ADD CONSTRAINT `planner_planner_addi_planner_id_e439a309_fk_planner_p` FOREIGN KEY (`planner_id`) REFERENCES `planner_planner`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'planner_planner_additional_tracks', 
+    'planner_planner_addi_planner_id_e439a309_fk_planner_p', 
+    'planner_id', 
+    'planner_planner', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `planner_takenplanneritem` ADD CONSTRAINT `planner_takenplanner_lecture_id_9b2d30d8_fk_subject_l` FOREIGN KEY (`lecture_id`) REFERENCES `subject_lecture`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'planner_takenplanneritem', 
+    'planner_takenplanner_lecture_id_9b2d30d8_fk_subject_l', 
+    'lecture_id', 
+    'subject_lecture', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `planner_takenplanneritem` ADD CONSTRAINT `planner_takenplanner_planner_id_b725ff83_fk_planner_p` FOREIGN KEY (`planner_id`) REFERENCES `planner_planner`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'planner_takenplanneritem', 
+    'planner_takenplanner_planner_id_b725ff83_fk_planner_p', 
+    'planner_id', 
+    'planner_planner', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `session_userprofile_majors` ADD CONSTRAINT `session_userpr_userprofile_id_20f3742a_fk_session_userprofile_id` FOREIGN KEY (`userprofile_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'session_userprofile_majors', 
+    'session_userpr_userprofile_id_20f3742a_fk_session_userprofile_id', 
+    'userprofile_id', 
+    'session_userprofile', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `session_userprofile_majors` ADD CONSTRAINT `session_userprof_department_id_db568678_fk_subject_department_id` FOREIGN KEY (`department_id`) REFERENCES `subject_department`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'session_userprofile_majors', 
+    'session_userprof_department_id_db568678_fk_subject_department_id', 
+    'department_id', 
+    'subject_department', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `session_userprofile_minors` ADD CONSTRAINT `session_userpr_userprofile_id_dad5ef83_fk_session_userprofile_id` FOREIGN KEY (`userprofile_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'session_userprofile_minors', 
+    'session_userpr_userprofile_id_dad5ef83_fk_session_userprofile_id', 
+    'userprofile_id', 
+    'session_userprofile', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `session_userprofile_minors` ADD CONSTRAINT `session_userprof_department_id_7a7ea3ed_fk_subject_department_id` FOREIGN KEY (`department_id`) REFERENCES `subject_department`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'session_userprofile_minors', 
+    'session_userprof_department_id_7a7ea3ed_fk_subject_department_id', 
+    'department_id', 
+    'subject_department', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `session_userprofile_specialized_major` ADD CONSTRAINT `session_userpr_userprofile_id_ca859cbe_fk_session_userprofile_id` FOREIGN KEY (`userprofile_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'session_userprofile_specialized_major', 
+    'session_userpr_userprofile_id_ca859cbe_fk_session_userprofile_id', 
+    'userprofile_id', 
+    'session_userprofile', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `session_userprofile_specialized_major` ADD CONSTRAINT `session_userprof_department_id_919e11be_fk_subject_department_id` FOREIGN KEY (`department_id`) REFERENCES `subject_department`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'session_userprofile_specialized_major', 
+    'session_userprof_department_id_919e11be_fk_subject_department_id', 
+    'department_id', 
+    'subject_department', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `subject_classtime` ADD CONSTRAINT `subject_classtime_lecture_id_bf773e65_fk_subject_lecture_id` FOREIGN KEY (`lecture_id`) REFERENCES `subject_lecture`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'subject_classtime', 
+    'subject_classtime_lecture_id_bf773e65_fk_subject_lecture_id', 
+    'lecture_id', 
+    'subject_lecture', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `subject_course_related_courses_posterior` ADD CONSTRAINT `subject_course_relat_from_course_id_f520f461_fk_subject_c` FOREIGN KEY (`from_course_id`) REFERENCES `subject_course`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'subject_course_related_courses_posterior', 
+    'subject_course_relat_from_course_id_f520f461_fk_subject_c', 
+    'from_course_id', 
+    'subject_course', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `subject_course_related_courses_posterior` ADD CONSTRAINT `subject_course_relat_to_course_id_5fbd4d28_fk_subject_c` FOREIGN KEY (`to_course_id`) REFERENCES `subject_course`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'subject_course_related_courses_posterior', 
+    'subject_course_relat_to_course_id_5fbd4d28_fk_subject_c', 
+    'to_course_id', 
+    'subject_course', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `subject_course_related_courses_prior` ADD CONSTRAINT `subject_course_relat_from_course_id_e994f30a_fk_subject_c` FOREIGN KEY (`from_course_id`) REFERENCES `subject_course`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'subject_course_related_courses_prior', 
+    'subject_course_relat_from_course_id_e994f30a_fk_subject_c', 
+    'from_course_id', 
+    'subject_course', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `subject_course_related_courses_prior` ADD CONSTRAINT `subject_course_relat_to_course_id_52f44705_fk_subject_c` FOREIGN KEY (`to_course_id`) REFERENCES `subject_course`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'subject_course_related_courses_prior', 
+    'subject_course_relat_to_course_id_52f44705_fk_subject_c', 
+    'to_course_id', 
+    'subject_course', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `subject_courseuser` ADD CONSTRAINT `subject_courseuser_course_id_2e4ccc6e_fk_subject_course_id` FOREIGN KEY (`course_id`) REFERENCES `subject_course`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'subject_courseuser', 
+    'subject_courseuser_course_id_2e4ccc6e_fk_subject_course_id', 
+    'course_id', 
+    'subject_course', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `subject_courseuser` ADD CONSTRAINT `subject_courseuser_user_profile_id_4d15ef1b_fk_session_u` FOREIGN KEY (`user_profile_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'subject_courseuser', 
+    'subject_courseuser_user_profile_id_4d15ef1b_fk_session_u', 
+    'user_profile_id', 
+    'session_userprofile', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `subject_examtime` ADD CONSTRAINT `subject_examtime_lecture_id_a35fa20c_fk_subject_lecture_id` FOREIGN KEY (`lecture_id`) REFERENCES `subject_lecture`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'subject_examtime', 
+    'subject_examtime_lecture_id_a35fa20c_fk_subject_lecture_id', 
+    'lecture_id', 
+    'subject_lecture', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `support_rate` ADD CONSTRAINT `support_rate_user_id_6d69ec9d_fk_session_userprofile_id` FOREIGN KEY (`user_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'support_rate', 
+    'support_rate_user_id_6d69ec9d_fk_session_userprofile_id', 
+    'user_id', 
+    'session_userprofile', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `timetable_oldtimetable_lectures` ADD CONSTRAINT `timetable_oldtimetab_lecture_id_530c66bb_fk_subject_l` FOREIGN KEY (`lecture_id`) REFERENCES `subject_lecture`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'timetable_oldtimetable_lectures', 
+    'timetable_oldtimetab_lecture_id_530c66bb_fk_subject_l', 
+    'lecture_id', 
+    'subject_lecture', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `timetable_oldtimetable_lectures` ADD CONSTRAINT `timetable_oldtimetab_oldtimetable_id_88e61f89_fk_timetable` FOREIGN KEY (`oldtimetable_id`) REFERENCES `timetable_oldtimetable`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'timetable_oldtimetable_lectures', 
+    'timetable_oldtimetab_oldtimetable_id_88e61f89_fk_timetable', 
+    'oldtimetable_id', 
+    'timetable_oldtimetable', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `timetable_timetable` ADD CONSTRAINT `timetable_timetable_user_id_0d214170_fk_session_userprofile_id` FOREIGN KEY (`user_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'timetable_timetable', 
+    'timetable_timetable_user_id_0d214170_fk_session_userprofile_id', 
+    'user_id', 
+    'session_userprofile', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `timetable_timetable_lectures` ADD CONSTRAINT `timetable_timetable__lecture_id_0aa33315_fk_subject_l` FOREIGN KEY (`lecture_id`) REFERENCES `subject_lecture`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'timetable_timetable_lectures', 
+    'timetable_timetable__lecture_id_0aa33315_fk_subject_l', 
+    'lecture_id', 
+    'subject_lecture', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `timetable_timetable_lectures` ADD CONSTRAINT `timetable_timetable__timetable_id_733ab103_fk_timetable` FOREIGN KEY (`timetable_id`) REFERENCES `timetable_timetable`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'timetable_timetable_lectures', 
+    'timetable_timetable__timetable_id_733ab103_fk_timetable', 
+    'timetable_id', 
+    'timetable_timetable', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `timetable_wishlist` ADD CONSTRAINT `timetable_wishlist_user_id_d057a6e4_fk_session_userprofile_id` FOREIGN KEY (`user_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'timetable_wishlist', 
+    'timetable_wishlist_user_id_d057a6e4_fk_session_userprofile_id', 
+    'user_id', 
+    'session_userprofile', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `timetable_wishlist_lectures` ADD CONSTRAINT `timetable_wishlist_lec_lecture_id_1ab5d523_fk_subject_lecture_id` FOREIGN KEY (`lecture_id`) REFERENCES `subject_lecture`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+CALL AddForeignKeyIfNotExists(
+    'timetable_wishlist_lectures', 
+    'timetable_wishlist_lec_lecture_id_1ab5d523_fk_subject_lecture_id', 
+    'lecture_id', 
+    'subject_lecture', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);
 
 -- AddForeignKey
-ALTER TABLE `timetable_wishlist_lectures` ADD CONSTRAINT `timetable_wishlist_wishlist_id_efc7ae12_fk_timetable_wishlist_id` FOREIGN KEY (`wishlist_id`) REFERENCES `timetable_wishlist`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
-
+CALL AddForeignKeyIfNotExists(
+    'timetable_wishlist_lectures', 
+    'timetable_wishlist_wishlist_id_efc7ae12_fk_timetable_wishlist_id', 
+    'wishlist_id', 
+    'timetable_wishlist', 
+    'id', 
+    'RESTRICT', 
+    'RESTRICT'
+);

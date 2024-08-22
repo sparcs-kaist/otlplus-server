@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
-import { PrismaClientOptions } from 'prisma/prisma-client/runtime';
 import { dotEnvOptions } from './dotenv-options';
+import { Prisma } from '@prisma/client';
 
 dotenv.config(dotEnvOptions);
 console.log(`NODE_ENV environment: ${process.env.NODE_ENV}`);
@@ -15,12 +15,30 @@ export default () => {
     getSsoConfig: () => getSsoConfig(),
     getCorsConfig: () => getCorsConfig(),
     getVersion: () => getVersion(),
+    getStaticConfig: () => staticConfig(),
   };
 };
 
 const getCorsConfig = () => {
   const { NODE_ENV } = process.env;
-  if (NODE_ENV === 'local') {
+  if (NODE_ENV === 'prod') {
+    return {
+      origin: 'https://otl.kaist.ac.kr:5173',
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+      credentials: true,
+      preflightContinue: false,
+      optionsSuccessStatus: 204,
+    };
+  } else if (NODE_ENV === 'dev') {
+    console.log('dev');
+    return {
+      origin: 'http://3.37.146.183',
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+      credentials: true,
+      preflightContinue: false,
+      optionsSuccessStatus: 204,
+    };
+  } else {
     return {
       origin: 'http://localhost:5173',
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -31,7 +49,7 @@ const getCorsConfig = () => {
   }
 };
 
-const getPrismaConfig = (): PrismaClientOptions => {
+const getPrismaConfig = (): Prisma.PrismaClientOptions => {
   return {
     datasources: {
       db: {
@@ -44,11 +62,23 @@ const getPrismaConfig = (): PrismaClientOptions => {
         emit: 'event',
         level: 'query',
       },
+      {
+        emit: 'stdout',
+        level: 'error',
+      },
+      {
+        emit: 'stdout',
+        level: 'info',
+      },
+      {
+        emit: 'stdout',
+        level: 'warn',
+      },
     ],
   };
 };
 
-const getReplicatedPrismaConfig = (): PrismaClientOptions => {
+const getReplicatedPrismaConfig = (): Prisma.PrismaClientOptions => {
   return {};
 };
 
@@ -76,4 +106,13 @@ const getSsoConfig = (): any => {
 
 const getVersion = () => {
   return String(process.env.npm_package_version);
+};
+
+const staticConfig = (): any => {
+  return {
+    file_path:
+      process.env.DOCKER_DEPLOY === 'true'
+        ? '/var/www/otlplus-server/static/'
+        : 'static/',
+  };
 };

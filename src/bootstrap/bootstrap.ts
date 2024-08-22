@@ -2,18 +2,11 @@ import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
-import { Server } from 'http';
 import { AppModule } from '../app.module';
-import { PrismaService } from '../prisma/prisma.service';
 import settings from '../settings';
-// import { AuthGuard, MockAuthGuard } from '../../common/guards/auth.guard'
 import morgan = require('morgan');
 
-let cachedServer: Server;
-
 async function bootstrap() {
-  const { NODE_ENV } = process.env;
-
   const app = await NestFactory.create(AppModule);
 
   app.enableVersioning({
@@ -60,8 +53,7 @@ async function bootstrap() {
     }),
   );
 
-  const prismaService = app.get(PrismaService);
-  await prismaService.enableShutdownHooks(app);
+  app.enableShutdownHooks();
   return app.listen(8000);
 }
 

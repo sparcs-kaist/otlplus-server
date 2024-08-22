@@ -5,15 +5,19 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "engines": {
+    "node": ">=18.20.4",
+    "npm": ">=10.7.0"
+  },
   "scripts": {
     "prebuild": "rimraf dist",
-    "build": "nest build",
+    "build": "nest build --config src/bootstrap/nest-cli.json",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "start:local": "cross-env NODE_ENV=local nest start --watch --config src/bootstrap/nest-cli.json",
     "start:dev": "cross-env NODE_ENV=dev nest start --config src/bootstrap/nest-cli.json",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
+    "start:prod": "cross-env NODE_ENV=prod node dist/src/bootstrap/bootstrap.js",
     "db:push": "dotenv -e env/.env.local -- npx prisma db push",
     "db:pull": "dotenv -e env/.env.local -- npx prisma db pull --schema src/prisma/schema.prisma",
     "db:init": "dotenv -e env/.env.local -- npx prisma db execute --file src/prisma/migrations/0_init/migration.sql --schema src/prisma/schema.prisma && dotenv -e env/.env.local -- npx prisma migrate resolve --applied 0_init",
@@ -38,13 +42,15 @@
     "schema": "src/prisma/schema.prisma"
   },
   "dependencies": {
+    "@nestjs-cls/transactional": "^2.4.1",
+    "@nestjs-cls/transactional-adapter-prisma": "^1.2.3",
     "@nestjs/common": "^9.0.0",
     "@nestjs/core": "^9.0.0",
     "@nestjs/jwt": "^10.0.3",
     "@nestjs/passport": "^9.0.3",
     "@nestjs/platform-express": "^9.0.0",
     "@nestjs/swagger": "^7.1.1",
-    "@prisma/client": "4.16.0",
+    "@prisma/client": "^5.18.0",
     "@types/cookie-parser": "^1.4.3",
     "@types/express-session": "^1.17.7",
     "@types/morgan": "^1.9.4",
@@ -53,19 +59,21 @@
     "@types/sharp": "^0.32.0",
     "axios": "^1.4.0",
     "bcrypt": "^5.1.0",
-    "cached-prisma": "^1.2.1",
     "canvas": "^2.11.2",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
     "cookie-parser": "^1.4.6",
+    "date-fns": "^3.6.0",
     "dotenv": "^16.0.3",
     "dotenv-cli": "^7.2.1",
     "enquirer": "^2.4.1",
     "express-session": "^1.17.3",
+    "ical-generator": "^7.1.0",
+    "moment-timezone": "^0.5.45",
     "morgan": "^1.10.0",
+    "nestjs-cls": "^4.4.0",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
-    "prisma": "4.16.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0"
@@ -79,7 +87,7 @@
     "@types/inquirer": "^9.0.7",
     "@types/jest": "28.1.4",
     "@types/node": "^16.18.23",
-    "@types/supertest": "^2.0.11",
+    "@types/supertest": "^6.0.2",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
     "cross-env": "^7.0.3",
@@ -89,13 +97,14 @@
     "jest": "28.1.2",
     "lint-staged": "^13.2.3",
     "prettier": "^2.3.2",
+    "prisma": "^5.18.0",
     "source-map-support": "^0.5.20",
-    "supertest": "^6.1.3",
-    "ts-jest": "28.0.5",
+    "supertest": "^7.0.0",
+    "ts-jest": "^28.0.5",
     "ts-loader": "^9.2.3",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "4.0.0",
-    "typescript": "^4.3.5"
+    "typescript": "^5.0.0"
   },
   "lint-staged": {
     "*.ts": "eslint --fix",
@@ -107,7 +116,12 @@
       "json",
       "ts"
     ],
-    "rootDir": "test",
+    "roots": [
+      "<rootDir>"
+    ],
+    "modulePaths": [
+      "<rootDir>"
+    ],
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
@@ -115,6 +129,9 @@
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
+    "moduleNameMapper": {
+      "^@src(.*)$": "<rootDir>/src$1"
+    },
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
   }

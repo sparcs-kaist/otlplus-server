@@ -3,10 +3,12 @@ import { session_userprofile, support_rate } from '@prisma/client';
 import { IRate } from 'src/common/interfaces/IRate';
 import { RateRepository } from 'src/prisma/repositories/rates.repository';
 import settings from 'src/settings';
+import { Transactional } from '@nestjs-cls/transactional';
 
 @Injectable()
 export class RatesService {
   constructor(private readonly rateRepository: RateRepository) {}
+  @Transactional()
   async createRate(
     body: IRate.CreateDto,
     user: session_userprofile,

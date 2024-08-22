@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma, session_userprofile } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
-import { SSOUser } from '../../common/interfaces/dto/auth/sso.dto';
+import { ESSOUser } from 'src/common/entities/ESSOUser';
 import { import_student_lectures } from '../../common/scholarDB/scripts';
 import { UserRepository } from '../../prisma/repositories/user.repository';
 import settings from '../../settings';
@@ -18,7 +18,7 @@ export class AuthService {
     return this.userRepository.findBySid(sid);
   }
 
-  public async ssoLogin(ssoProfile: SSOUser) {
+  public async ssoLogin(ssoProfile: ESSOUser.SSOUser) {
     const sid = ssoProfile.sid;
     let user = await this.findBySid(sid);
 

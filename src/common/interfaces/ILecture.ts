@@ -1,23 +1,34 @@
 import { Type } from 'class-transformer';
 import { IsInt, IsString } from 'class-validator';
-import { ClasstimeDto } from './dto/lecture/classtime.response.dto';
-import { ExamtimeDto } from './dto/lecture/examtime.response.dto';
+import { ICourse } from './ICourse';
+import { IProfessor } from './IProfessor';
+
+import { Transform } from 'class-transformer';
+import { IsArray, IsNumber, IsOptional } from 'class-validator';
 import { ITimetable } from './ITimetable';
 
 export namespace ILecture {
-  export class AutocompleteDto {
-    @IsInt()
-    @Type(() => Number)
-    year!: number;
-
-    @IsInt()
-    @Type(() => Number)
-    semester!: number;
-
-    @IsString()
-    keyword!: string;
+  export interface Classtime {
+    building_code: string;
+    room_name: string;
+    classroom: string;
+    classroom_en: string;
+    classroom_short: string;
+    classroom_short_en: string;
+    day: number;
+    begin: number;
+    end: number;
   }
-  export interface Basic {
+
+  export interface ExamTime {
+    day: number;
+    str: string;
+    str_en: string;
+    begin: number;
+    end: number;
+  }
+
+  export interface Raw {
     id: number;
     code: string;
     old_code: string;
@@ -62,7 +73,7 @@ export namespace ILecture {
     // Additional properties as needed
   }
 
-  export interface Response {
+  export interface Basic {
     id: number;
     title: string;
     title_en: string;
@@ -90,13 +101,59 @@ export namespace ILecture {
     class_title: string;
     class_title_en: string;
     review_total_weight: number;
+    professors: IProfessor.Basic[];
   }
 
-  export interface DetailedResponse extends Response {
-    grade?: number;
-    load?: number;
-    speech?: number;
-    classtimes?: ClasstimeDto;
-    examtimes?: ExamtimeDto;
+  export interface Detail extends Basic {
+    grade: number;
+    load: number;
+    speech: number;
+    classtimes: Classtime[];
+    examtimes: ExamTime[];
+  }
+
+  export class QueryDto extends ICourse.Query {
+    @IsOptional()
+    // @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+    @Transform(({ value }) => parseInt(value))
+    @IsNumber()
+    year?: number;
+
+    @IsOptional()
+    // @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+    @Transform(({ value }) => parseInt(value))
+    @IsNumber()
+    semester?: number;
+
+    @IsOptional()
+    // @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+    @Transform(({ value }) => parseInt(value))
+    @IsNumber()
+    day?: number;
+
+    @IsOptional()
+    // @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+    @Transform(({ value }) => parseInt(value))
+    @IsNumber()
+    begin?: number;
+
+    @IsOptional()
+    // @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+    @Transform(({ value }) => parseInt(value))
+    @IsNumber()
+    end?: number;
+  }
+
+  export class AutocompleteQueryDto {
+    @IsInt()
+    @Type(() => Number)
+    year!: number;
+
+    @IsInt()
+    @Type(() => Number)
+    semester!: number;
+
+    @IsString()
+    keyword!: string;
   }
 }
