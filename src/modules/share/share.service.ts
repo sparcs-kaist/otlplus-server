@@ -19,6 +19,7 @@ import { SemesterRepository } from 'src/prisma/repositories/semester.repository'
 import { LecturesService } from '../lectures/lectures.service';
 import { SemestersService } from '../semesters/semesters.service';
 import { TimetablesService } from '../timetables/timetables.service';
+import settings from '@src/settings';
 
 interface RoundedRectangleOptions {
   ctx: CanvasRenderingContext2D;
@@ -65,10 +66,7 @@ interface DrawTimetableDatas {
 
 @Injectable()
 export class ShareService {
-  private readonly file_path =
-    process.env.NODE_ENV === 'dev'
-      ? 'static/'
-      : '/var/www/otlplus-server/static/';
+  private readonly file_path = settings().getStaticConfig().file_path;
 
   constructor(
     private readonly semesterRepository: SemesterRepository,

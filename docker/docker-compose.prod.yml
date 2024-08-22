@@ -2,17 +2,17 @@ version: '3.4'
 
 services:
   back:
-    container_name: otlplus-server-nest-dev
+    container_name: otlplus-server-nest-prod
     platform: linux/amd64
     env_file:
-      - ../env/.env.dev
+      - ../env/.env.prod
     environment:
-      - NODE_ENV=dev
+      - NODE_ENV=prod
       - DOCKER_DEPLOY=true
     build:
       context: ..
       dockerfile: ./docker/Dockerfile.server
-    image: otlplus-server-nest-dev
+    image: otlplus-server-nest-prod
     restart: always
     tty: true
     ports:
