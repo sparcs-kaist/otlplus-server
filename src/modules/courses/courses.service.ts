@@ -11,6 +11,7 @@ import {
 import { getRepresentativeLecture } from '../../common/utils/lecture.utils';
 import { CourseRepository } from './../../prisma/repositories/course.repository';
 import { Transactional } from '@nestjs-cls/transactional';
+import LectureQueryDto = ICourse.LectureQueryDto;
 
 @Injectable()
 export class CoursesService {
@@ -73,7 +74,7 @@ export class CoursesService {
     return addIsRead(result, userspecific_is_read);
   }
 
-  public async getLecturesByCourseId(query: { order: string[] }, id: number) {
+  public async getLecturesByCourseId(query: LectureQueryDto, id: number) {
     const lectures = await this.courseRepository.getLecturesByCourseId(
       query,
       id,

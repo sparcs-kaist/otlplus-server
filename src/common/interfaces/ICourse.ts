@@ -2,7 +2,14 @@ import { IDepartment } from './IDepartment';
 import { IProfessor } from './IProfessor';
 
 import { Transform } from 'class-transformer';
-import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 
 export namespace ICourse {
   export interface Basic {
@@ -117,6 +124,14 @@ export namespace ICourse {
     limit?: number;
   }
 
+  export class LectureQueryDto {
+    @IsOptional()
+    @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+    @IsArray()
+    @IsString({ each: true })
+    order?: string[];
+  }
+
   export class ReviewQueryDto {
     @IsOptional()
     @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
@@ -127,11 +142,14 @@ export namespace ICourse {
     @IsOptional()
     @IsNumber()
     @Transform(({ value }) => parseInt(value))
+    @Min(0, { message: 'Offset must be a non-negative number' })
     offset?: number;
 
     @IsOptional()
     @IsNumber()
     @Transform(({ value }) => parseInt(value))
+    @Min(0, { message: 'limit must be a non-negative number' })
+    @Max(100, { message: 'limit must be less than or equal to 100' })
     limit?: number;
   }
 }
