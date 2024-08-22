@@ -17,6 +17,7 @@ jobs:
           username: ${{ secrets.REMOTE_USER_DEV }} # 우분투 아이디
           key: ${{ secrets.REMOTE_PRIVATE_KEY_DEV }} # ec2 instance pem key
           port: ${{ secrets.REMOTE_SSH_PORT_DEV }} # 접속포트
+          passphrase: ${{ secrets.REMOTE_PASSPHRASE_DEV }}
           script: | # 실행할 스크립트
             cd /otlplus-nest-server
             git pull origin dev
