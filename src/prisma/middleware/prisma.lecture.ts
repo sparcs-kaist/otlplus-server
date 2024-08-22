@@ -1,6 +1,6 @@
 import { Prisma, subject_lecture } from '@prisma/client';
 import { IPrismaMiddleware } from 'src/common/interfaces/IPrismaMiddleware';
-import { XOR } from 'src/common/schemaTypes/types';
+import { XOR } from '@src/common/types/types';
 import { PrismaService } from '../prisma.service';
 
 export class LectureMiddleware implements IPrismaMiddleware.IPrismaMiddleware {

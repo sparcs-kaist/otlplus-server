@@ -6,6 +6,8 @@ import { applyOffset, applyOrder } from 'src/common/utils/search.utils';
 import { groupBy } from '../../common/utils/method.utils';
 import { PrismaService } from '../prisma.service';
 import { CourseRepository } from './course.repository';
+import { FilterType } from '@src/common/types/types';
+import SubjectClasstimeFilter = FilterType.SubjectClasstimeFilter;
 
 @Injectable()
 export class LectureRepository {
@@ -210,19 +212,19 @@ export class LectureRepository {
     return lectures;
   }
 
-  public semesterFilter(years?: number[], semesters?: number[]): object | null {
-    if (!years && !semesters) {
+  public semesterFilter(year?: number, semester?: number): object | null {
+    if (!year && !semester) {
       return null;
-    } else if (!years) {
+    } else if (!year) {
       return {
         semester: {
-          in: semesters,
+          in: semester,
         },
       };
-    } else if (!semesters) {
+    } else if (!semester) {
       return {
         years: {
-          in: semesters,
+          equals: semester,
         },
       };
     } else {
@@ -230,12 +232,12 @@ export class LectureRepository {
         AND: [
           {
             year: {
-              in: years,
+              equals: year,
             },
           },
           {
             semester: {
-              in: semesters,
+              equals: semester,
             },
           },
         ],
@@ -243,22 +245,42 @@ export class LectureRepository {
     }
   }
 
-  public timeFilter(day?: number[], begin?: number[], end?: number[]): object {
-    const datetimeBegin = begin?.map((time) => this.datetimeConverter(time));
-    const datetimeEnd = end?.map((time) => this.datetimeConverter(time));
+  public timeFilter(day?: number, begin?: number, end?: number): object | null {
+    const datetimeBegin =
+      begin !== undefined && begin !== null
+        ? this.datetimeConverter(begin)
+        : undefined;
+    const datetimeEnd =
+      end !== undefined && end !== null
+        ? this.datetimeConverter(end)
+        : undefined;
 
-    const dayFilter = day ? { day: { in: day } } : null;
-    const beginFilter = begin ? { begin: { in: datetimeBegin } } : null;
-    const endFilter = end ? { end: { in: datetimeEnd } } : null;
-    return {
-      AND: [dayFilter, beginFilter, endFilter],
-    };
+    const result: any = {};
+
+    if (day !== undefined && day !== null) {
+      result.day = day;
+    }
+    if (datetimeBegin) {
+      result.begin = { gte: datetimeBegin };
+    }
+    if (datetimeEnd) {
+      result.end = { lte: datetimeEnd };
+    }
+
+    return Object.keys(result).length > 0
+      ? { subject_classtime: { some: result } }
+      : null;
   }
 
-  public datetimeConverter(time: number) {
+  public datetimeConverter(time: number): Date {
     const hour = Math.floor(time / 2) + 8;
     const minute = (time % 2) * 30;
-    return new Date(0, 0, 0, hour, minute, 0, 0);
+
+    // 1970-01-01 날짜로 고정된 Date 객체 생성
+    const date = new Date('1970-01-01T00:00:00.000Z');
+    date.setUTCHours(hour, minute, 0, 0); // UTC 시간을 설정
+
+    return date;
   }
 
   async getLectureAutocomplete({

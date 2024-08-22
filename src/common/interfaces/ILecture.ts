@@ -114,39 +114,34 @@ export namespace ILecture {
 
   export class QueryDto extends ICourse.Query {
     @IsOptional()
-    @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
-    @Transform(({ value }) => value.map(parseInt))
-    @IsArray()
-    @IsNumber({}, { each: true })
-    year?: number[];
+    // @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+    @Transform(({ value }) => parseInt(value))
+    @IsNumber()
+    year?: number;
 
     @IsOptional()
-    @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
-    @Transform(({ value }) => value.map(parseInt))
-    @IsArray()
-    @IsNumber({}, { each: true })
-    semester?: number[];
+    // @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+    @Transform(({ value }) => parseInt(value))
+    @IsNumber()
+    semester?: number;
 
     @IsOptional()
-    @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
-    @Transform(({ value }) => value.map(parseInt))
-    @IsArray()
-    @IsNumber({}, { each: true })
-    day?: number[];
+    // @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+    @Transform(({ value }) => parseInt(value))
+    @IsNumber()
+    day?: number;
 
     @IsOptional()
-    @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
-    @Transform(({ value }) => value.map(parseInt))
-    @IsArray()
-    @IsNumber({}, { each: true })
-    begin?: number[];
+    // @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+    @Transform(({ value }) => parseInt(value))
+    @IsNumber()
+    begin?: number;
 
     @IsOptional()
-    @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
-    @Transform(({ value }) => value.map(parseInt))
-    @IsArray()
-    @IsNumber({}, { each: true })
-    end?: number[];
+    // @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+    @Transform(({ value }) => parseInt(value))
+    @IsNumber()
+    end?: number;
   }
 
   export class AutocompleteQueryDto {
