@@ -38,8 +38,8 @@ export class LectureMiddleware implements IPrismaMiddleware.IPrismaMiddleware {
         !t.common_title_en &&
         !t.class_title_en
       ) {
-        if (this._checkClassTitleUpdateRequired(result.lecture)) {
-          await this.updateClassTitle(result.lecture);
+        if (this._checkClassTitleUpdateRequired(result)) {
+          await this.updateClassTitle(result);
         }
       }
 

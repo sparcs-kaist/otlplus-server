@@ -467,7 +467,7 @@ export class CourseRepository {
       return false;
 
     return (
-      courseUser.subject_course.latest_written_datetime <
+      courseUser.subject_course.latest_written_datetime >
       courseUser.latest_read_datetime
     );
   }
