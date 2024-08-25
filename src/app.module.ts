@@ -14,11 +14,11 @@ import { NoticesModule } from './modules/notices/notices.module';
 import { PlannersModule } from './modules/planners/planners.module';
 import { RatesModule } from './modules/rates/rates.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
-import { ScholarModule } from './modules/scholar/scholar.module';
 import { SemestersModule } from './modules/semesters/semesters.module';
 import { SessionModule } from './modules/session/session.module';
 import { ShareModule } from './modules/share/share.module';
 import { StatusModule } from './modules/status/status.module';
+import { SyncModule } from './modules/sync/sync.module';
 import { TimetablesModule } from './modules/timetables/timetables.module';
 import { TracksModule } from './modules/tracks/tracks.module';
 import { UserModule } from './modules/user/user.module';
@@ -45,7 +45,7 @@ import { PrismaModule } from './prisma/prisma.module';
     PlannersModule,
     TracksModule,
     ShareModule,
-    ScholarModule,
+    SyncModule,
   ],
   controllers: [AppController],
   providers: [

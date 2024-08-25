@@ -14,6 +14,7 @@ export default () => {
     getJwtConfig: () => getJwtConfig(),
     getSsoConfig: () => getSsoConfig(),
     getCorsConfig: () => getCorsConfig(),
+    syncConfig: () => getSyncConfig(),
     getVersion: () => getVersion(),
   };
 };
@@ -71,6 +72,12 @@ const getSsoConfig = (): any => {
     ssoIsBeta: process.env.SSO_IS_BETA === 'false' ? false : true,
     ssoClientId: process.env.SSO_CLIENT_ID,
     ssoSecretKey: process.env.SSO_SECRET_KEY,
+  };
+};
+
+const getSyncConfig = () => {
+  return {
+    secret: process.env.SYNC_SECRET,
   };
 };
 
