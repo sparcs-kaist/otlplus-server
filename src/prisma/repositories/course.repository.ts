@@ -369,7 +369,7 @@ export class CourseRepository {
   async getUserTakenCourses(
     takenLecturesId: number[],
     order: string[],
-  ): Promise<ECourse.Details[]> {
+  ): Promise<ECourse.DetailWithIsRead[]> {
     const orderFilter: { [key: string]: string }[] = [];
     order.forEach((orderList) => {
       const orderDict: { [key: string]: string } = {};
@@ -381,7 +381,7 @@ export class CourseRepository {
       orderDict[orderBy[orderBy.length - 1]] = order;
       orderFilter.push(orderDict);
     });
-    return await this.prisma.subject_course.findMany({
+    return this.prisma.subject_course.findMany({
       where: {
         lecture: {
           some: {

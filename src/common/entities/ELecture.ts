@@ -40,6 +40,17 @@ export namespace ELecture {
   });
   export type Details = Prisma.subject_lectureGetPayload<typeof Details>;
 
+  export const DetailsWithCourse =
+    Prisma.validator<Prisma.subject_lectureArgs>()({
+      include: {
+        ...Details.include,
+        course: true,
+      },
+    });
+  export type DetailsWithCourse = Prisma.subject_lectureGetPayload<
+    typeof DetailsWithCourse
+  >;
+
   export function isDetails(
     lecture: ELecture.Extended | ELecture.Details,
   ): lecture is ELecture.Details {

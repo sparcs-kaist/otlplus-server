@@ -101,24 +101,28 @@ export class UserService {
       takenLecturesId,
       query.order ?? DEFAULT_ORDER,
     );
-    return Promise.all(
-      courses.map(async (course) => {
-        const representativeLecture = getRepresentativeLecture(course.lecture);
-        const professorRaw = course.subject_course_professors.map(
-          (x) => x.professor,
-        );
-        const result = toJsonCourseDetail(
-          course,
-          representativeLecture,
-          professorRaw,
-        );
-
+    return courses.map((course) => {
+      const representativeLecture = getRepresentativeLecture(course.lecture);
+      const professorRaw = course.subject_course_professors.map(
+        (x) => x.professor,
+      );
+      const result = toJsonCourseDetail(
+        course,
+        representativeLecture,
+        professorRaw,
+      );
+      const subjectCourseUser = course.subject_courseuser.filter(
+        (e) => e.user_profile_id === user.id && e.course_id === course.id,
+      )[0];
+      if (!subjectCourseUser || !course.latest_written_datetime)
+        return addIsRead(result, false);
+      else
         return addIsRead(
           result,
-          await this.courseRepository.isUserSpecificRead(course.id, user.id),
+          course.latest_written_datetime >
+            subjectCourseUser?.latest_read_datetime,
         );
-      }),
-    );
+    });
   }
 
   async getUserLikedReviews(

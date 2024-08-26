@@ -8,6 +8,7 @@ import { PrismaService } from '../prisma.service';
 import { CourseRepository } from './course.repository';
 import { FilterType } from '@src/common/types/types';
 import SubjectClasstimeFilter = FilterType.SubjectClasstimeFilter;
+import Details = ELecture.Details;
 
 @Injectable()
 export class LectureRepository {
@@ -194,16 +195,7 @@ export class LectureRepository {
         },
         include: {
           lecture: {
-            include: {
-              subject_lecture_professors: {
-                include: {
-                  professor: true,
-                },
-              },
-              subject_department: true,
-              subject_examtime: true,
-              subject_classtime: true,
-            },
+            include: Details.include,
           },
         },
       })
