@@ -12,6 +12,7 @@ import { IsPublicCommand } from './command/isPublic.command';
 import { JwtCommand } from './command/jwt.command';
 import { SidCommand } from './command/sid.command';
 import { AuthConfig } from './auth.config';
+import { SessionCommand } from '@src/modules/auth/command/session.command';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { AuthConfig } from './auth.config';
     IsPublicCommand,
     JwtCommand,
     SidCommand,
+    SessionCommand,
     AuthConfig,
   ],
   exports: [AuthService, AuthConfig, AuthChain],
