@@ -130,4 +130,8 @@ export class AuthService {
   ): Promise<session_userprofile> {
     return await this.userRepository.updateUser(userId, user);
   }
+
+  async findBySessionKey(session_key: string) {
+    return await this.userRepository.findBySessionKey(session_key);
+  }
 }

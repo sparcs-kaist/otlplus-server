@@ -12,6 +12,49 @@ export class UserRepository {
     });
   }
 
+  async findBySessionKey(sessionKey: string) {
+    const djangoSession = await this.prisma.django_session.findFirstOrThrow({
+      where: {
+        session_key: sessionKey,
+      },
+    });
+    const decodedSessionData = Buffer.from(
+      djangoSession.session_data,
+      'base64',
+    ).toString('utf8');
+    const sessionData_obj = JSON.parse(decodedSessionData);
+    const userId = sessionData_obj['_auth_user_id'];
+    const user = await this.prisma.session_userprofile.findUnique({
+      select: {
+        id: true,
+        user_id: true,
+        student_id: true,
+        sid: true,
+        language: true,
+        portal_check: true,
+        department_id: true,
+        email: true,
+      },
+      where: {
+        user_id: userId,
+      },
+    });
+    const auth_user = await this.prisma.auth_user.findUnique({
+      select: {
+        date_joined: true,
+        first_name: true,
+        last_name: true,
+      },
+      where: {
+        id: userId,
+      },
+    });
+    return {
+      ...user,
+      ...auth_user,
+    };
+  }
+
   async createUser(
     user: Prisma.session_userprofileCreateInput,
   ): Promise<session_userprofile> {
