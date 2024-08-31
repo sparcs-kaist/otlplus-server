@@ -42,7 +42,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       : HttpStatus.INTERNAL_SERVER_ERROR;
 
     const startTime = Date.now();
-    const requestId = request.headers['uuid'] || uuidv4();
+    const requestId = request.headers['uuid'];
 
     const { method, headers, query } = request;
 

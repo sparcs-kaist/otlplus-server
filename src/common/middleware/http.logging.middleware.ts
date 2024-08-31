@@ -40,7 +40,7 @@ export class LoggingInterceptor implements NestInterceptor {
     const res = context.switchToHttp().getResponse();
 
     const startTime = Date.now();
-    const requestId = req.headers['uuid'] || uuidv4();
+    const requestId = req.headers['uuid'];
 
     const { method, headers, query } = req;
 

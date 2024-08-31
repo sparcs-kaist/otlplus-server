@@ -58,7 +58,7 @@ async function bootstrap() {
   app.useGlobalInterceptors(new LoggingInterceptor());
   app.useGlobalFilters(new HttpExceptionFilter());
   app.enableShutdownHooks();
-  return app.listen(8000);
+  return app.listen(8080);
 }
 
 bootstrap()
