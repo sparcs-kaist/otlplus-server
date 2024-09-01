@@ -74,6 +74,7 @@ export class LoggingInterceptor implements NestInterceptor {
 
     const requestLog = {
       method,
+      timestamp: (new Date()).toISOString(),
       path: req.path, // URI만 포함하도록 수정
       UUID: requestId,
       data: requestData,

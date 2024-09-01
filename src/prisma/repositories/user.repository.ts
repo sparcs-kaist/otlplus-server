@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { Prisma, session_userprofile, subject_semester } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 
@@ -22,8 +22,13 @@ export class UserRepository {
       djangoSession.session_data,
       'base64',
     ).toString('utf8');
-    const sessionData_obj = JSON.parse(decodedSessionData);
-    const userId = sessionData_obj['_auth_user_id'];
+    const regexMatch = decodedSessionData.match(/{.*}/)
+    if(regexMatch === null)
+      throw new InternalServerErrorException("json string error")
+    const jsonString = regexMatch[0]
+    const json_obj = JSON.parse(jsonString);
+    const sessionData_obj = json_obj
+    const userId = Number(sessionData_obj['_auth_user_id']);
     const user = await this.prisma.session_userprofile.findUnique({
       select: {
         id: true,
