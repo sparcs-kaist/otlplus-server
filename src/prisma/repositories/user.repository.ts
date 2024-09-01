@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { Prisma, session_userprofile, subject_semester } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
 
@@ -10,6 +10,54 @@ export class UserRepository {
     return await this.prisma.session_userprofile.findFirst({
       where: { sid: sid },
     });
+  }
+
+  async findBySessionKey(sessionKey: string) {
+    const djangoSession = await this.prisma.django_session.findFirstOrThrow({
+      where: {
+        session_key: sessionKey,
+      },
+    });
+    const decodedSessionData = Buffer.from(
+      djangoSession.session_data,
+      'base64',
+    ).toString('utf8');
+    const regexMatch = decodedSessionData.match(/{.*}/)
+    if(regexMatch === null)
+      throw new InternalServerErrorException("json string error")
+    const jsonString = regexMatch[0]
+    const json_obj = JSON.parse(jsonString);
+    const sessionData_obj = json_obj
+    const userId = Number(sessionData_obj['_auth_user_id']);
+    const user = await this.prisma.session_userprofile.findUnique({
+      select: {
+        id: true,
+        user_id: true,
+        student_id: true,
+        sid: true,
+        language: true,
+        portal_check: true,
+        department_id: true,
+        email: true,
+      },
+      where: {
+        user_id: userId,
+      },
+    });
+    const auth_user = await this.prisma.auth_user.findUnique({
+      select: {
+        date_joined: true,
+        first_name: true,
+        last_name: true,
+      },
+      where: {
+        id: userId,
+      },
+    });
+    return {
+      ...user,
+      ...auth_user,
+    };
   }
 
   async createUser(

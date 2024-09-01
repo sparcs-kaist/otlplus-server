@@ -3,15 +3,19 @@ FROM node:18 AS build
 RUN mkdir -p /var/www/otlplus-server
 WORKDIR /var/www/otlplus-server
 
-COPY package*.json ./
+COPY package.json ./
 RUN npm install
 
 COPY . .
 RUN npm run client:generate
 RUN npm run build
 
-FROM node:18-slim AS server
-RUN apt-get update -y && apt-get install -y openssl
+FROM node:18 AS server
+RUN rm -rf /var/lib/apt/lists/*
+RUN apt-get clean
+RUN apt-get install -y openssl
+
+# RUN apt-get update -y && apt-get install -y openssl
 
 COPY --from=build /var/www/otlplus-server/ /var/www/otlplus-server/
 

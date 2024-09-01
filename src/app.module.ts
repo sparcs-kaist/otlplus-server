@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { AppController } from './app.controller';
@@ -29,6 +29,7 @@ import { ClsModule } from 'nestjs-cls';
 import { ClsPluginTransactional } from '@nestjs-cls/transactional';
 import { PrismaService } from '@src/prisma/prisma.service';
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
+// import { LoggingMiddleware } from "@src/common/middleware/http.logging.middleware";
 
 @Module({
   imports: [

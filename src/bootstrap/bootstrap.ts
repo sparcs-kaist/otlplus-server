@@ -5,6 +5,8 @@ import session from 'express-session';
 import { AppModule } from '../app.module';
 import settings from '../settings';
 import morgan = require('morgan');
+import { LoggingInterceptor } from '@src/common/middleware/http.logging.middleware';
+import { HttpExceptionFilter } from '@src/common/filter/http.exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -53,8 +55,10 @@ async function bootstrap() {
     }),
   );
 
+  app.useGlobalInterceptors(new LoggingInterceptor());
+  app.useGlobalFilters(new HttpExceptionFilter());
   app.enableShutdownHooks();
-  return app.listen(8000);
+  return app.listen(8080);
 }
 
 bootstrap()
