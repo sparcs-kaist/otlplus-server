@@ -29,7 +29,7 @@ import { ClsModule } from 'nestjs-cls';
 import { ClsPluginTransactional } from '@nestjs-cls/transactional';
 import { PrismaService } from '@src/prisma/prisma.service';
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
-import { AppLoggerMiddleware } from '@src/common/middleware/http.logging.middleware';
+// import { LoggingMiddleware } from "@src/common/middleware/http.logging.middleware";
 
 @Module({
   imports: [
@@ -93,8 +93,4 @@ import { AppLoggerMiddleware } from '@src/common/middleware/http.logging.middlew
     JwtService,
   ],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer): any {
-    consumer.apply(AppLoggerMiddleware).forRoutes('*');
-  }
-}
+export class AppModule {}
