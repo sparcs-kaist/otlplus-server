@@ -10,5 +10,12 @@ export class SyncService {
     return await this.syncRepository.getDefaultSemester();
   }
 
-  async syncScholarDB(data: ISync.ScholarDBData) {}
+  async syncScholarDB(data: ISync.ScholarDBData) {
+    const existingLectures = await this.syncRepository.getExistingLectures({
+      year: data.year,
+      semester: data.semester,
+    });
+    const staffProfessor =
+      await this.syncRepository.getOrCreateStaffProfessor();
+  }
 }
