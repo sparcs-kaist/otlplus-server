@@ -4,14 +4,15 @@ import { PassportModule } from '@nestjs/passport';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { UserRepository } from '../../prisma/repositories/user.repository';
 import { UserService } from '../user/user.service';
+import { AuthChain } from './auth.chain';
+import { AuthConfig } from './auth.config';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { JwtCookieStrategy } from './strategy/jwt-cookie.strategy';
-import { AuthChain } from './auth.chain';
 import { IsPublicCommand } from './command/isPublic.command';
 import { JwtCommand } from './command/jwt.command';
 import { SidCommand } from './command/sid.command';
-import { AuthConfig } from './auth.config';
+import { SyncApiKeyCommand } from './command/syncApiKey.command';
+import { JwtCookieStrategy } from './strategy/jwt-cookie.strategy';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { AuthConfig } from './auth.config';
     IsPublicCommand,
     JwtCommand,
     SidCommand,
+    SyncApiKeyCommand,
     AuthConfig,
   ],
   exports: [AuthService, AuthConfig, AuthChain],

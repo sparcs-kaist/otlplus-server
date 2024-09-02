@@ -1,6 +1,6 @@
+import { Prisma } from '@prisma/client';
 import dotenv from 'dotenv';
 import { dotEnvOptions } from './dotenv-options';
-import { Prisma } from '@prisma/client';
 
 dotenv.config(dotEnvOptions);
 console.log(`NODE_ENV environment: ${process.env.NODE_ENV}`);
@@ -107,7 +107,7 @@ const getSsoConfig = (): any => {
 
 const getSyncConfig = () => {
   return {
-    secret: process.env.SYNC_SECRET,
+    apiKey: process.env.SYNC_SECRET,
   };
 };
 

@@ -4,11 +4,10 @@ import {
   Get,
   InternalServerErrorException,
   Post,
-  UnauthorizedException,
 } from '@nestjs/common';
+import { SyncApiKeyAuth } from '@src/common/decorators/sync-api-key-auth.decorator';
 import { ISync } from 'src/common/interfaces/ISync';
 import { toJsonSemester } from 'src/common/interfaces/serializer/semester.serializer';
-import settings from 'src/settings';
 import { SyncService } from './sync.service';
 
 @Controller('sync')
@@ -16,6 +15,7 @@ export class SyncController {
   constructor(private readonly syncService: SyncService) {}
 
   @Get('defaultSemester')
+  @SyncApiKeyAuth()
   async getDefaultSemester() {
     const semester = await this.syncService.getDefaultSemester();
     if (!semester)
@@ -24,9 +24,8 @@ export class SyncController {
   }
 
   @Post('scholarDB')
+  @SyncApiKeyAuth()
   async syncScholarDB(@Body() body: ISync.ScholarDBBody) {
-    if (body.secret !== settings().syncConfig().secret)
-      throw new UnauthorizedException();
     return await this.syncService.syncScholarDB(body.data);
   }
 }
