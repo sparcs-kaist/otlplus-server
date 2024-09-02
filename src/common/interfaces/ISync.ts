@@ -1,4 +1,10 @@
-import { IsIn, IsInt, IsNumber, IsString } from 'class-validator';
+import {
+  IsIn,
+  IsInt,
+  IsNumber,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 
 export namespace ISync {
   export class ScholarDBBody {
@@ -6,7 +12,17 @@ export namespace ISync {
     data!: ScholarDBData;
   }
 
-  export class ScholarDBData {}
+  export class ScholarDBData {
+    /** 동기화 대상 연도 */
+    @IsInt()
+    year!: number;
+    /** 동기화 대상 학기 */
+    @IsIn([1, 2, 3, 4])
+    semester!: number;
+    /** 동기화 대상 강의 정보 */
+    @ValidateNested({ each: true })
+    lectures!: ScholarLectureType[];
+  }
 
   /*
   example:
