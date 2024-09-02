@@ -1,9 +1,15 @@
+import { ClsPluginTransactional } from '@nestjs-cls/transactional';
+import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
+import { PrismaService } from '@src/prisma/prisma.service';
+import { ClsModule } from 'nestjs-cls';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthConfig } from './modules/auth/auth.config';
 import { AuthModule } from './modules/auth/auth.module';
+import { AuthGuard } from './modules/auth/guard/auth.guard';
 import { JwtCookieGuard } from './modules/auth/guard/jwt-cookie.guard';
 import { MockAuthGuard } from './modules/auth/guard/mock-auth-guard';
 import { CoursesModule } from './modules/courses/courses.module';
@@ -46,13 +52,41 @@ import { PrismaModule } from './prisma/prisma.module';
     TracksModule,
     ShareModule,
     SyncModule,
+    ClsModule.forRoot({
+      global: true,
+      middleware: { mount: true },
+      plugins: [
+        new ClsPluginTransactional({
+          imports: [PrismaModule],
+          adapter: new TransactionalAdapterPrisma({
+            prismaInjectionToken: PrismaService,
+          }),
+        }),
+      ],
+    }),
   ],
   controllers: [AppController],
   providers: [
+    // {
+    //   provide: APP_GUARD,
+    //   useClass:
+    //     process.env.NODE_ENV === 'production' ? JwtCookieGuard : MockAuthGuard,
+    // },
     {
       provide: APP_GUARD,
-      useClass:
-        process.env.NODE_ENV === 'production' ? JwtCookieGuard : MockAuthGuard,
+      useFactory: async (authConfig: AuthConfig) => {
+        const env =
+          process.env.NODE_ENV === undefined ? 'prod' : process.env.NODE_ENV;
+        const authChain = await authConfig.config(env);
+        return new AuthGuard(authChain);
+      },
+      inject: [AuthConfig],
+    },
+    {
+      provide: APP_GUARD,
+      useFactory: () => {
+        const env = process.env.NODE_ENV;
+      },
     },
     JwtCookieGuard,
     MockAuthGuard,

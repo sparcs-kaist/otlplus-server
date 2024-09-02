@@ -155,7 +155,7 @@ export class ReviewMiddleware implements IPrismaMiddleware.IPrismaMiddleware {
     const baseYear = new Date().getFullYear();
     const lectureYear: number = (
       await this.prisma.subject_lecture.findUniqueOrThrow({
-        where: { id: review.id },
+        where: { id: review.lecture_id },
         select: {
           year: true,
         },

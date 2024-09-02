@@ -1,9 +1,18 @@
-import { Controller, Get, Param, Post, Query } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { Public } from 'src/common/decorators/skip-auth.decorator';
 import { ICourse } from 'src/common/interfaces';
 import { CoursesService } from './courses.service';
+import { CourseIdPipe } from '@src/common/pipe/courseId.pipe';
+import LectureQueryDto = ICourse.LectureQueryDto;
 
 @Controller('api/courses')
 export class CourseController {
@@ -19,6 +28,7 @@ export class CourseController {
     return courses;
   }
 
+  @Public()
   @Get('autocomplete')
   async getCourseAutocomplete(@Query() query: ICourse.AutocompleteQueryDto) {
     return await this.coursesService.getCourseAutocomplete(query);
@@ -27,25 +37,28 @@ export class CourseController {
   @Public()
   @Get(':id')
   async getCourseById(
-    @Param('id') id: number,
+    @Param('id', CourseIdPipe) id: number,
     @GetUser() user: session_userprofile,
   ) {
+    if (isNaN(id)) throw new BadRequestException('Invalid course id');
     return await this.coursesService.getCourseById(id, user);
   }
 
+  @Public()
   @Get(':id/lectures')
   async getLecturesByCourseId(
-    @Query() query: { order: string[] },
-    @Param('id') id: number,
+    @Query() query: LectureQueryDto,
+    @Param('id', CourseIdPipe) id: number,
   ) {
+    console.log(query);
     return await this.coursesService.getLecturesByCourseId(query, id);
   }
 
-  @Get(':id/reviews')
   @Public()
+  @Get(':id/reviews')
   async getReviewByCourseId(
     @Query() query: ICourse.ReviewQueryDto,
-    @Param('id') id: number,
+    @Param('id', CourseIdPipe) id: number,
     @GetUser() user: session_userprofile,
   ) {
     return await this.coursesService.getReviewsByCourseId(query, id, user);
@@ -53,7 +66,7 @@ export class CourseController {
 
   @Post(':id/read')
   async readCourse(
-    @Param('id') id: number,
+    @Param('id', CourseIdPipe) id: number,
     @GetUser() user: session_userprofile,
   ) {
     await this.coursesService.readCourse(user.id, id);

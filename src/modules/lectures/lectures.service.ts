@@ -140,106 +140,77 @@ export class LecturesService {
     }
   }
 
-  async getProfessorShortStr(
-    lectureId: number,
-    isEnglish: boolean = false,
-  ): Promise<string> {
-    const lectureWithProfessors =
-      await this.LectureRepository.getProfessorsByLectureId(lectureId);
+  async getLectureDetailsForTimetable(
+    lectureIds: number[],
+    isEnglish: boolean,
+  ): Promise<
+    Map<number, { professorText: string; classroomShortStr: string }>
+  > {
+    const lectureDetails =
+      await this.LectureRepository.getLectureDetailsForTimetable(lectureIds);
 
-    if (!lectureWithProfessors) {
-      throw new Error(`Lecture with ID ${lectureId} not found.`);
-    }
+    const lectureDetailsMap = new Map<
+      number,
+      { professorText: string; classroomShortStr: string }
+    >();
 
-    const profNameList = lectureWithProfessors.subject_lecture_professors.map(
-      (lp) =>
+    lectureDetails.forEach((lecture) => {
+      const professorShortStr = lecture.subject_lecture_professors.map((lp) =>
         isEnglish
           ? lp.professor.professor_name_en
           : lp.professor.professor_name,
-    );
-
-    if (profNameList.length <= 2) {
-      return profNameList.join(', ');
-    }
-    return isEnglish
-      ? `${profNameList[0]} and ${profNameList.length - 1} others`
-      : `${profNameList[0]} 외 ${profNameList.length - 1} 명`;
-  }
-
-  async getClassroomShortStr(
-    lectureId: number,
-    isEnglish: boolean = false,
-  ): Promise<string> {
-    const lectureWithClassTimes =
-      await this.LectureRepository.getClassroomByLectureId(lectureId);
-
-    if (
-      !lectureWithClassTimes ||
-      !lectureWithClassTimes.subject_classtime ||
-      lectureWithClassTimes.subject_classtime.length === 0
-    ) {
-      throw new Error(`Lecture with ID ${lectureId} not found.`);
-    }
-
-    // 첫 번째 classtime 요소에서 정보를 가져옵니다.
-    const classtime = lectureWithClassTimes.subject_classtime[0];
-    const { building_full_name, building_full_name_en, room_name } = classtime;
-
-    if (!building_full_name) {
-      return isEnglish ? 'Unknown' : '정보 없음';
-    }
-
-    let classroomShort = '';
-    if (building_full_name.startsWith('(')) {
-      const buildingCode = building_full_name.substring(
-        1,
-        building_full_name.indexOf(')'),
       );
-      classroomShort = `(${buildingCode}) ${room_name || ''}`;
-    } else {
-      classroomShort = `${building_full_name} ${room_name || ''}`;
-    }
+      const professorText =
+        professorShortStr.length <= 2
+          ? professorShortStr.join(', ')
+          : isEnglish
+          ? `${professorShortStr[0]} and ${professorShortStr.length - 1} others`
+          : `${professorShortStr[0]} 외 ${professorShortStr.length - 1} 명`;
 
-    let classroomShortEn = '';
-    if (building_full_name_en && building_full_name_en.startsWith('(')) {
-      const buildingCodeEn = building_full_name_en.substring(
-        1,
-        building_full_name_en.indexOf(')'),
-      );
-      classroomShortEn = `(${buildingCodeEn}) ${room_name || ''}`;
-    } else {
-      classroomShortEn = `${building_full_name_en} ${room_name || ''}`;
-    }
+      const classtime = lecture.subject_classtime[0];
+      let classroomShortStr = '';
 
-    return isEnglish ? classroomShortEn : classroomShort;
-  }
+      if (classtime) {
+        const { building_full_name, building_full_name_en, room_name } =
+          classtime;
 
-  async getClassroomStr(
-    lectureId: number,
-    isEnglish: boolean = false,
-  ): Promise<string> {
-    const lectureWithClassTimes =
-      await this.LectureRepository.getClassroomByLectureId(lectureId);
+        if (!building_full_name) {
+          classroomShortStr = isEnglish ? 'Unknown' : '정보 없음';
+        } else {
+          if (building_full_name.startsWith('(')) {
+            const buildingCode = building_full_name.substring(
+              1,
+              building_full_name.indexOf(')'),
+            );
+            classroomShortStr = `(${buildingCode}) ${room_name || ''}`;
+          } else {
+            classroomShortStr = `${building_full_name} ${room_name || ''}`;
+          }
 
-    if (
-      !lectureWithClassTimes ||
-      !lectureWithClassTimes.subject_classtime ||
-      lectureWithClassTimes.subject_classtime.length === 0
-    ) {
-      throw new Error(`Lecture with ID ${lectureId} not found.`);
-    }
+          if (building_full_name_en && building_full_name_en.startsWith('(')) {
+            const buildingCodeEn = building_full_name_en.substring(
+              1,
+              building_full_name_en.indexOf(')'),
+            );
+            classroomShortStr = isEnglish
+              ? `(${buildingCodeEn}) ${room_name || ''}`
+              : classroomShortStr;
+          } else {
+            classroomShortStr = isEnglish
+              ? `${building_full_name_en} ${room_name || ''}`
+              : classroomShortStr;
+          }
+        }
+      } else {
+        classroomShortStr = isEnglish ? 'Unknown' : '정보 없음';
+      }
 
-    // 첫 번째 classtime 요소에서 정보를 가져옵니다.
-    const classtime = lectureWithClassTimes.subject_classtime[0];
-    const { building_full_name, building_full_name_en, room_name } = classtime;
+      lectureDetailsMap.set(lecture.id, {
+        professorText,
+        classroomShortStr,
+      });
+    });
 
-    if (!building_full_name) {
-      return isEnglish ? 'Unknown' : '정보 없음';
-    }
-
-    const classroom = `${building_full_name} ${room_name || ''}`;
-    const classroomEn = `${building_full_name_en} ${room_name || ''}`;
-
-    return isEnglish ? classroomEn : classroom;
+    return lectureDetailsMap;
   }
 }

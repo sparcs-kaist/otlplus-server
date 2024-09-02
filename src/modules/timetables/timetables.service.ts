@@ -15,6 +15,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { LectureRepository } from '../../prisma/repositories/lecture.repository';
 import { SemesterRepository } from '../../prisma/repositories/semester.repository';
 import { TimetableRepository } from '../../prisma/repositories/timetable.repository';
+import { Transactional } from '@nestjs-cls/transactional';
 
 @Injectable()
 export class TimetablesService {
@@ -48,6 +49,7 @@ export class TimetablesService {
     return await this.timetableRepository.getTimeTableById(timetableId);
   }
 
+  @Transactional()
   async createTimetable(
     timeTableBody: ITimetable.CreateDto,
     user: session_userprofile,
@@ -96,6 +98,7 @@ export class TimetablesService {
     );
   }
 
+  @Transactional()
   async addLectureToTimetable(
     timeTableId: number,
     body: ITimetable.AddLectureDto,
@@ -126,6 +129,7 @@ export class TimetablesService {
     return await this.timetableRepository.getTimeTableById(timeTableId);
   }
 
+  @Transactional()
   async removeLectureFromTimetable(
     timeTableId: number,
     body: ITimetable.AddLectureDto,
@@ -156,6 +160,7 @@ export class TimetablesService {
     return await this.timetableRepository.getTimeTableById(timeTableId);
   }
 
+  @Transactional()
   async deleteTimetable(user: session_userprofile, timetableId: number) {
     return await this.prismaService.$transaction(async (tx) => {
       const { semester, year, arrange_order } =
@@ -185,6 +190,7 @@ export class TimetablesService {
     });
   }
 
+  @Transactional()
   async reorderTimetable(
     user: session_userprofile,
     timetableId: number,
@@ -269,7 +275,6 @@ export class TimetablesService {
       : '5days';
   }
 
-  // Make sure to adjust other methods that use lectures to match the type
   public async getTimetableEntries(
     timetableId: number,
     year: number,

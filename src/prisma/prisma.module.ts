@@ -21,6 +21,7 @@ import { TimetableRepository } from './repositories/timetable.repository';
 import { TracksRepository } from './repositories/track.repository';
 import { UserRepository } from './repositories/user.repository';
 import { WishlistRepository } from './repositories/wishlist.repository';
+import { TranManager } from './transactionManager';
 
 // const extendPrismaClient = {
 //   provide: PrismaService,
@@ -46,6 +47,8 @@ import { WishlistRepository } from './repositories/wishlist.repository';
     TracksRepository,
     NoticesRepository,
     SyncRepository,
+    ReviewMiddleware,
+    TranManager,
   ],
   exports: [
     PrismaService,
