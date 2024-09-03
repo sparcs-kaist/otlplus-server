@@ -233,4 +233,31 @@ export namespace IPlanner {
     @Type(() => Number)
     credit_au!: number;
   }
+
+  export class UpdateBodyDto {
+    @IsInt()
+    @Type(() => Number)
+    start_year!: number;
+
+    @IsInt()
+    @Type(() => Number)
+    end_year!: number;
+
+    @IsInt()
+    @Type(() => Number)
+    general_track!: number;
+
+    @IsInt()
+    @Type(() => Number)
+    major_track!: number;
+
+    @Transform(({ value }) => (typeof value === 'number' ? [value] : value))
+    @IsArray()
+    @IsInt({ each: true })
+    additional_tracks!: number[];
+
+    @IsOptional()
+    @IsBoolean()
+    should_update_taken_semesters?: boolean;
+  }
 }

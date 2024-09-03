@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { session_userprofile } from '@prisma/client';
-import { ELecture } from 'src/common/entities/ELecture';
+import { Prisma, session_userprofile } from '@prisma/client';
 import { IPlanner } from 'src/common/interfaces/IPlanner';
 import { orderFilter } from 'src/common/utils/search.utils';
 import { EPlanners } from '../../common/entities/EPlanners';
 import { PlannerItemType } from '../../common/interfaces/constants/planner';
 import { PrismaService } from '../prisma.service';
+import CreateInput = EPlanners.EItems.Arbitrary.CreateInput;
 
 @Injectable()
 export class PlannerRepository {
@@ -164,93 +164,76 @@ export class PlannerRepository {
     });
   }
 
-  public async getTakenPlannerItemById(
-    user: session_userprofile,
-    id: number,
-  ): Promise<EPlanners.EItems.Taken.Details | null> {
-    const planner = await this.prisma.planner_planner.findMany({
-      include: {
-        planner_takenplanneritem: {
-          ...EPlanners.EItems.Taken.Details,
-        },
-      },
+  public async getTakenPlannerItemByIds(
+    plannerItemIds: number[],
+  ): Promise<EPlanners.EItems.Taken.Details[] | null> {
+    const plannerItems = await this.prisma.planner_takenplanneritem.findMany({
+      include: EPlanners.EItems.Taken.Details.include,
       where: {
-        user_id: user.id,
-        planner_takenplanneritem: {
-          some: {
-            id: id,
-          },
+        id: {
+          in: plannerItemIds,
         },
       },
     });
-    const candidates = planner.map((p) => p.planner_takenplanneritem).flat();
-    return candidates.find((c) => c.id === id) ?? null;
+    return plannerItems.length > 0 ? plannerItems : null;
   }
 
   public async createTakenPlannerItem(
-    planner: EPlanners.Basic,
-    lecture: ELecture.Details,
-    isExcluded: boolean = false,
-  ) {
-    return await this.prisma.planner_takenplanneritem.create({
-      data: {
-        planner_planner: {
-          connect: {
-            id: planner.id,
-          },
-        },
-        is_excluded: isExcluded,
-        subject_lecture: {
-          connect: {
-            id: lecture.id,
-          },
+    plannerId: number,
+    lectures: {
+      lectureId: number;
+      isExcluded: boolean;
+    }[],
+  ): Promise<EPlanners.EItems.Taken.Basic[]> {
+    const datas = lectures.map((lecture) => {
+      return {
+        planner_id: plannerId,
+        is_excluded: lecture.isExcluded,
+        lecture_id: lecture.lectureId,
+      };
+    });
+    await this.prisma.planner_takenplanneritem.createMany({
+      data: datas,
+    });
+    return this.prisma.planner_takenplanneritem.findMany({
+      where: {
+        planner_id: plannerId,
+        lecture_id: {
+          in: lectures.map((lecture) => lecture.lectureId),
         },
       },
     });
   }
   public async getFuturePlannerItemById(
-    user: session_userprofile,
-    id: number,
-  ): Promise<EPlanners.EItems.Future.Extended | null> {
-    const planner = await this.prisma.planner_planner.findMany({
-      include: {
-        planner_futureplanneritem: {
-          ...EPlanners.EItems.Future.Extended,
-        },
-      },
-      where: {
-        user_id: user.id,
-        planner_futureplanneritem: {
-          some: {
-            id: id,
+    futureItemIds: number[],
+  ): Promise<EPlanners.EItems.Future.Extended[] | null> {
+    const futurePlannerItems =
+      await this.prisma.planner_futureplanneritem.findMany({
+        include: EPlanners.EItems.Future.Extended.include,
+        where: {
+          id: {
+            in: futureItemIds,
           },
         },
-      },
-    });
-    const candidates = planner.map((p) => p.planner_futureplanneritem).flat();
-    return candidates.find((c) => c.id === id) ?? null;
+      });
+    return futurePlannerItems.length > 0 ? futurePlannerItems : null;
   }
 
   public async createFuturePlannerItem(
-    planner: EPlanners.Basic,
-    target_item: EPlanners.EItems.Future.Extended,
+    plannerId: number,
+    targetItems: EPlanners.EItems.Future.Extended[],
   ) {
-    return await this.prisma.planner_futureplanneritem.create({
-      data: {
-        planner_planner: {
-          connect: {
-            id: planner.id,
-          },
-        },
-        subject_course: {
-          connect: {
-            id: target_item.course_id,
-          },
-        },
+    const createDatas = targetItems.map((target_item) => {
+      return {
+        planner_id: plannerId,
+        course_id: target_item.course_id,
         is_excluded: target_item.is_excluded,
         year: target_item.year,
         semester: target_item.semester,
-      },
+      };
+    });
+    return await this.prisma.planner_futureplanneritem.createMany({
+      data: createDatas,
     });
   }
 
@@ -265,61 +248,66 @@ export class PlannerRepository {
   }
 
   public async getArbitraryPlannerItemById(
-    user: session_userprofile,
-    id: number,
-  ): Promise<EPlanners.EItems.Arbitrary.Extended | null> {
-    const planner = await this.prisma.planner_planner.findMany({
-      include: {
-        planner_arbitraryplanneritem: {
-          ...EPlanners.EItems.Arbitrary.Extended,
-        },
-      },
-      where: {
-        user_id: user.id,
-        planner_arbitraryplanneritem: {
-          some: {
-            id: id,
+    arbitraryItemIds: number[],
+  ): Promise<EPlanners.EItems.Arbitrary.Extended[] | null> {
+    const arbitraryItems =
+      await this.prisma.planner_arbitraryplanneritem.findMany({
+        include: EPlanners.EItems.Arbitrary.Extended.include,
+        where: {
+          id: {
+            in: arbitraryItemIds,
           },
         },
-      },
-    });
-    const candidates = planner
-      .map((p) => p.planner_arbitraryplanneritem)
-      .flat();
-    return candidates.find((c) => c.id === id) ?? null;
+      });
+    return arbitraryItems.length > 0 ? arbitraryItems : null;
   }
 
   public async createArbitraryPlannerItem(
-    planner: EPlanners.Basic,
-    target_item: Omit<
-      EPlanners.EItems.Arbitrary.Extended,
-      'id' | 'planner_id' | 'subject_department'
-    >,
-  ): Promise<EPlanners.EItems.Arbitrary.Extended> {
-    return await this.prisma.planner_arbitraryplanneritem.create({
-      data: {
-        planner_planner: {
-          connect: {
-            id: planner.id,
-          },
+    plannerId: number,
+    target_items: CreateInput[],
+  ): Promise<Prisma.BatchPayload>;
+
+  public async createArbitraryPlannerItem(
+    plannerId: number,
+    target_items: CreateInput,
+  ): Promise<EPlanners.EItems.Arbitrary.Extended>;
+
+  public async createArbitraryPlannerItem<
+    T extends CreateInput | CreateInput[],
+  >(plannerId: number, target_items: T): Promise<any> {
+    if (Array.isArray(target_items)) {
+      const createDatas = target_items.map((targetItem: CreateInput) => ({
+        planner_id: plannerId,
+        department_id: targetItem.department_id,
+        is_excluded: targetItem.is_excluded,
+        year: targetItem.year,
+        semester: targetItem.semester,
+        type: targetItem.type,
+        type_en: targetItem.type_en,
+        credit: targetItem.credit,
+        credit_au: targetItem.credit_au,
+      }));
+
+      return await this.prisma.planner_arbitraryplanneritem.createMany({
+        data: createDatas,
+      });
+    } else {
+      const targetItem = target_items as CreateInput;
+      return await this.prisma.planner_arbitraryplanneritem.create({
+        include: EPlanners.EItems.Arbitrary.Extended.include,
+        data: {
+          planner_id: plannerId,
+          department_id: targetItem.department_id,
+          is_excluded: targetItem.is_excluded,
+          year: targetItem.year,
+          semester: targetItem.semester,
+          type: targetItem.type,
+          type_en: targetItem.type_en,
+          credit: targetItem.credit,
+          credit_au: targetItem.credit_au,
         },
-        subject_department: target_item.department_id
-          ? {
-              connect: {
-                id: target_item.department_id,
-              },
-            }
-          : undefined,
-        is_excluded: target_item.is_excluded,
-        year: target_item.year,
-        semester: target_item.semester,
-        type: target_item.type,
-        type_en: target_item.type_en,
-        credit: target_item.credit,
-        credit_au: target_item.credit_au,
-      },
-      include: EPlanners.EItems.Arbitrary.Extended.include,
-    });
+      });
+    }
   }
 
   public async deleteArbitraryPlannerItem(
@@ -411,5 +399,130 @@ export class PlannerRepository {
     } else {
       throw new BadRequestException('Invalid Planner Item Type');
     }
+  }
+
+  async getTakenPlannerItemByLecture(
+    plannerId: number,
+    lectureId: number,
+  ): Promise<EPlanners.EItems.Taken.Basic | null> {
+    return await this.prisma.planner_takenplanneritem.findFirst({
+      where: {
+        planner_id: plannerId,
+        lecture_id: lectureId,
+      },
+    });
+  }
+
+  async getTakenPlannerItemByLectures(
+    plannerId: number,
+    lectureIds: number[],
+  ): Promise<EPlanners.EItems.Taken.Basic[]> {
+    return await this.prisma.planner_takenplanneritem.findMany({
+      where: {
+        planner_id: plannerId,
+        lecture_id: {
+          in: lectureIds,
+        },
+      },
+    });
+  }
+
+  async updatePlanner(
+    plannerId: number,
+    updateFields: {
+      additional_track_ids: number[];
+      start_year: number;
+      major_track_id: number;
+      general_track_id: number;
+      end_year: number;
+    },
+  ) {
+    const existedAdditonalTracks =
+      await this.prisma.planner_planner_additional_tracks.findMany({
+        where: {
+          planner_id: plannerId,
+        },
+      });
+
+    const disconnectAdditionalTracks = existedAdditonalTracks.filter(
+      (track) =>
+        !updateFields.additional_track_ids.includes(track.additionaltrack_id),
+    );
+    const connectAdditionalTrackIds = updateFields.additional_track_ids.filter(
+      (track) =>
+        !existedAdditonalTracks
+          .map((t) => t.additionaltrack_id)
+          .includes(track),
+    );
+
+    return this.prisma.planner_planner.update({
+      where: {
+        id: plannerId,
+      },
+      data: {
+        start_year: updateFields.start_year,
+        end_year: updateFields.end_year,
+        graduation_majortrack: {
+          connect: {
+            id: updateFields.major_track_id,
+          },
+        },
+        graduation_generaltrack: {
+          connect: {
+            id: updateFields.general_track_id,
+          },
+        },
+        planner_planner_additional_tracks: {
+          disconnect: disconnectAdditionalTracks.map((track) => ({
+            id: track.id,
+          })),
+          connect: connectAdditionalTrackIds.map((trackId) => ({
+            id: trackId,
+          })),
+        },
+      },
+      include: EPlanners.Details.include,
+    });
+  }
+
+  async deleteFuturePlannerItemsWithWhere(
+    plannerId: number,
+    where: Prisma.planner_futureplanneritemDeleteManyArgs,
+  ) {
+    return await this.prisma.planner_futureplanneritem.deleteMany({
+      where: {
+        ...where,
+        planner_id: plannerId,
+      },
+    });
+  }
+
+  async deleteArbitraryPlannerItemsWithWhere(
+    plannerId: number,
+    where: Prisma.planner_arbitraryplanneritemDeleteManyArgs,
+  ) {
+    return await this.prisma.planner_arbitraryplanneritem.deleteMany({
+      where: {
+        ...where,
+        planner_id: plannerId,
+      },
+    });
+  }
+
+  async deleteTakenPlannerItemsWithWhere(
+    plannerId: number,
+    where: Prisma.XOR<
+      Prisma.Subject_lectureRelationFilter,
+      Prisma.subject_lectureWhereInput
+    >,
+  ) {
+    return this.prisma.planner_takenplanneritem.deleteMany({
+      where: {
+        planner_id: plannerId,
+        subject_lecture: {
+          ...where,
+        },
+      },
+    });
   }
 }
