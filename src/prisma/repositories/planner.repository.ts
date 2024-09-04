@@ -6,6 +6,7 @@ import { EPlanners } from '../../common/entities/EPlanners';
 import { PlannerItemType } from '../../common/interfaces/constants/planner';
 import { PrismaService } from '../prisma.service';
 import CreateInput = EPlanners.EItems.Arbitrary.CreateInput;
+import { Transactional } from '@nestjs-cls/transactional';
 
 @Injectable()
 export class PlannerRepository {
@@ -219,6 +220,7 @@ export class PlannerRepository {
     return futurePlannerItems.length > 0 ? futurePlannerItems : null;
   }
 
+  @Transactional()
   public async createFuturePlannerItem(
     plannerId: number,
     targetItems: EPlanners.EItems.Future.Extended[],
@@ -237,6 +239,7 @@ export class PlannerRepository {
     });
   }
 
+  @Transactional()
   public async deleteFuturePlannerItem(
     target_item: EPlanners.EItems.Future.Extended,
   ) {
@@ -272,6 +275,7 @@ export class PlannerRepository {
     target_items: CreateInput,
   ): Promise<EPlanners.EItems.Arbitrary.Extended>;
 
+  @Transactional()
   public async createArbitraryPlannerItem<
     T extends CreateInput | CreateInput[],
   >(plannerId: number, target_items: T): Promise<any> {
@@ -355,6 +359,7 @@ export class PlannerRepository {
     });
   }
 
+  @Transactional()
   async updatePlannerItem(
     item_type: string,
     item: number,
@@ -427,6 +432,7 @@ export class PlannerRepository {
     });
   }
 
+  @Transactional()
   async updatePlanner(
     plannerId: number,
     updateFields: {
@@ -436,7 +442,7 @@ export class PlannerRepository {
       general_track_id: number;
       end_year: number;
     },
-  ) {
+  ): Promise<EPlanners.Details> {
     const existedAdditonalTracks =
       await this.prisma.planner_planner_additional_tracks.findMany({
         where: {
@@ -455,6 +461,26 @@ export class PlannerRepository {
           .includes(track),
     );
 
+    await this.prisma.planner_planner_additional_tracks.deleteMany({
+      where: {
+        planner_id: plannerId,
+        additionaltrack_id: {
+          in: disconnectAdditionalTracks.map(
+            (track) => track.additionaltrack_id,
+          ),
+        },
+      },
+    });
+
+    await this.prisma.planner_planner_additional_tracks.createMany({
+      data: connectAdditionalTrackIds.map((track) => {
+        return {
+          planner_id: plannerId,
+          additionaltrack_id: track,
+        };
+      }),
+    });
+
     return this.prisma.planner_planner.update({
       where: {
         id: plannerId,
@@ -472,43 +498,46 @@ export class PlannerRepository {
             id: updateFields.general_track_id,
           },
         },
-        planner_planner_additional_tracks: {
-          disconnect: disconnectAdditionalTracks.map((track) => ({
-            id: track.id,
-          })),
-          connect: connectAdditionalTrackIds.map((trackId) => ({
-            id: trackId,
-          })),
-        },
       },
       include: EPlanners.Details.include,
     });
   }
 
+  @Transactional()
   async deleteFuturePlannerItemsWithWhere(
     plannerId: number,
-    where: Prisma.planner_futureplanneritemDeleteManyArgs,
+    startYear: number,
+    endYear: number,
   ) {
     return await this.prisma.planner_futureplanneritem.deleteMany({
       where: {
-        ...where,
+        year: {
+          lte: startYear,
+          gte: endYear,
+        },
         planner_id: plannerId,
       },
     });
   }
 
+  @Transactional()
   async deleteArbitraryPlannerItemsWithWhere(
     plannerId: number,
-    where: Prisma.planner_arbitraryplanneritemDeleteManyArgs,
+    startYear: number,
+    endYear: number,
   ) {
     return await this.prisma.planner_arbitraryplanneritem.deleteMany({
       where: {
-        ...where,
+        year: {
+          lte: startYear,
+          gte: endYear,
+        },
         planner_id: plannerId,
       },
     });
   }
 
+  @Transactional()
   async deleteTakenPlannerItemsWithWhere(
     plannerId: number,
     where: Prisma.XOR<
@@ -526,6 +555,7 @@ export class PlannerRepository {
     });
   }
 
+  @Transactional()
   async deletePlanner(plannerId: number) {
     const planner = await this.prisma.planner_planner.findUniqueOrThrow({
       where: {

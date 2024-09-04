@@ -292,6 +292,7 @@ export class PlannersService {
     );
   }
 
+  @Transactional()
   async updateTakenLectures(
     user: session_userprofile,
     plannerId: number,
@@ -324,27 +325,25 @@ export class PlannersService {
         return { lectureId: lecture.lecture_id, isExcluded: false };
       }),
     );
-    await this.PlannerRepository.deleteFuturePlannerItemsWithWhere(plannerId, {
-      where: {
-        year: { gte: start_year, lte: end_year },
-      },
-    });
+    await this.PlannerRepository.deleteFuturePlannerItemsWithWhere(
+      plannerId,
+      start_year,
+      end_year,
+    );
     await this.PlannerRepository.deleteArbitraryPlannerItemsWithWhere(
       plannerId,
-      {
-        where: {
-          year: { gte: start_year, lte: end_year },
-        },
-      },
+      start_year,
+      end_year,
     );
     await this.PlannerRepository.deleteTakenPlannerItemsWithWhere(plannerId, {
       year: {
-        gte: start_year,
-        lte: end_year,
+        lte: start_year,
+        gte: end_year,
       },
     });
   }
 
+  @Transactional()
   async updatePlanner(
     plannerId: number,
     plannerDto: IPlanner.UpdateBodyDto,
@@ -364,6 +363,7 @@ export class PlannersService {
     return await this.PlannerRepository.updatePlanner(plannerId, updateFields);
   }
 
+  @Transactional()
   async deletePlanner(plannerId: number) {
     await this.PlannerRepository.deletePlanner(plannerId);
   }
