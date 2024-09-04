@@ -7,7 +7,7 @@ import {
 import { PrismaService } from '@src/prisma/prisma.service';
 
 @Injectable()
-export class CourseIdPipe implements PipeTransform {
+export class PlannerPipe implements PipeTransform {
   constructor(private prismaService: PrismaService) {}
 
   async transform(value: any, metadata: ArgumentMetadata): Promise<number> {

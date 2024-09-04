@@ -363,4 +363,8 @@ export class PlannersService {
     };
     return await this.PlannerRepository.updatePlanner(plannerId, updateFields);
   }
+
+  async deletePlanner(plannerId: number) {
+    await this.PlannerRepository.deletePlanner(plannerId);
+  }
 }

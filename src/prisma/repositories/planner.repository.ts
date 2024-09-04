@@ -525,4 +525,35 @@ export class PlannerRepository {
       },
     });
   }
+
+  async deletePlanner(plannerId: number) {
+    const planner = await this.prisma.planner_planner.findUniqueOrThrow({
+      where: {
+        id: plannerId,
+      },
+    });
+    const userId = planner.user_id;
+    const planners = await this.prisma.planner_planner.findMany({
+      where: {
+        user_id: userId,
+      },
+      orderBy: {
+        arrange_order: 'asc',
+      },
+    });
+    const deletedPlanner = await this.prisma.planner_planner.delete({
+      where: {
+        id: plannerId,
+      },
+    });
+    const needToUpdatePlanners = planners.filter(
+      (p) => p.arrange_order > deletedPlanner.arrange_order,
+    );
+    await this.decrementOrders(
+      needToUpdatePlanners.map((p) => p.id),
+      planner.arrange_order + 1,
+      planners.length,
+    );
+    return deletedPlanner;
+  }
 }

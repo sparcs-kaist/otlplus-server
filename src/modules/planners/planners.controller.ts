@@ -14,8 +14,8 @@ import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { IPlanner } from 'src/common/interfaces/IPlanner';
 import { toJsonPlannerItem } from '@src/common/interfaces/serializer/planner.item.serializer';
 import { PlannersService } from './planners.service';
-import { CourseIdPipe } from '@src/common/pipe/courseId.pipe';
 import { toJsonPlanner } from '@src/common/interfaces/serializer/planner.serializer';
+import { PlannerPipe } from '@src/common/pipe/planner.pipe';
 
 @Controller('api/users/:id/planners')
 export class PlannersController {
@@ -36,7 +36,7 @@ export class PlannersController {
 
   @Patch(':plannerId')
   async updatePlanner(
-    @Param('plannerId', CourseIdPipe) plannerId: number,
+    @Param('plannerId', PlannerPipe) plannerId: number,
     @Body() planner: IPlanner.UpdateBodyDto,
     @GetUser() user: session_userprofile,
   ) {
@@ -57,7 +57,13 @@ export class PlannersController {
   }
 
   @Delete(':plannerId')
-  async deletePlanner() {}
+  async deletePlanner(
+    @Param('plannerId', PlannerPipe) plannerId: number,
+    @GetUser() user: session_userprofile,
+  ) {
+    await this.plannersService.deletePlanner(plannerId);
+    return { message: 'Planner deleted' };
+  }
 
   @Post()
   async postPlanner(
