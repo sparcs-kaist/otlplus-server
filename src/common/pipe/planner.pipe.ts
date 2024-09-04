@@ -13,7 +13,7 @@ export class PlannerPipe implements PipeTransform {
   async transform(value: any, metadata: ArgumentMetadata): Promise<number> {
     const plannerId = parseInt(value, 10);
     if (isNaN(plannerId)) {
-      throw new BadRequestException('Invalid course ID');
+      throw new BadRequestException('Invalid planner ID');
     }
 
     const planner = await this.prismaService.planner_planner.findUnique({
@@ -21,7 +21,7 @@ export class PlannerPipe implements PipeTransform {
     });
 
     if (!planner) {
-      throw new BadRequestException('Course not found');
+      throw new BadRequestException('Planner not found');
     }
 
     return plannerId;

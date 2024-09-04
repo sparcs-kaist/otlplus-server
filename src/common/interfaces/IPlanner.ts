@@ -235,6 +235,7 @@ export namespace IPlanner {
   }
 
   export class UpdateBodyDto {
+    // @Todo start_year cannot be greater than end_year, also start_year cannot be greater than now
     @IsInt()
     @Type(() => Number)
     start_year!: number;
