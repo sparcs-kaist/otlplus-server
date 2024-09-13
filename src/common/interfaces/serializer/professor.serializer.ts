@@ -10,7 +10,7 @@ export const toJsonProfessors = (
       name: professor.professor_name,
       name_en: professor.professor_name_en ?? '',
       professor_id: professor.professor_id,
-      review_total_weight: professor.review_total_weight,
+      review_total_weight: professor.review_total_weight + 0.000001,
     };
   });
 

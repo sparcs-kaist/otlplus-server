@@ -37,7 +37,7 @@ export function toJsonLectureBasic(lecture: ELecture.Extended): ILecture.Basic {
     common_title_en: lecture.common_title_en ?? '',
     class_title: lecture.class_title ?? '',
     class_title_en: lecture.class_title_en ?? '',
-    review_total_weight: lecture.review_total_weight,
+    review_total_weight: lecture.review_total_weight + 0.000001,
     professors: toJsonProfessors(ordered_professors),
   };
 }

@@ -23,7 +23,7 @@ export function toJsonFeedBasic(course: subject_course): ICourse.FeedBasic {
     grade_sum: course.grade_sum,
     load_sum: course.load_sum,
     speech_sum: course.speech_sum,
-    review_total_weight: course.review_total_weight,
+    review_total_weight: course.review_total_weight + 0.000001,
     grade: course.grade,
     load: course.load,
     speech: course.speech,
@@ -53,7 +53,7 @@ export function toJsonCourseBasic(
     title: course.title,
     title_en: course.title_en,
     summary: course.summury, // Todo: fix summury typo in db.
-    review_total_weight: course.review_total_weight,
+    review_total_weight: course.review_total_weight + 0.000001,
     credit: lecture.credit ?? 0,
     credit_au: lecture.credit_au ?? 0,
     num_classes: lecture.num_classes ?? 0,
