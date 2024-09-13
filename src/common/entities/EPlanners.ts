@@ -36,8 +36,8 @@ export namespace EPlanners {
 
     export namespace Taken {
       export const Basic =
-        Prisma.validator<Prisma.planner_takenplanneritemArgs>()({});
-      export type Basic = Prisma.planner_futureplanneritemGetPayload<
+        Prisma.validator<Prisma.planner_takenplanneritemDefaultArgs>()({});
+      export type Basic = Prisma.planner_takenplanneritemGetPayload<
         typeof Basic
       >;
 
@@ -67,6 +67,13 @@ export namespace EPlanners {
       >;
     }
     export namespace Arbitrary {
+      export const CreateInput =
+        Prisma.validator<Prisma.planner_arbitraryplanneritemUncheckedCreateInput>()(
+          {},
+        );
+      export type CreateInput =
+        Prisma.planner_arbitraryplanneritemUncheckedCreateInput;
+
       export const Basic =
         Prisma.validator<Prisma.planner_arbitraryplanneritemArgs>()({});
       export type Basic = Prisma.planner_arbitraryplanneritemGetPayload<
