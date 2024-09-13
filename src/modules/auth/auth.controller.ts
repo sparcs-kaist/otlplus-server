@@ -9,6 +9,7 @@ import settings from '../../settings';
 import { UserService } from '../user/user.service';
 import { AuthService } from './auth.service';
 import { Client } from './utils/sparcs-sso';
+import { request } from 'http';
 
 @Controller('session')
 export class AuthController {
@@ -39,7 +40,9 @@ export class AuthController {
       return res.redirect(next ?? '/');
     }
     req.session['next'] = next ?? '/';
-    const { url, state } = this.ssoClient.get_login_params();
+    const request_url = req.get('host') ?? 'otl.kaist.ac.kr';
+    console.log(request_url);
+    const { url, state } = this.ssoClient.get_login_params(request_url);
     req.session['sso_state'] = state;
     if (social_login === '0') {
       return res.redirect(url + '&social_enabled=0&show_disabled_button=0');

@@ -123,7 +123,7 @@ export class Client {
     }
   }
 
-  public get_login_params(): { url: string; state: string } {
+  public get_login_params(request_url: string): { url: string; state: string } {
     /*
     Get login parameters for SPARCS SSO login
     :returns: [url, state] where url is a url to redirect user,
@@ -134,7 +134,20 @@ export class Client {
      * randomBytes에 10? 5? 둘중 어떤걸 넘겨줄지. gpt는 5라고 하고 파이썬은 token_hex(10) 10 같긴 한데....혹시나 해서
      */
     const state: string = crypto.randomBytes(10).toString('hex');
-    const params: Params = { client_id: this.client_id, state: state };
+    const allowedPreferredUris: { [key: string]: string } = {
+      'otl.sparcs.org': 'https://otl.sparcs.org/session/login/callback/',
+      'otl.kaist.ac.kr': 'https://otl.kaist.ac.kr/session/login/callback/',
+      'otl-stage.sparcsandbox.com':
+        'https://otl-stage.sparcsandbox.com/session/login/callback/',
+    };
+    const preferred_url =
+      allowedPreferredUris[request_url] ||
+      'https://otl.sparcs.org/session/login/callback/';
+    const params: Params = {
+      client_id: this.client_id,
+      state: state,
+      preferred_url: preferred_url,
+    };
     const url: string = `${this.URLS['token_require']}?${querystring.stringify(
       params,
     )}`;

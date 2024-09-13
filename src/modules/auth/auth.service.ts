@@ -82,7 +82,9 @@ export class AuthService {
       accessToken: token,
       path: '/',
       httpOnly: true,
+      sameSite: 'none' as const,
       maxAge: Number(jwtConfig.signOptions.expiresIn) * 1000,
+      secure: true,
     };
   }
 
@@ -100,7 +102,9 @@ export class AuthService {
       refreshToken: refreshToken,
       path: '/',
       httpOnly: true,
+      sameSite: 'none' as const,
       maxAge: Number(jwtConfig.signOptions.refreshExpiresIn) * 1000,
+      secure: true,
     };
   }
 
