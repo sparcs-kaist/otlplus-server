@@ -119,7 +119,6 @@ export class AuthController {
       res.clearCookie('accessToken', { path: '/', maxAge: 0, httpOnly: true });
       res.clearCookie('refreshToken', { path: '/', maxAge: 0, httpOnly: true });
 
-      console.log(logoutUrl);
       return res.redirect(logoutUrl);
     }
 

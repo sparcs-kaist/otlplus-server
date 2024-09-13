@@ -113,7 +113,6 @@ export class Client {
       }
 
       const result = r.data;
-      console.log(result);
       result.kaist_info = result.kaist_info
         ? JSON.parse(result.kaist_info)
         : {};
@@ -136,13 +135,9 @@ export class Client {
      */
     const state: string = crypto.randomBytes(10).toString('hex');
     const params: Params = { client_id: this.client_id, state: state };
-    console.log(this.client_id);
-    console.log(state);
-    console.log(this.URLS['token_require']);
     const url: string = `${this.URLS['token_require']}?${querystring.stringify(
       params,
     )}`;
-    console.log('url', url);
     return { url, state };
   }
 

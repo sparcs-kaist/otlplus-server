@@ -35,7 +35,6 @@ const getCorsConfig = () => {
       optionsSuccessStatus: 204,
     };
   } else if (NODE_ENV === 'dev') {
-    console.log('dev');
     return {
       origin: 'http://3.37.146.183',
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',

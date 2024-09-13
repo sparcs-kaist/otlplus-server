@@ -64,7 +64,7 @@
     "class-validator": "^0.14.0",
     "cookie-parser": "^1.4.6",
     "date-fns": "^3.6.0",
-    "dotenv": "^16.0.3",
+    "dotenv": "^16.4.5",
     "dotenv-cli": "^7.2.1",
     "enquirer": "^2.4.1",
     "express-session": "^1.17.3",
