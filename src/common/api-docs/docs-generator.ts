@@ -1,9 +1,17 @@
-import { Decorator, Project, SyntaxKind } from 'ts-morph';
+import { Decorator, Project, SourceFile } from 'ts-morph';
 
 // 프로젝트 초기화
 const project = new Project({
-  tsConfigFilePath: '../../../tsconfig.json',
+  tsConfigFilePath: './tsconfig.json',
 });
+
+const outputFile = project.createSourceFile(
+  'src/common/api-docs/types.ts',
+  '',
+  {
+    overwrite: true,
+  },
+);
 
 const sourceFiles = project.getSourceFiles('src/**/*.controller.ts');
 
@@ -26,48 +34,109 @@ function hasParameterDecorator(parameter: any, decoratorName: string) {
     );
 }
 
+// 인터페이스와 관련된 import 문인지 확인하는 함수
+function isInterfaceImport(
+  importPath: string,
+  namedImports: string[],
+): boolean {
+  // import 경로에 'interfaces'가 포함되어 있거나, named import 중 'I'로 시작하는 것이 있는지 확인
+  return (
+    importPath.includes('interfaces') &&
+    namedImports.some((name) => name.startsWith('I'))
+  );
+}
+
+function generateNamespace(
+  apiName: string,
+  requestBodyType: any,
+  requestParamType: any,
+  responseBodyType: string,
+) {
+  // Add namespace for each method
+  const namespace = outputFile.addModule({
+    name: apiName,
+    isExported: true,
+  });
+
+  // Add types to the namespace
+  namespace.addTypeAlias({
+    name: 'requestParam',
+    type: requestParamType ?? 'never',
+    isExported: true,
+  });
+
+  namespace.addTypeAlias({
+    name: 'requestBody',
+    type: requestBodyType ?? 'never',
+    isExported: true,
+  });
+  namespace.addTypeAlias({
+    name: 'responseBody',
+    type: responseBodyType ?? 'never',
+    isExported: true,
+  });
+}
+
+const namedImportsLst: Set<string> = new Set();
+
 // 소스 파일 필터링 및 처리
-sourceFiles.forEach((sourceFile) => {
-  // 클래스 선언 찾기
+sourceFiles.forEach((sourceFile: SourceFile) => {
+  // 인터페이스 관련 import 문 복사
+  sourceFile.getImportDeclarations().forEach((importDeclaration) => {
+    const importPath = importDeclaration.getModuleSpecifierValue();
+    const namedImports = importDeclaration
+      .getNamedImports()
+      .map((namedImport) => namedImport.getName());
+    if (isInterfaceImport(importPath, namedImports)) {
+      namedImports.forEach((name) => {
+        namedImportsLst.add(name);
+      });
+    }
+  });
+
   const classes = sourceFile.getClasses();
 
+  //  클래스의 메쏘드에 대해서 파라미터와 반환 타입을 추출한 뒤, 네임 스페이스 생성.
   classes.forEach((classDeclaration) => {
-    // 클래스의 모든 메서드에 대해 처리
     classDeclaration.getMethods().forEach((method) => {
-      // 메서드의 데코레이터 확인
       const decorators = method.getDecorators();
       if (!hasHttpMethodDecorator(decorators)) {
         return;
       }
+      let requestBodyType = undefined;
+      let requestParamType = undefined;
+      let responseBodyType = undefined;
 
       // 메서드의 파라미터 처리
       method.getParameters().forEach((parameter) => {
         if (hasParameterDecorator(parameter, 'Body')) {
-          const paramType = parameter.getType().getText();
-          method.addDecorator({
-            name: 'ApiBody',
-            arguments: [`{ type: ${paramType} }`],
-          });
+          requestBodyType = parameter.getType()?.getText(parameter); //undefined, TypeFormatFlags);
         }
         if (hasParameterDecorator(parameter, 'Param')) {
-          const paramType = parameter.getType().getText();
-          method.addDecorator({
-            name: 'ApiParam',
-            arguments: [`{ type: ${paramType} }`],
-          });
+          requestParamType = parameter.getType()?.getText(parameter);
         }
       });
 
       // 메서드의 반환 타입 가져오기
-      const returnType = method.getReturnType().getText();
-      method.addDecorator({
-        name: 'ApiResponse',
-        arguments: [
-          `{ status: 201, description: 'The response', type: ${returnType} }`,
-        ],
-      });
+      responseBodyType = method.getReturnType();
+      if (responseBodyType.getTypeArguments()) {
+        responseBodyType = responseBodyType.getTypeArguments()[0];
+      }
+      responseBodyType = responseBodyType?.getText(method);
+
+      generateNamespace(
+        method.getName(),
+        requestBodyType,
+        requestParamType,
+        responseBodyType,
+      );
     });
   });
+});
+
+outputFile.addImportDeclaration({
+  moduleSpecifier: 'src/common/interfaces',
+  namedImports: [...namedImportsLst].map((name) => ({ name })),
 });
 
 // 변경 사항 저장
