@@ -20,13 +20,13 @@ export function toJsonFeedBasic(course: subject_course): ICourse.FeedBasic {
     title: course.title,
     title_en: course.title_en,
     summary: course.summury,
-    grade_sum: course.grade_sum,
-    load_sum: course.load_sum,
-    speech_sum: course.speech_sum,
+    grade_sum: course.grade_sum + 0.00001,
+    load_sum: course.load_sum + 0.00001,
+    speech_sum: course.speech_sum + 0.000001,
     review_total_weight: course.review_total_weight + 0.000001,
-    grade: course.grade,
-    load: course.load,
-    speech: course.speech,
+    grade: course.grade + 0.000001,
+    load: course.load + 0.00001,
+    speech: course.speech + 0.00001,
     title_en_no_space: course.title_en_no_space,
     title_no_space: course.title_no_space,
   };
@@ -74,9 +74,9 @@ export function toJsonCourseDetail(
     related_courses_prior: [],
     related_courses_posterior: [],
     professors: professorSorted,
-    grade: course.grade,
-    load: course.load,
-    speech: course.speech,
+    grade: course.grade + 0.000001,
+    load: course.load + 0.000001,
+    speech: course.speech + 0.000001,
   };
 }
 

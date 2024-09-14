@@ -5,6 +5,7 @@ import session from 'express-session';
 import { AppModule } from '../app.module';
 import settings from '../settings';
 import morgan = require('morgan');
+import csrf from 'csurf';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -29,6 +30,7 @@ async function bootstrap() {
     }),
   );
   app.use(cookieParser());
+  app.use('/', csrf({ cookie: { key: 'csrftoken' } }));
   // Logs requests
   // app.use(
   //   morgan(':method :url OS/:req[client-os] Ver/:req[client-api-version]', {

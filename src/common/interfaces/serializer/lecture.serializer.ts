@@ -50,9 +50,9 @@ export function toJsonLectureDetail(
     throw new Error("Lecture is not of type 'ELecture.Details'");
 
   return Object.assign(basic, {
-    grade: lecture.grade,
-    load: lecture.load,
-    speech: lecture.speech,
+    grade: lecture.grade + 0.000001,
+    load: lecture.load + 0.000001,
+    speech: lecture.speech + 0.000001,
     classtimes: lecture.subject_classtime.map((classtime) =>
       toJsonClasstime(classtime),
     ),
