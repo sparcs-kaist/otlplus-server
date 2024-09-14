@@ -743,8 +743,8 @@ model planner_arbitraryplanneritem {
   credit_au          Int
   department_id      Int?
   planner_id         Int
-  subject_department subject_department? @relation(fields: [department_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "planner_arbitrarypla_department_id_0dc7ce25_fk_subject_d")
-  planner_planner    planner_planner     @relation(fields: [planner_id], references: [id], onUpdate: Restrict, map: "planner_arbitrarypla_planner_id_d6069d2c_fk_planner_p")
+  subject_department subject_department? @relation(fields: [department_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "planner_arbitrarypla_department_id_0dc7ce25_fk_subject_d")
+  planner_planner    planner_planner     @relation(fields: [planner_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "planner_arbitrarypla_planner_id_d6069d2c_fk_planner_p")
 
   @@index([department_id], map: "planner_arbitrarypla_department_id_0dc7ce25_fk_subject_d")
   @@index([planner_id], map: "planner_arbitrarypla_planner_id_d6069d2c_fk_planner_p")
@@ -759,8 +759,8 @@ model planner_futureplanneritem {
   semester        Int
   course_id       Int
   planner_id      Int
-  subject_course  subject_course  @relation(fields: [course_id], references: [id], onUpdate: Restrict, map: "planner_futureplanne_course_id_b1a06444_fk_subject_c")
-  planner_planner planner_planner @relation(fields: [planner_id], references: [id], onUpdate: Restrict, map: "planner_futureplanne_planner_id_dfd70193_fk_planner_p")
+  subject_course  subject_course  @relation(fields: [course_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "planner_futureplanne_course_id_b1a06444_fk_subject_c")
+  planner_planner planner_planner @relation(fields: [planner_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "planner_futureplanne_planner_id_dfd70193_fk_planner_p")
 
   @@index([course_id], map: "planner_futureplanne_course_id_b1a06444_fk_subject_c")
   @@index([planner_id], map: "planner_futureplanne_planner_id_dfd70193_fk_planner_p")
@@ -796,8 +796,8 @@ model planner_planner_additional_tracks {
   id                         Int                        @id @default(autoincrement())
   planner_id                 Int
   additionaltrack_id         Int
-  graduation_additionaltrack graduation_additionaltrack @relation(fields: [additionaltrack_id], references: [id], onUpdate: Restrict, map: "planner_planner_addi_additionaltrack_id_c46b8c4e_fk_graduatio")
-  planner_planner            planner_planner            @relation(fields: [planner_id], references: [id], onUpdate: Restrict, map: "planner_planner_addi_planner_id_e439a309_fk_planner_p")
+  graduation_additionaltrack graduation_additionaltrack @relation(fields: [additionaltrack_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "planner_planner_addi_additionaltrack_id_c46b8c4e_fk_graduatio")
+  planner_planner            planner_planner            @relation(fields: [planner_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "planner_planner_addi_planner_id_e439a309_fk_planner_p")
 
   @@unique([planner_id, additionaltrack_id], map: "planner_planner_addition_planner_id_additionaltra_2298c5cd_uniq")
   @@index([additionaltrack_id], map: "planner_planner_addi_additionaltrack_id_c46b8c4e_fk_graduatio")
@@ -808,8 +808,8 @@ model planner_takenplanneritem {
   is_excluded     Boolean
   lecture_id      Int
   planner_id      Int
-  subject_lecture subject_lecture @relation(fields: [lecture_id], references: [id], onUpdate: Restrict, map: "planner_takenplanner_lecture_id_9b2d30d8_fk_subject_l")
-  planner_planner planner_planner @relation(fields: [planner_id], references: [id], onUpdate: Restrict, map: "planner_takenplanner_planner_id_b725ff83_fk_planner_p")
+  subject_lecture subject_lecture @relation(fields: [lecture_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "planner_takenplanner_lecture_id_9b2d30d8_fk_subject_l")
+  planner_planner planner_planner @relation(fields: [planner_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "planner_takenplanner_planner_id_b725ff83_fk_planner_p")
 
   @@unique([planner_id, lecture_id], map: "planner_takenplanneritem_planner_id_lecture_id_4b39b432_uniq")
   @@index([lecture_id], map: "planner_takenplanner_lecture_id_9b2d30d8_fk_subject_l")
