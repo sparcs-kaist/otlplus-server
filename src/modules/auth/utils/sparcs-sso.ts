@@ -142,7 +142,7 @@ export class Client {
     };
     const preferred_url =
       allowedPreferredUris[request_url] ||
-      'https://otl.sparcs.org/session/login/callback/';
+      'http:localhost:8000/session/login/callback/';
     const params: Params = {
       client_id: this.client_id,
       state: state,
