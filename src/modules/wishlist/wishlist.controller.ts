@@ -17,7 +17,7 @@ export class WishlistController {
   constructor(private readonly wishlistService: WishlistService) {}
 
   @Get()
-  async getLectures(
+  async getWishlist(
     @Param('userId') userId: number,
     @GetUser() user: session_userprofile,
   ) {

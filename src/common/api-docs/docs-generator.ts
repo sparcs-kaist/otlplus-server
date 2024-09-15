@@ -1,4 +1,4 @@
-import { Decorator, Project, SourceFile } from 'ts-morph';
+import { Decorator, ImportDeclaration, Project, SourceFile } from 'ts-morph';
 
 // 프로젝트 초기화
 const project = new Project({
@@ -46,34 +46,23 @@ function isInterfaceImport(
   );
 }
 
-function generateNamespace(
-  apiName: string,
-  requestBodyType: any,
-  requestParamType: any,
-  responseBodyType: string,
-) {
+interface apiEndpoint {
+  [key: string]: any;
+}
+
+function generateNamespace(apiName: string, apiEndpoint: apiEndpoint) {
   // Add namespace for each method
   const namespace = outputFile.addModule({
     name: apiName,
     isExported: true,
   });
 
-  // Add types to the namespace
-  namespace.addTypeAlias({
-    name: 'requestParam',
-    type: requestParamType ?? 'never',
-    isExported: true,
-  });
-
-  namespace.addTypeAlias({
-    name: 'requestBody',
-    type: requestBodyType ?? 'never',
-    isExported: true,
-  });
-  namespace.addTypeAlias({
-    name: 'responseBody',
-    type: responseBodyType ?? 'never',
-    isExported: true,
+  Object.keys(apiEndpoint).forEach((key) => {
+    namespace.addTypeAlias({
+      name: key,
+      type: apiEndpoint[key] ?? 'never',
+      isExported: true,
+    });
   });
 }
 
@@ -82,17 +71,19 @@ const namedImportsLst: Set<string> = new Set();
 // 소스 파일 필터링 및 처리
 sourceFiles.forEach((sourceFile: SourceFile) => {
   // 인터페이스 관련 import 문 복사
-  sourceFile.getImportDeclarations().forEach((importDeclaration) => {
-    const importPath = importDeclaration.getModuleSpecifierValue();
-    const namedImports = importDeclaration
-      .getNamedImports()
-      .map((namedImport) => namedImport.getName());
-    if (isInterfaceImport(importPath, namedImports)) {
-      namedImports.forEach((name) => {
-        namedImportsLst.add(name);
-      });
-    }
-  });
+  sourceFile
+    .getImportDeclarations()
+    .forEach((importDeclaration: ImportDeclaration) => {
+      const importPath = importDeclaration.getModuleSpecifierValue();
+      const namedImports = importDeclaration
+        .getNamedImports()
+        .map((namedImport) => namedImport.getName());
+      if (isInterfaceImport(importPath, namedImports)) {
+        namedImports.forEach((name) => {
+          namedImportsLst.add(name);
+        });
+      }
+    });
 
   const classes = sourceFile.getClasses();
 
@@ -103,33 +94,35 @@ sourceFiles.forEach((sourceFile: SourceFile) => {
       if (!hasHttpMethodDecorator(decorators)) {
         return;
       }
-      let requestBodyType = undefined;
-      let requestParamType = undefined;
-      let responseBodyType = undefined;
+      let requestBody, requestParam, responseBody, requestQuery;
 
       // 메서드의 파라미터 처리
       method.getParameters().forEach((parameter) => {
         if (hasParameterDecorator(parameter, 'Body')) {
-          requestBodyType = parameter.getType()?.getText(parameter); //undefined, TypeFormatFlags);
+          requestBody = parameter.getType()?.getText(parameter); //undefined, TypeFormatFlags);
         }
         if (hasParameterDecorator(parameter, 'Param')) {
-          requestParamType = parameter.getType()?.getText(parameter);
+          requestParam = parameter.getType()?.getText(parameter);
+        }
+        if (hasParameterDecorator(parameter, 'Query')) {
+          requestQuery = parameter.getType()?.getText(parameter);
         }
       });
 
       // 메서드의 반환 타입 가져오기
-      responseBodyType = method.getReturnType();
-      if (responseBodyType.getTypeArguments()) {
-        responseBodyType = responseBodyType.getTypeArguments()[0];
+      responseBody = method.getReturnType();
+      // Promise 로 감싸져 있는 경우, 타입 argument만 추출
+      if (responseBody.getTypeArguments()) {
+        responseBody = responseBody.getTypeArguments()[0];
       }
-      responseBodyType = responseBodyType?.getText(method);
+      responseBody = responseBody?.getText(method);
 
-      generateNamespace(
-        method.getName(),
-        requestBodyType,
-        requestParamType,
-        responseBodyType,
-      );
+      generateNamespace(method.getName(), {
+        requestParam,
+        requestBody,
+        requestQuery,
+        responseBody,
+      });
     });
   });
 });
