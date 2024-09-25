@@ -24,7 +24,7 @@ export namespace ISync {
     lectures!: ScholarLectureType[];
   }
 
-  /*
+  /** 동기화 대상 강의 정보
   example:
       {
       "lecture_year": 2024,
@@ -121,5 +121,49 @@ export namespace ISync {
     english_lec!: string;
     /** 교수(들) 영어 이름 */
     e_prof_names!: string;
+  }
+
+  /** 동기화 대상 교수 정보
+  example:
+  {
+    "lecture_year": 2024,
+    "lecture_term": 1,
+    "subject_no": "21.960",
+    "lecture_class": "AS",
+    "dept_id": 132,
+    "prof_id": 1849,
+    "prof_name": "전상용",
+    "portion": 3,
+    "e_prof_name": " Sangyong Jon"
+  },
+  */
+  export class ScholarChargeType {
+    /** 개설 연도 */
+    @IsInt()
+    lecture_year!: number;
+    /** 개설 학기. 1: 봄학기, 2:여름학기, 3: 가을학기, 4: 겨울학기 */
+    @IsIn([1, 2, 3, 4])
+    lecture_term!: number;
+    /** 36.492 등의 과목코드 */
+    @IsString()
+    subject_no!: string;
+    /** 분반 */
+    @IsString()
+    lecture_class!: string;
+    /** 학과 숫자 id */
+    @IsInt()
+    dept_id!: number;
+    /** 교수 숫자 id */
+    @IsInt()
+    prof_id!: number;
+    /** 교수 이름 */
+    @IsString()
+    prof_name!: string;
+    /** ? */
+    @IsNumber()
+    portion!: number;
+    /** 교수 영어 이름 */
+    @IsString()
+    e_prof_name!: string;
   }
 }

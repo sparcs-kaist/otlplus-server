@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { EDepartment } from '@src/common/entities/EDepartment';
 import { ELecture } from '@src/common/entities/ELecture';
 import { EProfessor } from '@src/common/entities/EProfessor';
 import { STAFF_ID } from '@src/common/interfaces/constants/professor';
@@ -25,7 +26,7 @@ export class SyncRepository {
     semester: number;
   }): Promise<ELecture.Basic[]> {
     return await this.prisma.subject_lecture.findMany({
-      where: { year, semester },
+      where: { year, semester, deleted: false }, // 기존 코드에서 한 번 삭제된 강의는 복구되지 않고 새로 생성하던 것으로 보임.
     });
   }
 
@@ -48,6 +49,30 @@ export class SyncRepository {
         load: 0,
         speech: 0,
       },
+    });
+  }
+
+  async getExistingDepartments(): Promise<EDepartment.Basic[]> {
+    return await this.prisma.subject_department.findMany();
+  }
+
+  async createDepartment(data: LectureDerivedDepartmentInfo) {
+    return await this.prisma.subject_department.create({
+      data: {
+        id: data.id,
+        num_id: data.num_id,
+        code: data.code,
+        name: data.name,
+        name_en: data.name_en,
+        visible: true,
+      },
+    });
+  }
+
+  async updateDepartment(id: number, data: Partial<EDepartment.Basic>) {
+    return await this.prisma.subject_department.update({
+      where: { id },
+      data,
     });
   }
 }
