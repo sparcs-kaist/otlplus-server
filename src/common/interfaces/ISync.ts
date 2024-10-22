@@ -22,6 +22,9 @@ export namespace ISync {
     /** 동기화 대상 강의 정보 */
     @ValidateNested({ each: true })
     lectures!: ScholarLectureType[];
+    /** 강의 강사 정보 */
+    @ValidateNested({ each: true })
+    charges!: ScholarChargeType[];
   }
 
   /** 동기화 대상 강의 정보
@@ -118,7 +121,7 @@ export namespace ISync {
     old_no!: string;
     /** 영어 강의 여부 */
     @IsIn(['Y', 'N'])
-    english_lec!: string;
+    english_lec!: 'Y' | 'N';
     /** 교수(들) 영어 이름 */
     e_prof_names!: string;
   }
