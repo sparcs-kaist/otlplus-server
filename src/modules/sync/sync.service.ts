@@ -5,6 +5,7 @@ import { ELecture } from '@src/common/entities/ELecture';
 import { EProfessor } from '@src/common/entities/EProfessor';
 import { ISync } from 'src/common/interfaces/ISync';
 import { SyncRepository } from 'src/prisma/repositories/sync.repository';
+import { SlackNotiService } from './slackNoti.service';
 import {
   ChargeDerivedProfessorInfo,
   DerivedLectureInfo,
@@ -14,13 +15,19 @@ import {
 
 @Injectable()
 export class SyncService {
-  constructor(private readonly syncRepository: SyncRepository) {}
+  constructor(
+    private readonly syncRepository: SyncRepository,
+    private readonly slackNoti: SlackNotiService,
+  ) {}
 
   async getDefaultSemester() {
     return await this.syncRepository.getDefaultSemester();
   }
 
   async syncScholarDB(data: ISync.ScholarDBData) {
+    this.slackNoti.sendSyncNoti(
+      `syncScholarDB ${data.year}-${data.semester}: ${data.lectures.length} lectures, ${data.charges.length} charges`,
+    );
     const result: any = {
       time: new Date().toISOString(),
       departments: {
@@ -45,20 +52,18 @@ export class SyncService {
       },
     };
 
-    const existingLectures =
-      await this.syncRepository.getExistingDetailedLectures({
-        year: data.year,
-        semester: data.semester,
-      });
     const staffProfessor =
       await this.syncRepository.getOrCreateStaffProfessor();
+
+    /// Department update
     const existingDepartments =
       await this.syncRepository.getExistingDepartments();
     const departmentMap: Record<number, EDepartment.Basic> = Object.fromEntries(
       existingDepartments.map((dept) => [dept.id, dept]),
     );
-
-    /// Department update
+    this.slackNoti.sendSyncNoti(
+      `Found ${existingDepartments.length} existing departments, updating...`,
+    );
     const processedDepartmentIds = new Set<number>();
     for (const lecture of data.lectures) {
       try {
@@ -104,6 +109,9 @@ export class SyncService {
         });
       }
     }
+    this.slackNoti.sendSyncNoti(
+      `Department created: ${result.departments.created.length}, updated: ${result.departments.updated.length}, errors: ${result.departments.errors.length}`,
+    );
 
     /// Course update
     const lectureByCode = new Map(
@@ -113,6 +121,9 @@ export class SyncService {
       await this.syncRepository.getExistingCoursesByOldCodes(
         Array.from(lectureByCode.keys()),
       );
+    this.slackNoti.sendSyncNoti(
+      `Found ${existingCourses.length} existing courses, updating...`,
+    );
     const courseMap = new Map(
       existingCourses.map((l) => [l.old_code, l] as const),
     );
@@ -143,6 +154,9 @@ export class SyncService {
         });
       }
     }
+    this.slackNoti.sendSyncNoti(
+      `Course created: ${result.courses.created.length}, updated: ${result.courses.updated.length}, errors: ${result.courses.errors.length}`,
+    );
 
     // Professor update
     const existingProfessors =
@@ -151,6 +165,9 @@ export class SyncService {
       );
     const professorMap = new Map(
       existingProfessors.map((p) => [p.professor_id, p]),
+    );
+    this.slackNoti.sendSyncNoti(
+      `Found ${existingProfessors.length} existing professors, updating...`,
     );
     const processedProfessorIds = new Set<number>();
     for (const charge of data.charges) {
@@ -186,38 +203,19 @@ export class SyncService {
         });
       }
     }
-    /*
-    {
-      0"lecture_year": 2024,
-      1"lecture_term": 1,
-      2"subject_no": "35.878",
-      3"lecture_class": "B ",
-      4"dept_id": 4423,
-      5"prof_id": 1131,
-      6"prof_name": "유회준",
-      7"portion": 3,
-      8"e_prof_name": "Hoi-Jun Yoo"
-    },
-    */
-    /*
-    await Promise.all(
-          added.map((charge) => {
-            const professor = professorMap.get(charge.prof_id);
-            // TODO: 아래 로직 변경 필요할 수 있음? id는 staff id인데 실제 강사 이름이 들어있음. 데이터에서 staff id 830으로 확인 바람.
-            // 기존 코드에서도 이렇게 처리하고 있었음.
-            if (charge.prof_id === staffProfessor.professor_id) return;
-
-            if (!professor) {
-              return this.syncRepository.createProfessor({
-                professor_id: charge.prof_id,
-                professor_name: charge.prof_name.trim(),
-                professor_name_en: charge.e_prof_name.trim(),
-              });
-            }
-          }),
-        );*/
+    this.slackNoti.sendSyncNoti(
+      `Professor created: ${result.professors.created.length}, updated: ${result.professors.updated.length}, errors: ${result.professors.errors.length}`,
+    );
 
     /// Lecture update
+    const existingLectures =
+      await this.syncRepository.getExistingDetailedLectures({
+        year: data.year,
+        semester: data.semester,
+      });
+    this.slackNoti.sendSyncNoti(
+      `Found ${existingLectures.length} existing lectures, updating...`,
+    );
     const notExistingLectures = new Set(existingLectures.map((l) => l.id));
     for (const lecture of data.lectures) {
       try {
@@ -278,6 +276,11 @@ export class SyncService {
         });
       }
     }
+    this.slackNoti.sendSyncNoti(
+      `Lecture created: ${result.lectures.created.length}, updated: ${result.lectures.updated.length}, errors: ${result.lectures.errors.length}`,
+    );
+
+    return result;
   }
 
   deriveDepartmentInfo(

@@ -108,6 +108,7 @@ const getSsoConfig = (): any => {
 const getSyncConfig = () => {
   return {
     apiKey: process.env.SYNC_SECRET,
+    slackKey: process.env.SLACK_KEY,
   };
 };
 
