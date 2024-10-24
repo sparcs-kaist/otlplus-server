@@ -21,7 +21,8 @@ export class SyncApiKeyCommand implements AuthCommand {
     const realApiKey = settings().syncConfig().apiKey;
 
     if (useSyncApiKey && realApiKey && apiKey === realApiKey) {
-      prevResult.isPublic = true;
+      prevResult.authentication = true;
+      prevResult.authorization = true;
       return Promise.resolve(prevResult);
     }
     return Promise.resolve(prevResult);
