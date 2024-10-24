@@ -16,7 +16,7 @@ import {
 } from './types';
 
 @Injectable()
-export class SyncService {
+export class SyncScholarDBService {
   constructor(
     private readonly syncRepository: SyncRepository,
     private readonly slackNoti: SlackNotiService,
