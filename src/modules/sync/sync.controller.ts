@@ -34,4 +34,10 @@ export class SyncController {
   async syncExamtime(@Body() body: ISync.ExamtimeBody) {
     return await this.syncService.syncExamtime(body);
   }
+
+  @Post('classtime')
+  @SyncApiKeyAuth()
+  async syncClasstime(@Body() body: ISync.ClasstimeBody) {
+    return await this.syncService.syncClassTime(body);
+  }
 }

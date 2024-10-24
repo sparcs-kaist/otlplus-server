@@ -8,6 +8,7 @@ import { SyncRepository } from 'src/prisma/repositories/sync.repository';
 import { SlackNotiService } from './slackNoti.service';
 import {
   ChargeDerivedProfessorInfo,
+  DerivedClasstimeInfo,
   DerivedExamtimeInfo,
   DerivedLectureInfo,
   LectureDerivedCourseInfo,
@@ -437,6 +438,7 @@ export class SyncService {
       time: new Date().toISOString(),
       updated: [],
       skipped: [],
+      errors: [],
     };
 
     const existingLectures =
@@ -471,37 +473,44 @@ export class SyncService {
     }
 
     for (const [lecture, examtimes] of lecturePairMap.values()) {
-      const derivedExamtimes = examtimes.map(this.deriveExamtimeInfo);
-      const existingExamtimes = lecture.subject_examtime;
-      const examtimeToRemove = [];
-      for (const existing of existingExamtimes) {
-        const idx = derivedExamtimes.findIndex(
-          (e) =>
-            e.day === existing.day &&
-            e.begin.getHours() === existing.begin.getHours() &&
-            e.begin.getMinutes() === existing.begin.getMinutes(),
-        );
-        if (idx === -1) examtimeToRemove.push(existing.id);
-        else derivedExamtimes.splice(idx, 1); // remove matched examtime
-      }
-      const examtimesToAdd = derivedExamtimes;
-      await this.syncRepository.updateLectureExamtimes(lecture.id, {
-        added: examtimesToAdd,
-        removed: examtimeToRemove,
-      });
-
-      if (examtimesToAdd.length > 0 || examtimeToRemove.length > 0) {
-        result.updated.push({
-          lecture: lecture.code,
-          class_no: lecture.class_no,
-          previous: existingExamtimes,
+      try {
+        const derivedExamtimes = examtimes.map(this.deriveExamtimeInfo);
+        const existingExamtimes = lecture.subject_examtime;
+        const examtimeToRemove = [];
+        for (const existing of existingExamtimes) {
+          const idx = derivedExamtimes.findIndex((e) =>
+            this.examtimeMatches(e, existing),
+          );
+          if (idx === -1) examtimeToRemove.push(existing.id);
+          else derivedExamtimes.splice(idx, 1); // remove matched examtime
+        }
+        const examtimesToAdd = derivedExamtimes;
+        await this.syncRepository.updateLectureExamtimes(lecture.id, {
           added: examtimesToAdd,
           removed: examtimeToRemove,
+        });
+
+        if (examtimesToAdd.length > 0 || examtimeToRemove.length > 0) {
+          result.updated.push({
+            lecture: lecture.code,
+            class_no: lecture.class_no,
+            previous: existingExamtimes,
+            added: examtimesToAdd,
+            removed: examtimeToRemove,
+          });
+        }
+      } catch (e: any) {
+        result.errors.push({
+          lecture: {
+            code: lecture.code,
+            class_no: lecture.class_no,
+          },
+          error: e.message || 'Unknown error',
         });
       }
     }
     this.slackNoti.sendSyncNoti(
-      `Examtime updated: ${result.updated.length}, skipped: ${result.skipped.length}`,
+      `Examtime updated: ${result.updated.length}, skipped: ${result.skipped.length}, errors: ${result.errors.length}`,
     );
 
     return result;
@@ -513,5 +522,121 @@ export class SyncService {
       begin: new Date(examtime.exam_begin),
       end: new Date(examtime.exam_end),
     };
+  }
+
+  examtimeMatches(
+    examtime: DerivedExamtimeInfo,
+    existing: ELecture.Details['subject_examtime'][number],
+  ) {
+    return (
+      examtime.day === existing.day &&
+      examtime.begin.getHours() === existing.begin.getHours() &&
+      examtime.begin.getMinutes() === existing.begin.getMinutes()
+    );
+  }
+
+  async syncClassTime(data: ISync.ClasstimeBody) {
+    this.slackNoti.sendSyncNoti(
+      `syncClassTime ${data.year}-${data.semester}: ${data.classtimes.length} classtimes`,
+    );
+    const result: any = {
+      time: new Date().toISOString(),
+      updated: [],
+      skipped: [],
+      errors: [],
+    };
+
+    const existingLectures =
+      await this.syncRepository.getExistingDetailedLectures({
+        year: data.year,
+        semester: data.semester,
+      });
+    this.slackNoti.sendSyncNoti(
+      `Found ${existingLectures.length} existing lectures, updating classtimes...`,
+    );
+    const lecturePairMap = new Map<
+      number,
+      [ELecture.Details, ISync.ClasstimeType[]]
+    >(existingLectures.map((l) => [l.id, [l, []]]));
+
+    for (const classtime of data.classtimes) {
+      const lecture = existingLectures.find(
+        (l) =>
+          l.code === classtime.subject_no &&
+          l.class_no === classtime.lecture_class.trim(),
+      );
+      if (!lecture) {
+        result.skipped.push({
+          subject_no: classtime.subject_no,
+          lecture_class: classtime.lecture_class,
+          error: 'Lecture not found',
+        });
+        continue;
+      }
+      const [_, classtimes] = lecturePairMap.get(lecture.id)!;
+      classtimes.push(classtime);
+    }
+
+    for (const [lecture, classtimes] of lecturePairMap.values()) {
+      const derivedClasstimes = classtimes.map(this.deriveClasstimeInfo);
+      const existingClasstimes = lecture.subject_classtime;
+      const classtimeToRemove = [];
+      for (const existing of existingClasstimes) {
+        const idx = derivedClasstimes.findIndex((c) =>
+          this.classtimeMatches(c, existing),
+        );
+        if (idx === -1) classtimeToRemove.push(existing.id);
+        else classtimes.splice(idx, 1); // remove matched classtime
+      }
+      const classtimesToAdd = classtimes.map(this.deriveClasstimeInfo);
+      await this.syncRepository.updateLectureClasstimes(lecture.id, {
+        added: classtimesToAdd,
+        removed: classtimeToRemove,
+      });
+
+      if (classtimesToAdd.length > 0 || classtimeToRemove.length > 0) {
+        result.updated.push({
+          lecture: lecture.code,
+          class_no: lecture.class_no,
+          previous: existingClasstimes,
+          added: classtimesToAdd,
+          removed: classtimeToRemove,
+        });
+      }
+    }
+    this.slackNoti.sendSyncNoti(
+      `Classtime updated: ${result.updated.length}, skipped: ${result.skipped.length}, errors: ${result.errors.length}`,
+    );
+  }
+
+  deriveClasstimeInfo(classTime: ISync.ClasstimeType): DerivedClasstimeInfo {
+    return {
+      day: classTime.lecture_day - 1,
+      begin: new Date(classTime.lecture_begin),
+      end: new Date(classTime.lecture_end),
+      type: classTime.lecture_type,
+      building_id: classTime.building.toString(),
+      room_name: classTime.room_no,
+      building_full_name: classTime.room_k_name,
+      building_full_name_en: classTime.room_e_name,
+      unit_time: classTime.teaching,
+    };
+  }
+
+  classtimeMatches(
+    classtime: DerivedClasstimeInfo,
+    existing: ELecture.Details['subject_classtime'][number],
+  ) {
+    return (
+      classtime.day === existing.day &&
+      classtime.begin.getHours() === existing.begin.getHours() &&
+      classtime.begin.getMinutes() === existing.begin.getMinutes() &&
+      classtime.type === existing.type &&
+      classtime.building_id === existing.building_id &&
+      classtime.room_name === existing.room_name &&
+      classtime.building_full_name === existing.building_full_name &&
+      classtime.building_full_name_en === existing.building_full_name_en &&
+      classtime.unit_time === existing.unit_time
+    );
   }
 }

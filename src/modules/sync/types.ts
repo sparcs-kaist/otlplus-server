@@ -48,3 +48,15 @@ export type DerivedExamtimeInfo = {
   begin: Date;
   end: Date;
 };
+
+export type DerivedClasstimeInfo = {
+  day: number;
+  begin: Date;
+  end: Date;
+  type: 'l' | 'e';
+  building_id: string;
+  room_name: string;
+  building_full_name: string;
+  building_full_name_en: string;
+  unit_time: number;
+};

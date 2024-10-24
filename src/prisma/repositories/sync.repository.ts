@@ -5,6 +5,7 @@ import { EProfessor } from '@src/common/entities/EProfessor';
 import { STAFF_ID } from '@src/common/interfaces/constants/professor';
 import {
   ChargeDerivedProfessorInfo,
+  DerivedClasstimeInfo,
   DerivedExamtimeInfo,
   DerivedLectureInfo,
   LectureDerivedCourseInfo,
@@ -210,6 +211,23 @@ export class SyncRepository {
         data: added.map((examtime) => ({
           lecture_id: id,
           ...examtime,
+        })),
+      });
+  }
+
+  async updateLectureClasstimes(
+    id: number,
+    { added, removed }: { added: DerivedClasstimeInfo[]; removed: number[] },
+  ) {
+    if (removed.length)
+      await this.prisma.subject_classtime.deleteMany({
+        where: { id: { in: removed } },
+      });
+    if (added.length)
+      await this.prisma.subject_classtime.createMany({
+        data: added.map((classtime) => ({
+          lecture_id: id,
+          ...classtime,
         })),
       });
   }
