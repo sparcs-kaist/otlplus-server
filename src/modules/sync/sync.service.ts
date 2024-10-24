@@ -8,6 +8,7 @@ import { SyncRepository } from 'src/prisma/repositories/sync.repository';
 import { SlackNotiService } from './slackNoti.service';
 import {
   ChargeDerivedProfessorInfo,
+  DerivedExamtimeInfo,
   DerivedLectureInfo,
   LectureDerivedCourseInfo,
   LectureDerivedDepartmentInfo,
@@ -426,5 +427,91 @@ export class SyncService {
       )
       .map((p) => p.professor.id);
     return { addedIds, removedIds };
+  }
+
+  async syncExamtime(data: ISync.ExamtimeBody) {
+    this.slackNoti.sendSyncNoti(
+      `syncExamtime ${data.year}-${data.semester}: ${data.examtimes.length} examtimes`,
+    );
+    const result: any = {
+      time: new Date().toISOString(),
+      updated: [],
+      skipped: [],
+    };
+
+    const existingLectures =
+      await this.syncRepository.getExistingDetailedLectures({
+        year: data.year,
+        semester: data.semester,
+      });
+    this.slackNoti.sendSyncNoti(
+      `Found ${existingLectures.length} existing lectures, updating examtimes...`,
+    );
+    const lecturePairMap = new Map<
+      number,
+      [ELecture.Details, ISync.ExamtimeType[]]
+    >(existingLectures.map((l) => [l.id, [l, []]]));
+
+    for (const examtime of data.examtimes) {
+      const lecture = existingLectures.find(
+        (l) =>
+          l.code === examtime.subject_no &&
+          l.class_no === examtime.lecture_class.trim(),
+      );
+      if (!lecture) {
+        result.skipped.push({
+          subject_no: examtime.subject_no,
+          lecture_class: examtime.lecture_class,
+          error: 'Lecture not found',
+        });
+        continue;
+      }
+      const [_, examtimes] = lecturePairMap.get(lecture.id)!;
+      examtimes.push(examtime);
+    }
+
+    for (const [lecture, examtimes] of lecturePairMap.values()) {
+      const derivedExamtimes = examtimes.map(this.deriveExamtimeInfo);
+      const existingExamtimes = lecture.subject_examtime;
+      const examtimeToRemove = [];
+      for (const existing of existingExamtimes) {
+        const idx = derivedExamtimes.findIndex(
+          (e) =>
+            e.day === existing.day &&
+            e.begin.getHours() === existing.begin.getHours() &&
+            e.begin.getMinutes() === existing.begin.getMinutes(),
+        );
+        if (idx === -1) examtimeToRemove.push(existing.id);
+        else derivedExamtimes.splice(idx, 1); // remove matched examtime
+      }
+      const examtimesToAdd = derivedExamtimes;
+      await this.syncRepository.updateLectureExamtimes(lecture.id, {
+        added: examtimesToAdd,
+        removed: examtimeToRemove,
+      });
+
+      if (examtimesToAdd.length > 0 || examtimeToRemove.length > 0) {
+        result.updated.push({
+          lecture: lecture.code,
+          class_no: lecture.class_no,
+          previous: existingExamtimes,
+          added: examtimesToAdd,
+          removed: examtimeToRemove,
+        });
+      }
+    }
+    this.slackNoti.sendSyncNoti(
+      `Examtime updated: ${result.updated.length}, skipped: ${result.skipped.length}`,
+    );
+
+    return result;
+  }
+
+  deriveExamtimeInfo(examtime: ISync.ExamtimeType): DerivedExamtimeInfo {
+    return {
+      day: examtime.exam_day - 1,
+      begin: new Date(examtime.exam_begin),
+      end: new Date(examtime.exam_end),
+    };
   }
 }

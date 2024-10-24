@@ -28,4 +28,10 @@ export class SyncController {
   async syncScholarDB(@Body() body: ISync.ScholarDBBody) {
     return await this.syncService.syncScholarDB(body);
   }
+
+  @Post('examtime')
+  @SyncApiKeyAuth()
+  async syncExamtime(@Body() body: ISync.ExamtimeBody) {
+    return await this.syncService.syncExamtime(body);
+  }
 }

@@ -42,3 +42,9 @@ export type DerivedLectureInfo = {
   is_english: boolean;
   course_id: number;
 };
+
+export type DerivedExamtimeInfo = {
+  day: number;
+  begin: Date;
+  end: Date;
+};

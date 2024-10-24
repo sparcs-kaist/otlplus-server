@@ -167,4 +167,60 @@ export namespace ISync {
     @IsString()
     e_prof_name?: string | null;
   }
+
+  export class ExamtimeBody {
+    /** 동기화 대상 연도 */
+    @IsInt()
+    year!: number;
+    /** 동기화 대상 학기 */
+    @IsIn([1, 2, 3, 4])
+    semester!: number;
+    /** 동기화 대상 시험시간 정보 */
+    @ValidateNested({ each: true })
+    examtimes!: ExamtimeType[];
+  }
+
+  /** 동기화 대상 시험시간 정보
+   example:
+   {
+      "lecture_year": 2024,
+      "lecture_term": 1,
+      "subject_no": "31.343",
+      "lecture_class": "  ",
+      "dept_id": 331,
+      "exam_day": 4,
+      "exam_begin": "1899-12-31 13:00:00.0",
+      "exam_end": "1899-12-31 15:45:00.0",
+      "notice": ""
+    } 
+   */
+  export class ExamtimeType {
+    /** 개설 연도 */
+    @IsInt()
+    lecture_year!: number;
+    /** 개설 학기. 1: 봄학기, 2:여름학기, 3: 가을학기, 4: 겨울학기 */
+    @IsIn([1, 2, 3, 4])
+    lecture_term!: number;
+    /** 36.492 등의 과목코드 */
+    @IsString()
+    subject_no!: string;
+    /** 분반 */
+    @IsString()
+    lecture_class!: string;
+    /** 학과 숫자 id */
+    @IsInt()
+    dept_id!: number;
+    /** 시험 요일. 1~6 범위의 값 확인. 월부터 시작. */
+    @IsInt()
+    exam_day!: number;
+    /** 시험 시작 시간 */
+    @IsString()
+    exam_begin!: string;
+    /** 시험 종료 시간 */
+    @IsString()
+    exam_end!: string;
+    /** 공지사항 */
+    @IsString()
+    notice!: string;
+  }
 }
