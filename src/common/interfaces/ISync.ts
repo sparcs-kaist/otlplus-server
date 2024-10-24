@@ -2,6 +2,7 @@ import {
   IsIn,
   IsInt,
   IsNumber,
+  IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
@@ -92,7 +93,7 @@ export namespace ISync {
     /** 과목 종류 영어 명칭. Major Elective 등 */
     @IsString()
     e_subject_type!: string;
-    /** ? */
+    /** ? 학년 구분이라고 보임. */
     @IsInt()
     course_sect!: number;
     /** 부여 AU */
@@ -165,8 +166,10 @@ export namespace ISync {
     /** ? */
     @IsNumber()
     portion!: number;
+    // TODO: 이전 코드에 따르면 e_prof_name은 null이 가능하다고 되어 있음. 이게 맞는지 확인 필요.
     /** 교수 영어 이름 */
+    @IsOptional()
     @IsString()
-    e_prof_name!: string;
+    e_prof_name?: string | null;
   }
 }

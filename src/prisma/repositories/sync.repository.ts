@@ -4,6 +4,8 @@ import { ELecture } from '@src/common/entities/ELecture';
 import { EProfessor } from '@src/common/entities/EProfessor';
 import { STAFF_ID } from '@src/common/interfaces/constants/professor';
 import {
+  ChargeDerivedProfessorInfo,
+  DerivedLectureInfo,
   LectureDerivedCourseInfo,
   LectureDerivedDepartmentInfo,
 } from '@src/modules/sync/types';
@@ -113,13 +115,57 @@ export class SyncRepository {
   async updateCourse(id: number, data: Partial<ELecture.Basic>) {
     return await this.prisma.subject_course.update({
       where: { id },
-      data,
+      data: {
+        ...data,
+        title_no_space: data.title && data.title.replace(/\s/g, ''),
+        title_en_no_space: data.title_en && data.title_en.replace(/\s/g, ''),
+      },
     });
   }
 
   async getExistingProfessorsById(professorIds: number[]) {
     return await this.prisma.subject_professor.findMany({
       where: { professor_id: { in: professorIds } },
+    });
+  }
+
+  async createProfessor(data: ChargeDerivedProfessorInfo) {
+    return await this.prisma.subject_professor.create({
+      data: {
+        ...data,
+        grade_sum: 0,
+        load_sum: 0,
+        speech_sum: 0,
+        review_total_weight: 0,
+        grade: 0,
+        load: 0,
+        speech: 0,
+      },
+    });
+  }
+
+  async updateProfessor(id: number, data: Partial<EProfessor.Basic>) {
+    return await this.prisma.subject_professor.update({
+      where: { id },
+      data,
+    });
+  }
+
+  async createLecture(data: DerivedLectureInfo) {
+    return await this.prisma.subject_lecture.create({
+      data: {
+        ...data,
+        deleted: false,
+        title_no_space: data.title.replace(/\s/g, ''),
+        title_en_no_space: data.title_en.replace(/\s/g, ''),
+        grade_sum: 0,
+        load_sum: 0,
+        speech_sum: 0,
+        grade: 0,
+        load: 0,
+        speech: 0,
+        review_total_weight: 0,
+      },
     });
   }
 
@@ -134,17 +180,19 @@ export class SyncRepository {
     id: number,
     { added, removed }: { added: number[]; removed: number[] },
   ) {
-    await this.prisma.subject_lecture_professors.deleteMany({
-      where: {
-        lecture_id: id,
-        professor_id: { in: removed },
-      },
-    });
-    await this.prisma.subject_lecture_professors.createMany({
-      data: added.map((professor_id) => ({
-        lecture_id: id,
-        professor_id,
-      })),
-    });
+    if (removed.length)
+      await this.prisma.subject_lecture_professors.deleteMany({
+        where: {
+          lecture_id: id,
+          professor_id: { in: removed },
+        },
+      });
+    if (added.length)
+      await this.prisma.subject_lecture_professors.createMany({
+        data: added.map((professor_id) => ({
+          lecture_id: id,
+          professor_id,
+        })),
+      });
   }
 }
