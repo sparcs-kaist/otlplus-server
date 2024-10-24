@@ -431,8 +431,45 @@ export class SyncService {
   }
 
   async syncExamtime(data: ISync.ExamtimeBody) {
+    return this.syncTime(
+      data.year,
+      data.semester,
+      data.examtimes,
+      'examtime',
+      this.deriveExamtimeInfo,
+      this.examtimeMatches,
+    );
+  }
+
+  async syncClassTime(data: ISync.ClasstimeBody) {
+    return this.syncTime(
+      data.year,
+      data.semester,
+      data.classtimes,
+      'classtime',
+      this.deriveClasstimeInfo,
+      this.classtimeMatches,
+    );
+  }
+
+  async syncTime<
+    TYPE extends 'examtime' | 'classtime',
+    T extends TYPE extends 'examtime'
+      ? ISync.ExamtimeType
+      : ISync.ClasstimeType,
+    D extends TYPE extends 'examtime'
+      ? DerivedExamtimeInfo
+      : DerivedClasstimeInfo,
+  >(
+    year: number,
+    semester: number,
+    data: T[],
+    type: TYPE,
+    deriveInfo: (time: T) => D,
+    matches: (derivedTime: D, existingTime: any) => boolean,
+  ) {
     this.slackNoti.sendSyncNoti(
-      `syncExamtime ${data.year}-${data.semester}: ${data.examtimes.length} examtimes`,
+      `sync ${type} ${year}-${semester}: ${data.length} ${type}s`,
     );
     const result: any = {
       time: new Date().toISOString(),
@@ -443,60 +480,69 @@ export class SyncService {
 
     const existingLectures =
       await this.syncRepository.getExistingDetailedLectures({
-        year: data.year,
-        semester: data.semester,
+        year: year,
+        semester: semester,
       });
-    this.slackNoti.sendSyncNoti(
-      `Found ${existingLectures.length} existing lectures, updating examtimes...`,
-    );
-    const lecturePairMap = new Map<
-      number,
-      [ELecture.Details, ISync.ExamtimeType[]]
-    >(existingLectures.map((l) => [l.id, [l, []]]));
 
-    for (const examtime of data.examtimes) {
+    this.slackNoti.sendSyncNoti(
+      `Found ${existingLectures.length} existing lectures, updating ${type}s...`,
+    );
+
+    const lecturePairMap = new Map<number, [ELecture.Details, T[]]>(
+      existingLectures.map((l) => [l.id, [l, []]]),
+    );
+
+    for (const time of data) {
       const lecture = existingLectures.find(
         (l) =>
-          l.code === examtime.subject_no &&
-          l.class_no === examtime.lecture_class.trim(),
+          l.code === time.subject_no &&
+          l.class_no === time.lecture_class.trim(),
       );
       if (!lecture) {
         result.skipped.push({
-          subject_no: examtime.subject_no,
-          lecture_class: examtime.lecture_class,
+          subject_no: time.subject_no,
+          lecture_class: time.lecture_class,
           error: 'Lecture not found',
         });
         continue;
       }
-      const [_, examtimes] = lecturePairMap.get(lecture.id)!;
-      examtimes.push(examtime);
+      const [, times] = lecturePairMap.get(lecture.id)!;
+      times.push(time);
     }
 
-    for (const [lecture, examtimes] of lecturePairMap.values()) {
+    for (const [lecture, times] of lecturePairMap.values()) {
       try {
-        const derivedExamtimes = examtimes.map(this.deriveExamtimeInfo);
-        const existingExamtimes = lecture.subject_examtime;
-        const examtimeToRemove = [];
-        for (const existing of existingExamtimes) {
-          const idx = derivedExamtimes.findIndex((e) =>
-            this.examtimeMatches(e, existing),
-          );
-          if (idx === -1) examtimeToRemove.push(existing.id);
-          else derivedExamtimes.splice(idx, 1); // remove matched examtime
-        }
-        const examtimesToAdd = derivedExamtimes;
-        await this.syncRepository.updateLectureExamtimes(lecture.id, {
-          added: examtimesToAdd,
-          removed: examtimeToRemove,
-        });
+        const derivedTimes = times.map(deriveInfo);
+        const existingTimes =
+          type === 'examtime'
+            ? lecture.subject_examtime
+            : lecture.subject_classtime;
+        const timesToRemove = [];
 
-        if (examtimesToAdd.length > 0 || examtimeToRemove.length > 0) {
+        for (const existing of existingTimes) {
+          const idx = derivedTimes.findIndex((t) => matches(t, existing));
+          if (idx === -1) timesToRemove.push(existing.id);
+          else derivedTimes.splice(idx, 1); // remove matched time
+        }
+        const timesToAdd = derivedTimes;
+        if (type === 'examtime')
+          await this.syncRepository.updateLectureExamtimes(lecture.id, {
+            added: timesToAdd,
+            removed: timesToRemove,
+          });
+        else
+          await this.syncRepository.updateLectureClasstimes(lecture.id, {
+            added: timesToAdd as any,
+            removed: timesToRemove,
+          });
+
+        if (timesToAdd.length > 0 || timesToRemove.length > 0) {
           result.updated.push({
             lecture: lecture.code,
             class_no: lecture.class_no,
-            previous: existingExamtimes,
-            added: examtimesToAdd,
-            removed: examtimeToRemove,
+            previous: existingTimes,
+            added: timesToAdd,
+            removed: timesToRemove,
           });
         }
       } catch (e: any) {
@@ -509,8 +555,11 @@ export class SyncService {
         });
       }
     }
+
     this.slackNoti.sendSyncNoti(
-      `Examtime updated: ${result.updated.length}, skipped: ${result.skipped.length}, errors: ${result.errors.length}`,
+      `${type.charAt(0).toUpperCase() + type.slice(1)} updated: ${
+        result.updated.length
+      }, skipped: ${result.skipped.length}, errors: ${result.errors.length}`,
     );
 
     return result;
@@ -532,80 +581,6 @@ export class SyncService {
       examtime.day === existing.day &&
       examtime.begin.getHours() === existing.begin.getHours() &&
       examtime.begin.getMinutes() === existing.begin.getMinutes()
-    );
-  }
-
-  async syncClassTime(data: ISync.ClasstimeBody) {
-    this.slackNoti.sendSyncNoti(
-      `syncClassTime ${data.year}-${data.semester}: ${data.classtimes.length} classtimes`,
-    );
-    const result: any = {
-      time: new Date().toISOString(),
-      updated: [],
-      skipped: [],
-      errors: [],
-    };
-
-    const existingLectures =
-      await this.syncRepository.getExistingDetailedLectures({
-        year: data.year,
-        semester: data.semester,
-      });
-    this.slackNoti.sendSyncNoti(
-      `Found ${existingLectures.length} existing lectures, updating classtimes...`,
-    );
-    const lecturePairMap = new Map<
-      number,
-      [ELecture.Details, ISync.ClasstimeType[]]
-    >(existingLectures.map((l) => [l.id, [l, []]]));
-
-    for (const classtime of data.classtimes) {
-      const lecture = existingLectures.find(
-        (l) =>
-          l.code === classtime.subject_no &&
-          l.class_no === classtime.lecture_class.trim(),
-      );
-      if (!lecture) {
-        result.skipped.push({
-          subject_no: classtime.subject_no,
-          lecture_class: classtime.lecture_class,
-          error: 'Lecture not found',
-        });
-        continue;
-      }
-      const [_, classtimes] = lecturePairMap.get(lecture.id)!;
-      classtimes.push(classtime);
-    }
-
-    for (const [lecture, classtimes] of lecturePairMap.values()) {
-      const derivedClasstimes = classtimes.map(this.deriveClasstimeInfo);
-      const existingClasstimes = lecture.subject_classtime;
-      const classtimeToRemove = [];
-      for (const existing of existingClasstimes) {
-        const idx = derivedClasstimes.findIndex((c) =>
-          this.classtimeMatches(c, existing),
-        );
-        if (idx === -1) classtimeToRemove.push(existing.id);
-        else classtimes.splice(idx, 1); // remove matched classtime
-      }
-      const classtimesToAdd = classtimes.map(this.deriveClasstimeInfo);
-      await this.syncRepository.updateLectureClasstimes(lecture.id, {
-        added: classtimesToAdd,
-        removed: classtimeToRemove,
-      });
-
-      if (classtimesToAdd.length > 0 || classtimeToRemove.length > 0) {
-        result.updated.push({
-          lecture: lecture.code,
-          class_no: lecture.class_no,
-          previous: existingClasstimes,
-          added: classtimesToAdd,
-          removed: classtimeToRemove,
-        });
-      }
-    }
-    this.slackNoti.sendSyncNoti(
-      `Classtime updated: ${result.updated.length}, skipped: ${result.skipped.length}, errors: ${result.errors.length}`,
     );
   }
 
