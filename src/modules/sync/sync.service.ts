@@ -24,7 +24,7 @@ export class SyncService {
     return await this.syncRepository.getDefaultSemester();
   }
 
-  async syncScholarDB(data: ISync.ScholarDBData) {
+  async syncScholarDB(data: ISync.ScholarDBBody) {
     this.slackNoti.sendSyncNoti(
       `syncScholarDB ${data.year}-${data.semester}: ${data.lectures.length} lectures, ${data.charges.length} charges`,
     );

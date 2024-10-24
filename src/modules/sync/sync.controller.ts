@@ -26,6 +26,6 @@ export class SyncController {
   @Post('scholarDB')
   @SyncApiKeyAuth()
   async syncScholarDB(@Body() body: ISync.ScholarDBBody) {
-    return await this.syncService.syncScholarDB(body.data);
+    return await this.syncService.syncScholarDB(body);
   }
 }

@@ -9,11 +9,6 @@ import {
 
 export namespace ISync {
   export class ScholarDBBody {
-    secret!: string;
-    data!: ScholarDBData;
-  }
-
-  export class ScholarDBData {
     /** 동기화 대상 연도 */
     @IsInt()
     year!: number;
