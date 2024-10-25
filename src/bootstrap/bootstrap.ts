@@ -2,6 +2,7 @@ import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
 import csrf from 'csurf';
+import { json } from 'express';
 import session from 'express-session';
 import { AppModule } from '../app.module';
 import settings from '../settings';
@@ -68,6 +69,9 @@ async function bootstrap() {
       },
     }),
   );
+
+  app.use('/sync', json({ limit: '50mb' }));
+  app.use(json({ limit: '100kb' }));
 
   app.enableShutdownHooks();
   return app.listen(8000);
