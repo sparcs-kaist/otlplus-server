@@ -24,14 +24,18 @@ const getCorsConfig = () => {
   const { NODE_ENV } = process.env;
   if (NODE_ENV === 'prod') {
     return {
-      origin: 'https://otl.kaist.ac.kr:5173',
+      origin: [
+        'https://otl.kaist.ac.kr',
+        'http://otl.kaist.ac.kr',
+        'https://otl.sparcs.org',
+        'http://otl.sparcs.org',
+      ],
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
       credentials: true,
       preflightContinue: false,
       optionsSuccessStatus: 204,
     };
   } else if (NODE_ENV === 'dev') {
-    console.log('dev');
     return {
       origin: 'http://3.37.146.183',
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -59,10 +63,10 @@ const getPrismaConfig = (): Prisma.PrismaClientOptions => {
     },
     errorFormat: 'pretty',
     log: [
-      {
-        emit: 'event',
-        level: 'query',
-      },
+      // {
+      //   emit: 'event',
+      //   level: 'query',
+      // },
       {
         emit: 'stdout',
         level: 'error',
@@ -71,10 +75,10 @@ const getPrismaConfig = (): Prisma.PrismaClientOptions => {
         emit: 'stdout',
         level: 'info',
       },
-      {
-        emit: 'stdout',
-        level: 'warn',
-      },
+      // {
+      //   emit: 'stdout',
+      //   level: 'warn',
+      // },
     ],
   };
 };

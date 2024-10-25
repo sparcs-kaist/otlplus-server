@@ -50,7 +50,6 @@ export class CourseController {
     @Query() query: LectureQueryDto,
     @Param('id', CourseIdPipe) id: number,
   ) {
-    console.log(query);
     return await this.coursesService.getLecturesByCourseId(query, id);
   }
 

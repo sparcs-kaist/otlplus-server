@@ -77,7 +77,7 @@ export class JwtCommand implements AuthCommand {
           }
           return prevResult;
         } catch (e) {
-          console.error('error');
+          console.error(e);
           return prevResult;
         }
       }

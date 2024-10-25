@@ -1,6 +1,7 @@
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
+import csrf from 'csurf';
 import session from 'express-session';
 import { AppModule } from '../app.module';
 import settings from '../settings';
@@ -29,6 +30,21 @@ async function bootstrap() {
     }),
   );
   app.use(cookieParser());
+  app.use(
+    '/',
+    csrf({
+      cookie: { key: 'csrftoken' },
+      ignoreMethods: [
+        'GET',
+        'HEAD',
+        'OPTIONS',
+        'DELETE',
+        'PATCH',
+        'PUT',
+        'POST',
+      ],
+    }),
+  );
   // Logs requests
   // app.use(
   //   morgan(':method :url OS/:req[client-os] Ver/:req[client-api-version]', {

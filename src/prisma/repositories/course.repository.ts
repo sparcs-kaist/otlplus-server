@@ -46,6 +46,9 @@ export class CourseRepository {
     'AE',
     'CH',
     'TS',
+    'BTM',
+    'BCS',
+    'SS',
   ];
 
   public async getCourseById(id: number): Promise<ECourse.Details | null> {
@@ -300,10 +303,17 @@ export class CourseRepository {
             },
           },
         };
+
+    const old_code_filter = {
+      old_code: {
+        contains: keyword_space_removed,
+      },
+    };
     return {
       OR: [
         title_filter,
         en_title_filter,
+        old_code_filter,
         department_name_filter,
         department_name_en_filter,
         professors_professor_name_filter,
