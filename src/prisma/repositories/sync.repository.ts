@@ -292,4 +292,30 @@ export class SyncRepository {
       })),
     });
   }
+
+  async getUserWithId(userId: number) {
+    return await this.prisma.session_userprofile.findUnique({
+      where: { id: userId },
+    });
+  }
+
+  async getRawTakenLecturesOfStudent(student_id: number) {
+    return (
+      await this.prisma.sync_taken_lectures.findMany({
+        where: { student_id },
+      })
+    ).map((l) => l.lecture_id);
+  }
+
+  async repopulateTakenLecturesOfUser(userId: number, takenLectures: number[]) {
+    await this.prisma.session_userprofile_taken_lectures.deleteMany({
+      where: { userprofile_id: userId },
+    });
+    await this.prisma.session_userprofile_taken_lectures.createMany({
+      data: takenLectures.map((lecture_id) => ({
+        userprofile_id: userId,
+        lecture_id,
+      })),
+    });
+  }
 }

@@ -3,6 +3,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { UserRepository } from '../../prisma/repositories/user.repository';
+import { SyncModule } from '../sync/sync.module';
 import { UserService } from '../user/user.service';
 import { AuthChain } from './auth.chain';
 import { AuthConfig } from './auth.config';
@@ -19,6 +20,7 @@ import { JwtCookieStrategy } from './strategy/jwt-cookie.strategy';
     PrismaModule,
     PassportModule.register({ defaultStrategy: 'jwt-cookie' }),
     JwtModule.register({}),
+    SyncModule,
   ],
   controllers: [AuthController],
   providers: [

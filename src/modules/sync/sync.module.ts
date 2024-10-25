@@ -9,5 +9,6 @@ import { SyncTakenLectureService } from './syncTakenLecture.service';
   controllers: [SyncController],
   providers: [SyncScholarDBService, SyncTakenLectureService, SlackNotiService],
   imports: [PrismaModule],
+  exports: [SyncTakenLectureService],
 })
 export class SyncModule {}

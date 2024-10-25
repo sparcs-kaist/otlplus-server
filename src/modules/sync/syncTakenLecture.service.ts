@@ -121,8 +121,16 @@ export class SyncTakenLectureService {
     return lecture?.id;
   }
 
-  async syncTakenLectureForStudent(studentId: number) {
-    const takenLectures =
-      await this.syncRepository.getUserExistingTakenLectures(studentId);
+  async repopulateTakenLectureForStudent(userId: number) {
+    const user = await this.syncRepository.getUserWithId(userId);
+    if (!user) throw new Error('User not found');
+    const studentId = parseInt(user.student_id);
+    if (Number.isNaN(studentId)) return; // Skip if student_id is not a number
+    const rawTakenLectures =
+      await this.syncRepository.getRawTakenLecturesOfStudent(studentId);
+    await this.syncRepository.repopulateTakenLecturesOfUser(
+      studentId,
+      rawTakenLectures,
+    );
   }
 }
