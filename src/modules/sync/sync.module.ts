@@ -3,10 +3,11 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { SlackNotiService } from './slackNoti.service';
 import { SyncController } from './sync.controller';
 import { SyncScholarDBService } from './syncScholarDB.service';
+import { SyncTakenLectureService } from './syncTakenLecture.service';
 
 @Module({
   controllers: [SyncController],
-  providers: [SyncScholarDBService, SlackNotiService],
+  providers: [SyncScholarDBService, SyncTakenLectureService, SlackNotiService],
   imports: [PrismaModule],
 })
 export class SyncModule {}

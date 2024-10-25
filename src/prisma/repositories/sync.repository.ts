@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { EDepartment } from '@src/common/entities/EDepartment';
 import { ELecture } from '@src/common/entities/ELecture';
 import { EProfessor } from '@src/common/entities/EProfessor';
+import { EUserProfile } from '@src/common/entities/EUserProfile';
 import { STAFF_ID } from '@src/common/interfaces/constants/professor';
 import {
   ChargeDerivedProfessorInfo,
@@ -230,5 +231,46 @@ export class SyncRepository {
           ...classtime,
         })),
       });
+  }
+
+  async getUserExistingTakenLectures({
+    year,
+    semester,
+  }: {
+    year: number;
+    semester: number;
+  }): Promise<EUserProfile.WithTakenLectures[]> {
+    return await this.prisma.session_userprofile.findMany({
+      where: { taken_lectures: { some: { lecture: { year, semester } } } },
+      include: { taken_lectures: { where: { lecture: { year, semester } } } },
+    });
+  }
+
+  async updateTakenLectures(
+    student_id: number,
+    data: {
+      remove: number[];
+      add: number[];
+    },
+  ) {
+    if (data.remove.length)
+      await this.prisma.session_userprofile_taken_lectures.deleteMany({
+        where: { id: { in: data.remove } },
+      });
+    if (data.add.length) {
+      const userIds = (
+        await this.prisma.session_userprofile.findMany({
+          where: { student_id: student_id.toString() },
+          select: { id: true },
+        })
+      ).map((u) => u.id);
+      await this.prisma.session_userprofile_taken_lectures.createMany({
+        data: userIds
+          .map((userprofile_id) =>
+            data.add.map((lecture_id) => ({ userprofile_id, lecture_id })),
+          )
+          .flat(),
+      });
+    }
   }
 }

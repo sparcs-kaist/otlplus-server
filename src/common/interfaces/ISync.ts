@@ -299,4 +299,52 @@ export namespace ISync {
     @IsString()
     teaching!: number;
   }
+
+  export class TakenLectureBody {
+    /** 동기화 대상 연도 */
+    @IsInt()
+    year!: number;
+    /** 동기화 대상 학기 */
+    @IsIn([1, 2, 3, 4])
+    semester!: number;
+    /** 동기화 대상 수강 강의 정보 */
+    @ValidateNested({ each: true })
+    attend!: AttendType[];
+  }
+
+  /** 동기화 대상 들은 수업 정보
+   example:
+   {
+      "lecture_year": 2024,
+      "lecture_term": 1,
+      "subject_no": "25.101",
+      "lecture_class": "G ",
+      "dept_id": 151,
+      "student_no": 20240111,
+      "process_type": "I"
+    }
+  */
+  export class AttendType {
+    /** 개설 연도 */
+    @IsInt()
+    lecture_year!: number;
+    /** 개설 학기. 1: 봄학기, 2:여름학기, 3: 가을학기, 4: 겨울학기 */
+    @IsIn([1, 2, 3, 4])
+    lecture_term!: number;
+    /** 36.492 등의 과목코드 */
+    @IsString()
+    subject_no!: string;
+    /** 분반 */
+    @IsString()
+    lecture_class!: string;
+    /** 학과 숫자 id */
+    @IsInt()
+    dept_id!: number;
+    /** 학번 */
+    @IsInt()
+    student_no!: number;
+    /** 신청 기간 구분으로 유추. I: 수강신청기간 내 신청, C: 수강변경기간 내 신청 */
+    @IsIn(['I', 'C'])
+    process_type!: 'I' | 'C';
+  }
 }
