@@ -527,6 +527,7 @@ model subject_lecture {
   timetable_oldtimetable_lectures timetable_oldtimetable_lectures[]
   timetable_timetable_lectures    timetable_timetable_lectures[]
   timetable_wishlist_lectures     timetable_wishlist_lectures[]
+  sync_taken_lectures             sync_taken_lectures[]
 
   @@index([deleted], map: "subject_lecture_deleted_bedc6156_uniq")
   @@index([type_en], map: "subject_lecture_type_en_45ee2d3a_uniq")
@@ -821,4 +822,15 @@ model subject_professor_course_list {
   course_id    Int
 
   @@unique([professor_id, course_id], map: "professor_id")
+}
+
+model sync_taken_lectures {
+  id              Int             @id @default(autoincrement())
+  year            Int
+  semester        Int
+  student_id      Int
+  lecture_id      Int
+  subject_lecture subject_lecture @relation(fields: [lecture_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([student_id, lecture_id])
 }
