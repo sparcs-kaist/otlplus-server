@@ -50,7 +50,10 @@ export class SyncTakenLectureService {
       studentPairMap.get(student_id)![0] = user.taken_lectures;
     }
     for (const attend of data.attend) {
-      const lectureId = this.getLectureIdOfAttendRecord(existingLectures, attend);
+      const lectureId = this.getLectureIdOfAttendRecord(
+        existingLectures,
+        attend,
+      );
       if (lectureId) studentPairMap.get(attend.student_no)![1].push(lectureId);
       else
         result.errors.push({
@@ -60,6 +63,7 @@ export class SyncTakenLectureService {
         });
     }
 
+    const saveToDB = [];
     for (const [
       studentId,
       [existingTakenLectures, attendRecords],
@@ -83,10 +87,22 @@ export class SyncTakenLectureService {
             add: recordsToAdd,
           });
         }
+        if (attendRecords.length)
+          saveToDB.push(
+            ...attendRecords.map((lectureId) => ({
+              studentId,
+              lectureId,
+            })),
+          );
       } catch (e: any) {
         result.errors.push({ studentId, error: e.message || 'Unknown error' });
       }
     }
+
+    await this.syncRepository.replaceRawTakenLectures(saveToDB, {
+      year: data.year,
+      semester: data.semester,
+    });
 
     this.slackNoti.sendSyncNoti(
       `syncTakenLecture: ${result.updated.length} updated, ${result.errors.length} errors`,
@@ -103,5 +119,10 @@ export class SyncTakenLectureService {
         l.class_no === attend.lecture_class.trim(),
     );
     return lecture?.id;
+  }
+
+  async syncTakenLectureForStudent(studentId: number) {
+    const takenLectures =
+      await this.syncRepository.getUserExistingTakenLectures(studentId);
   }
 }

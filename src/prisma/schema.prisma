@@ -833,4 +833,5 @@ model sync_taken_lectures {
   subject_lecture subject_lecture @relation(fields: [lecture_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@unique([student_id, lecture_id])
+  @@index([year, semester])
 }

@@ -273,4 +273,23 @@ export class SyncRepository {
       });
     }
   }
+  async replaceRawTakenLectures(
+    data: {
+      studentId: number;
+      lectureId: number;
+    }[],
+    { year, semester }: { year: number; semester: number },
+  ) {
+    await this.prisma.sync_taken_lectures.deleteMany({
+      where: { year, semester },
+    });
+    await this.prisma.sync_taken_lectures.createMany({
+      data: data.map(({ studentId, lectureId }) => ({
+        year,
+        semester,
+        student_id: studentId,
+        lecture_id: lectureId,
+      })),
+    });
+  }
 }
