@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsIn,
   IsInt,
@@ -16,10 +17,12 @@ export namespace ISync {
     @IsIn([1, 2, 3, 4])
     semester!: number;
     /** 동기화 대상 강의 정보 */
-    @ValidateNested({ each: true })
+    @Type(() => ScholarLectureType)
+    @ValidateNested()
     lectures!: ScholarLectureType[];
     /** 강의 강사 정보 */
-    @ValidateNested({ each: true })
+    @Type(() => ScholarChargeType)
+    @ValidateNested()
     charges!: ScholarChargeType[];
   }
 
@@ -116,9 +119,10 @@ export namespace ISync {
     @IsString()
     old_no!: string;
     /** 영어 강의 여부 */
-    @IsIn(['Y', 'N'])
-    english_lec!: 'Y' | 'N';
+    @IsIn(['Y', 'N', ''], { message: (args) => JSON.stringify(args) })
+    english_lec!: 'Y' | 'N' | '';
     /** 교수(들) 영어 이름 */
+    @IsString()
     e_prof_names!: string;
   }
 
@@ -176,6 +180,7 @@ export namespace ISync {
     @IsIn([1, 2, 3, 4])
     semester!: number;
     /** 동기화 대상 시험시간 정보 */
+    @Type(() => ExamtimeType)
     @ValidateNested({ each: true })
     examtimes!: ExamtimeType[];
   }
@@ -232,6 +237,7 @@ export namespace ISync {
     @IsIn([1, 2, 3, 4])
     semester!: number;
     /** 동기화 대상 수업시간 정보 */
+    @Type(() => ClasstimeType)
     @ValidateNested({ each: true })
     classtimes!: ClasstimeType[];
   }
@@ -308,6 +314,7 @@ export namespace ISync {
     @IsIn([1, 2, 3, 4])
     semester!: number;
     /** 동기화 대상 수강 강의 정보 */
+    @Type(() => AttendType)
     @ValidateNested({ each: true })
     attend!: AttendType[];
   }
