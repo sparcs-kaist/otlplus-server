@@ -1,18 +1,16 @@
-import { AuthChain } from '../auth.chain';
 import {
   ExecutionContext,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
 import { Request } from 'express';
 import settings from '../../../settings';
-import * as bcrypt from 'bcrypt';
-import { AuthService } from '../auth.service';
-import { JwtService } from '@nestjs/jwt';
 import { AuthCommand, AuthResult } from '../auth.command';
+import { AuthService } from '../auth.service';
 
 @Injectable()
 export class JwtCommand implements AuthCommand {
@@ -48,7 +46,7 @@ export class JwtCommand implements AuthCommand {
             request,
             'refreshToken',
           );
-          if (!refreshToken) throw new UnauthorizedException();
+          if (!refreshToken) return prevResult;
           const payload = await this.jwtService.verify(refreshToken, {
             secret: settings().getJwtConfig().secret,
             ignoreExpiration: false,
