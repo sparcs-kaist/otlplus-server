@@ -35,6 +35,7 @@ export class SyncScholarDBService {
       departments: {
         created: [],
         updated: [],
+        deleted: [],
         errors: [],
       },
       courses: {
@@ -278,6 +279,20 @@ export class SyncScholarDBService {
         });
       }
     }
+
+    // Remove not existing lectures
+    try {
+      await this.syncRepository.markLecturesDeleted(
+        Array.from(notExistingLectures),
+      );
+      result.lectures.deleted = Array.from(notExistingLectures);
+    } catch (e: any) {
+      result.lectures.errors.push({
+        lecturesToDelete: Array.from(notExistingLectures),
+        error: e.message || 'Unknown error',
+      });
+    }
+
     this.slackNoti.sendSyncNoti(
       `Lecture created: ${result.lectures.created.length}, updated: ${result.lectures.updated.length}, errors: ${result.lectures.errors.length}`,
     );

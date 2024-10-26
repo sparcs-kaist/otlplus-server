@@ -199,6 +199,13 @@ export class SyncRepository {
       });
   }
 
+  async markLecturesDeleted(ids: number[]) {
+    await this.prisma.subject_lecture.updateMany({
+      where: { id: { in: ids } },
+      data: { deleted: true },
+    });
+  }
+
   async updateLectureExamtimes(
     id: number,
     { added, removed }: { added: DerivedExamtimeInfo[]; removed: number[] },
