@@ -35,7 +35,6 @@ export class SyncScholarDBService {
       departments: {
         created: [],
         updated: [],
-        deleted: [],
         errors: [],
       },
       courses: {
@@ -51,6 +50,8 @@ export class SyncScholarDBService {
       lectures: {
         created: [],
         updated: [],
+        chargeUpdated: [],
+        deleted: [],
         errors: [],
       },
     };
@@ -125,7 +126,7 @@ export class SyncScholarDBService {
         Array.from(lectureByCode.keys()),
       );
     this.slackNoti.sendSyncNoti(
-      `Found ${existingCourses.length} existing courses, updating...`,
+      `Found ${existingCourses.length} existing related courses, updating...`,
     );
     const courseMap = new Map(
       existingCourses.map((l) => [l.old_code, l] as const),
@@ -170,7 +171,7 @@ export class SyncScholarDBService {
       existingProfessors.map((p) => [p.professor_id, p]),
     );
     this.slackNoti.sendSyncNoti(
-      `Found ${existingProfessors.length} existing professors, updating...`,
+      `Found ${existingProfessors.length} existing related professors, updating...`,
     );
     const processedProfessorIds = new Set<number>();
     for (const charge of data.charges) {
@@ -253,17 +254,24 @@ export class SyncScholarDBService {
             professorCharges,
           );
 
-          if (addedIds.length || removedIds.length)
+          if (addedIds.length || removedIds.length) {
             await this.syncRepository.updateLectureProfessors(foundLecture.id, {
               added: addedIds,
               removed: removedIds,
             });
+            result.lectures.chargeUpdated.push({
+              lecture: foundLecture,
+              added: addedIds.map((id) => professorMap.get(id)),
+              removed: removedIds.map((id) => professorMap.get(id) || { id }),
+            });
+          }
         } else {
           const newLecture = await this.syncRepository.createLecture(
             derivedLecture,
           );
-          result.lectures.created.push(newLecture);
           const addedIds = professorCharges.map((charge) => charge.prof_id);
+
+          result.lectures.created.push({ ...newLecture, professors: addedIds });
           await this.syncRepository.updateLectureProfessors(newLecture.id, {
             added: addedIds,
             removed: [],
