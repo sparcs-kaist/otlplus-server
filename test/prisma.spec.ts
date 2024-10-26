@@ -1,12 +1,11 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { AppModule } from '../src/app.module';
-import { PrismaService } from '../src/prisma/prisma.service';
-import { CourseRepository } from '../src/prisma/repositories/course.repository';
 import { ELecture } from '@src/common/entities/ELecture';
 import { applyOffset, applyOrder } from '@src/common/utils/search.utils';
 import { LectureRepository } from '@src/prisma/repositories/lecture.repository';
-import { set } from 'date-fns';
+import { AppModule } from '../src/app.module';
+import { PrismaService } from '../src/prisma/prisma.service';
+import { CourseRepository } from '../src/prisma/repositories/course.repository';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -126,7 +125,6 @@ describe('AppController (e2e)', () => {
       },
       take: DEFAULT_LIMIT,
     };
-    console.log(JSON.stringify(options, null, 2));
     const queryResult = await prisma.subject_lecture.findMany(options);
     const levelFilteredResult = courseRepo.levelFilter<ELecture.Details>(
       queryResult,
@@ -138,7 +136,6 @@ describe('AppController (e2e)', () => {
       (['old_code', 'class_no'] ?? DEFAULT_ORDER) as (keyof ELecture.Details)[],
     );
     const result = applyOffset<ELecture.Details>(orderedQuery, 0);
-    console.log(JSON.stringify(result, null, 2));
   });
 
   // it("select classtime", async () => {
