@@ -53,7 +53,6 @@ export class SyncScholarDBService {
         errors: [],
       },
     };
-    console.log(data.lectures);
 
     const staffProfessor =
       await this.syncRepository.getOrCreateStaffProfessor();
@@ -120,9 +119,6 @@ export class SyncScholarDBService {
     const lectureByCode = new Map(
       data.lectures.map((l) => [l.old_no, l] as const),
     );
-    console.log(data.lectures[0]);
-    console.log(lectureByCode);
-    for (const code in lectureByCode.keys()) console.log(code);
     const existingCourses =
       await this.syncRepository.getExistingCoursesByOldCodes(
         Array.from(lectureByCode.keys()),

@@ -8,7 +8,7 @@ export class SlackNotiService {
   constructor() {
     const key = settings().syncConfig().slackKey;
     if (key) this.client = new WebClient(key);
-    else console.warn('No slack key, logging to console.');
+    else console.info('No slack key, logging to console.');
   }
 
   async sendSyncNoti(text: string) {
@@ -17,6 +17,6 @@ export class SlackNotiService {
         channel: '#otl-db-sync',
         text,
       });
-    else console.log(text);
+    else console.info(text);
   }
 }
