@@ -591,8 +591,8 @@ export class SyncScholarDBService {
   deriveExamtimeInfo(examtime: ISync.ExamtimeType): DerivedExamtimeInfo {
     return {
       day: examtime.exam_day - 1,
-      begin: new Date(examtime.exam_begin),
-      end: new Date(examtime.exam_end),
+      begin: new Date('1970-01-01T' + examtime.exam_begin.slice(11)),
+      end: new Date('1970-01-01T' + examtime.exam_end.slice(11)),
     };
   }
 
@@ -610,8 +610,8 @@ export class SyncScholarDBService {
   deriveClasstimeInfo(classTime: ISync.ClasstimeType): DerivedClasstimeInfo {
     return {
       day: classTime.lecture_day - 1,
-      begin: new Date(classTime.lecture_begin),
-      end: new Date(classTime.lecture_end),
+      begin: new Date('1970-01-01T' + classTime.lecture_begin.slice(11)),
+      end: new Date('1970-01-01T' + classTime.lecture_end.slice(11)),
       type: classTime.lecture_type,
       building_id: classTime.building.toString(),
       room_name: classTime.room_no,
