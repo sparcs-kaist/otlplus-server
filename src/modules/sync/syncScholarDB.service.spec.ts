@@ -162,8 +162,20 @@ const examtimeData = [...Array(1).keys()].map((i) => ({
   lecture_id: lectureData[i].id,
   day: 0,
   begin: new Date('1970-01-01T09:00:00'),
-  end: new Date('1970-01-01T10:30:00'),
+  end: new Date('1970-01-01T12:00:00'),
 }));
+
+const examtimeBase = {
+  lecture_year: 3000,
+  lecture_term: 1,
+  subject_no: lectureData[0].code,
+  lecture_class: lectureData[0].class_no + ' ',
+  dept_id: lectureData[0].department_id,
+  exam_day: 1,
+  exam_begin: '1900-01-01 09:00:00.0',
+  exam_end: '1900-01-01 12:00:00.0',
+  notice: '',
+} as const;
 
 maybe('SyncScholarDBService', () => {
   let service: SyncScholarDBService;
@@ -560,7 +572,7 @@ maybe('SyncScholarDBService', () => {
     });
   });
 
-  describe('sync', () => {
+  describe('sync classtime', () => {
     beforeAll(async () => {
       await prisma.subject_lecture_professors.deleteMany();
       await prisma.subject_lecture.deleteMany();
@@ -683,6 +695,128 @@ maybe('SyncScholarDBService', () => {
             lecture_day: 3,
             lecture_begin: '1900-01-01 09:00:00.0',
             lecture_end: '1900-01-01 10:30:00.0',
+          },
+        ],
+      });
+
+      expect(result.updated.length).toBe(0);
+    });
+  });
+
+  describe('sync examtime', () => {
+    beforeAll(async () => {
+      await prisma.subject_lecture_professors.deleteMany();
+      await prisma.subject_lecture.deleteMany();
+      await prisma.subject_course.deleteMany();
+      await prisma.subject_professor.deleteMany();
+      await prisma.subject_department.deleteMany();
+
+      await prisma.subject_department.createMany({ data: departmentData });
+      await prisma.subject_course.createMany({ data: courseData });
+      await prisma.subject_professor.createMany({ data: professorData });
+      await prisma.subject_lecture.createMany({ data: lectureData });
+    });
+
+    afterAll(async () => {
+      await prisma.subject_lecture_professors.deleteMany();
+      await prisma.subject_lecture.deleteMany();
+      await prisma.subject_course.deleteMany();
+      await prisma.subject_professor.deleteMany();
+      await prisma.subject_department.deleteMany();
+    });
+
+    beforeEach(async () => {
+      await prisma.subject_examtime.deleteMany();
+
+      await prisma.subject_examtime.createMany({ data: examtimeData });
+    });
+
+    afterEach(async () => {
+      await prisma.subject_examtime.deleteMany();
+    });
+
+    it('should handle examtime creation & deletion', async () => {
+      const existingLecture = lectureData[1]; // Use the second lecture from lectureData
+
+      const result = await service.syncExamtime({
+        year: 3000,
+        semester: 1,
+        examtimes: [
+          {
+            ...examtimeBase,
+            subject_no: existingLecture.code,
+            lecture_class: existingLecture.class_no,
+            dept_id: existingLecture.department_id,
+            exam_day: 2,
+            exam_begin: '1900-01-01 13:00:00.0',
+            exam_end: '1900-01-01 14:30:00.0',
+          },
+        ],
+      });
+
+      expect(result.updated.length).toBe(2);
+      expect(
+        result.updated.filter((l: any) => l.lecture === existingLecture.code)[0]
+          .added.length,
+      ).toBe(1);
+      expect(
+        result.updated.filter((l: any) => l.lecture === lectureData[0].code)[0]
+          .removed.length,
+      ).toBe(1);
+
+      const examtime = await prisma.subject_examtime.findFirst({
+        where: { lecture_id: existingLecture.id },
+      });
+
+      expect(examtime).toMatchObject({
+        day: 1,
+        begin: new Date('1970-01-01T13:00:00'),
+        end: new Date('1970-01-01T14:30:00'),
+      });
+    });
+
+    it('should handle examtime update', async () => {
+      const existingLecture = lectureData[0]; // Use the first lecture
+
+      const result = await service.syncExamtime({
+        year: 3000,
+        semester: 1,
+        examtimes: [
+          {
+            ...examtimeBase,
+            subject_no: existingLecture.code,
+            lecture_class: existingLecture.class_no,
+            dept_id: existingLecture.department_id,
+            exam_day: 2,
+            exam_begin: '1900-01-01 14:00:00.0',
+            exam_end: '1900-01-01 15:30:00.0',
+          },
+        ],
+      });
+
+      expect(result.updated.length).toBe(1);
+      expect(result.updated[0].added.length).toBe(1);
+      expect(result.updated[0].removed.length).toBe(1);
+
+      const updatedExamtime = await prisma.subject_examtime.findFirst({});
+
+      expect(updatedExamtime).toMatchObject({
+        day: 1,
+        begin: new Date('1970-01-01T14:00:00'),
+        end: new Date('1970-01-01T15:30:00'),
+      });
+    });
+
+    it('should not update examtime if no changes are detected', async () => {
+      const result = await service.syncExamtime({
+        year: 3000,
+        semester: 1,
+        examtimes: [
+          {
+            ...examtimeBase,
+            exam_day: 1,
+            exam_begin: '1900-01-01 09:00:00.0',
+            exam_end: '1900-01-01 10:30:00.0',
           },
         ],
       });
