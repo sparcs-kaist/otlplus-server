@@ -4,11 +4,13 @@ import { AppModule } from '@src/app.module';
 import { PrismaService } from '@src/prisma/prisma.service';
 import { SyncScholarDBService } from './syncScholarDB.service';
 
+// This tests on test database only. Add `DATABASE_URL` with `otlplus_test` database to run this test.
+
 const maybe = process.env.DATABASE_URL?.includes('/otlplus_test?')
   ? describe
   : describe.skip;
 
-const departmentData = [...Array(5).keys()].map((i) => ({
+const departmentData = [...Array(2).keys()].map((i) => ({
   id: i + 1,
   num_id: (10 + i).toString(),
   code: String.fromCharCode(65 + i),
@@ -16,7 +18,7 @@ const departmentData = [...Array(5).keys()].map((i) => ({
   name_en: `department${i}`,
   visible: true,
 }));
-const courseData = [...Array(5).keys()].map((i) => ({
+const courseData = [...Array(2).keys()].map((i) => ({
   id: i + 1,
   old_code: `${departmentData[i].code}10${i}`,
   department_id: departmentData[i].id,
@@ -35,7 +37,7 @@ const courseData = [...Array(5).keys()].map((i) => ({
   title_no_space: `과목${i}`,
   title_en_no_space: `subject${i}`,
 }));
-const professorData = [...Array(5).keys()].map((i) => ({
+const professorData = [...Array(2).keys()].map((i) => ({
   id: i + 1,
   professor_id: i + 1,
   professor_name: `교수${i}`,
@@ -49,7 +51,7 @@ const professorData = [...Array(5).keys()].map((i) => ({
   load: 0,
   speech: 0,
 }));
-const lectureData = [...Array(5).keys()].map((i) => ({
+const lectureData = [...Array(2).keys()].map((i) => ({
   id: i + 1,
   code: `${departmentData[i].num_id}:10${i}`,
   year: 3000,
@@ -106,6 +108,62 @@ const lectureBase = {
   english_lec: 'N' as const,
   e_prof_names: 'professor0',
 };
+
+const classtimeData = [...Array(1).keys()]
+  .map((i) => [
+    {
+      id: 2 * i + 1,
+      lecture_id: lectureData[i].id,
+      day: 0,
+      begin: new Date('1970-01-01T09:00:00'),
+      end: new Date('1970-01-01T10:30:00'),
+      type: 'l',
+      building_id: '301',
+      building_full_name: '(E11)창의학습관',
+      building_full_name_en: '(E11)Creative Learning Bldg.',
+      room_name: '304',
+      unit_time: 1,
+    },
+    {
+      id: 2 * i + 2,
+      lecture_id: lectureData[i].id,
+      day: 2,
+      begin: new Date('1970-01-01T09:00:00'),
+      end: new Date('1970-01-01T10:30:00'),
+      type: 'l',
+      building_id: '301',
+      building_full_name: '(E11)창의학습관',
+      building_full_name_en: '(E11)Creative Learning Bldg.',
+      room_name: '304',
+      unit_time: 1,
+    },
+  ])
+  .flat();
+
+const classtimeBase = {
+  lecture_year: 3000,
+  lecture_term: 1,
+  subject_no: lectureData[0].code,
+  lecture_class: lectureData[0].class_no + ' ',
+  dept_id: lectureData[0].department_id,
+  lecture_day: 1,
+  lecture_begin: '1900-01-01 09:00:00.0',
+  lecture_end: '1900-01-01 10:30:00.0',
+  lecture_type: 'l',
+  building: 301,
+  room_no: '304',
+  room_k_name: '(E11)창의학습관',
+  room_e_name: '(E11)Creative Learning Bldg.',
+  teaching: 1,
+} as const;
+
+const examtimeData = [...Array(1).keys()].map((i) => ({
+  id: i + 1,
+  lecture_id: lectureData[i].id,
+  day: 0,
+  begin: new Date('1970-01-01T09:00:00'),
+  end: new Date('1970-01-01T10:30:00'),
+}));
 
 maybe('SyncScholarDBService', () => {
   let service: SyncScholarDBService;
@@ -381,12 +439,12 @@ maybe('SyncScholarDBService', () => {
         charges: [],
       });
 
-      expect(result.lectures.deleted.length).toBe(5);
+      expect(result.lectures.deleted.length).toBe(lectureData.length);
 
       const deletedLectureCount = await prisma.subject_lecture.count({
         where: { deleted: true },
       });
-      expect(deletedLectureCount).toBe(5);
+      expect(deletedLectureCount).toBe(lectureData.length);
     });
 
     it('should handle professor creation', async () => {
@@ -490,10 +548,6 @@ maybe('SyncScholarDBService', () => {
         ],
       });
 
-      console.log(result.professors.updated);
-      console.log(result.lectures.updated);
-      console.log(result.lectures.chargeUpdated[0]);
-
       expect(result.professors.updated.length).toBe(0);
       expect(result.professors.created.length).toBe(0);
       expect(result.lectures.updated.length).toBe(0);
@@ -503,6 +557,137 @@ maybe('SyncScholarDBService', () => {
         added: [{ id: professorData[1].id }],
         removed: [{ id: professorData[0].id }],
       });
+    });
+  });
+
+  describe('sync', () => {
+    beforeAll(async () => {
+      await prisma.subject_lecture_professors.deleteMany();
+      await prisma.subject_lecture.deleteMany();
+      await prisma.subject_course.deleteMany();
+      await prisma.subject_professor.deleteMany();
+      await prisma.subject_department.deleteMany();
+
+      await prisma.subject_department.createMany({ data: departmentData });
+      await prisma.subject_course.createMany({ data: courseData });
+      await prisma.subject_professor.createMany({ data: professorData });
+      await prisma.subject_lecture.createMany({ data: lectureData });
+    });
+
+    afterAll(async () => {
+      await prisma.subject_lecture_professors.deleteMany();
+      await prisma.subject_lecture.deleteMany();
+      await prisma.subject_course.deleteMany();
+      await prisma.subject_professor.deleteMany();
+      await prisma.subject_department.deleteMany();
+    });
+
+    beforeEach(async () => {
+      await prisma.subject_classtime.deleteMany();
+
+      await prisma.subject_classtime.createMany({ data: classtimeData });
+    });
+
+    afterEach(async () => {
+      await prisma.subject_classtime.deleteMany();
+    });
+
+    it('should handle classtime creation & deletion', async () => {
+      const existingLecture = lectureData[1]; // Use the second lecture from lectureData
+
+      const result = await service.syncClassTime({
+        year: 3000,
+        semester: 1,
+        classtimes: [
+          {
+            ...classtimeBase,
+            subject_no: existingLecture.code,
+            lecture_class: existingLecture.class_no,
+            dept_id: existingLecture.department_id,
+            lecture_day: 2,
+            lecture_begin: '1900-01-01 13:00:00.0',
+            lecture_end: '1900-01-01 14:30:00.0',
+          },
+        ],
+      });
+
+      expect(result.updated.length).toBe(2);
+      expect(
+        result.updated.filter((l: any) => l.lecture === existingLecture.code)[0]
+          .added.length,
+      ).toBe(1);
+      expect(
+        result.updated.filter((l: any) => l.lecture === lectureData[0].code)[0]
+          .removed.length,
+      ).toBe(2);
+
+      const classtime = await prisma.subject_classtime.findFirst({
+        where: { lecture_id: existingLecture.id },
+      });
+
+      expect(classtime).toMatchObject({
+        day: 1,
+        begin: new Date('1970-01-01T13:00:00'),
+        end: new Date('1970-01-01T14:30:00'),
+        building_id: '301',
+      });
+    });
+
+    it('should handle classtime update', async () => {
+      const existingLecture = lectureData[0]; // Use the first lecture
+
+      const result = await service.syncClassTime({
+        year: 3000,
+        semester: 1,
+        classtimes: [
+          {
+            ...classtimeBase,
+            subject_no: existingLecture.code,
+            lecture_class: existingLecture.class_no,
+            dept_id: existingLecture.department_id,
+            lecture_day: 2,
+            lecture_begin: '1900-01-01 14:00:00.0',
+            lecture_end: '1900-01-01 15:30:00.0',
+          },
+        ],
+      });
+
+      expect(result.updated.length).toBe(1);
+      expect(result.updated[0].added.length).toBe(1);
+      expect(result.updated[0].removed.length).toBe(2);
+
+      const updatedClasstime = await prisma.subject_classtime.findFirst({});
+
+      expect(updatedClasstime).toMatchObject({
+        day: 1,
+        begin: new Date('1970-01-01T14:00:00'),
+        end: new Date('1970-01-01T15:30:00'),
+      });
+    });
+
+    it('should not update classtime if no changes are detected', async () => {
+      const existingLecture = lectureData[0]; // Use the first lecture
+
+      const result = await service.syncClassTime({
+        year: 3000,
+        semester: 1,
+        classtimes: [
+          {
+            ...classtimeBase,
+            lecture_day: 1,
+            lecture_begin: '1900-01-01 09:00:00.0',
+            lecture_end: '1900-01-01 10:30:00.0',
+          },
+          {
+            ...classtimeBase,
+            lecture_day: 3,
+            lecture_begin: '1900-01-01 09:00:00.0',
+            lecture_end: '1900-01-01 10:30:00.0',
+          },
+        ],
+      });
+
+      expect(result.updated.length).toBe(0);
     });
   });
 });
