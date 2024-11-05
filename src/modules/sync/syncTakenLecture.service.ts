@@ -107,6 +107,8 @@ export class SyncTakenLectureService {
     this.slackNoti.sendSyncNoti(
       `syncTakenLecture: ${result.updated.length} updated, ${result.errors.length} errors`,
     );
+
+    return result;
   }
 
   getLectureIdOfAttendRecord(
