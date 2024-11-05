@@ -180,7 +180,6 @@ const examtimeBase = {
 maybe('SyncScholarDBService', () => {
   let service: SyncScholarDBService;
   let prisma: PrismaService;
-  let consoleInfoSpy: jest.SpyInstance;
   let users: session_userprofile[];
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -190,7 +189,6 @@ maybe('SyncScholarDBService', () => {
 
     service = module.get<SyncScholarDBService>(SyncScholarDBService);
     prisma = module.get<PrismaService>(PrismaService);
-    // consoleInfoSpy = jest.spyOn(console, 'info').mockImplementation(() => {});
 
     const userData = [...Array(5).keys()].map((i) => ({
       student_id: `3000000${i}`,
@@ -205,19 +203,27 @@ maybe('SyncScholarDBService', () => {
     users = await prisma.session_userprofile.findMany();
   });
 
-  afterEach(() => {
-    // consoleInfoSpy.mockClear();
-  });
-
   afterAll(async () => {
-    // consoleInfoSpy.mockRestore();
-
     await prisma.session_userprofile.deleteMany();
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
+
+  function checkNoError(result: any) {
+    if (result.departments.errors.length > 0)
+      console.error(result.departments.errors);
+    if (result.courses.errors.length > 0) console.error(result.courses.errors);
+    if (result.lectures.errors.length > 0)
+      console.error(result.lectures.errors);
+    if (result.professors.errors.length > 0)
+      console.error(result.professors.errors);
+    expect(result.departments.errors.length).toBe(0);
+    expect(result.courses.errors.length).toBe(0);
+    expect(result.lectures.errors.length).toBe(0);
+    expect(result.professors.errors.length).toBe(0);
+  }
 
   describe('syncScholarDB', () => {
     beforeEach(async () => {
@@ -258,6 +264,7 @@ maybe('SyncScholarDBService', () => {
       });
 
       expect(result.departments.created.length).toBe(1);
+      checkNoError(result);
 
       const department = await prisma.subject_department.findFirst({
         where: { id: 10 },
@@ -288,6 +295,7 @@ maybe('SyncScholarDBService', () => {
       });
 
       expect(result.departments.updated.length).toBe(1);
+      checkNoError(result);
 
       const department = await prisma.subject_department.findFirst({
         where: { id: departmentData[0].id },
@@ -320,6 +328,7 @@ maybe('SyncScholarDBService', () => {
       });
 
       expect(result.courses.created.length).toBe(1);
+      checkNoError(result);
 
       const course = await prisma.subject_course.findFirst({
         where: { old_code: `${departmentData[0].code}200` },
@@ -352,6 +361,7 @@ maybe('SyncScholarDBService', () => {
       });
 
       expect(result.courses.updated.length).toBe(1);
+      checkNoError(result);
 
       const updatedCourse = await prisma.subject_course.findFirst({
         where: { old_code: existingLecture.old_code },
@@ -386,6 +396,7 @@ maybe('SyncScholarDBService', () => {
 
       expect(result.lectures.updated.length).toBe(0);
       expect(result.lectures.created.length).toBe(1);
+      checkNoError(result);
 
       const lecture = await prisma.subject_lecture.findFirst({
         where: {
@@ -425,6 +436,7 @@ maybe('SyncScholarDBService', () => {
 
       expect(result.lectures.updated.length).toBe(1);
       expect(result.lectures.updated.length).toBe(1);
+      checkNoError(result);
 
       const updatedLecture = await prisma.subject_lecture.findFirst({
         where: {
@@ -452,6 +464,7 @@ maybe('SyncScholarDBService', () => {
       });
 
       expect(result.lectures.deleted.length).toBe(lectureData.length);
+      checkNoError(result);
 
       const deletedLectureCount = await prisma.subject_lecture.count({
         where: { deleted: true },
@@ -482,6 +495,7 @@ maybe('SyncScholarDBService', () => {
       });
 
       expect(result.professors.created.length).toBe(1);
+      checkNoError(result);
 
       const professor = await prisma.subject_professor.findFirst({
         where: { professor_id: 999 },
@@ -518,6 +532,7 @@ maybe('SyncScholarDBService', () => {
       });
 
       expect(result.professors.updated.length).toBe(1);
+      checkNoError(result);
 
       const updatedProfessor = await prisma.subject_professor.findFirst({
         where: { professor_id: existingProfessor.professor_id },
@@ -564,6 +579,7 @@ maybe('SyncScholarDBService', () => {
       expect(result.professors.created.length).toBe(0);
       expect(result.lectures.updated.length).toBe(0);
       expect(result.lectures.chargeUpdated.length).toBe(1);
+      checkNoError(result);
 
       expect(result.lectures.chargeUpdated[0]).toMatchObject({
         added: [{ id: professorData[1].id }],
