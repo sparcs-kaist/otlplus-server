@@ -252,6 +252,7 @@ export class SyncScholarDBService {
           const { addedIds, removedIds } = this.lectureProfessorsChanges(
             foundLecture,
             professorCharges,
+            professorMap,
           );
 
           if (addedIds.length || removedIds.length) {
@@ -269,7 +270,9 @@ export class SyncScholarDBService {
           const newLecture = await this.syncRepository.createLecture(
             derivedLecture,
           );
-          const addedIds = professorCharges.map((charge) => charge.prof_id);
+          const addedIds = professorCharges.map(
+            (charge) => professorMap.get(charge.prof_id)!.id,
+          );
 
           result.lectures.created.push({ ...newLecture, professors: addedIds });
           await this.syncRepository.updateLectureProfessors(newLecture.id, {
@@ -436,6 +439,7 @@ export class SyncScholarDBService {
   lectureProfessorsChanges(
     lecture: ELecture.Details,
     charges: ISync.ScholarChargeType[],
+    professorMap: Map<number, EProfessor.Basic>,
   ): { addedIds: number[]; removedIds: number[] } {
     const addedIds = charges
       .filter(
@@ -444,7 +448,7 @@ export class SyncScholarDBService {
             (p) => p.professor.id === charge.prof_id,
           ),
       )
-      .map((charge) => charge.prof_id);
+      .map((charge) => professorMap.get(charge.prof_id)!.id);
     const removedIds = lecture.subject_lecture_professors
       .filter(
         (p) => !charges.find((charge) => charge.prof_id === p.professor.id),
