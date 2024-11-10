@@ -274,11 +274,11 @@ export class SyncScholarDBService {
             (charge) => professorMap.get(charge.prof_id)!.id,
           );
 
-          result.lectures.created.push({ ...newLecture, professors: addedIds });
           await this.syncRepository.updateLectureProfessors(newLecture.id, {
             added: addedIds,
             removed: [],
           });
+          result.lectures.created.push({ ...newLecture, professors: addedIds });
         }
       } catch (e: any) {
         result.lectures.errors.push({
@@ -445,16 +445,22 @@ export class SyncScholarDBService {
       .filter(
         (charge) =>
           !lecture.subject_lecture_professors.find(
-            (p) => p.professor.id === charge.prof_id,
+            (p) => p.professor.professor_id === charge.prof_id,
           ),
       )
       .map((charge) => professorMap.get(charge.prof_id)!.id);
     const removedIds = lecture.subject_lecture_professors
       .filter(
-        (p) => !charges.find((charge) => charge.prof_id === p.professor.id),
+        (p) =>
+          !charges.find(
+            (charge) => charge.prof_id === p.professor.professor_id,
+          ),
       )
       .map((p) => p.professor.id);
-    return { addedIds, removedIds };
+    return {
+      addedIds: Array.from(new Set(addedIds)),
+      removedIds: Array.from(new Set(removedIds)),
+    };
   }
 
   async syncExamtime(data: ISync.ExamtimeBody) {

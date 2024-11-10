@@ -296,13 +296,13 @@ export namespace ISync {
     @IsString()
     room_no!: string;
     /** 강의실 한글 이름 */
-    @IsInt()
+    @IsString()
     room_k_name!: string;
     /** 강의실 영어 이름 */
     @IsString()
     room_e_name!: string;
     /** 수업 교시 */
-    @IsString()
+    @IsInt()
     teaching!: number;
   }
 
