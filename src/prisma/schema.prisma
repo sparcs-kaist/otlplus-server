@@ -358,7 +358,7 @@ model subject_classtime {
   building_id           String?          @db.VarChar(10)
   building_full_name    String?          @db.VarChar(60)
   building_full_name_en String?          @db.VarChar(60)
-  room_name             String?          @db.VarChar(20)
+  room_name             String?          @db.VarChar(40)
   unit_time             Int?             @db.SmallInt
   lecture_id            Int?
   subject_lecture       subject_lecture? @relation(fields: [lecture_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "subject_classtime_lecture_id_bf773e65_fk_subject_lecture_id")
@@ -370,8 +370,8 @@ model subject_course {
   id                                                                                                               Int                                        @id @default(autoincrement())
   old_code                                                                                                         String                                     @db.VarChar(10)
   department_id                                                                                                    Int
-  type                                                                                                             String                                     @db.VarChar(12)
-  type_en                                                                                                          String                                     @db.VarChar(36)
+  type                                                                                                             String                                     @db.VarChar(30)
+  type_en                                                                                                          String                                     @db.VarChar(60)
   title                                                                                                            String                                     @db.VarChar(100)
   title_en                                                                                                         String                                     @db.VarChar(200)
   summury                                                                                                          String                                     @db.VarChar(400)
@@ -454,7 +454,7 @@ model subject_department {
   num_id                                   String                                     @db.VarChar(4)
   code                                     String                                     @db.VarChar(5)
   name                                     String                                     @db.VarChar(60)
-  name_en                                  String?                                    @db.VarChar(60)
+  name_en                                  String?                                    @db.VarChar(100)
   visible                                  Boolean
   graduation_additionaltrack               graduation_additionaltrack[]
   graduation_majortrack                    graduation_majortrack[]
@@ -490,8 +490,8 @@ model subject_lecture {
   class_no                        String                               @db.VarChar(4)
   title                           String                               @db.VarChar(100)
   title_en                        String                               @db.VarChar(200)
-  type                            String                               @db.VarChar(12)
-  type_en                         String                               @db.VarChar(36)
+  type                            String                               @db.VarChar(30)
+  type_en                         String                               @db.VarChar(60)
   audience                        Int
   credit                          Int
   num_classes                     Int
