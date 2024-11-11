@@ -253,8 +253,15 @@ export class SyncRepository {
     });
   }
 
+  async getUserProfileIdsFromStudentIds(studentIds: number[]) {
+    return await this.prisma.session_userprofile.findMany({
+      where: { student_id: { in: studentIds.map((id) => id.toString()) } },
+      select: { id: true, student_id: true },
+    });
+  }
+
   async updateTakenLectures(
-    student_id: number,
+    userprofile_id: number,
     data: {
       remove: number[];
       add: number[];
@@ -265,18 +272,8 @@ export class SyncRepository {
         where: { id: { in: data.remove } },
       });
     if (data.add.length) {
-      const userIds = (
-        await this.prisma.session_userprofile.findMany({
-          where: { student_id: student_id.toString() },
-          select: { id: true },
-        })
-      ).map((u) => u.id);
       await this.prisma.session_userprofile_taken_lectures.createMany({
-        data: userIds
-          .map((userprofile_id) =>
-            data.add.map((lecture_id) => ({ userprofile_id, lecture_id })),
-          )
-          .flat(),
+        data: data.add.map((lecture_id) => ({ userprofile_id, lecture_id })),
       });
     }
   }
