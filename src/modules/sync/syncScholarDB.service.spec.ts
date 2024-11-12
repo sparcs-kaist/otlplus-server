@@ -115,8 +115,8 @@ const classtimeData = [...Array(1).keys()]
       id: 2 * i + 1,
       lecture_id: lectureData[i].id,
       day: 0,
-      begin: new Date('1970-01-01T09:00:00'),
-      end: new Date('1970-01-01T10:30:00'),
+      begin: new Date('1970-01-01T09:00:00Z'),
+      end: new Date('1970-01-01T10:30:00Z'),
       type: 'l',
       building_id: '301',
       building_full_name: '(E11)창의학습관',
@@ -128,8 +128,8 @@ const classtimeData = [...Array(1).keys()]
       id: 2 * i + 2,
       lecture_id: lectureData[i].id,
       day: 2,
-      begin: new Date('1970-01-01T09:00:00'),
-      end: new Date('1970-01-01T10:30:00'),
+      begin: new Date('1970-01-01T09:00:00Z'),
+      end: new Date('1970-01-01T10:30:00Z'),
       type: 'l',
       building_id: '301',
       building_full_name: '(E11)창의학습관',
@@ -161,8 +161,8 @@ const examtimeData = [...Array(1).keys()].map((i) => ({
   id: i + 1,
   lecture_id: lectureData[i].id,
   day: 0,
-  begin: new Date('1970-01-01T09:00:00'),
-  end: new Date('1970-01-01T12:00:00'),
+  begin: new Date('1970-01-01T09:00:00Z'),
+  end: new Date('1970-01-01T12:00:00Z'),
 }));
 
 const examtimeBase = {
@@ -655,8 +655,8 @@ maybe('SyncScholarDBService', () => {
 
       expect(classtime).toMatchObject({
         day: 1,
-        begin: new Date('1970-01-01T13:00:00'),
-        end: new Date('1970-01-01T14:30:00'),
+        begin: new Date('1970-01-01T13:00:00Z'),
+        end: new Date('1970-01-01T14:30:00Z'),
         building_id: '301',
       });
     });
@@ -688,8 +688,8 @@ maybe('SyncScholarDBService', () => {
 
       expect(updatedClasstime).toMatchObject({
         day: 1,
-        begin: new Date('1970-01-01T14:00:00'),
-        end: new Date('1970-01-01T15:30:00'),
+        begin: new Date('1970-01-01T14:00:00Z'),
+        end: new Date('1970-01-01T15:30:00Z'),
       });
     });
 
@@ -786,8 +786,8 @@ maybe('SyncScholarDBService', () => {
 
       expect(examtime).toMatchObject({
         day: 1,
-        begin: new Date('1970-01-01T13:00:00'),
-        end: new Date('1970-01-01T14:30:00'),
+        begin: new Date('1970-01-01T13:00:00Z'),
+        end: new Date('1970-01-01T14:30:00Z'),
       });
     });
 
@@ -818,8 +818,8 @@ maybe('SyncScholarDBService', () => {
 
       expect(updatedExamtime).toMatchObject({
         day: 1,
-        begin: new Date('1970-01-01T14:00:00'),
-        end: new Date('1970-01-01T15:30:00'),
+        begin: new Date('1970-01-01T14:00:00Z'),
+        end: new Date('1970-01-01T15:30:00Z'),
       });
     });
 
@@ -832,7 +832,7 @@ maybe('SyncScholarDBService', () => {
             ...examtimeBase,
             exam_day: 1,
             exam_begin: '1900-01-01 09:00:00.0',
-            exam_end: '1900-01-01 10:30:00.0',
+            exam_end: '1900-01-01 12:00:00.0',
           },
         ],
       });

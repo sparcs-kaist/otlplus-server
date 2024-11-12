@@ -126,8 +126,9 @@ export class SyncTakenLectureService {
             });
             result.updated.push({
               studentId,
-              remove: recordIdsToRemove.map((id) =>
-                existingTakenLectures.find((e) => e.id === id),
+              remove: recordIdsToRemove.map(
+                (id) =>
+                  existingTakenLectures.find((e) => e.id === id)?.lecture_id,
               ),
               add: recordsToAdd,
             });
