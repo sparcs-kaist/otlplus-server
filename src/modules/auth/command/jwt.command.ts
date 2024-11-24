@@ -36,7 +36,11 @@ export class JwtCommand implements AuthCommand {
         secret: settings().getJwtConfig().secret,
         ignoreExpiration: false,
       });
-      const user = this.authService.findBySid(payload.sid);
+      const user = await this.authService.findBySid(payload.sid);
+
+      if (user == null) {
+        throw new NotFoundException('user is not found');
+      }
       request['user'] = user;
       prevResult.authentication = true;
       prevResult.authorization = true;

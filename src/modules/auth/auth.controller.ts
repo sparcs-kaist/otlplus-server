@@ -41,7 +41,6 @@ export class AuthController {
     }
     req.session['next'] = next ?? '/';
     const request_url = req.get('host') ?? 'otl.kaist.ac.kr';
-    console.log(request_url);
     const { url, state } = this.ssoClient.get_login_params(request_url);
     req.session['sso_state'] = state;
     if (social_login === '0') {

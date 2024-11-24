@@ -59,15 +59,16 @@ async function bootstrap() {
   // );
 
   // Logs responses
-  app.use(
-    morgan(':method :url :status :res[content-length] :response-time ms', {
-      stream: {
-        write: (message) => {
-          console.info(message.trim());
-        },
-      },
-    }),
-  );
+  // app.use(
+  //   morgan(':method :url :status :res[content-length] :response-time ms', {
+  //     stream: {
+  //       write: (message) => {
+  //         // console.log(formatMemoryUsage())
+  //         console.info(message.trim());
+  //       },
+  //     },
+  //   }),
+  // );
 
   app.enableShutdownHooks();
   return app.listen(8000);
