@@ -8,7 +8,8 @@ import hmac
 import hashlib
 
 FLASK_ENV = os.getenv("FLASK_ENV", "development")
-load_dotenv(f".env.{FLASK_ENV}")
+print(FLASK_ENV)
+load_dotenv(f"./env/.env.{FLASK_ENV}")
 
 app = Flask(__name__)
 
@@ -20,12 +21,21 @@ app.wsgi_app = ProxyFix(
 def otlplus_redeploy():
     webhook_secret = os.getenv("WEBHOOK_SECRET").encode()
     signature = 'sha256=' + hmac.new(webhook_secret, request.data, hashlib.sha256).hexdigest()
+    print(signature)
+    print( request.headers['X-Hub-Signature-256'])
     if 'X-Hub-Signature-256' not in request.headers or not hmac.compare_digest(
         signature, request.headers['X-Hub-Signature-256']
     ):
         abort(403) 
     
-    os.spawnl(os.P_NOWAIT, "/bin/bash", "/bin/bash", "/home/otlplus/server/deploy.sh -e dev")
+    os.spawnl(
+        os.P_NOWAIT,
+        "/usr/bin/sudo",
+        "sudo",
+        "/bin/bash",
+        "/home/otlplus/server/deploy.sh",
+        "-e", "dev"
+    )
     return "Done", 200
 
 @app.route('/server-webhook-status', methods=["GET"])

@@ -28,8 +28,9 @@ while getopts "e:" opt; do
         echo "Error: Compose file does not exist: $COMPOSE_FILE" 1>&2
         exit 1
       fi
-
-      docker compose -f "$COMPOSE_FILE" up -d
+      
+      echo "Rebuilding and deploying with $COMPOSE_FILE..."
+      docker compose -f "$COMPOSE_FILE" up --build -d
       ;;
     \?)
       echo "Invalid option: -$OPTARG" 1>&2
