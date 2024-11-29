@@ -23,21 +23,3 @@ jobs:
             -d "$PAYLOAD" \
             https://webhook.otl.dev.sparcs.org/server-webhook)
           echo "response=$RESPONSE" >> $GITHUB_ENV
-
-      - name: Notify Slack
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        run: |
-          curl -X POST -H 'Content-type: application/json' --data \
-          '{
-            "text": "*Deployment Status:*",
-            "blocks": [
-              {
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": "Deployment Status: *${{ env.response }}*"
-                }
-              }
-            ]
-          }' $SLACK_WEBHOOK_URL
