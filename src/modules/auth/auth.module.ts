@@ -1,13 +1,17 @@
-import { PrismaModule } from "../../prisma/prisma.module";
-import { Module } from "@nestjs/common";
-import { AuthController } from "./auth.controller";
-import { AuthService } from "./auth.service";
-import { JwtCookieStrategy } from "./strategy/jwt-cookie.strategy";
-import { UserRepository } from "../../prisma/repositories/user.repository";
-import { JwtModule } from "@nestjs/jwt";
-import settings from "../../settings";
-import { UserService } from "../user/user.service";
-import { PassportModule } from "@nestjs/passport";
+import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import { PrismaModule } from '../../prisma/prisma.module';
+import { UserRepository } from '../../prisma/repositories/user.repository';
+import { UserService } from '../user/user.service';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
+import { JwtCookieStrategy } from './strategy/jwt-cookie.strategy';
+import { AuthChain } from './auth.chain';
+import { IsPublicCommand } from './command/isPublic.command';
+import { JwtCommand } from './command/jwt.command';
+import { SidCommand } from './command/sid.command';
+import { AuthConfig } from './auth.config';
 
 @Module({
   imports: [
@@ -21,7 +25,12 @@ import { PassportModule } from "@nestjs/passport";
     JwtCookieStrategy,
     UserService,
     UserRepository,
+    AuthChain,
+    IsPublicCommand,
+    JwtCommand,
+    SidCommand,
+    AuthConfig,
   ],
-  exports: [AuthService],
+  exports: [AuthService, AuthConfig, AuthChain],
 })
 export class AuthModule {}

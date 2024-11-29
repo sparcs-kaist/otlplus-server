@@ -1,7 +1,7 @@
+import axios, { AxiosResponse } from 'axios';
 import * as crypto from 'crypto';
 import * as querystring from 'querystring';
-import axios, { AxiosResponse } from 'axios';
-import { KaistInfo, SSOUser } from "../../../common/interfaces/dto/auth/sso.dto";
+import { ESSOUser } from 'src/common/entities/ESSOUser';
 
 // CONVERT SPARCS SSO V2 Client Version 1.1 TO TYPESCRIPT
 // VALID ONLY AFTER ----(NOT VALID) ----
@@ -44,8 +44,6 @@ export class Client {
     :param secret_key: your secret key
     :param is_beta: true iff you want to use SPARCS SSO beta server
     :param server_addr: SPARCS SSO server addr (only for testing)*/
-    console.log(is_beta)
-    console.log(is_beta ? true : false);
     this.DOMAIN = is_beta ? this.BETA_DOMAIN : this.SERVER_DOMAIN;
     this.DOMAIN = server_addr || this.DOMAIN;
 
@@ -96,7 +94,7 @@ export class Client {
     return true;
   }
 
-  private async _post_data(url: any, data: any): Promise<SSOUser> {
+  private async _post_data(url: any, data: any): Promise<ESSOUser.SSOUser> {
     /**
      *@SSO
      *querystring.stringify(data)인지 .toString('utf8')붙여야 하는지 확인 필요
@@ -114,17 +112,18 @@ export class Client {
         throw new Error('UNKNOWN_ERROR');
       }
 
-      const result =  r.data
-      console.log(result)
-      result.kaist_info = result.kaist_info ? JSON.parse(result.kaist_info) : {}
-      return result as SSOUser;
+      const result = r.data;
+      result.kaist_info = result.kaist_info
+        ? JSON.parse(result.kaist_info)
+        : {};
+      return result as ESSOUser.SSOUser;
     } catch (e) {
       console.error(e);
       throw new Error('INVALID_OBJECT');
     }
   }
 
-  public get_login_params(): {url: string, state: string} {
+  public get_login_params(request_url: string): { url: string; state: string } {
     /*
     Get login parameters for SPARCS SSO login
     :returns: [url, state] where url is a url to redirect user,
@@ -135,18 +134,27 @@ export class Client {
      * randomBytes에 10? 5? 둘중 어떤걸 넘겨줄지. gpt는 5라고 하고 파이썬은 token_hex(10) 10 같긴 한데....혹시나 해서
      */
     const state: string = crypto.randomBytes(10).toString('hex');
-    const params: Params = { client_id: this.client_id, state: state };
-    console.log(this.client_id)
-    console.log(state);
-    console.log(this.URLS['token_require'])
+    const allowedPreferredUris: { [key: string]: string } = {
+      'otl.sparcs.org': 'https://otl.sparcs.org/session/login/callback/',
+      'otl.kaist.ac.kr': 'https://otl.kaist.ac.kr/session/login/callback/',
+      'otl-stage.sparcsandbox.com':
+        'https://otl-stage.sparcsandbox.com/session/login/callback/',
+    };
+    const preferred_url =
+      allowedPreferredUris[request_url] ||
+      'https://otl.sparcs.org/session/login/callback/';
+    const params: Params = {
+      client_id: this.client_id,
+      state: state,
+      preferred_url: preferred_url,
+    };
     const url: string = `${this.URLS['token_require']}?${querystring.stringify(
       params,
     )}`;
-    console.log('url',url)
-    return {url, state}
+    return { url, state };
   }
 
-  public async get_user_info(code: string): Promise<SSOUser> {
+  public async get_user_info(code: string): Promise<ESSOUser.SSOUser> {
     /*
     Exchange a code to user information
     :param code: the code that given by SPARCS SSO server
@@ -182,7 +190,6 @@ export class Client {
     };
     return `${this.URLS['logout']}?${querystring.stringify(params)}`;
   }
-
 
   public async get_notice(
     offset: number = 0,

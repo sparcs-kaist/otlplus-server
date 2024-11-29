@@ -1,6 +1,7 @@
-import { INestApplication, Injectable, OnModuleInit } from "@nestjs/common";
+import { INestApplication, Injectable, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
-import settings from "../settings";
+import settings from '../settings';
+import { signalExtension } from './custom-prisma-client';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
@@ -11,11 +12,12 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
 
   async onModuleInit() {
     await this.$connect();
-  }
-
-  async enableShutdownHooks(app: INestApplication) {
-    this.$on('beforeExit', async () => {
-      await app.close();
+    // @ts-ignore
+    this.$on('query', async (e) => {
+      // @ts-ignore
+      console.log(`Query: ${e.query} ${e.params}`);
     });
+    const extendedClient = this.$extends(signalExtension);
+    Object.assign(this, extendedClient);
   }
 }

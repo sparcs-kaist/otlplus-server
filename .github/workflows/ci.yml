@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev, release]
   pull_request:
-    branches: [main]
+    branches: [main, dev, release]
 
 env:
   NODE_VERSION: 18
@@ -23,7 +23,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --force
       - name: Check format
         run: npm run format:check
 
@@ -40,7 +40,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --force
       - name: Check lint
         run: npm run lint:check
 
@@ -57,8 +57,10 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --force
       - name: Copy env file
         run: cp ./env/.env.example ./env/.env.local
+      - name: Generate PrismaClient
+        run: npm run client:generate
       - name: Build
         run: npm run build
