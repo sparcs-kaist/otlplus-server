@@ -29,7 +29,7 @@ while getopts "e:" opt; do
         exit 1
       fi
 
-      docker-compose -f "$COMPOSE_FILE" up -d
+      docker compose -f "$COMPOSE_FILE" up -d
       ;;
     \?)
       echo "Invalid option: -$OPTARG" 1>&2

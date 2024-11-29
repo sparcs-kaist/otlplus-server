@@ -137,6 +137,8 @@ export class Client {
     const allowedPreferredUris: { [key: string]: string } = {
       'otl.sparcs.org': 'https://otl.sparcs.org/session/login/callback/',
       'otl.kaist.ac.kr': 'https://otl.kaist.ac.kr/session/login/callback/',
+      'api.otl.dev.sparcs.org':
+        'https://api.otl.dev.sparcs.org/session/login/callback/',
       'otl-stage.sparcsandbox.com':
         'https://otl-stage.sparcsandbox.com/session/login/callback/',
     };

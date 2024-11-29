@@ -1,27 +1,18 @@
-name: dev branch auto ci process script
+name: Deploy to Development
 
-on: # 아래 job을 실행시킬 상황
+on:
   push:
-    branches: [dev]
+    branches:
+      - dev
 
 jobs:
   deploy:
-    name: deploy
-    runs-on: ubuntu-latest # 실행될 인스턴스 OS와 버전
-
+    runs-on: ubuntu-latest
     steps:
-      - name: excuting remote ssh commands
-        uses: appleboy/ssh-action@v0.1.6 # ssh 접속하는 오픈소스
-        with:
-          host: ${{ secrets.REMOTE_IP_DEV }} # 인스턴스 IP
-          username: ${{ secrets.REMOTE_USER_DEV }} # 우분투 아이디
-          key: ${{ secrets.REMOTE_PRIVATE_KEY_DEV }} # ec2 instance pem key
-          port: ${{ secrets.REMOTE_SSH_PORT_DEV }} # 접속포트
-          passphrase: ${{ secrets.REMOTE_PASSPHRASE_DEV }}
-          script: | # 실행할 스크립트
-            cd otlplus-nest-server
-            git pull origin dev
-            sudo docker stop otlplus-server-nest-dev
-            sudo docker rm otlplus-server-nest-dev
-            sudo docker rmi otlplus-server-nest-dev
-            sudo ./deploy.sh -e dev
+      - name: Send Deployment Webhook
+        env:
+          WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
+        run: |
+          curl -X POST \
+          -H "X-Hub-Signature-256: sha256=$(echo -n '{}' | openssl dgst -sha256 -hmac $WEBHOOK_SECRET)" \
+          http://webhook.otl.dev.sparcs.org/server-webhook
