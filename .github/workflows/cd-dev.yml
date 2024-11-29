@@ -8,6 +8,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Send Deployment Webhook
         id: deploy
@@ -16,7 +17,7 @@ jobs:
         run: |
           PAYLOAD='{}'
           SIGNATURE=$(echo -n "$PAYLOAD" | openssl dgst -sha256 -hmac "$WEBHOOK_SECRET" | awk '{print $2}')
-          RESPONSE=$(curl -s -X POST \
+          RESPONSE=$(curl -s --max-time 600 -X POST \
             -H "X-Hub-Signature-256: sha256=$SIGNATURE" \
             -H "Content-Type: application/json" \
             -d "$PAYLOAD" \
