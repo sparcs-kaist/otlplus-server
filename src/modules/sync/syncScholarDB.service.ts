@@ -226,7 +226,7 @@ export class SyncScholarDBService {
         const foundLecture = existingLectures.find(
           (l) =>
             l.code === lecture.subject_no &&
-            l.class_no === lecture.lecture_class.trim(),
+            l.class_no.trim() === lecture.lecture_class.trim(),
         );
         const course_id = courseMap.get(lecture.old_no)?.id;
         if (!course_id)
@@ -529,7 +529,7 @@ export class SyncScholarDBService {
       const lecture = existingLectures.find(
         (l) =>
           l.code === time.subject_no &&
-          l.class_no === time.lecture_class.trim(),
+          l.class_no.trim() === time.lecture_class.trim(),
       );
       if (!lecture) {
         result.skipped.push({

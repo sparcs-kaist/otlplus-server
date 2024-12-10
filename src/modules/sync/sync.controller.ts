@@ -11,7 +11,7 @@ import { toJsonSemester } from 'src/common/interfaces/serializer/semester.serial
 import { SyncScholarDBService } from './syncScholarDB.service';
 import { SyncTakenLectureService } from './syncTakenLecture.service';
 
-@Controller('sync')
+@Controller('api/sync')
 export class SyncController {
   constructor(
     private readonly syncScholarDBService: SyncScholarDBService,
