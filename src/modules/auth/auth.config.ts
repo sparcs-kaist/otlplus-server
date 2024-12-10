@@ -1,11 +1,9 @@
-import { ExecutionContext, Injectable } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { AuthService } from './auth.service';
-import { JwtService } from '@nestjs/jwt';
+import { Injectable } from '@nestjs/common';
+import { AuthChain } from './auth.chain';
+import { IsPublicCommand } from './command/isPublic.command';
 import { JwtCommand } from './command/jwt.command';
 import { SidCommand } from './command/sid.command';
-import { IsPublicCommand } from './command/isPublic.command';
-import { AuthChain } from './auth.chain';
+import { SyncApiKeyCommand } from './command/syncApiKey.command';
 
 @Injectable()
 export class AuthConfig {
@@ -14,6 +12,7 @@ export class AuthConfig {
     private readonly jwtCommand: JwtCommand,
     private readonly sidCommand: SidCommand,
     private readonly isPublicCommand: IsPublicCommand,
+    private readonly syncApiKeyCommand: SyncApiKeyCommand,
   ) {}
 
   public async config(env: string) {
@@ -27,19 +26,22 @@ export class AuthConfig {
     return this.authChain
       .register(this.isPublicCommand)
       .register(this.sidCommand)
-      .register(this.jwtCommand);
+      .register(this.jwtCommand)
+      .register(this.syncApiKeyCommand);
   };
 
   private getDevGuardConfig = () => {
     return this.authChain
       .register(this.isPublicCommand)
       .register(this.sidCommand)
-      .register(this.jwtCommand);
+      .register(this.jwtCommand)
+      .register(this.syncApiKeyCommand);
   };
 
   private getProdGuardConfig = () => {
     return this.authChain
       .register(this.jwtCommand)
-      .register(this.isPublicCommand);
+      .register(this.isPublicCommand)
+      .register(this.syncApiKeyCommand);
   };
 }

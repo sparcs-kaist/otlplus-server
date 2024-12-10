@@ -13,6 +13,7 @@ export default () => {
     getJwtConfig: () => getJwtConfig(),
     getSsoConfig: () => getSsoConfig(),
     getCorsConfig: () => getCorsConfig(),
+    syncConfig: () => getSyncConfig(),
     getVersion: () => getVersion(),
     getStaticConfig: () => staticConfig(),
   };
@@ -104,6 +105,13 @@ const getSsoConfig = (): any => {
     ssoIsBeta: process.env.SSO_IS_BETA === 'false' ? false : true,
     ssoClientId: process.env.SSO_CLIENT_ID,
     ssoSecretKey: process.env.SSO_SECRET_KEY,
+  };
+};
+
+const getSyncConfig = () => {
+  return {
+    apiKey: process.env.SYNC_SECRET,
+    slackKey: process.env.SLACK_KEY,
   };
 };
 

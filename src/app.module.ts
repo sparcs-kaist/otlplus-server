@@ -1,9 +1,15 @@
+import { ClsPluginTransactional } from '@nestjs-cls/transactional';
+import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
+import { PrismaService } from '@src/prisma/prisma.service';
+import { ClsModule } from 'nestjs-cls';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthConfig } from './modules/auth/auth.config';
 import { AuthModule } from './modules/auth/auth.module';
+import { AuthGuard } from './modules/auth/guard/auth.guard';
 import { JwtCookieGuard } from './modules/auth/guard/jwt-cookie.guard';
 import { MockAuthGuard } from './modules/auth/guard/mock-auth-guard';
 import { CoursesModule } from './modules/courses/courses.module';
@@ -16,19 +22,14 @@ import { RatesModule } from './modules/rates/rates.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { SemestersModule } from './modules/semesters/semesters.module';
 import { SessionModule } from './modules/session/session.module';
+import { ShareModule } from './modules/share/share.module';
 import { StatusModule } from './modules/status/status.module';
+import { SyncModule } from './modules/sync/sync.module';
 import { TimetablesModule } from './modules/timetables/timetables.module';
 import { TracksModule } from './modules/tracks/tracks.module';
 import { UserModule } from './modules/user/user.module';
 import { WishlistModule } from './modules/wishlist/wishlist.module';
 import { PrismaModule } from './prisma/prisma.module';
-import { ShareModule } from './modules/share/share.module';
-import { AuthConfig } from './modules/auth/auth.config';
-import { AuthGuard } from './modules/auth/guard/auth.guard';
-import { ClsModule } from 'nestjs-cls';
-import { ClsPluginTransactional } from '@nestjs-cls/transactional';
-import { PrismaService } from '@src/prisma/prisma.service';
-import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-pr
     PlannersModule,
     TracksModule,
     ShareModule,
+    SyncModule,
     ClsModule.forRoot({
       global: true,
       middleware: { mount: true },
