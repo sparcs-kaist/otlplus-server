@@ -70,7 +70,7 @@ async function bootstrap() {
     }),
   );
 
-  app.use('/sync', json({ limit: '50mb' }));
+  app.use('/api/sync', json({ limit: '50mb' }));
   app.use(json({ limit: '100kb' }));
 
   app.enableShutdownHooks();
