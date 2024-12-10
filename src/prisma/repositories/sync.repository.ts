@@ -101,8 +101,6 @@ export class SyncRepository {
         type_en: data.type_en,
         title: data.title,
         title_en: data.title_en,
-        title_en_no_space: data.title_en.replace(/\s/g, ''),
-        title_no_space: data.title.replace(/\s/g, ''),
         summury: '',
         grade_sum: 0,
         load_sum: 0,
@@ -120,8 +118,6 @@ export class SyncRepository {
       where: { id },
       data: {
         ...data,
-        title_no_space: data.title && data.title.replace(/\s/g, ''),
-        title_en_no_space: data.title_en && data.title_en.replace(/\s/g, ''),
       },
     });
   }
@@ -159,8 +155,6 @@ export class SyncRepository {
       data: {
         ...data,
         deleted: false,
-        title_no_space: data.title.replace(/\s/g, ''),
-        title_en_no_space: data.title_en.replace(/\s/g, ''),
         grade_sum: 0,
         load_sum: 0,
         speech_sum: 0,

@@ -383,8 +383,8 @@ model subject_course {
   load                                                                                                             Float
   speech                                                                                                           Float
   latest_written_datetime                                                                                          DateTime?                                  @db.DateTime(0)
-  title_no_space                                                                                                   String                                     @db.VarChar(100)
-  title_en_no_space                                                                                                String                                     @db.VarChar(200)
+  title_no_space                                                                                                   String                                     @default(dbgenerated()) @db.VarChar(100)
+  title_en_no_space                                                                                                String                                     @default(dbgenerated()) @db.VarChar(200)
   main_relatedcoursedailyuserfeed                                                                                  main_relatedcoursedailyuserfeed[]
   planner_futureplanneritem                                                                                        planner_futureplanneritem[]
   review                                                                                                           review_review[]
@@ -513,8 +513,8 @@ model subject_lecture {
   class_title_en                  String?                              @db.VarChar(100)
   common_title                    String?                              @db.VarChar(100)
   common_title_en                 String?                              @db.VarChar(100)
-  title_no_space                  String                               @db.VarChar(100)
-  title_en_no_space               String                               @db.VarChar(200)
+  title_no_space                  String                               @default(dbgenerated()) @db.VarChar(100)
+  title_en_no_space               String                               @default(dbgenerated()) @db.VarChar(200)
   main_reviewwritedailyuserfeed   main_reviewwritedailyuserfeed[]
   planner_takenplanneritem        planner_takenplanneritem[]
   review                          review_review[]
