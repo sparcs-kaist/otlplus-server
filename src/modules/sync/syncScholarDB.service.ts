@@ -60,6 +60,11 @@ export class SyncScholarDBService {
       await this.syncRepository.getOrCreateStaffProfessor();
 
     /// Department update
+    /**
+     * Temporary Comment out
+     * 모든 Department ID가 다 바뀌었는데 어떻게 바뀌었는지 모름.
+     * 일단 1/3일 타겟까지는 업데이트하지말고 수강신청 기간 이후에 적절히 수동으로 바꿔줄 수 있도록 할 예정
+     **/
     const existingDepartments =
       await this.syncRepository.getExistingDepartments();
     const departmentMap: Record<number, EDepartment.Basic> = Object.fromEntries(
