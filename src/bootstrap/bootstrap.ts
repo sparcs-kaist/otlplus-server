@@ -1,20 +1,16 @@
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
+import csrf from 'csurf';
+import { json } from 'express';
 import session from 'express-session';
-import { Server } from 'http';
 import { AppModule } from '../app.module';
-import { PrismaService } from '../prisma/prisma.service';
 import settings from '../settings';
 import { SwaggerModule } from '@nestjs/swagger';
 // import { AuthGuard, MockAuthGuard } from '../../common/guards/auth.guard'
 import morgan = require('morgan');
 
-let cachedServer: Server;
-
 async function bootstrap() {
-  const { NODE_ENV } = process.env;
-
   const app = await NestFactory.create(AppModule);
 
   app.enableVersioning({
@@ -37,6 +33,21 @@ async function bootstrap() {
     }),
   );
   app.use(cookieParser());
+  app.use(
+    '/',
+    csrf({
+      cookie: { key: 'csrftoken' },
+      ignoreMethods: [
+        'GET',
+        'HEAD',
+        'OPTIONS',
+        'DELETE',
+        'PATCH',
+        'PUT',
+        'POST',
+      ],
+    }),
+  );
   // Logs requests
   // app.use(
   //   morgan(':method :url OS/:req[client-os] Ver/:req[client-api-version]', {
@@ -67,8 +78,10 @@ async function bootstrap() {
   );
   SwaggerModule.setup('docs', app, document);
 
-  const prismaService = app.get(PrismaService);
-  await prismaService.enableShutdownHooks(app);
+  app.use('/api/sync', json({ limit: '50mb' }));
+  app.use(json({ limit: '100kb' }));
+
+  app.enableShutdownHooks();
   return app.listen(8000);
 }
 

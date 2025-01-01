@@ -10,6 +10,7 @@ import { LecturesService } from './lectures.service';
 export class LecturesController {
   constructor(private readonly LectureService: LecturesService) {}
 
+  @Public()
   @Get()
   async getLectures(
     @Query() query: ILecture.QueryDto,
@@ -25,6 +26,7 @@ export class LecturesController {
     return await this.LectureService.getLectureAutocomplete(query);
   }
 
+  @Public()
   @Get(':id')
   async getLectureById(@Param('id') id: number): Promise<ILecture.Detail> {
     return await this.LectureService.getLectureById(id);

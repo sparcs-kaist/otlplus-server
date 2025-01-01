@@ -20,6 +20,18 @@ export namespace ECourse {
   });
   export type Details = Prisma.subject_courseGetPayload<typeof Details>;
 
+  export const DetailWithIsRead = Prisma.validator<Prisma.subject_courseArgs>()(
+    {
+      include: {
+        ...Details.include,
+        subject_courseuser: true,
+      },
+    },
+  );
+  export type DetailWithIsRead = Prisma.subject_courseGetPayload<
+    typeof DetailWithIsRead
+  >;
+
   export namespace ECourseUser {
     export const Basic = Prisma.validator<Prisma.subject_courseuserArgs>()({});
     export type Basic = Prisma.subject_courseuserGetPayload<typeof Basic>;

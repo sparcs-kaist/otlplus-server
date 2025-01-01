@@ -54,8 +54,8 @@ export class TimetableLectureMiddleware
       }
       throw new Error("can't find user");
     } else if (operations === 'delete') {
-      const timetableId = args?.where?.timetable_id; // todo : args에 where이 들거가나?
-      const lectureId = args?.where?.lecture_id;
+      const timetableId = args?.where?.timetable_id_lecture_id?.timetable_id; // todo : args에 where이 들거가나?
+      const lectureId = args?.where?.timetable_id_lecture_id?.lecture_id;
       const userId: number | undefined = (
         await this.prisma.timetable_timetable.findUnique({
           where: { id: timetableId },
@@ -108,16 +108,19 @@ export class TimetableLectureMiddleware
       await prisma.subject_lecture.update({
         where: { id: lectureId },
         data: {
-          num_people: await prisma.timetable_timetable.count({
-            distinct: ['user_id'],
-            where: {
-              timetable_timetable_lectures: {
-                some: {
-                  lecture_id: lectureId,
+          num_people:
+            (
+              await prisma.timetable_timetable.findMany({
+                distinct: ['user_id'],
+                where: {
+                  timetable_timetable_lectures: {
+                    some: {
+                      lecture_id: lectureId,
+                    },
+                  },
                 },
-              },
-            },
-          }),
+              })
+            )?.length ?? 0,
         },
       });
     });
@@ -134,16 +137,19 @@ export class TimetableLectureMiddleware
           await prisma.subject_lecture.update({
             where: { id: id },
             data: {
-              num_people: await prisma.timetable_timetable.count({
-                distinct: ['user_id'],
-                where: {
-                  timetable_timetable_lectures: {
-                    some: {
-                      lecture_id: id,
+              num_people:
+                (
+                  await prisma.timetable_timetable.findMany({
+                    distinct: ['user_id'],
+                    where: {
+                      timetable_timetable_lectures: {
+                        some: {
+                          lecture_id: id,
+                        },
+                      },
                     },
-                  },
-                },
-              }),
+                  })
+                )?.length ?? 0,
             },
           });
         });

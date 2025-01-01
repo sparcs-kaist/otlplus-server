@@ -16,10 +16,12 @@ import { NoticesRepository } from './repositories/notices.repository';
 import { PlannerRepository } from './repositories/planner.repository';
 import { ReviewsRepository } from './repositories/review.repository';
 import { SemesterRepository } from './repositories/semester.repository';
+import { SyncRepository } from './repositories/sync.repository';
 import { TimetableRepository } from './repositories/timetable.repository';
 import { TracksRepository } from './repositories/track.repository';
 import { UserRepository } from './repositories/user.repository';
 import { WishlistRepository } from './repositories/wishlist.repository';
+import { TranManager } from './transactionManager';
 
 // const extendPrismaClient = {
 //   provide: PrismaService,
@@ -44,6 +46,9 @@ import { WishlistRepository } from './repositories/wishlist.repository';
     PlannerRepository,
     TracksRepository,
     NoticesRepository,
+    SyncRepository,
+    ReviewMiddleware,
+    TranManager,
   ],
   exports: [
     PrismaService,
@@ -58,6 +63,7 @@ import { WishlistRepository } from './repositories/wishlist.repository';
     PlannerRepository,
     TracksRepository,
     NoticesRepository,
+    SyncRepository,
   ],
 })
 export class PrismaModule implements OnModuleInit {

@@ -3,15 +3,16 @@ import { JwtService } from '@nestjs/jwt';
 import { Prisma, session_userprofile } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { ESSOUser } from 'src/common/entities/ESSOUser';
-import { import_student_lectures } from '../../common/scholarDB/scripts';
 import { UserRepository } from '../../prisma/repositories/user.repository';
 import settings from '../../settings';
+import { SyncTakenLectureService } from '../sync/syncTakenLecture.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly jwtService: JwtService,
+    private readonly syncTakenLecturesService: SyncTakenLectureService,
   ) {}
 
   public async findBySid(sid: string) {
@@ -42,11 +43,11 @@ export class AuthService {
         ssoProfile['last_name'],
         encryptedRefreshToken,
       );
+      await this.syncTakenLecturesService.repopulateTakenLectureForStudent(
+        user.id,
+      );
     } else {
-      if (user.student_id != studentId) {
-        await import_student_lectures(studentId);
-      }
-
+      const prev_student_id = user.student_id;
       const updateData = {
         first_name: ssoProfile['first_name'],
         last_name: ssoProfile['last_name'],
@@ -54,6 +55,11 @@ export class AuthService {
         refresh_token: encryptedRefreshToken,
       };
       user = await this.updateUser(user.id, updateData);
+      if (prev_student_id !== studentId) {
+        await this.syncTakenLecturesService.repopulateTakenLectureForStudent(
+          user.id,
+        );
+      }
     }
 
     return {
@@ -82,7 +88,9 @@ export class AuthService {
       accessToken: token,
       path: '/',
       httpOnly: true,
+      sameSite: 'none' as const,
       maxAge: Number(jwtConfig.signOptions.expiresIn) * 1000,
+      secure: true,
     };
   }
 
@@ -100,7 +108,9 @@ export class AuthService {
       refreshToken: refreshToken,
       path: '/',
       httpOnly: true,
+      sameSite: 'none' as const,
       maxAge: Number(jwtConfig.signOptions.refreshExpiresIn) * 1000,
+      secure: true,
     };
   }
 

@@ -258,21 +258,6 @@ export class ReviewsRepository {
       where: {
         lecture: lectureFilter,
       },
-      distinct: [
-        'id',
-        'course_id',
-        'lecture_id',
-        'content',
-        'grade',
-        'load',
-        'speech',
-        'writer_id',
-        'writer_label',
-        'updated_datetime',
-        'like',
-        'is_deleted',
-        'written_datetime',
-      ],
     });
     return reviewsCount;
   }

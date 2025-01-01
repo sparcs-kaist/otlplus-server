@@ -4,6 +4,7 @@ import { IReview } from 'src/common/interfaces/IReview';
 import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
 import { LectureRepository } from 'src/prisma/repositories/lecture.repository';
 import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
+import { Transactional } from '@nestjs-cls/transactional';
 import { EReview } from '../../common/entities/EReview';
 import EReviewVote = EReview.EReviewVote;
 
@@ -78,6 +79,7 @@ export class ReviewsService {
     );
   }
 
+  @Transactional()
   async createReviews(
     reviewsBody: IReview.CreateDto,
     user: session_userprofile,
@@ -114,6 +116,7 @@ export class ReviewsService {
     }
   }
 
+  @Transactional()
   async updateReviewById(
     reviewId: number,
     user: session_userprofile,
@@ -164,6 +167,7 @@ export class ReviewsService {
     return isLiked;
   }
 
+  @Transactional()
   async createReviewVote(
     reviewId: number,
     user: session_userprofile,

@@ -1,6 +1,6 @@
 import { Prisma, subject_lecture } from '@prisma/client';
 import { IPrismaMiddleware } from 'src/common/interfaces/IPrismaMiddleware';
-import { XOR } from 'src/common/schemaTypes/types';
+import { XOR } from '@src/common/types/types';
 import { PrismaService } from '../prisma.service';
 
 export class LectureMiddleware implements IPrismaMiddleware.IPrismaMiddleware {
@@ -38,8 +38,8 @@ export class LectureMiddleware implements IPrismaMiddleware.IPrismaMiddleware {
         !t.common_title_en &&
         !t.class_title_en
       ) {
-        if (this._checkClassTitleUpdateRequired(result.lecture)) {
-          await this.updateClassTitle(result.lecture);
+        if (this._checkClassTitleUpdateRequired(result)) {
+          await this.updateClassTitle(result);
         }
       }
 

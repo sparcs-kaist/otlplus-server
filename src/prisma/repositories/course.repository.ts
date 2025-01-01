@@ -11,6 +11,7 @@ import {
 } from 'src/common/utils/search.utils';
 import { PrismaService } from '../prisma.service';
 import ECourseUser = ECourse.ECourseUser;
+import LectureQueryDto = ICourse.LectureQueryDto;
 
 @Injectable()
 export class CourseRepository {
@@ -46,6 +47,9 @@ export class CourseRepository {
     'AE',
     'CH',
     'TS',
+    'BTM',
+    'BCS',
+    'SS',
   ];
 
   public async getCourseById(id: number): Promise<ECourse.Details | null> {
@@ -58,9 +62,10 @@ export class CourseRepository {
   }
 
   public async getLecturesByCourseId(
-    query: { order: string[] },
+    query: LectureQueryDto,
     id: number,
   ): Promise<ELecture.Details[]> {
+    const order = query.order ? query.order : ['year', 'semester', 'class_no'];
     const course = await this.prisma.subject_course.findUnique({
       include: {
         lecture: {
@@ -70,6 +75,7 @@ export class CourseRepository {
             subject_classtime: true,
             subject_examtime: true,
           },
+          orderBy: orderFilter(query.order),
         },
       },
       where: {
@@ -79,11 +85,7 @@ export class CourseRepository {
     const filteredLecture = course
       ? course.lecture.filter((lecture) => !lecture.deleted)
       : [];
-    const order = query.order ? query.order : ['year', 'semester', 'class_no'];
-    return applyOrder<ELecture.Details>(
-      filteredLecture,
-      order as (keyof ELecture.Details)[],
-    );
+    return filteredLecture;
   }
 
   public async getReviewsByCourseId(
@@ -302,10 +304,17 @@ export class CourseRepository {
             },
           },
         };
+
+    const old_code_filter = {
+      old_code: {
+        contains: keyword_space_removed,
+      },
+    };
     return {
       OR: [
         title_filter,
         en_title_filter,
+        old_code_filter,
         department_name_filter,
         department_name_en_filter,
         professors_professor_name_filter,
@@ -371,7 +380,7 @@ export class CourseRepository {
   async getUserTakenCourses(
     takenLecturesId: number[],
     order: string[],
-  ): Promise<ECourse.Details[]> {
+  ): Promise<ECourse.DetailWithIsRead[]> {
     const orderFilter: { [key: string]: string }[] = [];
     order.forEach((orderList) => {
       const orderDict: { [key: string]: string } = {};
@@ -383,7 +392,7 @@ export class CourseRepository {
       orderDict[orderBy[orderBy.length - 1]] = order;
       orderFilter.push(orderDict);
     });
-    return await this.prisma.subject_course.findMany({
+    return this.prisma.subject_course.findMany({
       where: {
         lecture: {
           some: {
@@ -472,7 +481,7 @@ export class CourseRepository {
       return false;
 
     return (
-      courseUser.subject_course.latest_written_datetime <
+      courseUser.subject_course.latest_written_datetime >
       courseUser.latest_read_datetime
     );
   }

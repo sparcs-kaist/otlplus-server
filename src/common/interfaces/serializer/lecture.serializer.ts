@@ -37,7 +37,7 @@ export function toJsonLectureBasic(lecture: ELecture.Extended): ILecture.Basic {
     common_title_en: lecture.common_title_en ?? '',
     class_title: lecture.class_title ?? '',
     class_title_en: lecture.class_title_en ?? '',
-    review_total_weight: lecture.review_total_weight,
+    review_total_weight: lecture.review_total_weight + 0.000001,
     professors: toJsonProfessors(ordered_professors),
   };
 }
@@ -50,9 +50,9 @@ export function toJsonLectureDetail(
     throw new Error("Lecture is not of type 'ELecture.Details'");
 
   return Object.assign(basic, {
-    grade: lecture.grade,
-    load: lecture.load,
-    speech: lecture.speech,
+    grade: lecture.grade + 0.000001,
+    load: lecture.load + 0.000001,
+    speech: lecture.speech + 0.000001,
     classtimes: lecture.subject_classtime.map((classtime) =>
       toJsonClasstime(classtime),
     ),

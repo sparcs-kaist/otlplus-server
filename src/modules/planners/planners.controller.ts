@@ -1,8 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   UnauthorizedException,
@@ -10,8 +12,10 @@ import {
 import { session_userprofile } from '@prisma/client';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { IPlanner } from 'src/common/interfaces/IPlanner';
-import { toJsonPlannerItem } from '../../common/interfaces/serializer/planner.item.serializer';
+import { toJsonPlannerItem } from '@src/common/interfaces/serializer/planner.item.serializer';
 import { PlannersService } from './planners.service';
+import { toJsonPlanner } from '@src/common/interfaces/serializer/planner.serializer';
+import { PlannerPipe } from '@src/common/pipe/planner.pipe';
 
 @Controller('api/users/:id/planners')
 export class PlannersController {
@@ -28,6 +32,37 @@ export class PlannersController {
     }
     const planners = await this.plannersService.getPlannerByUser(query, user);
     return planners;
+  }
+
+  @Patch(':plannerId')
+  async updatePlanner(
+    @Param('plannerId', PlannerPipe) plannerId: number,
+    @Body() planner: IPlanner.UpdateBodyDto,
+    @GetUser() user: session_userprofile,
+  ) {
+    if (planner.should_update_taken_semesters) {
+      await this.plannersService.updateTakenLectures(
+        user,
+        plannerId,
+        planner.start_year,
+        planner.end_year,
+      );
+    }
+    const updatedPlanner = await this.plannersService.updatePlanner(
+      plannerId,
+      planner,
+      user,
+    );
+    return toJsonPlanner(updatedPlanner);
+  }
+
+  @Delete(':plannerId')
+  async deletePlanner(
+    @Param('plannerId', PlannerPipe) plannerId: number,
+    @GetUser() user: session_userprofile,
+  ) {
+    await this.plannersService.deletePlanner(plannerId);
+    return { message: 'Planner deleted' };
   }
 
   @Post()
@@ -107,7 +142,7 @@ export class PlannersController {
   }
 
   @Post(':plannerId/update-item')
-  async updatePlanner(
+  async updatePlannerItem(
     @Param('id') userId: number,
     @Param('plannerId') plannerId: number,
     @GetUser() user: session_userprofile,

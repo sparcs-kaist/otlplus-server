@@ -1,6 +1,4 @@
-FROM node:18
-
-ENV NODE_ENV=dev
+FROM node:18 AS build
 
 RUN mkdir -p /var/www/otlplus-server
 WORKDIR /var/www/otlplus-server
@@ -9,8 +7,16 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
-RUN npm run prisma-generate
+RUN npm run client:generate
 RUN npm run build
 
-EXPOSE 3000
-CMD [ "npm", "run", "start:dev" ]
+FROM node:18-slim AS server
+RUN apt-get update -y && apt-get install -y openssl
+
+COPY --from=build /var/www/otlplus-server/ /var/www/otlplus-server/
+
+WORKDIR /var/www/otlplus-server
+
+RUN npm prune --production
+
+EXPOSE 8000

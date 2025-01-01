@@ -18,6 +18,9 @@ import { LectureRepository } from 'src/prisma/repositories/lecture.repository';
 import { PlannerRepository } from 'src/prisma/repositories/planner.repository';
 import { EPlanners } from '../../common/entities/EPlanners';
 import { CourseRepository } from './../../prisma/repositories/course.repository';
+import { Transactional } from '@nestjs-cls/transactional';
+import { SemesterRepository } from '@src/prisma/repositories/semester.repository';
+import { UserRepository } from '@src/prisma/repositories/user.repository';
 
 @Injectable()
 export class PlannersService {
@@ -26,6 +29,8 @@ export class PlannersService {
     private readonly LectureRepository: LectureRepository,
     private readonly DepartmentRepository: DepartmentRepository,
     private readonly CourseRepository: CourseRepository,
+    private readonly SemesterRepository: SemesterRepository,
+    private readonly UserRepository: UserRepository,
   ) {}
 
   public async getPlannerByUser(
@@ -43,6 +48,7 @@ export class PlannersService {
     return await this.PlannerRepository.getRelatedPlanner(user);
   }
 
+  @Transactional()
   public async postPlanner(
     body: IPlanner.CreateBodyDto,
     user: session_userprofile,
@@ -69,52 +75,55 @@ export class PlannersService {
         const validEndYear = lecture.year <= body.end_year;
         return validStartYear && validEndYear;
       });
-      valid_takenLectures.forEach(async (lecture) => {
-        await this.PlannerRepository.createTakenPlannerItem(planner, lecture);
-      });
+      await this.PlannerRepository.createTakenPlannerItem(
+        planner.id,
+        valid_takenLectures.map((lecture) => {
+          return { lectureId: lecture.id, isExcluded: false };
+        }),
+      );
     }
 
-    body.taken_items_to_copy.forEach(async (item) => {
-      const targetItem = await this.PlannerRepository.getTakenPlannerItemById(
-        user,
-        item,
+    const takenTargetItems =
+      await this.PlannerRepository.getTakenPlannerItemByIds(
+        body.taken_items_to_copy,
       );
-      if (!targetItem) {
-        return; // ignore non-existing items during copy
-      }
-      await this.PlannerRepository.createTakenPlannerItem(
-        planner,
-        targetItem.subject_lecture,
-        targetItem.is_excluded,
-      );
-    });
+    await this.PlannerRepository.createTakenPlannerItem(
+      planner.id,
+      takenTargetItems?.map((item) => {
+        return { lectureId: item.lecture_id, isExcluded: item.is_excluded };
+      }) || [],
+    );
 
-    body.future_items_to_copy.forEach(async (item) => {
-      const targetItem = await this.PlannerRepository.getFuturePlannerItemById(
-        user,
-        item,
+    const futureTargetItems =
+      await this.PlannerRepository.getFuturePlannerItemById(
+        body.future_items_to_copy,
       );
-      if (!targetItem) {
-        return; // ignore non-existing items during copy
-      }
-      await this.PlannerRepository.createFuturePlannerItem(planner, targetItem);
-    });
+    await this.PlannerRepository.createFuturePlannerItem(
+      planner.id,
+      futureTargetItems || [],
+    );
 
-    body.arbitrary_items_to_copy.forEach(async (item) => {
-      const targetItem =
-        await this.PlannerRepository.getArbitraryPlannerItemById(user, item);
-      if (!targetItem) {
-        return; // ignore non-existing items during copy
-      }
-      await this.PlannerRepository.createArbitraryPlannerItem(
-        planner,
-        targetItem,
+    const targetItems =
+      await this.PlannerRepository.getArbitraryPlannerItemById(
+        body.arbitrary_items_to_copy,
       );
-    });
+    await this.PlannerRepository.createArbitraryPlannerItem(
+      planner.id,
+      targetItems || [],
+    );
 
-    return toJsonPlanner(planner);
+    const newPlanner = await this.PlannerRepository.getPlannerById(
+      user,
+      planner.id,
+    );
+    if (!newPlanner) {
+      throw new NotFoundException();
+    }
+
+    return toJsonPlanner(newPlanner);
   }
 
+  @Transactional()
   async addArbitraryItem(
     plannerId: number,
     body: IPlanner.AddArbitraryItemDto,
@@ -128,20 +137,24 @@ export class PlannersService {
       body.department,
     );
 
+    const data = {
+      planner_id: planner.id,
+      year: body.year,
+      semester: body.semester,
+      department_id: department?.id || null,
+      type: body.type,
+      type_en: body.type_en,
+      credit: body.credit,
+      credit_au: body.credit_au,
+      is_excluded: false,
+    };
+
     const arbitraryItem =
-      await this.PlannerRepository.createArbitraryPlannerItem(planner, {
-        year: body.year,
-        semester: body.semester,
-        department_id: department?.id || null,
-        type: body.type,
-        type_en: body.type_en,
-        credit: body.credit,
-        credit_au: body.credit_au,
-        is_excluded: false,
-      });
+      await this.PlannerRepository.createArbitraryPlannerItem(planner.id, data);
     return toJsonArbitraryItem(arbitraryItem);
   }
 
+  @Transactional()
   public async removePlannerItem(
     plannerId: number,
     removeItem: IPlanner.RemoveItemBodyDto,
@@ -154,26 +167,26 @@ export class PlannersService {
         );
       case 'FUTURE': {
         const futureItem =
-          await this.PlannerRepository.getFuturePlannerItemById(
-            user,
+          await this.PlannerRepository.getFuturePlannerItemById([
             removeItem.item,
-          );
-        if (!futureItem || futureItem.planner_id !== plannerId) {
+          ]);
+        if (!futureItem || futureItem[0].planner_id !== plannerId) {
           throw new NotFoundException();
         }
-        await this.PlannerRepository.deleteFuturePlannerItem(futureItem);
+        await this.PlannerRepository.deleteFuturePlannerItem(futureItem[0]);
         break;
       }
       case 'ARBITRARY': {
         const arbitraryItem =
-          await this.PlannerRepository.getArbitraryPlannerItemById(
-            user,
+          await this.PlannerRepository.getArbitraryPlannerItemById([
             removeItem.item,
-          );
-        if (!arbitraryItem || arbitraryItem.planner_id !== plannerId) {
+          ]);
+        if (!arbitraryItem || arbitraryItem[0].planner_id !== plannerId) {
           throw new NotFoundException();
         }
-        await this.PlannerRepository.deleteArbitraryPlannerItem(arbitraryItem);
+        await this.PlannerRepository.deleteArbitraryPlannerItem(
+          arbitraryItem[0],
+        );
         break;
       }
     }
@@ -190,6 +203,7 @@ export class PlannersService {
     return toJsonPlanner(planner);
   }
 
+  @Transactional()
   async createFuturePlannerItem(
     plannerId: number,
     year: number,
@@ -218,6 +232,7 @@ export class PlannersService {
     return toJsonFutureItem(item);
   }
 
+  @Transactional()
   public async reorderPlanner(
     plannerId: number,
     order: number,
@@ -256,6 +271,7 @@ export class PlannersService {
     return toJsonPlanner(updated);
   }
 
+  @Transactional()
   async updatePlannerItem(
     plannerId: number,
     updateItemDto: IPlanner.UpdateItemBodyDto,
@@ -274,5 +290,81 @@ export class PlannersService {
       item,
       updatedFields,
     );
+  }
+
+  @Transactional()
+  async updateTakenLectures(
+    user: session_userprofile,
+    plannerId: number,
+    start_year: number,
+    end_year: number,
+  ) {
+    const notWritableSemester =
+      await this.SemesterRepository.getNotWritableSemester();
+    const takenLectures = await this.UserRepository.getTakenLecturesByYear(
+      user.id,
+      start_year,
+      end_year,
+      notWritableSemester,
+    );
+    const existedTakenItems =
+      await this.PlannerRepository.getTakenPlannerItemByLectures(
+        plannerId,
+        takenLectures.map((takenLecture) => takenLecture.lecture_id),
+      );
+    const needToAddTakenLectures = takenLectures.filter(
+      (takenLecture) =>
+        !existedTakenItems.find(
+          (existedTakenItem) =>
+            existedTakenItem.lecture_id === takenLecture.lecture_id,
+        ),
+    );
+    await this.PlannerRepository.createTakenPlannerItem(
+      plannerId,
+      needToAddTakenLectures.map((lecture) => {
+        return { lectureId: lecture.lecture_id, isExcluded: false };
+      }),
+    );
+    await this.PlannerRepository.deleteFuturePlannerItemsWithWhere(
+      plannerId,
+      start_year,
+      end_year,
+    );
+    await this.PlannerRepository.deleteArbitraryPlannerItemsWithWhere(
+      plannerId,
+      start_year,
+      end_year,
+    );
+    await this.PlannerRepository.deleteTakenPlannerItemsWithWhere(plannerId, {
+      year: {
+        lte: start_year,
+        gte: end_year,
+      },
+    });
+  }
+
+  @Transactional()
+  async updatePlanner(
+    plannerId: number,
+    plannerDto: IPlanner.UpdateBodyDto,
+    user: session_userprofile,
+  ) {
+    const planner = this.PlannerRepository.getPlannerById(user, plannerId);
+    if (!planner) {
+      throw new NotFoundException();
+    }
+    const updateFields = {
+      start_year: plannerDto.start_year,
+      end_year: plannerDto.end_year,
+      general_track_id: plannerDto.general_track,
+      major_track_id: plannerDto.major_track,
+      additional_track_ids: plannerDto.additional_tracks ?? [],
+    };
+    return await this.PlannerRepository.updatePlanner(plannerId, updateFields);
+  }
+
+  @Transactional()
+  async deletePlanner(plannerId: number) {
+    await this.PlannerRepository.deletePlanner(plannerId);
   }
 }

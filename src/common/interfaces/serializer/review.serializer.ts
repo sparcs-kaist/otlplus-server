@@ -31,11 +31,11 @@ export const toJsonReview = (
     content: review.is_deleted
       ? '관리자에 의해 삭제된 코멘트입니다.'
       : review.content,
-    like: review.like,
-    is_deleted: review.is_deleted,
-    grade: review.grade,
-    load: review.load,
-    speech: review.speech,
+    like: Math.round(review.like),
+    is_deleted: Math.round(review.is_deleted),
+    grade: Math.round(review.grade),
+    load: Math.round(review.load),
+    speech: Math.round(review.speech),
     userspecific_is_liked: isLiked,
   };
   return result;

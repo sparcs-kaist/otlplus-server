@@ -67,4 +67,20 @@ export class UserRepository {
       },
     });
   }
+
+  async getTakenLecturesByYear(
+    userId: number,
+    from: number,
+    to: number,
+    notWritableSemester?: subject_semester | null,
+  ) {
+    const reviewWritableLecture = await this.getTakenLectures(
+      userId,
+      notWritableSemester,
+    );
+    return reviewWritableLecture.filter(
+      (takenLecture) =>
+        takenLecture.lecture.year >= from && takenLecture.lecture.year <= to,
+    );
+  }
 }
