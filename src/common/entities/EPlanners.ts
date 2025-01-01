@@ -7,13 +7,13 @@ export namespace EPlanners {
   export namespace EItems {
     export namespace Future {
       export const Basic =
-        Prisma.validator<Prisma.planner_futureplanneritemArgs>()({});
+        Prisma.validator<Prisma.planner_futureplanneritemDefaultArgs>()({});
       export type Basic = Prisma.planner_futureplanneritemGetPayload<
         typeof Basic
       >;
 
       export const Extended =
-        Prisma.validator<Prisma.planner_futureplanneritemArgs>()({
+        Prisma.validator<Prisma.planner_futureplanneritemDefaultArgs>()({
           include: {
             subject_course: ECourse.Details,
           },
@@ -23,7 +23,7 @@ export namespace EPlanners {
       >;
 
       export const Details =
-        Prisma.validator<Prisma.planner_futureplanneritemArgs>()({
+        Prisma.validator<Prisma.planner_futureplanneritemDefaultArgs>()({
           include: {
             ...Extended.include,
             planner_planner: true,
@@ -42,7 +42,7 @@ export namespace EPlanners {
       >;
 
       export const Extended =
-        Prisma.validator<Prisma.planner_takenplanneritemArgs>()({
+        Prisma.validator<Prisma.planner_takenplanneritemDefaultArgs>()({
           include: {
             subject_lecture: ELecture.Details,
           },
@@ -52,7 +52,7 @@ export namespace EPlanners {
       >;
 
       export const Details =
-        Prisma.validator<Prisma.planner_takenplanneritemArgs>()({
+        Prisma.validator<Prisma.planner_takenplanneritemDefaultArgs>()({
           include: {
             subject_lecture: {
               include: {
@@ -75,13 +75,13 @@ export namespace EPlanners {
         Prisma.planner_arbitraryplanneritemUncheckedCreateInput;
 
       export const Basic =
-        Prisma.validator<Prisma.planner_arbitraryplanneritemArgs>()({});
+        Prisma.validator<Prisma.planner_arbitraryplanneritemDefaultArgs>()({});
       export type Basic = Prisma.planner_arbitraryplanneritemGetPayload<
         typeof Basic
       >;
 
       export const Extended =
-        Prisma.validator<Prisma.planner_arbitraryplanneritemArgs>()({
+        Prisma.validator<Prisma.planner_arbitraryplanneritemDefaultArgs>()({
           include: {
             subject_department: true,
           },
@@ -91,7 +91,7 @@ export namespace EPlanners {
       >;
 
       export const Details =
-        Prisma.validator<Prisma.planner_arbitraryplanneritemArgs>()({
+        Prisma.validator<Prisma.planner_arbitraryplanneritemDefaultArgs>()({
           include: {
             subject_department: true,
             planner_planner: true,
@@ -103,10 +103,12 @@ export namespace EPlanners {
     }
   }
 
-  export const Basic = Prisma.validator<Prisma.planner_plannerArgs>()({});
+  export const Basic = Prisma.validator<Prisma.planner_plannerDefaultArgs>()(
+    {},
+  );
   export type Basic = Prisma.planner_plannerGetPayload<typeof Basic>;
 
-  export const Details = Prisma.validator<Prisma.planner_plannerArgs>()({
+  export const Details = Prisma.validator<Prisma.planner_plannerDefaultArgs>()({
     include: {
       planner_planner_additional_tracks: {
         include: {

@@ -541,7 +541,7 @@ export class PlannerRepository {
   async deleteTakenPlannerItemsWithWhere(
     plannerId: number,
     where: Prisma.XOR<
-      Prisma.Subject_lectureRelationFilter,
+      Prisma.Subject_lectureScalarRelationFilter,
       Prisma.subject_lectureWhereInput
     >,
   ) {

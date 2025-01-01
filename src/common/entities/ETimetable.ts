@@ -4,20 +4,21 @@ import { ELecture } from './ELecture';
 export namespace ETimetable {
   export type Basic = Prisma.timetable_timetableGetPayload<null>;
 
-  export const Details = Prisma.validator<Prisma.timetable_timetableArgs>()({
-    include: {
-      timetable_timetable_lectures: {
-        include: {
-          subject_lecture: ELecture.Details,
+  export const Details =
+    Prisma.validator<Prisma.timetable_timetableDefaultArgs>()({
+      include: {
+        timetable_timetable_lectures: {
+          include: {
+            subject_lecture: ELecture.Details,
+          },
         },
       },
-    },
-  });
+    });
 
   export type Details = Prisma.timetable_timetableGetPayload<typeof Details>;
 
   export const WithLectureClasstimes =
-    Prisma.validator<Prisma.timetable_timetable_lecturesArgs>()({
+    Prisma.validator<Prisma.timetable_timetable_lecturesDefaultArgs>()({
       include: {
         subject_lecture: ELecture.WithClasstime,
       },
