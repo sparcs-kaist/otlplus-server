@@ -10,6 +10,7 @@ import {
   orderFilter,
 } from 'src/common/utils/search.utils';
 import { PrismaService } from '../prisma.service';
+import ECourseUser = ECourse.ECourseUser;
 import LectureQueryDto = ICourse.LectureQueryDto;
 
 @Injectable()
@@ -441,7 +442,10 @@ export class CourseRepository {
     return candidate;
   }
 
-  async readCourse(userId: number, courseId: number) {
+  async readCourse(
+    userId: number,
+    courseId: number,
+  ): Promise<ECourseUser.Basic> {
     const now = new Date();
     return await this.prisma.subject_courseuser.upsert({
       create: {

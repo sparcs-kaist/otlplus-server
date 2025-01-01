@@ -26,7 +26,7 @@ export class PlannersController {
     @Query() query: IPlanner.QueryDto,
     @Param('id') id: number,
     @GetUser() user: session_userprofile,
-  ) {
+  ): Promise<IPlanner.Detail[]> {
     if (id !== user.id) {
       throw new UnauthorizedException();
     }
@@ -70,7 +70,7 @@ export class PlannersController {
     @Body() planner: IPlanner.CreateBodyDto,
     @Param('id') id: number,
     @GetUser() user: session_userprofile,
-  ) {
+  ): Promise<IPlanner.Detail> {
     if (id !== user.id) {
       throw new UnauthorizedException();
     }
@@ -85,7 +85,7 @@ export class PlannersController {
     @Param('plannerId') plannerId: number,
     @Body() item: IPlanner.AddArbitraryItemDto,
     @GetUser() user: session_userprofile,
-  ) {
+  ): Promise<IPlanner.IItem.Arbitrary> {
     if (id !== user.id) throw new UnauthorizedException();
 
     const newPlanner = await this.plannersService.addArbitraryItem(
@@ -115,7 +115,7 @@ export class PlannersController {
     @Param('id') userId: number,
     @Param('plannerId') plannerId: number,
     @GetUser() user: session_userprofile,
-  ) {
+  ): Promise<IPlanner.IItem.Future> {
     if (userId !== user.id) {
       throw new UnauthorizedException();
     }
@@ -147,7 +147,7 @@ export class PlannersController {
     @Param('plannerId') plannerId: number,
     @GetUser() user: session_userprofile,
     @Body() updateItemDto: IPlanner.UpdateItemBodyDto,
-  ) {
+  ): Promise<IPlanner.IItem.IMutate> {
     if (userId !== user.id) {
       throw new UnauthorizedException();
     }

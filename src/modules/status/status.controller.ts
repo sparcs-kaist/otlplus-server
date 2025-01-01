@@ -5,7 +5,7 @@ import { Public } from '../../common/decorators/skip-auth.decorator';
 export class StatusController {
   @Get()
   @Public()
-  getStatus() {
+  getStatus(): string {
     return 'I am Healthy!';
   }
 }

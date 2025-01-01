@@ -45,6 +45,7 @@
     "@nestjs-cls/transactional": "^2.4.1",
     "@nestjs-cls/transactional-adapter-prisma": "^1.2.3",
     "@nestjs/common": "^9.0.0",
+    "@nestjs/config": "^3.2.3",
     "@nestjs/core": "^9.0.0",
     "@nestjs/jwt": "^10.0.3",
     "@nestjs/passport": "^9.0.3",
@@ -78,7 +79,8 @@
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^7.2.0"
+    "rxjs": "^7.2.0",
+    "ts-morph": "^23.0.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",

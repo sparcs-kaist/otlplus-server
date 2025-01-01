@@ -10,7 +10,9 @@ export class SemestersController {
 
   @Get()
   @Public()
-  async getSemesters(@Query() query: ISemester.QueryDto) {
+  async getSemesters(
+    @Query() query: ISemester.QueryDto,
+  ): Promise<ISemester.Response[]> {
     const semesters = await this.semestersService.getSemesters(query);
     return semesters.map((semester) => toJsonSemester(semester));
   }

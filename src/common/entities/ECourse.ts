@@ -31,4 +31,9 @@ export namespace ECourse {
   export type DetailWithIsRead = Prisma.subject_courseGetPayload<
     typeof DetailWithIsRead
   >;
+
+  export namespace ECourseUser {
+    export const Basic = Prisma.validator<Prisma.subject_courseuserArgs>()({});
+    export type Basic = Prisma.subject_courseuserGetPayload<typeof Basic>;
+  }
 }

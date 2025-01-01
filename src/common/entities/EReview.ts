@@ -14,4 +14,9 @@ export namespace EReview {
     },
   });
   export type Details = Prisma.review_reviewGetPayload<typeof Details>;
+
+  export namespace EReviewVote {
+    export const Basic = Prisma.validator<Prisma.review_reviewvoteArgs>()({});
+    export type Basic = Prisma.review_reviewvoteGetPayload<typeof Basic>;
+  }
 }

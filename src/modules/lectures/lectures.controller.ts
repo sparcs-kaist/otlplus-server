@@ -12,19 +12,23 @@ export class LecturesController {
 
   @Public()
   @Get()
-  async getLectures(@Query() query: ILecture.QueryDto) {
+  async getLectures(
+    @Query() query: ILecture.QueryDto,
+  ): Promise<ILecture.Detail[]> {
     return await this.LectureService.getLectureByFilter(query);
   }
 
   @Public()
   @Get('autocomplete')
-  async getLectureAutocomplete(@Query() query: ILecture.AutocompleteQueryDto) {
+  async getLectureAutocomplete(
+    @Query() query: ILecture.AutocompleteQueryDto,
+  ): Promise<string | undefined> {
     return await this.LectureService.getLectureAutocomplete(query);
   }
 
   @Public()
   @Get(':id')
-  async getLectureById(@Param('id') id: number) {
+  async getLectureById(@Param('id') id: number): Promise<ILecture.Detail> {
     return await this.LectureService.getLectureById(id);
   }
 
@@ -34,7 +38,6 @@ export class LecturesController {
     @Query() query: IReview.LectureReviewsQueryDto,
     @Param('lectureId') lectureId: number,
     @GetUser() user: session_userprofile,
-    // TODO: Consider using IReview.Basic
   ): Promise<(IReview.Basic & { userspecific_is_liked: boolean })[]> {
     return await this.LectureService.getLectureReviews(user, lectureId, query);
   }
@@ -45,7 +48,6 @@ export class LecturesController {
     @Query() query: IReview.LectureReviewsQueryDto,
     @Param('lectureId') lectureId: number,
     @GetUser() user: session_userprofile,
-    // TODO: Consider using IReview.Basic
   ): Promise<(IReview.Basic & { userspecific_is_liked: boolean })[]> {
     return await this.LectureService.getLectureRelatedReviews(
       user,

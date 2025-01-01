@@ -9,6 +9,7 @@ import { ELecture } from 'src/common/entities/ELecture';
 import { EReview } from 'src/common/entities/EReview';
 import { orderFilter } from 'src/common/utils/search.utils';
 import { PrismaService } from '../prisma.service';
+import EReviewVote = EReview.EReviewVote;
 
 @Injectable()
 export class ReviewsRepository {
@@ -382,8 +383,11 @@ export class ReviewsRepository {
       LIMIT ${n}`;
   }
 
-  async upsertReviewVote(reviewId: number, userId: number) {
-    await this.prisma.review_reviewvote.upsert({
+  async upsertReviewVote(
+    reviewId: number,
+    userId: number,
+  ): Promise<EReviewVote.Basic> {
+    return await this.prisma.review_reviewvote.upsert({
       where: {
         review_id_userprofile_id: {
           review_id: reviewId,
@@ -396,6 +400,5 @@ export class ReviewsRepository {
         userprofile: { connect: { id: userId } },
       },
     });
-    return null;
   }
 }

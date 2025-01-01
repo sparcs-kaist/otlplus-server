@@ -12,6 +12,8 @@ import { getRepresentativeLecture } from '../../common/utils/lecture.utils';
 import { CourseRepository } from './../../prisma/repositories/course.repository';
 import { Transactional } from '@nestjs-cls/transactional';
 import LectureQueryDto = ICourse.LectureQueryDto;
+import { IReview } from '../../common/interfaces/IReview';
+import ECourseUser = ECourse.ECourseUser;
 
 @Injectable()
 export class CoursesService {
@@ -90,7 +92,7 @@ export class CoursesService {
     query: ICourse.ReviewQueryDto,
     id: number,
     user: session_userprofile,
-  ) {
+  ): Promise<IReview.Basic[]> {
     query.limit = query.limit ?? 100;
     query.offset = query.offset ?? 0;
     query.order = query.order ?? [
@@ -107,7 +109,9 @@ export class CoursesService {
     return reviews.map((review) => toJsonReview(review, user));
   }
 
-  async getCourseAutocomplete(dto: ICourse.AutocompleteQueryDto) {
+  async getCourseAutocomplete(
+    dto: ICourse.AutocompleteQueryDto,
+  ): Promise<string | undefined> {
     const candidate = await this.courseRepository.getCourseAutocomplete(dto);
     if (!candidate) return dto.keyword;
     return this.findAutocompleteFromCandidate(candidate, dto.keyword);
@@ -116,7 +120,7 @@ export class CoursesService {
   private findAutocompleteFromCandidate(
     candidate: ECourse.Extended,
     keyword: string,
-  ) {
+  ): string | undefined {
     const keywordLower = keyword.toLowerCase();
     if (candidate.subject_department.name.startsWith(keyword))
       return candidate.subject_department.name;
@@ -142,7 +146,10 @@ export class CoursesService {
   }
 
   @Transactional()
-  async readCourse(userId: number, courseId: number) {
-    await this.courseRepository.readCourse(userId, courseId);
+  async readCourse(
+    userId: number,
+    courseId: number,
+  ): Promise<ECourseUser.Basic> {
+    return await this.courseRepository.readCourse(userId, courseId);
   }
 }

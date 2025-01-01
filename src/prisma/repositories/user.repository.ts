@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, session_userprofile, subject_semester } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
+import { EUser } from '../../common/entities/EUser';
 
 @Injectable()
 export class UserRepository {
@@ -30,7 +31,10 @@ export class UserRepository {
     });
   }
 
-  async changeFavoriteDepartments(userId: number, departmentIds: number[]) {
+  async changeFavoriteDepartments(
+    userId: number,
+    departmentIds: number[],
+  ): Promise<EUser.Basic> {
     await this.prisma.session_userprofile_favorite_departments.deleteMany({
       where: { userprofile_id: userId },
     });

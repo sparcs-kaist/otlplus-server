@@ -6,6 +6,8 @@ import { json } from 'express';
 import session from 'express-session';
 import { AppModule } from '../app.module';
 import settings from '../settings';
+import { SwaggerModule } from '@nestjs/swagger';
+// import { AuthGuard, MockAuthGuard } from '../../common/guards/auth.guard'
 import morgan = require('morgan');
 
 async function bootstrap() {
@@ -70,6 +72,12 @@ async function bootstrap() {
   //     },
   //   }),
   // );
+
+  const document = SwaggerModule.createDocument(
+    app,
+    settings().getSwaggerConfig(),
+  );
+  SwaggerModule.setup('docs', app, document);
 
   app.use('/api/sync', json({ limit: '50mb' }));
   app.use(json({ limit: '100kb' }));

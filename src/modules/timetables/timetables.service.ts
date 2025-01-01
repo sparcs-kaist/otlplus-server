@@ -16,6 +16,7 @@ import { LectureRepository } from '../../prisma/repositories/lecture.repository'
 import { SemesterRepository } from '../../prisma/repositories/semester.repository';
 import { TimetableRepository } from '../../prisma/repositories/timetable.repository';
 import { Transactional } from '@nestjs-cls/transactional';
+import { ETimetable } from '../../common/entities/ETimetable';
 
 @Injectable()
 export class TimetablesService {
@@ -161,33 +162,34 @@ export class TimetablesService {
   }
 
   @Transactional()
-  async deleteTimetable(user: session_userprofile, timetableId: number) {
-    return await this.prismaService.$transaction(async (tx) => {
-      const { semester, year, arrange_order } =
-        await this.timetableRepository.getTimeTableById(timetableId);
-      await this.timetableRepository.deleteById(timetableId);
-      const relatedTimeTables = await this.timetableRepository.getTimetables(
-        user,
-        year,
-        semester,
-      );
-      const timeTablesToBeUpdated = relatedTimeTables
-        .filter((timeTable) => timeTable.arrange_order > arrange_order)
-        .map((timeTable) => {
-          return {
-            id: timeTable.id,
-            arrange_order: timeTable.arrange_order - 1,
-          };
-        });
-      await Promise.all(
-        timeTablesToBeUpdated.map(async (updateElem) => {
-          return this.timetableRepository.updateOrder(
-            updateElem.id,
-            updateElem.arrange_order,
-          );
-        }),
-      );
-    });
+  async deleteTimetable(
+    user: session_userprofile,
+    timetableId: number,
+  ): Promise<ETimetable.Basic[]> {
+    const { semester, year, arrange_order } =
+      await this.timetableRepository.getTimeTableById(timetableId);
+    await this.timetableRepository.deleteById(timetableId);
+    const relatedTimeTables = await this.timetableRepository.getTimetables(
+      user,
+      year,
+      semester,
+    );
+    const timeTablesToBeUpdated = relatedTimeTables
+      .filter((timeTable) => timeTable.arrange_order > arrange_order)
+      .map((timeTable) => {
+        return {
+          id: timeTable.id,
+          arrange_order: timeTable.arrange_order - 1,
+        };
+      });
+    return await Promise.all(
+      timeTablesToBeUpdated.map(async (updateElem) => {
+        return this.timetableRepository.updateOrder(
+          updateElem.id,
+          updateElem.arrange_order,
+        );
+      }),
+    );
   }
 
   @Transactional()
@@ -275,6 +277,7 @@ export class TimetablesService {
       : '5days';
   }
 
+  // Make sure to adjust other methods that use lectures to match the type
   public async getTimetableEntries(
     timetableId: number,
     year: number,

@@ -22,5 +22,10 @@
     "paths": {
       "@src/*": ["src/*"]
     }
-  }
+  },
+  "plugins": [
+    {
+      "name": "@nestjs/swagger/plugin"
+    }
+  ]
 }

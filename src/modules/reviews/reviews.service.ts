@@ -5,6 +5,8 @@ import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer
 import { LectureRepository } from 'src/prisma/repositories/lecture.repository';
 import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
 import { Transactional } from '@nestjs-cls/transactional';
+import { EReview } from '../../common/entities/EReview';
+import EReviewVote = EReview.EReviewVote;
 
 @Injectable()
 export class ReviewsService {
@@ -166,8 +168,10 @@ export class ReviewsService {
   }
 
   @Transactional()
-  async createReviewVote(reviewId: number, user: session_userprofile) {
-    await this.reviewsRepository.upsertReviewVote(reviewId, user.id);
-    return null;
+  async createReviewVote(
+    reviewId: number,
+    user: session_userprofile,
+  ): Promise<EReviewVote.Basic> {
+    return await this.reviewsRepository.upsertReviewVote(reviewId, user.id);
   }
 }

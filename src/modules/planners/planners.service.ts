@@ -128,7 +128,7 @@ export class PlannersService {
     plannerId: number,
     body: IPlanner.AddArbitraryItemDto,
     user: session_userprofile,
-  ) {
+  ): Promise<IPlanner.IItem.Arbitrary> {
     const planner = await this.PlannerRepository.getBasicPlannerById(plannerId);
     if (!planner) throw new NotFoundException();
     if (planner.user_id !== user.id) throw new UnauthorizedException();
