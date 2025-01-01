@@ -60,15 +60,16 @@ async function bootstrap() {
   // );
 
   // Logs responses
-  app.use(
-    morgan(':method :url :status :res[content-length] :response-time ms', {
-      stream: {
-        write: (message) => {
-          console.info(message.trim());
-        },
-      },
-    }),
-  );
+  // app.use(
+  //   morgan(':method :url :status :res[content-length] :response-time ms', {
+  //     stream: {
+  //       write: (message) => {
+  //         // console.log(formatMemoryUsage())
+  //         console.info(message.trim());
+  //       },
+  //     },
+  //   }),
+  // );
 
   app.use('/api/sync', json({ limit: '50mb' }));
   app.use(json({ limit: '100kb' }));

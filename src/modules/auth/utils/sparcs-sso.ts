@@ -141,6 +141,7 @@ export class Client {
         'https://api.otl.dev.sparcs.org/session/login/callback/',
       'otl-stage.sparcsandbox.com':
         'https://otl-stage.sparcsandbox.com/session/login/callback/',
+      'localhost:8000': 'http://localhost:8000/session/login/callback/',
     };
     const preferred_url =
       allowedPreferredUris[request_url] ||
