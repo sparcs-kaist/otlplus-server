@@ -79,9 +79,8 @@ export class SyncScholarDBService {
 
         // No department found, create new department
         if (!foundDepartment) {
-          const newDept = await this.syncRepository.createDepartment(
-            departmentInfo,
-          );
+          const newDept =
+            await this.syncRepository.createDepartment(departmentInfo);
           departmentMap[newDept.id] = newDept;
           result.departments.created.push(newDept);
 
@@ -136,9 +135,8 @@ export class SyncScholarDBService {
         const foundCourse = courseMap.get(old_code);
         const derivedCourse = this.deriveCourseInfo(lecture);
         if (!foundCourse) {
-          const newCourse = await this.syncRepository.createCourse(
-            derivedCourse,
-          );
+          const newCourse =
+            await this.syncRepository.createCourse(derivedCourse);
           result.courses.created.push(newCourse);
           courseMap.set(old_code, newCourse);
         } else {
@@ -187,9 +185,8 @@ export class SyncScholarDBService {
         const derivedProfessor = this.deriveProfessorInfo(charge);
 
         if (!professor) {
-          const newProfessor = await this.syncRepository.createProfessor(
-            derivedProfessor,
-          );
+          const newProfessor =
+            await this.syncRepository.createProfessor(derivedProfessor);
           professorMap.set(charge.prof_id, newProfessor);
           result.professors.created.push(newProfessor);
         } else if (this.professorChanged(professor, derivedProfessor)) {
@@ -267,9 +264,8 @@ export class SyncScholarDBService {
             });
           }
         } else {
-          const newLecture = await this.syncRepository.createLecture(
-            derivedLecture,
-          );
+          const newLecture =
+            await this.syncRepository.createLecture(derivedLecture);
           const addedIds = professorCharges.map(
             (charge) => professorMap.get(charge.prof_id)!.id,
           );

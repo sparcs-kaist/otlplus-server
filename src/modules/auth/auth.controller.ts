@@ -9,7 +9,6 @@ import settings from '../../settings';
 import { UserService } from '../user/user.service';
 import { AuthService } from './auth.service';
 import { Client } from './utils/sparcs-sso';
-import { request } from 'http';
 
 @Controller('session')
 export class AuthController {
@@ -61,9 +60,8 @@ export class AuthController {
     if (!stateBefore || stateBefore != state) {
       response.redirect('/error/invalid-login');
     }
-    const ssoProfile: ESSOUser.SSOUser = await this.ssoClient.get_user_info(
-      code,
-    );
+    const ssoProfile: ESSOUser.SSOUser =
+      await this.ssoClient.get_user_info(code);
     const {
       accessToken,
       accessTokenOptions,

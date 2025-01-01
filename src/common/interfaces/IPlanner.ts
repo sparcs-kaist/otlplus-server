@@ -64,13 +64,13 @@ export namespace IPlanner {
       IT extends PlannerItemTypeEnum.Taken
         ? IPlanner.IItem.Taken
         : IT extends PlannerItemTypeEnum.Future
-        ? IPlanner.IItem.Future
-        : IT extends PlannerItemTypeEnum.Arbitrary
-        ? IPlanner.IItem.Arbitrary
-        :
-            | IPlanner.IItem.Taken
-            | IPlanner.IItem.Future
-            | IPlanner.IItem.Arbitrary;
+          ? IPlanner.IItem.Future
+          : IT extends PlannerItemTypeEnum.Arbitrary
+            ? IPlanner.IItem.Arbitrary
+            :
+                | IPlanner.IItem.Taken
+                | IPlanner.IItem.Future
+                | IPlanner.IItem.Arbitrary;
 
     export interface Basic {
       id: number;
