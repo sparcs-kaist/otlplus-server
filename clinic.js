@@ -1,4 +1,4 @@
-const ClinicHeapProfiler = require('@clinic/heap-profiler');
+import ClinicHeapProfiler from '@clinic/heap-profiler';
 
 const heapProfiler = new ClinicHeapProfiler();
 
