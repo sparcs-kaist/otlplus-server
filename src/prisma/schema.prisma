@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider          = "mysql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 model auth_group {
@@ -369,6 +370,7 @@ model subject_classtime {
 model subject_course {
   id                                                                                                               Int                                        @id @default(autoincrement())
   old_code                                                                                                         String                                     @db.VarChar(10)
+  new_code                                                                                                         String                                     @db.VarChar(20)
   department_id                                                                                                    Int
   type                                                                                                             String                                     @db.VarChar(30)
   type_en                                                                                                          String                                     @db.VarChar(60)
@@ -484,6 +486,7 @@ model subject_lecture {
   id                              Int                                  @id @default(autoincrement())
   code                            String                               @db.VarChar(10)
   old_code                        String                               @db.VarChar(10)
+  new_code                        String                               @db.VarChar(20)
   year                            Int
   semester                        Int                                  @db.SmallInt
   department_id                   Int

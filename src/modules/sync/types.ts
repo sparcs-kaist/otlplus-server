@@ -8,6 +8,7 @@ export type LectureDerivedDepartmentInfo = {
 
 export type LectureDerivedCourseInfo = {
   old_code: string;
+  new_code: string;
   department_id: number;
   type: string;
   type_en: string;
@@ -24,6 +25,7 @@ export type ChargeDerivedProfessorInfo = {
 
 export type DerivedLectureInfo = {
   code: string;
+  new_code: string;
   year: number;
   semester: number;
   class_no: string;

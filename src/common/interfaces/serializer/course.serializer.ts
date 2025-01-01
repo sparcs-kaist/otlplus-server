@@ -13,7 +13,7 @@ import { toJsonProfessors } from './professor.serializer';
 export function toJsonFeedBasic(course: subject_course): ICourse.FeedBasic {
   return {
     id: course.id,
-    old_code: course.old_code,
+    old_code: course.new_code,
     department_id: course.department_id,
     type: course.type,
     type_en: course.type_en,

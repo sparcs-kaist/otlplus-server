@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsIn,
   IsInt,
@@ -57,73 +57,73 @@ export namespace ISync {
   export class ScholarLectureType {
     /** 개설 연도 */
     @IsInt()
-    lecture_year!: number;
+    LECTURE_YEAR!: number;
     /** 개설 학기. 1: 봄학기, 2:여름학기, 3: 가을학기, 4: 겨울학기 */
     @IsIn([1, 2, 3, 4])
-    lecture_term!: number;
+    LECTURE_TERM!: number;
     /** 36.492 등의 과목코드 */
     @IsString()
-    subject_no!: string;
+    SUBJECT_NO!: string;
     /** 분반 */
     @IsString()
-    lecture_class!: string;
+    LECTURE_CLASS!: string;
     /** 학과 숫자 id */
     @IsInt()
-    dept_id!: number;
+    DEPT_ID!: number;
     /** 학과 이름 */
     @IsString()
-    dept_name!: string;
+    DEPT_NAME!: string;
     /** 학과 영어 이름 */
     @IsString()
-    e_dept_name!: string;
+    E_DEPT_NAME!: string;
     /** 강의 이름, 전산학특강<AI 프로토타이핑> 처럼 꺾쇠도 사용. */
     @IsString()
-    sub_title!: string;
+    SUB_TITLE!: string;
     /** 강의 영어 이름 */
     @IsString()
-    e_sub_title!: string;
+    E_SUB_TITLE!: string;
     /** 과목 종류 id로 추정. 아래 subject_type과 대응. */
     @IsInt()
-    subject_id!: number;
+    SUBJECT_ID!: number;
     /** 과목 종류 한글 명칭. 전공필수, 전공선택 등 */
     @IsString()
-    subject_type!: string;
+    SUBJECT_TYPE!: string;
     /** 과목 종류 영어 명칭. Major Elective 등 */
     @IsString()
-    e_subject_type!: string;
+    E_SUBJECT_TYPE!: string;
     /** ? 학년 구분이라고 보임. */
     @IsInt()
-    course_sect!: number;
+    COURSE_SECT!: number;
     /** 부여 AU */
     @IsInt()
-    act_unit!: number;
+    ACT_UNIT!: number;
     /** 강의시간 */
     @IsNumber()
-    lecture!: number;
+    LECTURE!: number;
     /** 실습시간 */
     @IsNumber()
-    lab!: number;
+    LAB!: number;
     /** 학점 */
     @IsInt()
-    credit!: number;
+    CREDIT!: number;
     /** 수강 제한 인원 */
     @IsInt()
-    limit!: number;
+    LIMIT!: number;
     /** 교수(들) 이름 */
     @IsString()
-    prof_names!: string;
+    PROF_NAMES!: string;
     /** 공지사항 */
     @IsString()
-    notice!: string;
+    NOTICE!: string;
     /** CS492 형의 과목 코드 */
     @IsString()
-    old_no!: string;
+    OLD_NO!: string;
     /** 영어 강의 여부 */
     @IsIn(['Y', 'N', ''], { message: (args) => JSON.stringify(args) })
-    english_lec!: 'Y' | 'N' | '';
+    ENGLISH_LEC!: 'Y' | 'N' | '';
     /** 교수(들) 영어 이름 */
     @IsString()
-    e_prof_names!: string;
+    E_PROF_NAMES!: string;
   }
 
   /** 동기화 대상 교수 정보
@@ -143,33 +143,33 @@ export namespace ISync {
   export class ScholarChargeType {
     /** 개설 연도 */
     @IsInt()
-    lecture_year!: number;
+    LECTURE_YEAR!: number;
     /** 개설 학기. 1: 봄학기, 2:여름학기, 3: 가을학기, 4: 겨울학기 */
     @IsIn([1, 2, 3, 4])
-    lecture_term!: number;
+    LECTURE_TERM!: number;
     /** 36.492 등의 과목코드 */
     @IsString()
-    subject_no!: string;
+    SUBJECT_NO!: string;
     /** 분반 */
     @IsString()
-    lecture_class!: string;
+    LECTURE_CLASS!: string;
     /** 학과 숫자 id */
     @IsInt()
-    dept_id!: number;
+    DEPT_ID!: number;
     /** 교수 숫자 id */
     @IsInt()
-    prof_id!: number;
+    PROF_ID!: number;
     /** 교수 이름 */
     @IsString()
-    prof_name!: string;
+    PROF_NAME!: string;
     /** ? */
     @IsNumber()
-    portion!: number;
+    PORTION!: number;
     // TODO: 이전 코드에 따르면 e_prof_name은 null이 가능하다고 되어 있음. 이게 맞는지 확인 필요.
     /** 교수 영어 이름 */
     @IsOptional()
     @IsString()
-    e_prof_name?: string | null;
+    E_PROF_NAME?: string | null;
   }
 
   export class ExamtimeBody {
@@ -202,31 +202,31 @@ export namespace ISync {
   export class ExamtimeType {
     /** 개설 연도 */
     @IsInt()
-    lecture_year!: number;
+    LECTURE_YEAR!: number;
     /** 개설 학기. 1: 봄학기, 2:여름학기, 3: 가을학기, 4: 겨울학기 */
     @IsIn([1, 2, 3, 4])
-    lecture_term!: number;
+    LECTURE_TERM!: number;
     /** 36.492 등의 과목코드 */
     @IsString()
-    subject_no!: string;
+    SUBJECT_NO!: string;
     /** 분반 */
     @IsString()
-    lecture_class!: string;
+    LECTURE_CLASS!: string;
     /** 학과 숫자 id */
     @IsInt()
-    dept_id!: number;
+    DEPT_ID!: number;
     /** 시험 요일. 1~6 범위의 값 확인. 월부터 시작. */
     @IsInt()
-    exam_day!: number;
+    EXAM_DAY!: number;
     /** 시험 시작 시간 */
     @IsString()
-    exam_begin!: string;
+    EXAM_BEGIN!: string;
     /** 시험 종료 시간 */
     @IsString()
-    exam_end!: string;
+    EXAM_END!: string;
     /** 공지사항 */
     @IsString()
-    notice!: string;
+    NOTICE!: string;
   }
 
   export class ClasstimeBody {
@@ -264,46 +264,48 @@ export namespace ISync {
   export class ClasstimeType {
     /** 개설 연도 */
     @IsInt()
-    lecture_year!: number;
+    LECTURE_YEAR!: number;
     /** 개설 학기. 1: 봄학기, 2:여름학기, 3: 가을학기, 4: 겨울학기 */
     @IsIn([1, 2, 3, 4])
-    lecture_term!: number;
+    LECTURE_TERM!: number;
     /** 36.492 등의 과목코드 */
     @IsString()
-    subject_no!: string;
+    SUBJECT_NO!: string;
     /** 분반 */
     @IsString()
-    lecture_class!: string;
+    LECTURE_CLASS!: string;
     /** 학과 숫자 id */
     @IsInt()
-    dept_id!: number;
+    DEPT_ID!: number;
     /** 수업 요일. 1~7 범위의 값 확인. 월부터 시작. */
-    @IsInt()
-    lecture_day!: number;
+    @IsNumber()
+    @Transform(({ value }) => parseInt(value))
+    LECTURE_DAY!: number;
     /** 수업 시작 시간 */
     @IsString()
-    lecture_begin!: string;
+    LECTURE_BEGIN!: string;
     /** 수업 종료 시간 */
     @IsString()
-    lecture_end!: string;
+    LECTURE_END!: string;
     /** 수업 종류. l: lecture, e: experiment */
     @IsIn(['l', 'e'])
-    lecture_type!: 'l' | 'e';
+    LECTURE_TYPE!: 'l' | 'e';
     /** 건물 번호 */
     @IsInt()
-    building!: number;
+    BUILDING!: number;
     /** 강의실 번호 */
     @IsString()
-    room_no!: string;
+    ROOM_NO!: string;
     /** 강의실 한글 이름 */
     @IsString()
-    room_k_name!: string;
+    ROOM_K_NAME!: string;
     /** 강의실 영어 이름 */
     @IsString()
-    room_e_name!: string;
+    ROOM_E_NAME!: string;
     /** 수업 교시 */
-    @IsInt()
-    teaching!: number;
+    @IsNumber()
+    @Transform(({ value }) => parseInt(value))
+    TEACHING!: number;
   }
 
   export class TakenLectureBody {
@@ -334,24 +336,24 @@ export namespace ISync {
   export class AttendType {
     /** 개설 연도 */
     @IsInt()
-    lecture_year!: number;
+    LECTURE_YEAR!: number;
     /** 개설 학기. 1: 봄학기, 2:여름학기, 3: 가을학기, 4: 겨울학기 */
     @IsIn([1, 2, 3, 4])
-    lecture_term!: number;
+    LECTURE_TERM!: number;
     /** 36.492 등의 과목코드 */
     @IsString()
-    subject_no!: string;
+    SUBJECT_NO!: string;
     /** 분반 */
     @IsString()
-    lecture_class!: string;
+    LECTURE_CLASS!: string;
     /** 학과 숫자 id */
     @IsInt()
-    dept_id!: number;
+    DEPT_ID!: number;
     /** 학번 */
     @IsInt()
-    student_no!: number;
+    STUDENT_NO!: number;
     /** 신청 기간 구분으로 유추. I: 수강신청기간 내 신청, C: 수강변경기간 내 신청 */
     @IsIn(['I', 'C'])
-    process_type!: 'I' | 'C';
+    PROCESS_TYPE!: 'I' | 'C';
   }
 }

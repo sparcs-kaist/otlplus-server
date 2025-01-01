@@ -96,6 +96,7 @@ export class SyncRepository {
     return await this.prisma.subject_course.create({
       data: {
         old_code: data.old_code,
+        new_code: data.new_code,
         department_id: data.department_id,
         type: data.type,
         type_en: data.type_en,
