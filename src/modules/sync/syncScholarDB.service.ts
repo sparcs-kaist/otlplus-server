@@ -222,7 +222,7 @@ export class SyncScholarDBService {
       try {
         const foundLecture = existingLectures.find(
           (l) =>
-            l.code === lecture.SUBJECT_NO &&
+            l.old_code === lecture.OLD_NO &&
             l.class_no.trim() === lecture.LECTURE_CLASS.trim(),
         );
         const course_id = courseMap.get(lecture.OLD_NO)?.id;

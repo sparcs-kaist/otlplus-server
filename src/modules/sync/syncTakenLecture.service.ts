@@ -157,7 +157,7 @@ export class SyncTakenLectureService {
   ) {
     const lecture = lectures.find(
       (l) =>
-        l.code === attend.SUBJECT_NO &&
+        l.new_code === attend.SUBJECT_NO &&
         l.class_no === attend.LECTURE_CLASS.trim(),
     );
     return lecture?.id;
