@@ -106,9 +106,8 @@ export class TimetablesService {
   ) {
     const lectureId = body.lecture;
     const lecture = await this.lectureRepository.getLectureBasicById(lectureId);
-    const timetable = await this.timetableRepository.getTimeTableBasicById(
-      timeTableId,
-    );
+    const timetable =
+      await this.timetableRepository.getTimeTableBasicById(timeTableId);
     if (!lecture) {
       throw new BadRequestException(
         "Wrong field \\'lecture\\' in request data",
@@ -137,9 +136,8 @@ export class TimetablesService {
   ) {
     const lectureId = body.lecture;
     const lecture = await this.lectureRepository.getLectureBasicById(lectureId);
-    const timetable = await this.timetableRepository.getTimeTableBasicById(
-      timeTableId,
-    );
+    const timetable =
+      await this.timetableRepository.getTimeTableBasicById(timeTableId);
     if (!lecture) {
       throw new BadRequestException(
         "Wrong field \\'lecture\\' in request data",
@@ -198,73 +196,70 @@ export class TimetablesService {
     timetableId: number,
     body: ITimetable.ReorderTimetableDto,
   ) {
-    return await this.prismaService.$transaction(async (tx) => {
-      const { arrange_order: targetArrangeOrder } = body;
-      const targetTimetable = await this.timetableRepository.getTimeTableById(
-        timetableId,
-      );
-      if (targetTimetable.user_id !== user.id) {
-        throw new BadRequestException('User is not owner of timetable');
-      }
-      if (targetArrangeOrder === targetTimetable.arrange_order) {
-        return targetTimetable;
-      }
+    const { arrange_order: targetArrangeOrder } = body;
+    const targetTimetable =
+      await this.timetableRepository.getTimeTableById(timetableId);
+    if (targetTimetable.user_id !== user.id) {
+      throw new BadRequestException('User is not owner of timetable');
+    }
+    if (targetArrangeOrder === targetTimetable.arrange_order) {
+      return targetTimetable;
+    }
 
-      const relatedTimeTables = await this.timetableRepository.getTimetables(
-        user,
-        targetTimetable.year,
-        targetTimetable.semester,
-      );
-      if (
-        targetArrangeOrder < 0 ||
-        targetArrangeOrder >= relatedTimeTables.length
-      ) {
-        throw new BadRequestException('Wrong field arrange_order in request');
-      }
+    const relatedTimeTables = await this.timetableRepository.getTimetables(
+      user,
+      targetTimetable.year,
+      targetTimetable.semester,
+    );
+    if (
+      targetArrangeOrder < 0 ||
+      targetArrangeOrder >= relatedTimeTables.length
+    ) {
+      throw new BadRequestException('Wrong field arrange_order in request');
+    }
 
-      let timeTablesToBeUpdated: { id: number; arrange_order: number }[] = [];
-      if (targetArrangeOrder < targetTimetable.arrange_order) {
-        timeTablesToBeUpdated = relatedTimeTables
-          .filter(
-            (timeTable) =>
-              timeTable.arrange_order >= targetArrangeOrder &&
-              timeTable.arrange_order < targetTimetable.arrange_order,
-          )
-          .map((timeTable) => {
-            return {
-              id: timeTable.id,
-              arrange_order: timeTable.arrange_order + 1,
-            };
-          });
-      } else if (targetArrangeOrder > targetTimetable.arrange_order) {
-        timeTablesToBeUpdated = relatedTimeTables
-          .filter(
-            (timeTable) =>
-              timeTable.arrange_order <= targetArrangeOrder &&
-              timeTable.arrange_order > targetTimetable.arrange_order,
-          )
-          .map((timeTable) => {
-            return {
-              id: timeTable.id,
-              arrange_order: timeTable.arrange_order - 1,
-            };
-          });
-      }
+    let timeTablesToBeUpdated: { id: number; arrange_order: number }[] = [];
+    if (targetArrangeOrder < targetTimetable.arrange_order) {
+      timeTablesToBeUpdated = relatedTimeTables
+        .filter(
+          (timeTable) =>
+            timeTable.arrange_order >= targetArrangeOrder &&
+            timeTable.arrange_order < targetTimetable.arrange_order,
+        )
+        .map((timeTable) => {
+          return {
+            id: timeTable.id,
+            arrange_order: timeTable.arrange_order + 1,
+          };
+        });
+    } else if (targetArrangeOrder > targetTimetable.arrange_order) {
+      timeTablesToBeUpdated = relatedTimeTables
+        .filter(
+          (timeTable) =>
+            timeTable.arrange_order <= targetArrangeOrder &&
+            timeTable.arrange_order > targetTimetable.arrange_order,
+        )
+        .map((timeTable) => {
+          return {
+            id: timeTable.id,
+            arrange_order: timeTable.arrange_order - 1,
+          };
+        });
+    }
 
-      await Promise.all(
-        timeTablesToBeUpdated.map(async (timetable) => {
-          return this.timetableRepository.updateOrder(
-            timetable.id,
-            timetable.arrange_order,
-          );
-        }),
-      );
-      const updatedTimeTable = await this.timetableRepository.updateOrder(
-        targetTimetable.id,
-        targetArrangeOrder,
-      );
-      return updatedTimeTable;
-    });
+    await Promise.all(
+      timeTablesToBeUpdated.map(async (timetable) => {
+        return this.timetableRepository.updateOrder(
+          timetable.id,
+          timetable.arrange_order,
+        );
+      }),
+    );
+    const updatedTimeTable = await this.timetableRepository.updateOrder(
+      targetTimetable.id,
+      targetArrangeOrder,
+    );
+    return updatedTimeTable;
   }
 
   public getTimetableType(
