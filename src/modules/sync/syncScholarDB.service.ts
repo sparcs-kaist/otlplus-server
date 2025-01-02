@@ -84,8 +84,9 @@ export class SyncScholarDBService {
 
         // No department found, create new department
         if (!foundDepartment) {
-          const newDept =
-            await this.syncRepository.createDepartment(departmentInfo);
+          const newDept = await this.syncRepository.createDepartment(
+            departmentInfo,
+          );
           departmentMap[newDept.id] = newDept;
           result.departments.created.push(newDept);
 
@@ -140,8 +141,9 @@ export class SyncScholarDBService {
         const foundCourse = courseMap.get(old_code);
         const derivedCourse = this.deriveCourseInfo(lecture);
         if (!foundCourse) {
-          const newCourse =
-            await this.syncRepository.createCourse(derivedCourse);
+          const newCourse = await this.syncRepository.createCourse(
+            derivedCourse,
+          );
           result.courses.created.push(newCourse);
           courseMap.set(old_code, newCourse);
         } else {
@@ -190,8 +192,9 @@ export class SyncScholarDBService {
         const derivedProfessor = this.deriveProfessorInfo(charge);
 
         if (!professor) {
-          const newProfessor =
-            await this.syncRepository.createProfessor(derivedProfessor);
+          const newProfessor = await this.syncRepository.createProfessor(
+            derivedProfessor,
+          );
           professorMap.set(charge.PROF_ID, newProfessor);
           result.professors.created.push(newProfessor);
         } else if (this.professorChanged(professor, derivedProfessor)) {
@@ -269,8 +272,9 @@ export class SyncScholarDBService {
             });
           }
         } else {
-          const newLecture =
-            await this.syncRepository.createLecture(derivedLecture);
+          const newLecture = await this.syncRepository.createLecture(
+            derivedLecture,
+          );
           const addedIds = professorCharges.map(
             (charge) => professorMap.get(charge.PROF_ID)!.id,
           );
@@ -317,8 +321,8 @@ export class SyncScholarDBService {
   ): LectureDerivedDepartmentInfo {
     return {
       id: lecture.DEPT_ID,
-      num_id: lecture.SUBJECT_NO.slice(0, 2), // TODO: This will be changed in new API
-      code: this.extract_dept_code(lecture.OLD_NO),
+      num_id: lecture.SUBJECT_NO.split('.')[0], // TODO: num_id is obsolete. It equals code, and should be removed later.
+      code: this.extract_dept_code(lecture.OLD_NO), // TODO: May need to extract from new SUBJECT_NO
       name: lecture.DEPT_NAME,
       name_en: lecture.E_DEPT_NAME,
     };
