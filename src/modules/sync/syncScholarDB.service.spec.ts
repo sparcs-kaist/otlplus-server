@@ -20,6 +20,7 @@ const departmentData = [...Array(2).keys()].map((i) => ({
 }));
 const courseData = [...Array(2).keys()].map((i) => ({
   id: i + 1,
+  new_code: `${departmentData[i].code}.1000${i}`,
   old_code: `${departmentData[i].code}10${i}`,
   department_id: departmentData[i].id,
   type: '전공',
@@ -53,7 +54,8 @@ const professorData = [...Array(2).keys()].map((i) => ({
 }));
 const lectureData = [...Array(2).keys()].map((i) => ({
   id: i + 1,
-  code: `${departmentData[i].num_id}:10${i}`,
+  code: `${departmentData[i].num_id}:1000${i}`,
+  new_code: `${departmentData[i].code}.1000${i}`,
   year: 3000,
   semester: 1,
   class_no: String.fromCharCode(65 + i),
@@ -84,29 +86,29 @@ const lectureData = [...Array(2).keys()].map((i) => ({
 }));
 
 const lectureBase = {
-  lecture_year: 3000,
-  lecture_term: 1,
-  subject_no: lectureData[0].code,
-  lecture_class: lectureData[0].class_no + ' ',
-  dept_id: departmentData[0].id,
-  dept_name: departmentData[0].name,
-  e_dept_name: departmentData[0].name_en,
-  sub_title: lectureData[0].title,
-  e_sub_title: lectureData[0].title_en,
-  subject_id: 0,
-  subject_type: '전공',
-  e_subject_type: 'major',
-  course_sect: 0,
-  act_unit: 0,
-  lecture: 3,
-  lab: 0,
-  credit: 3,
-  limit: 0,
-  prof_names: '교수0',
-  notice: '',
-  old_no: lectureData[0].old_code,
-  english_lec: 'N' as const,
-  e_prof_names: 'professor0',
+  LECTURE_YEAR: 3000,
+  LECTURE_TERM: 1,
+  SUBJECT_NO: lectureData[0].code,
+  LECTURE_CLASS: lectureData[0].class_no + ' ',
+  DEPT_ID: departmentData[0].id,
+  DEPT_NAME: departmentData[0].name,
+  E_DEPT_NAME: departmentData[0].name_en,
+  SUB_TITLE: lectureData[0].title,
+  E_SUB_TITLE: lectureData[0].title_en,
+  SUBJECT_ID: 0,
+  SUBJECT_TYPE: '전공',
+  E_SUBJECT_TYPE: 'major',
+  COURSE_SECT: 0,
+  ACT_UNIT: 0,
+  LECTURE: 3,
+  LAB: 0,
+  CREDIT: 3,
+  LIMIT: 0,
+  PROF_NAMES: '교수0',
+  NOTICE: '',
+  OLD_NO: lectureData[0].old_code,
+  ENGLISH_LEC: 'N' as const,
+  E_PROF_NAMES: 'professor0',
 };
 
 const classtimeData = [...Array(1).keys()]
@@ -141,20 +143,20 @@ const classtimeData = [...Array(1).keys()]
   .flat();
 
 const classtimeBase = {
-  lecture_year: 3000,
-  lecture_term: 1,
-  subject_no: lectureData[0].code,
-  lecture_class: lectureData[0].class_no + ' ',
-  dept_id: lectureData[0].department_id,
-  lecture_day: 1,
-  lecture_begin: '1900-01-01 09:00:00.0',
-  lecture_end: '1900-01-01 10:30:00.0',
-  lecture_type: 'l',
-  building: 301,
-  room_no: '304',
-  room_k_name: '(E11)창의학습관',
-  room_e_name: '(E11)Creative Learning Bldg.',
-  teaching: 1,
+  LECTURE_YEAR: 3000,
+  LECTURE_TERM: 1,
+  SUBJECT_NO: lectureData[0].code,
+  LECTURE_CLASS: lectureData[0].class_no + ' ',
+  DEPT_ID: lectureData[0].department_id,
+  LECTURE_DAY: 1,
+  LECTURE_BEGIN: '1900-01-01 09:00:00.0',
+  LECTURE_END: '1900-01-01 10:30:00.0',
+  LECTURE_TYPE: 'l',
+  BUILDING: 301,
+  ROOM_NO: '304',
+  ROOM_K_NAME: '(E11)창의학습관',
+  ROOM_E_NAME: '(E11)Creative Learning Bldg.',
+  TEACHING: 1,
 } as const;
 
 const examtimeData = [...Array(1).keys()].map((i) => ({
@@ -166,15 +168,15 @@ const examtimeData = [...Array(1).keys()].map((i) => ({
 }));
 
 const examtimeBase = {
-  lecture_year: 3000,
-  lecture_term: 1,
-  subject_no: lectureData[0].code,
-  lecture_class: lectureData[0].class_no + ' ',
-  dept_id: lectureData[0].department_id,
-  exam_day: 1,
-  exam_begin: '1900-01-01 09:00:00.0',
-  exam_end: '1900-01-01 12:00:00.0',
-  notice: '',
+  LECTURE_YEAR: 3000,
+  LECTURE_TERM: 1,
+  SUBJECT_NO: lectureData[0].code,
+  LECTURE_CLASS: lectureData[0].class_no + ' ',
+  DEPT_ID: lectureData[0].department_id,
+  EXAM_DAY: 1,
+  EXAM_BEGIN: '1900-01-01 09:00:00.0',
+  EXAM_END: '1900-01-01 12:00:00.0',
+  NOTICE: '',
 } as const;
 
 maybe('SyncScholarDBService', () => {
@@ -254,10 +256,10 @@ maybe('SyncScholarDBService', () => {
         lectures: [
           {
             ...lectureBase,
-            dept_id: 10,
-            dept_name: '학과10',
-            old_no: 'K100',
-            e_dept_name: 'department10',
+            DEPT_ID: 10,
+            DEPT_NAME: '학과10',
+            OLD_NO: 'K100',
+            E_DEPT_NAME: 'department10',
           },
         ],
         charges: [],
@@ -285,10 +287,10 @@ maybe('SyncScholarDBService', () => {
         lectures: [
           {
             ...lectureBase,
-            dept_id: departmentData[0].id,
-            dept_name: '학과0_Updated',
-            old_no: 'AA100',
-            e_dept_name: 'department0_Updated',
+            DEPT_ID: departmentData[0].id,
+            DEPT_NAME: '학과0_Updated',
+            OLD_NO: 'AA100',
+            E_DEPT_NAME: 'department0_Updated',
           },
         ],
         charges: [],
@@ -317,11 +319,11 @@ maybe('SyncScholarDBService', () => {
         lectures: [
           {
             ...lectureBase,
-            subject_no: `${departmentData[0].num_id}.200`,
-            old_no: `${departmentData[0].code}200`,
-            dept_id: departmentData[0].id,
-            sub_title: '새 과목',
-            e_sub_title: 'New Course EN',
+            SUBJECT_NO: `${departmentData[0].num_id}.200`,
+            OLD_NO: `${departmentData[0].code}200`,
+            DEPT_ID: departmentData[0].id,
+            SUB_TITLE: '새 과목',
+            E_SUB_TITLE: 'New Course EN',
           },
         ],
         charges: [],
@@ -350,11 +352,11 @@ maybe('SyncScholarDBService', () => {
         lectures: [
           {
             ...lectureBase,
-            subject_no: existingLecture.code,
-            old_no: existingLecture.old_code,
-            dept_id: existingLecture.department_id,
-            sub_title: '수정된 과목',
-            e_sub_title: 'Updated Course EN',
+            SUBJECT_NO: existingLecture.code,
+            OLD_NO: existingLecture.old_code,
+            DEPT_ID: existingLecture.department_id,
+            SUB_TITLE: '수정된 과목',
+            E_SUB_TITLE: 'Updated Course EN',
           },
         ],
         charges: [],
@@ -383,12 +385,12 @@ maybe('SyncScholarDBService', () => {
         lectures: [
           {
             ...lectureBase,
-            subject_no: departmentData[0].code + '.200', // Use the same department code as the existing course
-            old_no: existingCourse.old_code,
-            dept_id: existingCourse.department_id,
-            sub_title: `${existingCourse.title}<new>`,
-            e_sub_title: `${existingCourse.title_en}<new>`,
-            lecture_class: 'Z', // Set a new class number
+            SUBJECT_NO: departmentData[0].code + '.200', // Use the same department code as the existing course
+            OLD_NO: existingCourse.old_code,
+            DEPT_ID: existingCourse.department_id,
+            SUB_TITLE: `${existingCourse.title}<new>`,
+            E_SUB_TITLE: `${existingCourse.title_en}<new>`,
+            LECTURE_CLASS: 'Z', // Set a new class number
           },
         ],
         charges: [],
@@ -423,12 +425,12 @@ maybe('SyncScholarDBService', () => {
         lectures: [
           {
             ...lectureBase,
-            subject_no: existingLecture.code,
-            old_no: existingLecture.old_code,
-            dept_id: existingLecture.department_id,
-            sub_title: '수정된 강의',
-            e_sub_title: 'Updated Lecture EN',
-            lecture_class: existingLecture.class_no, // Use the existing class number
+            SUBJECT_NO: existingLecture.code,
+            OLD_NO: existingLecture.old_code,
+            DEPT_ID: existingLecture.department_id,
+            SUB_TITLE: '수정된 강의',
+            E_SUB_TITLE: 'Updated Lecture EN',
+            LECTURE_CLASS: existingLecture.class_no, // Use the existing class number
           },
         ],
         charges: [],
@@ -481,15 +483,15 @@ maybe('SyncScholarDBService', () => {
         lectures: [lectureBase],
         charges: [
           {
-            lecture_year: existingLecture.year,
-            lecture_term: existingLecture.semester,
-            subject_no: existingLecture.code,
-            lecture_class: existingLecture.class_no,
-            dept_id: existingLecture.department_id,
-            prof_id: 999, // New professor ID
-            prof_name: 'New Professor',
-            portion: 3,
-            e_prof_name: 'New Professor EN',
+            LECTURE_YEAR: existingLecture.year,
+            LECTURE_TERM: existingLecture.semester,
+            SUBJECT_NO: existingLecture.code,
+            LECTURE_CLASS: existingLecture.class_no,
+            DEPT_ID: existingLecture.department_id,
+            PROF_ID: 999, // New professor ID
+            PROF_NAME: 'New Professor',
+            PORTION: 3,
+            E_PROF_NAME: 'New Professor EN',
           },
         ],
       });
@@ -518,15 +520,15 @@ maybe('SyncScholarDBService', () => {
         lectures: [lectureBase],
         charges: [
           {
-            lecture_year: existingLecture.year,
-            lecture_term: existingLecture.semester,
-            subject_no: existingLecture.code,
-            lecture_class: existingLecture.class_no,
-            dept_id: existingLecture.department_id,
-            prof_id: existingProfessor.professor_id, // Existing professor ID
-            prof_name: 'Updated Professor',
-            portion: 3,
-            e_prof_name: 'Updated Professor EN',
+            LECTURE_YEAR: existingLecture.year,
+            LECTURE_TERM: existingLecture.semester,
+            SUBJECT_NO: existingLecture.code,
+            LECTURE_CLASS: existingLecture.class_no,
+            DEPT_ID: existingLecture.department_id,
+            PROF_ID: existingProfessor.professor_id, // Existing professor ID
+            PROF_NAME: 'Updated Professor',
+            PORTION: 3,
+            E_PROF_NAME: 'Updated Professor EN',
           },
         ],
       });
@@ -562,15 +564,15 @@ maybe('SyncScholarDBService', () => {
         lectures: [lectureBase],
         charges: [
           {
-            lecture_year: existingLecture.year,
-            lecture_term: existingLecture.semester,
-            subject_no: existingLecture.code,
-            lecture_class: existingLecture.class_no,
-            dept_id: parseInt(existingProfessor.major),
-            prof_id: existingProfessor.professor_id, // Existing professor ID
-            prof_name: existingProfessor.professor_name,
-            portion: 3,
-            e_prof_name: existingProfessor.professor_name_en,
+            LECTURE_YEAR: existingLecture.year,
+            LECTURE_TERM: existingLecture.semester,
+            SUBJECT_NO: existingLecture.code,
+            LECTURE_CLASS: existingLecture.class_no,
+            DEPT_ID: parseInt(existingProfessor.major),
+            PROF_ID: existingProfessor.professor_id, // Existing professor ID
+            PROF_NAME: existingProfessor.professor_name,
+            PORTION: 3,
+            E_PROF_NAME: existingProfessor.professor_name_en,
           },
         ],
       });
@@ -629,12 +631,12 @@ maybe('SyncScholarDBService', () => {
         classtimes: [
           {
             ...classtimeBase,
-            subject_no: existingLecture.code,
-            lecture_class: existingLecture.class_no,
-            dept_id: existingLecture.department_id,
-            lecture_day: 2,
-            lecture_begin: '1900-01-01 13:00:00.0',
-            lecture_end: '1900-01-01 14:30:00.0',
+            SUBJECT_NO: existingLecture.code,
+            LECTURE_CLASS: existingLecture.class_no,
+            DEPT_ID: existingLecture.department_id,
+            LECTURE_DAY: 2,
+            LECTURE_BEGIN: '1900-01-01 13:00:00.0',
+            LECTURE_END: '1900-01-01 14:30:00.0',
           },
         ],
       });
@@ -670,12 +672,12 @@ maybe('SyncScholarDBService', () => {
         classtimes: [
           {
             ...classtimeBase,
-            subject_no: existingLecture.code,
-            lecture_class: existingLecture.class_no,
-            dept_id: existingLecture.department_id,
-            lecture_day: 2,
-            lecture_begin: '1900-01-01 14:00:00.0',
-            lecture_end: '1900-01-01 15:30:00.0',
+            SUBJECT_NO: existingLecture.code,
+            LECTURE_CLASS: existingLecture.class_no,
+            DEPT_ID: existingLecture.department_id,
+            LECTURE_DAY: 2,
+            LECTURE_BEGIN: '1900-01-01 14:00:00.0',
+            LECTURE_END: '1900-01-01 15:30:00.0',
           },
         ],
       });
@@ -702,15 +704,15 @@ maybe('SyncScholarDBService', () => {
         classtimes: [
           {
             ...classtimeBase,
-            lecture_day: 1,
-            lecture_begin: '1900-01-01 09:00:00.0',
-            lecture_end: '1900-01-01 10:30:00.0',
+            LECTURE_DAY: 1,
+            LECTURE_BEGIN: '1900-01-01 09:00:00.0',
+            LECTURE_END: '1900-01-01 10:30:00.0',
           },
           {
             ...classtimeBase,
-            lecture_day: 3,
-            lecture_begin: '1900-01-01 09:00:00.0',
-            lecture_end: '1900-01-01 10:30:00.0',
+            LECTURE_DAY: 3,
+            LECTURE_BEGIN: '1900-01-01 09:00:00.0',
+            LECTURE_END: '1900-01-01 10:30:00.0',
           },
         ],
       });
@@ -760,12 +762,12 @@ maybe('SyncScholarDBService', () => {
         examtimes: [
           {
             ...examtimeBase,
-            subject_no: existingLecture.code,
-            lecture_class: existingLecture.class_no,
-            dept_id: existingLecture.department_id,
-            exam_day: 2,
-            exam_begin: '1900-01-01 13:00:00.0',
-            exam_end: '1900-01-01 14:30:00.0',
+            SUBJECT_NO: existingLecture.code,
+            LECTURE_CLASS: existingLecture.class_no,
+            DEPT_ID: existingLecture.department_id,
+            EXAM_DAY: 2,
+            EXAM_BEGIN: '1900-01-01 13:00:00.0',
+            EXAM_END: '1900-01-01 14:30:00.0',
           },
         ],
       });
@@ -800,12 +802,12 @@ maybe('SyncScholarDBService', () => {
         examtimes: [
           {
             ...examtimeBase,
-            subject_no: existingLecture.code,
-            lecture_class: existingLecture.class_no,
-            dept_id: existingLecture.department_id,
-            exam_day: 2,
-            exam_begin: '1900-01-01 14:00:00.0',
-            exam_end: '1900-01-01 15:30:00.0',
+            SUBJECT_NO: existingLecture.code,
+            LECTURE_CLASS: existingLecture.class_no,
+            DEPT_ID: existingLecture.department_id,
+            EXAM_DAY: 2,
+            EXAM_BEGIN: '1900-01-01 14:00:00.0',
+            EXAM_END: '1900-01-01 15:30:00.0',
           },
         ],
       });
@@ -830,9 +832,9 @@ maybe('SyncScholarDBService', () => {
         examtimes: [
           {
             ...examtimeBase,
-            exam_day: 1,
-            exam_begin: '1900-01-01 09:00:00.0',
-            exam_end: '1900-01-01 12:00:00.0',
+            EXAM_DAY: 1,
+            EXAM_BEGIN: '1900-01-01 09:00:00.0',
+            EXAM_END: '1900-01-01 12:00:00.0',
           },
         ],
       });

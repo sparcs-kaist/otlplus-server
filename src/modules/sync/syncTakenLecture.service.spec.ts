@@ -29,6 +29,7 @@ const departmentData = [...Array(2).keys()].map((i) => ({
 const courseData = [...Array(2).keys()].map((i) => ({
   id: i + 1,
   old_code: `${departmentData[i].code}10${i}`,
+  new_code: `${departmentData[i].num_id}.1000${i}`,
   department_id: departmentData[i].id,
   type: '전공',
   type_en: 'major',
@@ -48,7 +49,8 @@ const courseData = [...Array(2).keys()].map((i) => ({
 
 const lectureData = [...Array(2).keys()].map((i) => ({
   id: i + 1,
-  code: `${departmentData[i].num_id}:10${i}`,
+  code: `${departmentData[i].num_id}.1000${i}`,
+  new_code: `${departmentData[i].num_id}.1000${i}`,
   year: 3000,
   semester: 1,
   class_no: String.fromCharCode(65 + i),
@@ -85,13 +87,13 @@ const takenLectureData = [...Array(2).keys()].map((i) => ({
 }));
 
 const attendBase = {
-  lecture_year: 3000,
-  lecture_term: 1,
-  subject_no: lectureData[0].code,
-  lecture_class: lectureData[0].class_no,
-  dept_id: departmentData[0].id,
-  student_no: parseInt(userData[0].student_id),
-  process_type: 'I',
+  LECTURE_YEAR: 3000,
+  LECTURE_TERM: 1,
+  SUBJECT_NO: lectureData[0].code,
+  LECTURE_CLASS: lectureData[0].class_no,
+  DEPT_ID: departmentData[0].id,
+  STUDENT_NO: parseInt(userData[0].student_id),
+  PROCESS_TYPE: 'I',
 } as const;
 
 maybe('SyncTakenLectureService', () => {
@@ -149,9 +151,9 @@ maybe('SyncTakenLectureService', () => {
       attend: [
         {
           ...attendBase,
-          subject_no: lectureData[1].code,
-          lecture_class: lectureData[1].class_no,
-          dept_id: departmentData[1].id,
+          SUBJECT_NO: lectureData[1].code,
+          LECTURE_CLASS: lectureData[1].class_no,
+          DEPT_ID: departmentData[1].id,
         },
       ],
     });
@@ -193,7 +195,7 @@ maybe('SyncTakenLectureService', () => {
       attend: [
         {
           ...attendBase,
-          subject_no: 'invalid',
+          SUBJECT_NO: 'invalid',
         },
       ],
     });
@@ -203,7 +205,7 @@ maybe('SyncTakenLectureService', () => {
       student_no: parseInt(userData[0].student_id),
       attend: {
         ...attendBase,
-        subject_no: 'invalid',
+        SUBJECT_NO: 'invalid',
       },
       error: 'lecture not found',
     });
@@ -219,10 +221,10 @@ maybe('SyncTakenLectureService', () => {
         },
         {
           ...attendBase,
-          student_no: parseInt(userData[1].student_id),
-          subject_no: lectureData[1].code,
-          lecture_class: lectureData[1].class_no,
-          dept_id: departmentData[1].id,
+          STUDENT_NO: parseInt(userData[1].student_id),
+          SUBJECT_NO: lectureData[1].code,
+          LECTURE_CLASS: lectureData[1].class_no,
+          DEPT_ID: departmentData[1].id,
         },
       ],
     });
