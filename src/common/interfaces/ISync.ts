@@ -56,9 +56,11 @@ export namespace ISync {
   */
   export class ScholarLectureType {
     /** 개설 연도 */
+    @Transform(({ value }) => parseInt(value))
     @IsInt()
     LECTURE_YEAR!: number;
     /** 개설 학기. 1: 봄학기, 2:여름학기, 3: 가을학기, 4: 겨울학기 */
+    @Transform(({ value }) => parseInt(value))
     @IsIn([1, 2, 3, 4])
     LECTURE_TERM!: number;
     /** 36.492 등의 과목코드 */
@@ -68,6 +70,7 @@ export namespace ISync {
     @IsString()
     LECTURE_CLASS!: string;
     /** 학과 숫자 id */
+    @Transform(({ value }) => parseInt(value))
     @IsInt()
     DEPT_ID!: number;
     /** 학과 이름 */
@@ -83,6 +86,7 @@ export namespace ISync {
     @IsString()
     E_SUB_TITLE!: string;
     /** 과목 종류 id로 추정. 아래 subject_type과 대응. */
+    @Transform(({ value }) => parseInt(value))
     @IsInt()
     SUBJECT_ID!: number;
     /** 과목 종류 한글 명칭. 전공필수, 전공선택 등 */
@@ -92,21 +96,27 @@ export namespace ISync {
     @IsString()
     E_SUBJECT_TYPE!: string;
     /** ? 학년 구분이라고 보임. */
+    @Transform(({ value }) => parseInt(value))
     @IsInt()
     COURSE_SECT!: number;
     /** 부여 AU */
+    @Transform(({ value }) => parseInt(value))
     @IsInt()
     ACT_UNIT!: number;
     /** 강의시간 */
+    @Transform(({ value }) => parseFloat(value))
     @IsNumber()
     LECTURE!: number;
     /** 실습시간 */
+    @Transform(({ value }) => parseFloat(value))
     @IsNumber()
     LAB!: number;
     /** 학점 */
+    @Transform(({ value }) => parseInt(value))
     @IsInt()
     CREDIT!: number;
     /** 수강 제한 인원 */
+    @Transform(({ value }) => parseInt(value))
     @IsInt()
     LIMIT!: number;
     /** 교수(들) 이름 */
@@ -142,9 +152,11 @@ export namespace ISync {
   */
   export class ScholarChargeType {
     /** 개설 연도 */
+    @Transform(({ value }) => parseInt(value))
     @IsInt()
     LECTURE_YEAR!: number;
     /** 개설 학기. 1: 봄학기, 2:여름학기, 3: 가을학기, 4: 겨울학기 */
+    @Transform(({ value }) => parseInt(value))
     @IsIn([1, 2, 3, 4])
     LECTURE_TERM!: number;
     /** 36.492 등의 과목코드 */
@@ -154,15 +166,18 @@ export namespace ISync {
     @IsString()
     LECTURE_CLASS!: string;
     /** 학과 숫자 id */
+    @Transform(({ value }) => parseInt(value))
     @IsInt()
     DEPT_ID!: number;
     /** 교수 숫자 id */
+    @Transform(({ value }) => parseInt(value))
     @IsInt()
     PROF_ID!: number;
     /** 교수 이름 */
     @IsString()
     PROF_NAME!: string;
     /** ? */
+    @Transform(({ value }) => parseInt(value))
     @IsNumber()
     PORTION!: number;
     // TODO: 이전 코드에 따르면 e_prof_name은 null이 가능하다고 되어 있음. 이게 맞는지 확인 필요.
@@ -336,8 +351,10 @@ export namespace ISync {
   export class AttendType {
     /** 개설 연도 */
     @IsInt()
+    @Transform(({ value }) => parseInt(value))
     LECTURE_YEAR!: number;
     /** 개설 학기. 1: 봄학기, 2:여름학기, 3: 가을학기, 4: 겨울학기 */
+    @Transform(({ value }) => parseInt(value))
     @IsIn([1, 2, 3, 4])
     LECTURE_TERM!: number;
     /** 36.492 등의 과목코드 */
@@ -347,9 +364,11 @@ export namespace ISync {
     @IsString()
     LECTURE_CLASS!: string;
     /** 학과 숫자 id */
+    @Transform(({ value }) => parseInt(value))
     @IsInt()
     DEPT_ID!: number;
     /** 학번 */
+    @Transform(({ value }) => parseInt(value))
     @IsInt()
     STUDENT_NO!: number;
     /** 신청 기간 구분으로 유추. I: 수강신청기간 내 신청, C: 수강변경기간 내 신청 */
