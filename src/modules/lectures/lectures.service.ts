@@ -164,8 +164,8 @@ export class LecturesService {
         professorShortStr.length <= 2
           ? professorShortStr.join(', ')
           : isEnglish
-          ? `${professorShortStr[0]} and ${professorShortStr.length - 1} others`
-          : `${professorShortStr[0]} 외 ${professorShortStr.length - 1} 명`;
+            ? `${professorShortStr[0]} and ${professorShortStr.length - 1} others`
+            : `${professorShortStr[0]} 외 ${professorShortStr.length - 1} 명`;
 
       const classtime = lecture.subject_classtime[0];
       let classroomShortStr = '';

@@ -75,7 +75,7 @@ export class CourseRepository {
             subject_classtime: true,
             subject_examtime: true,
           },
-          orderBy: orderFilter(query.order),
+          orderBy: orderFilter(order),
         },
       },
       where: {
@@ -191,18 +191,20 @@ export class CourseRepository {
           (type) => this.TYPE_ACRONYMS[type as keyof typeof this.TYPE_ACRONYMS],
         );
       return {
-        type_en: {
-          in: unselected_types,
-        },
+        OR: unselected_types.map((type) => ({
+          type_en: {
+            contains: type, // OR 조건으로 LIKE와 비슷한 매칭
+          },
+        })),
       };
     } else {
       return {
-        type_en: {
-          in: types.map(
-            (type) =>
+        OR: types.map((type) => ({
+          type_en: {
+            contains:
               this.TYPE_ACRONYMS[type as keyof typeof this.TYPE_ACRONYMS],
-          ),
-        },
+          },
+        })),
       };
     }
   }
@@ -329,7 +331,6 @@ export class CourseRepository {
     }
 
     const filters = [];
-    const includeHumanity = group.includes('Humanity');
 
     if (group.includes('Basic')) {
       group.splice(group.indexOf('Basic'), 1);

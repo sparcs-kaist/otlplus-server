@@ -19,21 +19,25 @@ export function groupBy<T, K extends keyof any>(
   arr: T[],
   selector: (i: T) => K,
 ): Record<K, T[] | undefined> {
-  return arr.reduce((groups: Record<K, T[] | undefined>, item) => {
-    (groups[selector(item)] ??= []).push(item);
-    return groups;
-  }, {} as Record<K, T[] | undefined>);
+  return arr.reduce(
+    (groups: Record<K, T[] | undefined>, item) => {
+      (groups[selector(item)] ??= []).push(item);
+      return groups;
+    },
+    {} as Record<K, T[] | undefined>,
+  );
 }
 
 type ValueType = string | number | boolean;
 
 export type Union<
   T extends { [key: string]: ValueType } | ReadonlyArray<ValueType>,
-> = T extends ReadonlyArray<ValueType>
-  ? T[number]
-  : T extends { [key: string]: infer U }
-  ? U
-  : never;
+> =
+  T extends ReadonlyArray<ValueType>
+    ? T[number]
+    : T extends { [key: string]: infer U }
+      ? U
+      : never;
 
 export function getRandomChoice<T>(choices: T[]): T {
   const randomIndex = Math.floor(Math.random() * choices.length);

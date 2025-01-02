@@ -6,8 +6,6 @@ import { applyOffset, applyOrder } from 'src/common/utils/search.utils';
 import { groupBy } from '../../common/utils/method.utils';
 import { PrismaService } from '../prisma.service';
 import { CourseRepository } from './course.repository';
-import { FilterType } from '@src/common/types/types';
-import SubjectClasstimeFilter = FilterType.SubjectClasstimeFilter;
 import Details = ELecture.Details;
 
 @Injectable()
@@ -159,7 +157,7 @@ export class LectureRepository {
 
     const takenLectures = await this.getTakenLectures(user);
     const reviewWritableLectures = takenLectures.filter((lecture) => {
-      return notWritableYearAndSemesterMap[lecture.year] ?? [lecture.semester]
+      return (notWritableYearAndSemesterMap[lecture.year] ?? [lecture.semester])
         ? true
         : false;
     });

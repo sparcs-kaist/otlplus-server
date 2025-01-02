@@ -127,9 +127,8 @@ export class FeedsService {
   public async getFeeds(query: IFeed.QueryDto, user: session_userprofile) {
     const { date: dateString } = query;
     const date = new Date(dateString);
-    const departments = await this.departmentRepository.getRelatedDepartments(
-      user,
-    );
+    const departments =
+      await this.departmentRepository.getRelatedDepartments(user);
     const feeds: EFeed.Details[] = [];
 
     const famousHumanityReview = await this.getFamousHumanityReview(date);
