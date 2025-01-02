@@ -60,6 +60,11 @@ export class SyncScholarDBService {
       await this.syncRepository.getOrCreateStaffProfessor();
 
     /// Department update
+    /**
+     * Temporary Comment out
+     * 모든 Department ID가 다 바뀌었는데 어떻게 바뀌었는지 모름.
+     * 일단 1/3일 타겟까지는 업데이트하지말고 수강신청 기간 이후에 적절히 수동으로 바꿔줄 수 있도록 할 예정
+     **/
     const existingDepartments =
       await this.syncRepository.getExistingDepartments();
     const departmentMap: Record<number, EDepartment.Basic> = Object.fromEntries(
@@ -71,11 +76,11 @@ export class SyncScholarDBService {
     const processedDepartmentIds = new Set<number>();
     for (const lecture of data.lectures) {
       try {
-        if (processedDepartmentIds.has(lecture.dept_id)) continue; // skip if already processed
-        processedDepartmentIds.add(lecture.dept_id);
+        if (processedDepartmentIds.has(lecture.DEPT_ID)) continue; // skip if already processed
+        processedDepartmentIds.add(lecture.DEPT_ID);
 
         const departmentInfo = this.deriveDepartmentInfo(lecture);
-        const foundDepartment = departmentMap[lecture.dept_id];
+        const foundDepartment = departmentMap[lecture.DEPT_ID];
 
         // No department found, create new department
         if (!foundDepartment) {
@@ -107,7 +112,7 @@ export class SyncScholarDBService {
         }
       } catch (e: any) {
         result.departments.errors.push({
-          dept_id: lecture.dept_id,
+          dept_id: lecture.DEPT_ID,
           error: e.message || 'Unknown error',
         });
       }
@@ -118,7 +123,7 @@ export class SyncScholarDBService {
 
     /// Course update
     const lectureByCode = new Map(
-      data.lectures.map((l) => [l.old_no, l] as const),
+      data.lectures.map((l) => [l.OLD_NO, l] as const), // TODO: OLD_NO may not be available later, need to change to use new code
     );
     const existingCourses =
       await this.syncRepository.getExistingCoursesByOldCodes(
@@ -163,7 +168,7 @@ export class SyncScholarDBService {
     // Professor update
     const existingProfessors =
       await this.syncRepository.getExistingProfessorsById(
-        data.charges.map((c) => c.prof_id),
+        data.charges.map((c) => c.PROF_ID),
       );
     const professorMap = new Map(
       existingProfessors.map((p) => [p.professor_id, p]),
@@ -177,29 +182,29 @@ export class SyncScholarDBService {
         // TODO: 아래 로직 변경 필요할 수 있음? id는 staff id인데 실제 강사 이름이 들어있음. 데이터에서 staff id 830으로 확인 바람.
         // 기존 코드에서도 이렇게 처리하고 있었음.
         // staff id인 경우 이름이 각자 다를 수 있다는 것임.
-        if (charge.prof_id === staffProfessor.professor_id) continue;
-        if (processedProfessorIds.has(charge.prof_id)) continue;
-        processedProfessorIds.add(charge.prof_id);
+        if (charge.PROF_ID === staffProfessor.professor_id) continue;
+        if (processedProfessorIds.has(charge.PROF_ID)) continue;
+        processedProfessorIds.add(charge.PROF_ID);
 
-        const professor = professorMap.get(charge.prof_id);
+        const professor = professorMap.get(charge.PROF_ID);
         const derivedProfessor = this.deriveProfessorInfo(charge);
 
         if (!professor) {
           const newProfessor =
             await this.syncRepository.createProfessor(derivedProfessor);
-          professorMap.set(charge.prof_id, newProfessor);
+          professorMap.set(charge.PROF_ID, newProfessor);
           result.professors.created.push(newProfessor);
         } else if (this.professorChanged(professor, derivedProfessor)) {
           const updatedProfessor = await this.syncRepository.updateProfessor(
             professor.id,
             derivedProfessor,
           );
-          professorMap.set(charge.prof_id, updatedProfessor);
+          professorMap.set(charge.PROF_ID, updatedProfessor);
           result.professors.updated.push([professor, updatedProfessor]);
         }
       } catch (e: any) {
         result.professors.errors.push({
-          prof_id: charge.prof_id,
+          prof_id: charge.PROF_ID,
           error: e.message || 'Unknown error',
         });
       }
@@ -222,19 +227,19 @@ export class SyncScholarDBService {
       try {
         const foundLecture = existingLectures.find(
           (l) =>
-            l.code === lecture.subject_no &&
-            l.class_no.trim() === lecture.lecture_class.trim(),
+            l.old_code === lecture.OLD_NO &&
+            l.class_no.trim() === lecture.LECTURE_CLASS.trim(),
         );
-        const course_id = courseMap.get(lecture.old_no)?.id;
+        const course_id = courseMap.get(lecture.OLD_NO)?.id;
         if (!course_id)
-          throw new Error(`Course not found for lecture ${lecture.subject_no}`);
+          throw new Error(`Course not found for lecture ${lecture.SUBJECT_NO}`);
         const derivedLecture = this.deriveLectureInfo(lecture, course_id);
         const professorCharges = data.charges.filter(
           (c) =>
-            c.lecture_year === lecture.lecture_year &&
-            c.lecture_term === lecture.lecture_term &&
-            c.subject_no === lecture.subject_no &&
-            c.lecture_class.trim() === lecture.lecture_class.trim(),
+            c.LECTURE_YEAR === lecture.LECTURE_YEAR &&
+            c.LECTURE_TERM === lecture.LECTURE_TERM &&
+            c.SUBJECT_NO === lecture.SUBJECT_NO &&
+            c.LECTURE_CLASS.trim() === lecture.LECTURE_CLASS.trim(),
         );
 
         if (foundLecture) {
@@ -267,7 +272,7 @@ export class SyncScholarDBService {
           const newLecture =
             await this.syncRepository.createLecture(derivedLecture);
           const addedIds = professorCharges.map(
-            (charge) => professorMap.get(charge.prof_id)!.id,
+            (charge) => professorMap.get(charge.PROF_ID)!.id,
           );
 
           await this.syncRepository.updateLectureProfessors(newLecture.id, {
@@ -279,8 +284,8 @@ export class SyncScholarDBService {
       } catch (e: any) {
         result.lectures.errors.push({
           lecture: {
-            code: lecture.subject_no,
-            class_no: lecture.lecture_class,
+            code: lecture.SUBJECT_NO,
+            class_no: lecture.LECTURE_CLASS,
           },
           error: e.message || 'Unknown error',
         });
@@ -311,11 +316,11 @@ export class SyncScholarDBService {
     lecture: ISync.ScholarLectureType,
   ): LectureDerivedDepartmentInfo {
     return {
-      id: lecture.dept_id,
-      num_id: lecture.subject_no.slice(0, 2), // TODO: This will be changed in new API
-      code: this.extract_dept_code(lecture.old_no),
-      name: lecture.dept_name,
-      name_en: lecture.e_dept_name,
+      id: lecture.DEPT_ID,
+      num_id: lecture.SUBJECT_NO.split('.')[0], // TODO: num_id is obsolete. It equals code, and should be removed later.
+      code: this.extract_dept_code(lecture.OLD_NO), // TODO: May need to extract from new SUBJECT_NO
+      name: lecture.DEPT_NAME,
+      name_en: lecture.E_DEPT_NAME,
     };
   }
 
@@ -342,12 +347,13 @@ export class SyncScholarDBService {
     lecture: ISync.ScholarLectureType,
   ): LectureDerivedCourseInfo {
     return {
-      old_code: lecture.old_no,
-      department_id: lecture.dept_id,
-      type: lecture.subject_type,
-      type_en: lecture.e_subject_type,
-      title: lecture.sub_title.split('<')[0].split('[')[0].trim(),
-      title_en: lecture.e_sub_title.split('<')[0].split('[')[0].trim(),
+      old_code: lecture.OLD_NO,
+      new_code: lecture.SUBJECT_NO,
+      department_id: lecture.DEPT_ID,
+      type: lecture.SUBJECT_TYPE,
+      type_en: lecture.E_SUBJECT_TYPE,
+      title: lecture.SUB_TITLE.split('<')[0].split('[')[0].trim(),
+      title_en: lecture.E_SUB_TITLE.split('<')[0].split('[')[0].trim(),
     };
   }
 
@@ -365,10 +371,10 @@ export class SyncScholarDBService {
     charge: ISync.ScholarChargeType,
   ): ChargeDerivedProfessorInfo {
     return {
-      professor_id: charge.prof_id,
-      professor_name: charge.prof_name.trim(),
-      professor_name_en: charge.e_prof_name?.trim() || '',
-      major: charge.dept_id.toString(),
+      professor_id: charge.PROF_ID,
+      professor_name: charge.PROF_NAME.trim(),
+      professor_name_en: charge.E_PROF_NAME?.trim() || '',
+      major: charge.DEPT_ID.toString(),
     };
   }
 
@@ -388,30 +394,31 @@ export class SyncScholarDBService {
     course_id: number,
   ): DerivedLectureInfo {
     return {
-      code: lecture.subject_no,
-      year: lecture.lecture_year,
-      semester: lecture.lecture_term,
-      class_no: lecture.lecture_class.trim(),
-      department_id: lecture.dept_id,
-      old_code: lecture.old_no,
-      title: lecture.sub_title,
-      title_en: lecture.e_sub_title,
-      type: lecture.subject_type,
-      type_en: lecture.e_subject_type,
-      audience: lecture.course_sect,
-      limit: lecture.limit,
-      credit: lecture.credit,
-      credit_au: lecture.act_unit,
-      num_classes: lecture.lecture,
-      num_labs: lecture.lab,
-      is_english: lecture.english_lec === 'Y',
+      code: lecture.SUBJECT_NO,
+      new_code: lecture.SUBJECT_NO,
+      year: lecture.LECTURE_YEAR,
+      semester: lecture.LECTURE_TERM,
+      class_no: lecture.LECTURE_CLASS.trim(),
+      department_id: lecture.DEPT_ID,
+      old_code: lecture.OLD_NO,
+      title: lecture.SUB_TITLE,
+      title_en: lecture.E_SUB_TITLE,
+      type: lecture.SUBJECT_TYPE,
+      type_en: lecture.E_SUBJECT_TYPE,
+      audience: lecture.COURSE_SECT,
+      limit: lecture.LIMIT,
+      credit: lecture.CREDIT,
+      credit_au: lecture.ACT_UNIT,
+      num_classes: lecture.LECTURE,
+      num_labs: lecture.LAB,
+      is_english: lecture.ENGLISH_LEC === 'Y',
       course_id,
     };
   }
 
   lectureChanged(lecture: ELecture.Details, newData: DerivedLectureInfo) {
     return (
-      lecture.code !== newData.code ||
+      lecture.code !== newData.code || // TODO: This can be problematic if multiple lectures have the same old code
       lecture.year !== newData.year ||
       lecture.semester !== newData.semester ||
       lecture.class_no !== newData.class_no ||
@@ -441,15 +448,15 @@ export class SyncScholarDBService {
       .filter(
         (charge) =>
           !lecture.subject_lecture_professors.find(
-            (p) => p.professor.professor_id === charge.prof_id,
+            (p) => p.professor.professor_id === charge.PROF_ID,
           ),
       )
-      .map((charge) => professorMap.get(charge.prof_id)!.id);
+      .map((charge) => professorMap.get(charge.PROF_ID)!.id);
     const removedIds = lecture.subject_lecture_professors
       .filter(
         (p) =>
           !charges.find(
-            (charge) => charge.prof_id === p.professor.professor_id,
+            (charge) => charge.PROF_ID === p.professor.professor_id,
           ),
       )
       .map((p) => p.professor.id);
@@ -524,13 +531,13 @@ export class SyncScholarDBService {
     for (const time of data) {
       const lecture = existingLectures.find(
         (l) =>
-          l.code === time.subject_no &&
-          l.class_no.trim() === time.lecture_class.trim(),
+          l.code === time.SUBJECT_NO &&
+          l.class_no.trim() === time.LECTURE_CLASS.trim(),
       );
       if (!lecture) {
         result.skipped.push({
-          subject_no: time.subject_no,
-          lecture_class: time.lecture_class,
+          subject_no: time.SUBJECT_NO,
+          lecture_class: time.LECTURE_CLASS,
           error: 'Lecture not found',
         });
         continue;
@@ -596,9 +603,9 @@ export class SyncScholarDBService {
 
   deriveExamtimeInfo(examtime: ISync.ExamtimeType): DerivedExamtimeInfo {
     return {
-      day: examtime.exam_day - 1,
-      begin: new Date('1970-01-01T' + examtime.exam_begin.slice(11) + 'Z'),
-      end: new Date('1970-01-01T' + examtime.exam_end.slice(11) + 'Z'),
+      day: examtime.EXAM_DAY - 1,
+      begin: new Date('1970-01-01T' + examtime.EXAM_BEGIN.slice(11) + 'Z'),
+      end: new Date('1970-01-01T' + examtime.EXAM_END.slice(11) + 'Z'),
     };
   }
 
@@ -615,15 +622,15 @@ export class SyncScholarDBService {
 
   deriveClasstimeInfo(classTime: ISync.ClasstimeType): DerivedClasstimeInfo {
     return {
-      day: classTime.lecture_day - 1,
-      begin: new Date('1970-01-01T' + classTime.lecture_begin.slice(11) + 'Z'),
-      end: new Date('1970-01-01T' + classTime.lecture_end.slice(11) + 'Z'),
-      type: classTime.lecture_type,
-      building_id: classTime.building.toString(),
-      room_name: classTime.room_no,
-      building_full_name: classTime.room_k_name,
-      building_full_name_en: classTime.room_e_name,
-      unit_time: classTime.teaching,
+      day: classTime.LECTURE_DAY - 1,
+      begin: new Date('1970-01-01T' + classTime.LECTURE_BEGIN.slice(11) + 'Z'),
+      end: new Date('1970-01-01T' + classTime.LECTURE_END.slice(11) + 'Z'),
+      type: classTime.LECTURE_TYPE,
+      building_id: classTime.BUILDING.toString(),
+      room_name: classTime.ROOM_NO,
+      building_full_name: classTime.ROOM_K_NAME,
+      building_full_name_en: classTime.ROOM_E_NAME,
+      unit_time: classTime.TEACHING,
     };
   }
 

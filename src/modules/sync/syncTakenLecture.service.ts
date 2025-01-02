@@ -39,7 +39,7 @@ export class SyncTakenLectureService {
     );
     const studentIds = Array.from(
       new Set([
-        ...data.attend.map((a) => a.student_no),
+        ...data.attend.map((a) => a.STUDENT_NO),
         ...existingUserTakenLectures.map((u) => parseInt(u.student_id)),
       ]),
     );
@@ -71,11 +71,11 @@ export class SyncTakenLectureService {
         attend,
       );
       if (lectureId) {
-        const pair = studentPairMap.get(attend.student_no)!;
+        const pair = studentPairMap.get(attend.STUDENT_NO)!;
         pair[1].push(lectureId);
       } else
         result.errors.push({
-          student_no: attend.student_no,
+          student_no: attend.STUDENT_NO,
           attend,
           error: 'lecture not found',
         });
@@ -157,8 +157,8 @@ export class SyncTakenLectureService {
   ) {
     const lecture = lectures.find(
       (l) =>
-        l.code === attend.subject_no &&
-        l.class_no === attend.lecture_class.trim(),
+        l.new_code === attend.SUBJECT_NO &&
+        l.class_no === attend.LECTURE_CLASS.trim(),
     );
     return lecture?.id;
   }
