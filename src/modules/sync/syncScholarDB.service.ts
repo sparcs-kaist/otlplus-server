@@ -124,7 +124,7 @@ export class SyncScholarDBService {
 
     /// Course update
     const lectureByCode = new Map(
-      data.lectures.map((l) => [l.OLD_NO, l] as const),
+      data.lectures.map((l) => [l.OLD_NO, l] as const), // TODO: OLD_NO may not be available later, need to change to use new code
     );
     const existingCourses =
       await this.syncRepository.getExistingCoursesByOldCodes(
@@ -422,7 +422,7 @@ export class SyncScholarDBService {
 
   lectureChanged(lecture: ELecture.Details, newData: DerivedLectureInfo) {
     return (
-      lecture.code !== newData.code ||
+      lecture.code !== newData.code || // TODO: This can be problematic if multiple lectures have the same old code
       lecture.year !== newData.year ||
       lecture.semester !== newData.semester ||
       lecture.class_no !== newData.class_no ||
