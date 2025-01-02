@@ -1,3 +1,4 @@
+import { Transactional } from '@nestjs-cls/transactional';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Prisma, session_userprofile } from '@prisma/client';
 import { IPlanner } from 'src/common/interfaces/IPlanner';
@@ -6,7 +7,6 @@ import { EPlanners } from '../../common/entities/EPlanners';
 import { PlannerItemType } from '../../common/interfaces/constants/planner';
 import { PrismaService } from '../prisma.service';
 import CreateInput = EPlanners.EItems.Arbitrary.CreateInput;
-import { Transactional } from '@nestjs-cls/transactional';
 
 @Injectable()
 export class PlannerRepository {
@@ -541,7 +541,7 @@ export class PlannerRepository {
   async deleteTakenPlannerItemsWithWhere(
     plannerId: number,
     where: Prisma.XOR<
-      Prisma.Subject_lectureScalarRelationFilter,
+      Prisma.Subject_lectureRelationFilter,
       Prisma.subject_lectureWhereInput
     >,
   ) {
