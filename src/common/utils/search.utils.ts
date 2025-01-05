@@ -85,3 +85,19 @@ export async function validateYearAndSemester(
     (2009 < year && year < 2018 && semester && [1, 3].includes(semester))
   );
 }
+
+export function formatNewLectureCodeWithDot(keyword: string): string {
+  // new_code의 .을 수용할 수 있게 과목코드를 바꿔주는 함수
+
+  // 정규식: [알파벳]+[숫자]+ 형식 매칭
+  const regex = /^([a-zA-Z]+)(\d+)$/;
+
+  // 키워드가 정규식에 매칭되면 변환, 매칭되지 않으면 원래 값을 반환
+  const match = keyword.match(regex);
+  if (match) {
+    const [, letters, numbers] = match; // 알파벳 그룹과 숫자 그룹 추출
+    return `${letters}.${numbers}`; // 알파벳과 숫자 사이에 '.' 삽입
+  }
+
+  return keyword; // 변환 불가능한 경우 원래 키워드 반환
+}
