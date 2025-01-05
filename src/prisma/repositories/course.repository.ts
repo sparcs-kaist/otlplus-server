@@ -7,6 +7,7 @@ import { ICourse } from 'src/common/interfaces';
 import {
   applyOffset,
   applyOrder,
+  formatNewLectureCodeWithDot,
   orderFilter,
 } from 'src/common/utils/search.utils';
 import { PrismaService } from '../prisma.service';
@@ -312,11 +313,18 @@ export class CourseRepository {
         contains: keyword_space_removed,
       },
     };
+
+    const new_code_filter = {
+      new_code: {
+        contains: formatNewLectureCodeWithDot(keyword_space_removed),
+      },
+    };
     return {
       OR: [
         title_filter,
         en_title_filter,
         old_code_filter,
+        new_code_filter,
         department_name_filter,
         department_name_en_filter,
         professors_professor_name_filter,
