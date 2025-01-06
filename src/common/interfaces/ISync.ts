@@ -280,13 +280,22 @@ export namespace ISync {
       "teaching": 3
     }
    */
+  function TimeDayConverter(dayString: string) {
+    const dayNumber = parseInt(dayString);
+    if (dayNumber < 1 || dayNumber > 7) {
+      throw new Error('Invalid day number. Must be between 1 and 7.');
+    }
+
+    const day = dayNumber === 7 ? 1 : dayNumber - 1;
+    return day - 1;
+  }
   export class ClasstimeType {
     /** 개설 연도 */
     @Transform(({ value }) => parseInt(value))
     @IsInt()
     LECTURE_YEAR!: number;
     /** 개설 학기. 1: 봄학기, 2:여름학기, 3: 가을학기, 4: 겨울학기 */
-    @Transform(({ value }) => parseInt(value))
+    @Transform(({ value }) => TimeDayConverter(value))
     @IsIn([1, 2, 3, 4])
     LECTURE_TERM!: number;
     /** 36.492 등의 과목코드 */
