@@ -24,7 +24,6 @@ export class AuthChain {
       authorization: false,
       authentication: false,
       isPublic: false,
-      isReviewProhibited: false,
     };
     for (const command of this.authChain) {
       result = await command.next(context, result);
@@ -33,11 +32,7 @@ export class AuthChain {
   }
 
   private async handleException(result: AuthResult) {
-    if (result.isReviewProhibited)
-      throw new ForbiddenException(
-        'review submissions for the 2025-1 lectures are currently not allowed',
-      );
-    else if (result.isPublic) return true;
+    if (result.isPublic) return true;
     else {
       if (!result.authentication) throw new UnauthorizedException();
       if (!result.authorization) throw new ForbiddenException();

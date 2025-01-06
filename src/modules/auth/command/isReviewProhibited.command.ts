@@ -24,10 +24,6 @@ export class IsReviewProhibitedCommand implements AuthCommand {
     const request = context.switchToHttp().getRequest<Request>();
     const reviewsBody = request.body;
 
-    console.log('isReviewProhibited: ', isReviewProhibited);
-
-    console.log(reviewsBody);
-
     if (isReviewProhibited) {
       try {
         if (!reviewsBody || !reviewsBody.lecture) {
@@ -36,18 +32,13 @@ export class IsReviewProhibitedCommand implements AuthCommand {
         const lecture = await this.lectureService.getLectureById(
           reviewsBody.lecture,
         );
-        console.log(
-          'lecture year',
-          lecture.year,
-          'lecture semester',
-          lecture.semester,
-        );
+        // TODO: implement logic to replace hardcoded values
         if (lecture.year == 2025 && lecture.semester == 1) {
-          prevResult.isReviewProhibited = true;
+          prevResult.authorization = false;
         }
         return Promise.resolve(prevResult);
-      } catch (e: any) {
-        console.log(e);
+      } catch (e) {
+        console.error(e);
         return Promise.resolve(prevResult);
       }
     }
