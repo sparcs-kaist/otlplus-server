@@ -620,18 +620,9 @@ export class SyncScholarDBService {
     );
   }
 
-  TimeDayConverter(dayNumber: number) {
-    if (dayNumber < 1 || dayNumber > 7) {
-      throw new Error('Invalid day number. Must be between 1 and 7.');
-    }
-
-    const day = dayNumber === 1 ? 7 : dayNumber - 1;
-    return day - 1;
-  }
-
   deriveClasstimeInfo(classTime: ISync.ClasstimeType): DerivedClasstimeInfo {
     return {
-      day: this.TimeDayConverter(classTime.LECTURE_DAY),
+      day: this.timeDayConverter(classTime.LECTURE_DAY),
       begin: new Date('1970-01-01T' + classTime.LECTURE_BEGIN.slice(11) + 'Z'),
       end: new Date('1970-01-01T' + classTime.LECTURE_END.slice(11) + 'Z'),
       type: classTime.LECTURE_TYPE,
@@ -641,6 +632,15 @@ export class SyncScholarDBService {
       building_full_name_en: `(${classTime.BUILDING})${classTime.ROOM_E_NAME}`,
       unit_time: classTime.TEACHING,
     };
+  }
+
+  private timeDayConverter(dayNumber: number) {
+    if (dayNumber < 1 || dayNumber > 7) {
+      throw new Error('Invalid day number. Must be between 1 and 7.');
+    }
+
+    const day = dayNumber === 1 ? 7 : dayNumber - 1;
+    return day - 1;
   }
 
   classtimeMatches(
