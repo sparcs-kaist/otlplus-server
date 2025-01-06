@@ -314,9 +314,9 @@ export namespace ISync {
     @IsIn(['l', 'e'])
     LECTURE_TYPE!: 'l' | 'e';
     /** 건물 번호 */
-    @Transform(({ value }) => parseInt(value))
-    @IsInt()
-    BUILDING!: number;
+    // @Transform(({ value }) => parseInt(value))
+    @IsString()
+    BUILDING!: string;
     /** 강의실 번호 */
     @IsString()
     ROOM_NO!: string;
