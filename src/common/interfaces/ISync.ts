@@ -326,10 +326,18 @@ export namespace ISync {
     /** 강의실 영어 이름 */
     @IsString()
     ROOM_E_NAME!: string;
+
     /** 수업 교시 */
     @IsNumber()
-    @Transform(({ value }) => parseInt(value))
-    TEACHING!: number;
+    @IsOptional() // 빈 문자열이나 undefined를 허용
+    @Transform(({ value }) => {
+      if (value === '' || value === null || value === undefined) {
+        return null; // 임시로 null로 처리합니다.
+      }
+      const parsed = parseInt(value, 10);
+      return isNaN(parsed) ? null : parsed; // 숫자가 아닌 경우 null 반환
+    })
+    TEACHING!: number | null;
   }
 
   export class TakenLectureBody {

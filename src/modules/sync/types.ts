@@ -60,5 +60,5 @@ export type DerivedClasstimeInfo = {
   room_name: string;
   building_full_name: string;
   building_full_name_en: string;
-  unit_time: number;
+  unit_time: number | null;
 };
