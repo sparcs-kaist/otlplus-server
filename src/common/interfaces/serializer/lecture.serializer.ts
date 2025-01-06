@@ -14,6 +14,7 @@ export function toJsonLectureBasic(lecture: ELecture.Extended): ILecture.Basic {
     title: lecture.title,
     title_en: lecture.title_en,
     course: lecture.course_id,
+    old_old_code: lecture.old_code,
     old_code: lecture.new_code,
     class_no: lecture.class_no,
     year: lecture.year,

@@ -46,6 +46,7 @@ export function toJsonCourseBasic(
 ): ICourse.Basic {
   return {
     id: course.id,
+    old_old_code: course.old_code,
     old_code: course.new_code,
     department: toJsonDepartment(course.subject_department, true),
     type: course.type,

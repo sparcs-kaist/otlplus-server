@@ -4,7 +4,7 @@ import { ICourse } from './ICourse';
 import { IProfessor } from './IProfessor';
 
 import { Transform } from 'class-transformer';
-import { IsArray, IsNumber, IsOptional } from 'class-validator';
+import { IsNumber, IsOptional } from 'class-validator';
 import { ITimetable } from './ITimetable';
 
 export namespace ILecture {
@@ -78,6 +78,7 @@ export namespace ILecture {
     title: string;
     title_en: string;
     course: number;
+    old_old_code: string;
     old_code: string;
     class_no: string;
     year: number;

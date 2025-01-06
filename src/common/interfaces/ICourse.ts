@@ -15,6 +15,7 @@ export namespace ICourse {
   export interface Basic {
     id: number;
     old_code: string;
+    old_old_code: string;
     department: IDepartment.Basic;
     type: string;
     type_en: string;
