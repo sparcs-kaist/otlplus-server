@@ -62,3 +62,13 @@ export function toJsonLectureDetail(
     ),
   });
 }
+
+export function toJsonLectureDetailWithStudents(
+  lecture: ELecture.DetailsWithStudents,
+): ILecture.DetailWithStudents {
+  const detail = toJsonLectureDetail(lecture);
+  return Object.assign(detail, {
+    student_num: lecture.student_num,
+    student_limit: lecture.student_limit,
+  });
+}

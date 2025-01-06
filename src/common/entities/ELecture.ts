@@ -46,6 +46,11 @@ export namespace ELecture {
   });
   export type Details = Prisma.subject_lectureGetPayload<typeof Details>;
 
+  export interface DetailsWithStudents extends Details {
+    student_num: number;
+    student_limit: number;
+  }
+
   export const DetailsWithCourse =
     Prisma.validator<Prisma.subject_lectureDefaultArgs>()({
       include: {

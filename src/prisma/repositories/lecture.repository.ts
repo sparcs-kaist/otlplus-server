@@ -3,7 +3,7 @@ import { Prisma, session_userprofile } from '@prisma/client';
 import { ELecture } from 'src/common/entities/ELecture';
 import { ILecture } from 'src/common/interfaces/ILecture';
 import { applyOffset, applyOrder } from 'src/common/utils/search.utils';
-import { groupBy } from '../../common/utils/method.utils';
+import { groupBy, normalizeArray } from '../../common/utils/method.utils';
 import { PrismaService } from '../prisma.service';
 import { CourseRepository } from './course.repository';
 import Details = ELecture.Details;
@@ -43,7 +43,9 @@ export class LectureRepository {
     });
   }
 
-  async filterByRequest(query: ILecture.QueryDto): Promise<ELecture.Details[]> {
+  async filterByRequest(
+    query: ILecture.QueryDto,
+  ): Promise<ELecture.DetailsWithStudents[]> {
     const DEFAULT_LIMIT = 300;
     const DEFAULT_ORDER = ['year', 'semester', 'old_code', 'class_no'];
     const researchTypes = [
@@ -97,17 +99,46 @@ export class LectureRepository {
       },
       take: query.limit ?? DEFAULT_LIMIT,
     });
+    const lectureIds = queryResult.map((lecture) => lecture.id);
+    const lectureWithStudents = await this.prisma.subject_lecture.findMany({
+      include: {
+        students: true,
+      },
+      where: {
+        id: {
+          in: lectureIds,
+        },
+      },
+    });
+    const lectureWithStudentsMap = normalizeArray(
+      lectureWithStudents.map((lecture) => {
+        return {
+          id: lecture.id,
+          student_num: lecture.students.length,
+          student_limit: lecture.limit,
+        };
+      }),
+    );
+
     const levelFilteredResult =
       this.courseRepository.levelFilter<ELecture.Details>(
         queryResult,
         query?.level,
       );
 
-    const orderedQuery = applyOrder<ELecture.Details>(
+    const studentsFilteredResult = this.studentNumFilter(
       levelFilteredResult,
+      lectureWithStudentsMap,
+      query?.isFull,
+    );
+    const orderedQuery = applyOrder<ELecture.DetailsWithStudents>(
+      studentsFilteredResult,
       (query.order ?? DEFAULT_ORDER) as (keyof ELecture.Details)[],
     );
-    return applyOffset<ELecture.Details>(orderedQuery, query.offset ?? 0);
+    return applyOffset<ELecture.DetailsWithStudents>(
+      orderedQuery,
+      query.offset ?? 0,
+    );
   }
 
   async findReviewWritableLectures(
@@ -260,6 +291,35 @@ export class LectureRepository {
     return Object.keys(result).length > 0
       ? { subject_classtime: { some: result } }
       : null;
+  }
+
+  public studentNumFilter(
+    queryResult: ELecture.Details[],
+    lectureWithStudentsMap: {
+      [key: number]: { student_num: number; student_limit: number } | undefined;
+    },
+    isFull?: boolean,
+  ): ELecture.DetailsWithStudents[] {
+    const lectureWithStudents = queryResult.map((lecture) => {
+      const lectureWithStudent = lectureWithStudentsMap[lecture.id];
+      if (lectureWithStudent) {
+        return Object.assign(lecture, {
+          student_num: lectureWithStudent.student_num,
+          student_limit: lectureWithStudent.student_limit,
+        });
+      } else {
+        return Object.assign(lecture, {
+          student_num: 0,
+          student_limit: lecture.limit,
+        });
+      }
+    });
+    if (isFull) {
+      return lectureWithStudents.filter(
+        (lecture) => lecture.student_num < lecture.student_limit,
+      );
+    }
+    return lectureWithStudents;
   }
 
   public datetimeConverter(time: number): Date {

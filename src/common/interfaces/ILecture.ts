@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsString } from 'class-validator';
+import { IsBoolean, IsInt, IsString } from 'class-validator';
 import { ICourse } from './ICourse';
 import { IProfessor } from './IProfessor';
 
@@ -127,6 +127,10 @@ export namespace ILecture {
     semester?: number;
 
     @IsOptional()
+    @IsBoolean()
+    isFull?: boolean;
+
+    @IsOptional()
     // @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
     @Transform(({ value }) => parseInt(value))
     @IsNumber()
@@ -156,5 +160,10 @@ export namespace ILecture {
 
     @IsString()
     keyword!: string;
+  }
+
+  export interface DetailWithStudents extends Detail {
+    student_num: number;
+    student_limit: number;
   }
 }

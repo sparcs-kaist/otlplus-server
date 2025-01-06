@@ -4,7 +4,10 @@ import { ELecture } from 'src/common/entities/ELecture';
 import { EReview } from 'src/common/entities/EReview';
 import { ILecture } from 'src/common/interfaces/ILecture';
 import { IReview } from 'src/common/interfaces/IReview';
-import { toJsonLectureDetail } from 'src/common/interfaces/serializer/lecture.serializer';
+import {
+  toJsonLectureDetail,
+  toJsonLectureDetailWithStudents,
+} from 'src/common/interfaces/serializer/lecture.serializer';
 import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
@@ -20,9 +23,11 @@ export class LecturesService {
 
   public async getLectureByFilter(
     query: ILecture.QueryDto,
-  ): Promise<ILecture.Detail[]> {
+  ): Promise<ILecture.DetailWithStudents[]> {
     const queryResult = await this.LectureRepository.filterByRequest(query);
-    return queryResult.map((lecture) => toJsonLectureDetail(lecture));
+    return queryResult.map((lecture) =>
+      toJsonLectureDetailWithStudents(lecture),
+    );
   }
 
   public async getLectureById(id: number): Promise<ILecture.Detail> {

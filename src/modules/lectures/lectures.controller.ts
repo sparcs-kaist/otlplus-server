@@ -14,7 +14,7 @@ export class LecturesController {
   @Get()
   async getLectures(
     @Query() query: ILecture.QueryDto,
-  ): Promise<ILecture.Detail[]> {
+  ): Promise<ILecture.DetailWithStudents[]> {
     return await this.LectureService.getLectureByFilter(query);
   }
 
