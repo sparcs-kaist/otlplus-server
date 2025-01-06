@@ -281,6 +281,16 @@ export namespace ISync {
     }
    */
 
+  function timeDayConverter(dayString: string) {
+    const dayNumber = parseInt(dayString);
+    if (dayNumber < 1 || dayNumber > 7) {
+      throw new Error('Invalid day number. Must be between 1 and 7.');
+    }
+
+    const day = dayNumber === 1 ? 7 : dayNumber - 1;
+    return day - 1;
+  }
+
   export class ClasstimeType {
     /** 개설 연도 */
     @Transform(({ value }) => parseInt(value))
@@ -302,7 +312,7 @@ export namespace ISync {
     DEPT_ID!: number;
     /** 수업 요일. 1~7 범위의 값 확인. 월부터 시작. */
     @IsNumber()
-    @Transform(({ value }) => parseInt(value))
+    @Transform(({ value }) => timeDayConverter(value))
     LECTURE_DAY!: number;
     /** 수업 시작 시간 */
     @IsString()
