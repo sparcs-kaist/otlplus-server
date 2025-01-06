@@ -620,9 +620,18 @@ export class SyncScholarDBService {
     );
   }
 
+  TimeDayConverter(dayNumber: number) {
+    if (dayNumber < 1 || dayNumber > 7) {
+      throw new Error('Invalid day number. Must be between 1 and 7.');
+    }
+
+    const day = dayNumber === 1 ? 7 : dayNumber - 1;
+    return day - 1;
+  }
+
   deriveClasstimeInfo(classTime: ISync.ClasstimeType): DerivedClasstimeInfo {
     return {
-      day: classTime.LECTURE_DAY - 1,
+      day: this.TimeDayConverter(classTime.LECTURE_DAY),
       begin: new Date('1970-01-01T' + classTime.LECTURE_BEGIN.slice(11) + 'Z'),
       end: new Date('1970-01-01T' + classTime.LECTURE_END.slice(11) + 'Z'),
       type: classTime.LECTURE_TYPE,
