@@ -127,6 +127,9 @@ export namespace ILecture {
     semester?: number;
 
     @IsOptional()
+    @Transform((value) => {
+      return value.value == 'true' ? true : false;
+    })
     @IsBoolean()
     isFull?: boolean;
 
