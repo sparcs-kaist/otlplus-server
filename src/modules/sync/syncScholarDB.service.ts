@@ -621,8 +621,9 @@ export class SyncScholarDBService {
   }
 
   deriveClasstimeInfo(classTime: ISync.ClasstimeType): DerivedClasstimeInfo {
+    const day = this.timeDayConverter(classTime.LECTURE_DAY);
     return {
-      day: this.timeDayConverter(classTime.LECTURE_DAY),
+      day: day,
       begin: new Date('1970-01-01T' + classTime.LECTURE_BEGIN.slice(11) + 'Z'),
       end: new Date('1970-01-01T' + classTime.LECTURE_END.slice(11) + 'Z'),
       type: classTime.LECTURE_TYPE,
