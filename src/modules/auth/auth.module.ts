@@ -14,6 +14,8 @@ import { JwtCommand } from './command/jwt.command';
 import { SidCommand } from './command/sid.command';
 import { SyncApiKeyCommand } from './command/syncApiKey.command';
 import { JwtCookieStrategy } from './strategy/jwt-cookie.strategy';
+import { IsReviewProhibitedCommand } from '@src/modules/auth/command/isReviewProhibited.command';
+import { LecturesService } from '@src/modules/lectures/lectures.service';
 
 @Module({
   imports: [
@@ -28,11 +30,13 @@ import { JwtCookieStrategy } from './strategy/jwt-cookie.strategy';
     JwtCookieStrategy,
     UserService,
     UserRepository,
+    LecturesService,
     AuthChain,
     IsPublicCommand,
     JwtCommand,
     SidCommand,
     SyncApiKeyCommand,
+    IsReviewProhibitedCommand,
     AuthConfig,
   ],
   exports: [AuthService, AuthConfig, AuthChain],

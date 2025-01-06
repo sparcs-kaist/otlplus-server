@@ -4,6 +4,7 @@ import { IsPublicCommand } from './command/isPublic.command';
 import { JwtCommand } from './command/jwt.command';
 import { SidCommand } from './command/sid.command';
 import { SyncApiKeyCommand } from './command/syncApiKey.command';
+import { IsReviewProhibitedCommand } from '@src/modules/auth/command/isReviewProhibited.command';
 
 @Injectable()
 export class AuthConfig {
@@ -13,6 +14,7 @@ export class AuthConfig {
     private readonly sidCommand: SidCommand,
     private readonly isPublicCommand: IsPublicCommand,
     private readonly syncApiKeyCommand: SyncApiKeyCommand,
+    private readonly isReviewProhibitedCommand: IsReviewProhibitedCommand,
   ) {}
 
   public async config(env: string) {
@@ -27,7 +29,8 @@ export class AuthConfig {
       .register(this.isPublicCommand)
       .register(this.sidCommand)
       .register(this.jwtCommand)
-      .register(this.syncApiKeyCommand);
+      .register(this.syncApiKeyCommand)
+      .register(this.isReviewProhibitedCommand);
   };
 
   private getDevGuardConfig = () => {
@@ -35,13 +38,15 @@ export class AuthConfig {
       .register(this.isPublicCommand)
       .register(this.sidCommand)
       .register(this.jwtCommand)
-      .register(this.syncApiKeyCommand);
+      .register(this.syncApiKeyCommand)
+      .register(this.isReviewProhibitedCommand);
   };
 
   private getProdGuardConfig = () => {
     return this.authChain
       .register(this.jwtCommand)
       .register(this.isPublicCommand)
-      .register(this.syncApiKeyCommand);
+      .register(this.syncApiKeyCommand)
+      .register(this.isReviewProhibitedCommand);
   };
 }
