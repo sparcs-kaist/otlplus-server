@@ -628,8 +628,8 @@ export class SyncScholarDBService {
       type: classTime.LECTURE_TYPE,
       building_id: classTime.BUILDING.toString(),
       room_name: classTime.ROOM_NO,
-      building_full_name: classTime.ROOM_K_NAME,
-      building_full_name_en: classTime.ROOM_E_NAME,
+      building_full_name: `(${classTime.BUILDING})${classTime.ROOM_K_NAME}`,
+      building_full_name_en: `(${classTime.BUILDING})${classTime.ROOM_E_NAME}`,
       unit_time: classTime.TEACHING,
     };
   }
