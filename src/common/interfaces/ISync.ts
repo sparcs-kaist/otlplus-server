@@ -86,9 +86,9 @@ export namespace ISync {
     @IsString()
     E_SUB_TITLE!: string;
     /** 과목 종류 id로 추정. 아래 subject_type과 대응. */
-    @Transform(({ value }) => parseInt(value))
-    @IsInt()
-    SUBJECT_ID!: number;
+    // @Transform(({ value }) => parseInt(value))
+    @IsString()
+    SUBJECT_ID!: string;
     /** 과목 종류 한글 명칭. 전공필수, 전공선택 등 */
     @IsString()
     SUBJECT_TYPE!: string;
