@@ -435,7 +435,8 @@ export class SyncScholarDBService {
       lecture.num_classes !== newData.num_classes ||
       lecture.num_labs !== newData.num_labs ||
       lecture.is_english !== newData.is_english ||
-      lecture.course_id !== newData.course_id
+      lecture.course_id !== newData.course_id ||
+      lecture.new_code !== newData.code
     );
   }
 
