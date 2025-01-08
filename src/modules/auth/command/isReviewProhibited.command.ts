@@ -34,7 +34,7 @@ export class IsReviewProhibitedCommand implements AuthCommand {
         );
         // TODO: implement logic to replace hardcoded values
         if (lecture.year == 2025 && lecture.semester == 1) {
-          prevResult.authentication = false;
+          prevResult.authorization = false;
         }
         return Promise.resolve(prevResult);
       } catch (e) {
