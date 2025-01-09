@@ -16,6 +16,7 @@ import { IReview } from 'src/common/interfaces/IReview';
 import { ReviewsService } from './reviews.service';
 import { EReview } from '../../common/entities/EReview';
 import EReviewVote = EReview.EReviewVote;
+import { ReviewProhibited } from '@src/common/decorators/prohibit-review.decorator';
 
 @Controller('api/reviews')
 export class ReviewsController {
@@ -37,6 +38,7 @@ export class ReviewsController {
     return result;
   }
 
+  @ReviewProhibited()
   @Post()
   async createReviews(
     @Body() reviewsBody: IReview.CreateDto,
