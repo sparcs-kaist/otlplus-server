@@ -92,6 +92,12 @@ export class SyncRepository {
     });
   }
 
+  async getExistingCoursesByNewCodes(newCodes: string[]) {
+    return await this.prisma.subject_course.findMany({
+      where: { new_code: { in: newCodes } },
+    });
+  }
+
   async createCourse(data: LectureDerivedCourseInfo) {
     return await this.prisma.subject_course.create({
       data: {

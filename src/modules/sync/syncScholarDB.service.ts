@@ -122,28 +122,30 @@ export class SyncScholarDBService {
     );
 
     /// Course update
+    // TODO: OLD_NO may not be available later, need to change to use new code
+    // -> SUBJECT_NO(DB의 code 및 new_code) 사용으로 수정
     const lectureByCode = new Map(
-      data.lectures.map((l) => [l.OLD_NO, l] as const), // TODO: OLD_NO may not be available later, need to change to use new code
+      data.lectures.map((l) => [l.SUBJECT_NO, l] as const),
     );
     const existingCourses =
-      await this.syncRepository.getExistingCoursesByOldCodes(
+      await this.syncRepository.getExistingCoursesByNewCodes(
         Array.from(lectureByCode.keys()),
       );
     this.slackNoti.sendSyncNoti(
       `Found ${existingCourses.length} existing related courses, updating...`,
     );
     const courseMap = new Map(
-      existingCourses.map((l) => [l.old_code, l] as const),
+      existingCourses.map((l) => [l.new_code, l] as const),
     );
-    for (const [old_code, lecture] of lectureByCode.entries()) {
+    for (const [new_code, lecture] of lectureByCode.entries()) {
       try {
-        const foundCourse = courseMap.get(old_code);
+        const foundCourse = courseMap.get(new_code);
         const derivedCourse = this.deriveCourseInfo(lecture);
         if (!foundCourse) {
           const newCourse =
             await this.syncRepository.createCourse(derivedCourse);
           result.courses.created.push(newCourse);
-          courseMap.set(old_code, newCourse);
+          courseMap.set(new_code, newCourse);
         } else {
           if (this.courseChanged(foundCourse, derivedCourse)) {
             const updatedCourse = await this.syncRepository.updateCourse(
@@ -151,12 +153,12 @@ export class SyncScholarDBService {
               derivedCourse,
             );
             result.courses.updated.push([foundCourse, updatedCourse]);
-            courseMap.set(old_code, updatedCourse);
+            courseMap.set(new_code, updatedCourse);
           }
         }
       } catch (e: any) {
         result.courses.errors.push({
-          old_code,
+          new_code,
           error: e.message || 'Unknown error',
         });
       }
@@ -225,12 +227,17 @@ export class SyncScholarDBService {
     const notExistingLectures = new Set(existingLectures.map((l) => l.id));
     for (const lecture of data.lectures) {
       try {
-        const foundLecture = existingLectures.find(
-          (l) =>
-            l.old_code === lecture.OLD_NO &&
-            l.class_no.trim() === lecture.LECTURE_CLASS.trim(),
+        const foundLecture = existingLectures.find((l) =>
+          // 차세대 학사시스템 이후 신설된 과목은 OLD_NO의 값이 ""로 모두 같음.
+          l.old_code === ''
+            ? l.new_code === lecture.SUBJECT_NO &&
+              l.class_no.trim() === lecture.LECTURE_CLASS.trim()
+            : l.old_code === lecture.OLD_NO &&
+              l.class_no.trim() === lecture.LECTURE_CLASS.trim(),
         );
-        const course_id = courseMap.get(lecture.OLD_NO)?.id;
+        const course_id = courseMap.get(
+          lecture.OLD_NO === '' ? lecture.SUBJECT_NO : lecture.OLD_NO,
+        )?.id;
         if (!course_id)
           throw new Error(`Course not found for lecture ${lecture.SUBJECT_NO}`);
         const derivedLecture = this.deriveLectureInfo(lecture, course_id);
