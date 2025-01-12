@@ -227,17 +227,12 @@ export class SyncScholarDBService {
     const notExistingLectures = new Set(existingLectures.map((l) => l.id));
     for (const lecture of data.lectures) {
       try {
-        const foundLecture = existingLectures.find((l) =>
-          // 차세대 학사시스템 이후 신설된 과목은 OLD_NO의 값이 ""로 모두 같음.
-          l.old_code === ''
-            ? l.new_code === lecture.SUBJECT_NO &&
-              l.class_no.trim() === lecture.LECTURE_CLASS.trim()
-            : l.old_code === lecture.OLD_NO &&
-              l.class_no.trim() === lecture.LECTURE_CLASS.trim(),
+        const foundLecture = existingLectures.find(
+          (l) =>
+            l.new_code === lecture.SUBJECT_NO &&
+            l.class_no.trim() === lecture.LECTURE_CLASS.trim(),
         );
-        const course_id = courseMap.get(
-          lecture.OLD_NO === '' ? lecture.SUBJECT_NO : lecture.OLD_NO,
-        )?.id;
+        const course_id = courseMap.get(lecture.SUBJECT_NO)?.id;
         if (!course_id)
           throw new Error(`Course not found for lecture ${lecture.SUBJECT_NO}`);
         const derivedLecture = this.deriveLectureInfo(lecture, course_id);
@@ -425,7 +420,8 @@ export class SyncScholarDBService {
 
   lectureChanged(lecture: ELecture.Details, newData: DerivedLectureInfo) {
     return (
-      lecture.code !== newData.code || // TODO: This can be problematic if multiple lectures have the same old code
+      // TODO: This can be problematic if multiple lectures have the same old code
+      // -> new_code(=code)를 기준으로 lecture 구분하므로 code가 다르면 다른 lecture로 취급해야 함
       lecture.year !== newData.year ||
       lecture.semester !== newData.semester ||
       lecture.class_no !== newData.class_no ||
