@@ -320,14 +320,14 @@ export class SyncScholarDBService {
     return {
       id: lecture.DEPT_ID,
       num_id: lecture.SUBJECT_NO.split('.')[0], // TODO: num_id is obsolete. It equals code, and should be removed later.
-      code: this.extract_dept_code(lecture.OLD_NO), // TODO: May need to extract from new SUBJECT_NO
+      code: this.extract_dept_code(lecture.SUBJECT_NO), // TODO: May need to extract from new SUBJECT_NO
       name: lecture.DEPT_NAME,
       name_en: lecture.E_DEPT_NAME,
     };
   }
 
   extract_dept_code(lectureCode: string) {
-    const code = lectureCode.match(/([a-zA-Z]+)(\d+)/)?.[1];
+    const code = lectureCode.match(/[a-zA-Z]+|\d+/g)?.[0];
     if (!code)
       throw new Error(`Failed to extract department code from ${lectureCode}`);
     return code;
