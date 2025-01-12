@@ -122,28 +122,30 @@ export class SyncScholarDBService {
     );
 
     /// Course update
+    // TODO: OLD_NO may not be available later, need to change to use new code
+    // -> SUBJECT_NO(DB의 code 및 new_code) 사용으로 수정
     const lectureByCode = new Map(
-      data.lectures.map((l) => [l.OLD_NO, l] as const), // TODO: OLD_NO may not be available later, need to change to use new code
+      data.lectures.map((l) => [l.SUBJECT_NO, l] as const),
     );
     const existingCourses =
-      await this.syncRepository.getExistingCoursesByOldCodes(
+      await this.syncRepository.getExistingCoursesByNewCodes(
         Array.from(lectureByCode.keys()),
       );
     this.slackNoti.sendSyncNoti(
       `Found ${existingCourses.length} existing related courses, updating...`,
     );
     const courseMap = new Map(
-      existingCourses.map((l) => [l.old_code, l] as const),
+      existingCourses.map((l) => [l.new_code, l] as const),
     );
-    for (const [old_code, lecture] of lectureByCode.entries()) {
+    for (const [new_code, lecture] of lectureByCode.entries()) {
       try {
-        const foundCourse = courseMap.get(old_code);
+        const foundCourse = courseMap.get(new_code);
         const derivedCourse = this.deriveCourseInfo(lecture);
         if (!foundCourse) {
           const newCourse =
             await this.syncRepository.createCourse(derivedCourse);
           result.courses.created.push(newCourse);
-          courseMap.set(old_code, newCourse);
+          courseMap.set(new_code, newCourse);
         } else {
           if (this.courseChanged(foundCourse, derivedCourse)) {
             const updatedCourse = await this.syncRepository.updateCourse(
@@ -151,12 +153,12 @@ export class SyncScholarDBService {
               derivedCourse,
             );
             result.courses.updated.push([foundCourse, updatedCourse]);
-            courseMap.set(old_code, updatedCourse);
+            courseMap.set(new_code, updatedCourse);
           }
         }
       } catch (e: any) {
         result.courses.errors.push({
-          old_code,
+          new_code,
           error: e.message || 'Unknown error',
         });
       }
@@ -227,10 +229,10 @@ export class SyncScholarDBService {
       try {
         const foundLecture = existingLectures.find(
           (l) =>
-            l.old_code === lecture.OLD_NO &&
+            l.new_code === lecture.SUBJECT_NO &&
             l.class_no.trim() === lecture.LECTURE_CLASS.trim(),
         );
-        const course_id = courseMap.get(lecture.OLD_NO)?.id;
+        const course_id = courseMap.get(lecture.SUBJECT_NO)?.id;
         if (!course_id)
           throw new Error(`Course not found for lecture ${lecture.SUBJECT_NO}`);
         const derivedLecture = this.deriveLectureInfo(lecture, course_id);
@@ -318,14 +320,14 @@ export class SyncScholarDBService {
     return {
       id: lecture.DEPT_ID,
       num_id: lecture.SUBJECT_NO.split('.')[0], // TODO: num_id is obsolete. It equals code, and should be removed later.
-      code: this.extract_dept_code(lecture.OLD_NO), // TODO: May need to extract from new SUBJECT_NO
+      code: this.extract_dept_code(lecture.SUBJECT_NO), // TODO: May need to extract from new SUBJECT_NO
       name: lecture.DEPT_NAME,
       name_en: lecture.E_DEPT_NAME,
     };
   }
 
   extract_dept_code(lectureCode: string) {
-    const code = lectureCode.match(/([a-zA-Z]+)(\d+)/)?.[1];
+    const code = lectureCode.match(/[a-zA-Z]+|\d+/g)?.[0];
     if (!code)
       throw new Error(`Failed to extract department code from ${lectureCode}`);
     return code;
@@ -418,7 +420,8 @@ export class SyncScholarDBService {
 
   lectureChanged(lecture: ELecture.Details, newData: DerivedLectureInfo) {
     return (
-      lecture.code !== newData.code || // TODO: This can be problematic if multiple lectures have the same old code
+      // TODO: This can be problematic if multiple lectures have the same old code
+      // -> new_code(=code)를 기준으로 lecture 구분하므로 code가 다르면 다른 lecture로 취급해야 함
       lecture.year !== newData.year ||
       lecture.semester !== newData.semester ||
       lecture.class_no !== newData.class_no ||
