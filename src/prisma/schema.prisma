@@ -216,10 +216,16 @@ model main_reviewwritedailyuserfeed {
 
 model review_humanitybestreview {
   review_id Int @id
+  review    review_review @relation(fields: [review_id], references: [id], onDelete: Cascade)
+
+  @@index([review_id])
 }
 
 model review_majorbestreview {
-  review_id Int @id
+  review_id Int          @id
+  review    review_review @relation(fields: [review_id], references: [id], onDelete: Cascade)
+
+  @@index([review_id])
 }
 
 model review_review {
@@ -242,6 +248,9 @@ model review_review {
   lecture                                    subject_lecture                              @relation(fields: [lecture_id], references: [id])
   writer                                     session_userprofile?                         @relation(fields: [writer_id], references: [id])
   review_reviewvote                          review_reviewvote[]
+  review_majorbestreview                     review_majorbestreview?                      @relation
+  review_humanitybestreview                  review_humanitybestreview?                   @relation
+
 
   @@unique([writer_id, lecture_id], map: "review_comment_writer_id_af700a5d_uniq")
   @@index([written_datetime], map: "review_comment_e5e30a4a")

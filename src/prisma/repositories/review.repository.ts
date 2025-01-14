@@ -401,4 +401,56 @@ export class ReviewsRepository {
       },
     });
   }
+
+  // Fetch humanity reviews (HSS department)
+  async getHumanityReviews() {
+    return this.prisma.review_review.findMany({
+      where: {
+        course: {
+          subject_department: {
+            code: 'HSS',
+          },
+        },
+      },
+    });
+  }
+
+  // Fetch major reviews (Non-HSS department)
+  async getMajorReviews() {
+    return this.prisma.review_review.findMany({
+      where: {
+        NOT: {
+          course: {
+            subject_department: {
+              code: 'HSS',
+            },
+          },
+        },
+      },
+    });
+  }
+
+  // Clear all humanity best reviews
+  async clearHumanityBestReviews() {
+    return this.prisma.review_humanitybestreview.deleteMany();
+  }
+
+  // Clear all major best reviews
+  async clearMajorBestReviews() {
+    return this.prisma.review_majorbestreview.deleteMany();
+  }
+
+  // Add new humanity best reviews
+  async addHumanityBestReviews(reviews: { reviewId: number }[]) {
+    return this.prisma.review_humanitybestreview.createMany({
+      data: reviews.map((review) => ({ review_id: review.reviewId })),
+    });
+  }
+
+  // Add new major best reviews
+  async addMajorBestReviews(reviews: { reviewId: number }[]) {
+    return this.prisma.review_majorbestreview.createMany({
+      data: reviews.map((review) => ({ review_id: review.reviewId })),
+    });
+  }
 }

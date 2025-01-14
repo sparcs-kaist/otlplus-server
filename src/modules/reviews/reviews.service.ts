@@ -1,10 +1,11 @@
+import { Transactional } from '@nestjs-cls/transactional';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { session_userprofile } from '@prisma/client';
+import { Cron } from '@nestjs/schedule';
+import { review_review, session_userprofile } from '@prisma/client';
 import { IReview } from 'src/common/interfaces/IReview';
 import { toJsonReview } from 'src/common/interfaces/serializer/review.serializer';
 import { LectureRepository } from 'src/prisma/repositories/lecture.repository';
 import { ReviewsRepository } from 'src/prisma/repositories/review.repository';
-import { Transactional } from '@nestjs-cls/transactional';
 import { EReview } from '../../common/entities/EReview';
 import EReviewVote = EReview.EReviewVote;
 
@@ -173,5 +174,69 @@ export class ReviewsService {
     user: session_userprofile,
   ): Promise<EReviewVote.Basic> {
     return await this.reviewsRepository.upsertReviewVote(reviewId, user.id);
+  }
+
+  @Cron('0 0 * * *') // 매일 자정에 실행하는 Cron 작업 설정: 과거 update-best-reviews.py를 계승
+  async updateBestReviewsCron() {
+    function calculateKey(review: any): number {
+      const baseYear = new Date().getFullYear();
+      const lectureYear = review.lecture.year;
+      const yearDiff = baseYear - lectureYear > 0 ? baseYear - lectureYear : 0;
+      return Math.floor(
+        (review.like / (review.lecture.audience + 1)) *
+          Math.pow(0.85, yearDiff),
+      );
+    }
+
+    function getBestReviews(
+      reviews: review_review[],
+      minLikedCount: number,
+      maxResultCount: number,
+    ): review_review[] {
+      const likedCount = Math.max(
+        minLikedCount,
+        Math.floor(reviews.length / 10),
+      );
+
+      const mostLikedReviews = reviews
+        .sort((a, b) => calculateKey(b) - calculateKey(a))
+        .slice(0, likedCount);
+
+      const latestDateStart = new Date();
+      latestDateStart.setDate(latestDateStart.getDate() - 7);
+
+      const latestReviews = reviews.filter(
+        (review) =>
+          review.written_datetime &&
+          new Date(review.written_datetime) >= latestDateStart,
+      );
+
+      const bestCandidateReviews = [...mostLikedReviews, ...latestReviews];
+      return bestCandidateReviews.length > maxResultCount
+        ? bestCandidateReviews.slice(0, maxResultCount)
+        : bestCandidateReviews;
+    }
+
+    console.log('Running scheduled job: Update Best Reviews');
+
+    // Process humanity reviews
+    const humanityReviews = await this.reviewsRepository.getHumanityReviews();
+    const humanityBestReviews = getBestReviews(humanityReviews, 50, 20);
+
+    await this.reviewsRepository.clearHumanityBestReviews();
+    await this.reviewsRepository.addHumanityBestReviews(
+      humanityBestReviews.map((r) => ({ reviewId: r.id })),
+    );
+
+    // Process major reviews
+    const majorReviews = await this.reviewsRepository.getMajorReviews();
+    const majorBestReviews = getBestReviews(majorReviews, 2000, 1000);
+
+    await this.reviewsRepository.clearMajorBestReviews();
+    await this.reviewsRepository.addMajorBestReviews(
+      majorBestReviews.map((r) => ({ reviewId: r.id })),
+    );
+
+    console.log('BestReview updated by scheduled job');
   }
 }
