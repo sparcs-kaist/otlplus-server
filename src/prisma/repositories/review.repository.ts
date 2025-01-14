@@ -403,7 +403,7 @@ export class ReviewsRepository {
   }
 
   // Fetch humanity reviews (HSS department)
-  async getHumanityReviews() {
+  async getHumanityReviews(): Promise<EReview.WithLectures[]> {
     return this.prisma.review_review.findMany({
       where: {
         course: {
@@ -412,11 +412,14 @@ export class ReviewsRepository {
           },
         },
       },
+      include: {
+        lecture: true,
+      },
     });
   }
 
   // Fetch major reviews (Non-HSS department)
-  async getMajorReviews() {
+  async getMajorReviews(): Promise<EReview.WithLectures[]> {
     return this.prisma.review_review.findMany({
       where: {
         NOT: {
@@ -426,6 +429,9 @@ export class ReviewsRepository {
             },
           },
         },
+      },
+      include: {
+        lecture: true,
       },
     });
   }

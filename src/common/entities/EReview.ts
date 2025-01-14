@@ -15,6 +15,17 @@ export namespace EReview {
   });
   export type Details = Prisma.review_reviewGetPayload<typeof Details>;
 
+  export const WithLectures =
+    Prisma.validator<Prisma.review_reviewDefaultArgs>()({
+      include: {
+        lecture: ELecture.Basic,
+      },
+    });
+
+  export type WithLectures = Prisma.review_reviewGetPayload<
+    typeof WithLectures
+  >;
+
   export namespace EReviewVote {
     export const Basic =
       Prisma.validator<Prisma.review_reviewvoteDefaultArgs>()({});

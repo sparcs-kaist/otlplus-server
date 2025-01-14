@@ -10,13 +10,13 @@ import {
   Query,
 } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
+import { ReviewProhibited } from '@src/common/decorators/prohibit-review.decorator';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { Public } from 'src/common/decorators/skip-auth.decorator';
 import { IReview } from 'src/common/interfaces/IReview';
-import { ReviewsService } from './reviews.service';
 import { EReview } from '../../common/entities/EReview';
+import { ReviewsService } from './reviews.service';
 import EReviewVote = EReview.EReviewVote;
-import { ReviewProhibited } from '@src/common/decorators/prohibit-review.decorator';
 
 @Controller('api/reviews')
 export class ReviewsController {
@@ -50,6 +50,13 @@ export class ReviewsController {
     } else {
       throw new HttpException("Can't find user", 401);
     }
+  }
+
+  @Get('update-best-reviews')
+  async triggerUpdateBestReviews() {
+    console.log('Triggered manual update for Best Reviews');
+    await this.reviewsService.updateBestReviewsCron();
+    return { message: 'BestReviews update triggered successfully' };
   }
 
   @Public()

@@ -178,7 +178,7 @@ export class ReviewsService {
 
   @Cron('0 0 * * *') // 매일 자정에 실행하는 Cron 작업 설정: 과거 update-best-reviews.py를 계승
   async updateBestReviewsCron() {
-    function calculateKey(review: any): number {
+    function calculateKey(review: EReview.WithLectures): number {
       const baseYear = new Date().getFullYear();
       const lectureYear = review.lecture.year;
       const yearDiff = baseYear - lectureYear > 0 ? baseYear - lectureYear : 0;
@@ -189,7 +189,7 @@ export class ReviewsService {
     }
 
     function getBestReviews(
-      reviews: review_review[],
+      reviews: EReview.WithLectures[],
       minLikedCount: number,
       maxResultCount: number,
     ): review_review[] {
