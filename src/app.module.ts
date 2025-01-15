@@ -82,12 +82,6 @@ import { PrismaModule } from './prisma/prisma.module';
       },
       inject: [AuthConfig],
     },
-    {
-      provide: APP_GUARD,
-      useFactory: () => {
-        const env = process.env.NODE_ENV;
-      },
-    },
     JwtCookieGuard,
     MockAuthGuard,
     AppService,

@@ -19,8 +19,7 @@ export function RegexValidator(
   regexExps: RegExp[],
   validationOptions?: { message?: string },
 ) {
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'regexValidator',
       target: object.constructor,
@@ -46,8 +45,7 @@ export function InverseRegexValidator(
   regexExps: RegExp[],
   validationOptions?: { message?: string },
 ) {
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'regexValidator',
       target: object.constructor,

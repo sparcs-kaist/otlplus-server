@@ -16,7 +16,7 @@ const compat = new FlatCompat({
 
 export default [
   {
-    ignores: ['**/.eslintrc.js', '**/dist'],
+    ignores: ['**/.eslintrc.js', '**/eslint.config.mjs', '**/dist'],
   },
   ...compat.extends(
     'eslint:recommended',
@@ -56,6 +56,7 @@ export default [
       'no-irregular-whitespace': 'off',
       'no-extra-boolean-cast': 'off',
       'no-inner-declarations': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/no-empty-interface': 'off',
     },
