@@ -8,7 +8,7 @@ import { AppModule } from '../app.module';
 import settings from '../settings';
 import { SwaggerModule } from '@nestjs/swagger';
 // import { AuthGuard, MockAuthGuard } from '../../common/guards/auth.guard'
-import morgan = require('morgan');
+import morgan from 'morgan';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

@@ -130,10 +130,10 @@ describe('AppController (e2e)', () => {
       queryResult,
       ['ALL'],
     );
-
+    const order = ['old_code', 'class_no'];
     const orderedQuery = applyOrder<ELecture.Details>(
       levelFilteredResult,
-      (['old_code', 'class_no'] ?? DEFAULT_ORDER) as (keyof ELecture.Details)[],
+      (order ?? DEFAULT_ORDER) as (keyof ELecture.Details)[],
     );
     const result = applyOffset<ELecture.Details>(orderedQuery, 0);
   });
