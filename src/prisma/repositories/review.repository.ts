@@ -412,9 +412,7 @@ export class ReviewsRepository {
           },
         },
       },
-      include: {
-        lecture: true,
-      },
+      include: EReview.WithLectures.include,
     });
   }
 
@@ -422,17 +420,16 @@ export class ReviewsRepository {
   async getMajorReviews(): Promise<EReview.WithLectures[]> {
     return this.prisma.review_review.findMany({
       where: {
-        NOT: {
+        AND: {
           course: {
             subject_department: {
-              code: 'HSS',
+              code: { not: 'HSS' },
+              visible: true,
             },
           },
         },
       },
-      include: {
-        lecture: true,
-      },
+      include: EReview.WithLectures.include,
     });
   }
 
