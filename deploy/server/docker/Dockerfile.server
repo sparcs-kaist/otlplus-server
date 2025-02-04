@@ -5,11 +5,16 @@ RUN mkdir -p /var/www/otlplus-server/apps
 RUN mkdir -p /var/www/otlplus-server/packages
 WORKDIR /var/www/otlplus-server
 
-COPY ./apps/server ./apps/server
-COPY ./packages/api-interface ./packages/api-interface
 COPY package.json yarn.lock* package-lock.json* tsconfig.base.json ./
+COPY ./apps/server/package.json ./apps/server/package.json
+COPY ./packages/api-interface/package.json ./packages/api-interface/package.json
+
 RUN yarn workspaces info
 RUN yarn --production
+
+COPY ./apps/server ./apps/server
+COPY ./packages/api-interface ./packages/api-interface
+
 
 RUN yarn workspace @otl/server-nest run client:generate
 RUN yarn workspace @otl/api-interface build
