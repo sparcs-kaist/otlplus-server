@@ -1,10 +1,13 @@
 # compiled output
 /dist
 /node_modules
-/src/common/node_modules
+/apps/server/src/common/node_modules
 
 #
 /env/*
+apps/server/env/*
+apps/scholar-sync/env/*
+
 .venv
 
 # Logs
@@ -39,5 +42,6 @@ lerna-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 
+apps/server/volumes
 volumes
 .clinic

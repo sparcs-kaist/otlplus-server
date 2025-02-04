@@ -1,0 +1,29 @@
+FROM node:20 AS build
+
+RUN mkdir -p /var/www/otlplus-server
+RUN mkdir -p /var/www/otlplus-server/apps
+RUN mkdir -p /var/www/otlplus-server/packages
+WORKDIR /var/www/otlplus-server
+
+COPY ./apps/server ./apps/server
+COPY ./packages/api-interface ./packages/api-interface
+COPY package.json yarn.lock* package-lock.json* tsconfig.base.json ./
+RUN yarn workspaces info
+RUN yarn --production
+
+RUN yarn workspace @otl/server-nest run client:generate
+RUN yarn workspace @otl/api-interface build
+RUN yarn workspace @otl/server-nest run build
+# RUN /usr/local/bin/node-prune
+
+FROM node:20-slim AS server
+RUN apt-get update -y && apt-get install -y openssl
+
+COPY --from=build /var/www/otlplus-server/apps/server/dist /var/www/otlplus-server/apps/server/dist
+COPY --from=build /var/www/otlplus-server/apps/server/static /var/www/otlplus-server/apps/server/static
+COPY --from=build /var/www/otlplus-server/packages/api-interface /var/www/otlplus-server/packages/api-interface
+COPY --from=build /var/www/otlplus-server/node_modules /var/www/otlplus-server/node_modules
+
+WORKDIR /var/www/otlplus-server/
+
+EXPOSE 8000
