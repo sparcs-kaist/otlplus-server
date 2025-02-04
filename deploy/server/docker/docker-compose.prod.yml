@@ -20,4 +20,4 @@ services:
     volumes:
       - '/etc/timezone:/etc/timezone:ro'
     working_dir: /var/www/otlplus-server
-    command: node dist/src/bootstrap/bootstrap.js
+    command: node apps/server/dist/src/bootstrap/bootstrap.js
