@@ -16,11 +16,10 @@ services:
     restart: always
     tty: true
     ports:
-      - '58000:8000'
+      - '8000:8000'
     expose:
       - '8000'
     volumes:
       - '/etc/timezone:/etc/timezone:ro'
-    network_mode: 'host'
     working_dir: /var/www/otlplus-server
     command: node dist/src/bootstrap/bootstrap.js
