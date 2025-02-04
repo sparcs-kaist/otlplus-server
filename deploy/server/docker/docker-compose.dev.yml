@@ -11,7 +11,7 @@ services:
       - DOCKER_DEPLOY=true
     build:
       context: ../../..
-      dockerfile: Dockerfile.server
+      dockerfile: ./deploy/server/docker/Dockerfile.server
     image: otlplus-server-nest-dev
     restart: always
     tty: true
