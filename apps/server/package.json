@@ -14,6 +14,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "start:local": "cross-env NODE_ENV=local nest start --watch --config src/bootstrap/nest-cli.json",
+    "pm2:start:local": "cross-env NODE_ENV=local pm2 start ecosystem.config.js --only @otl/server-nest  --node-args=\"max-old-space-size=40920\"",
     "start:dev": "cross-env NODE_ENV=dev nest start --config src/bootstrap/nest-cli.json",
     "start:debug": "nest start --debug --watch",
     "start:prod": "cross-env NODE_ENV=prod node dist/src/bootstrap/bootstrap.js",

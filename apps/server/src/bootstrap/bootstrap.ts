@@ -9,6 +9,7 @@ import settings from '../settings';
 import { SwaggerModule } from '@nestjs/swagger';
 // import { AuthGuard, MockAuthGuard } from '../../common/guards/auth.guard'
 import morgan from 'morgan';
+import * as v8 from 'node:v8';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -70,6 +71,7 @@ async function bootstrap() {
 
   app.use('/api/sync', json({ limit: '50mb' }));
   app.use(json({ limit: '100kb' }));
+  console.log(v8.getHeapStatistics().heap_size_limit / 1024 / 1024);
 
   app.enableShutdownHooks();
   return app.listen(8000);
