@@ -28,7 +28,10 @@ COPY --from=build /var/www/otlplus-server/apps/server/dist /var/www/otlplus-serv
 COPY --from=build /var/www/otlplus-server/apps/server/static /var/www/otlplus-server/apps/server/static
 COPY --from=build /var/www/otlplus-server/packages/api-interface /var/www/otlplus-server/packages/api-interface
 COPY --from=build /var/www/otlplus-server/node_modules /var/www/otlplus-server/node_modules
+COPY ./apps/server/ecosystem.config.js /var/www/otlplus-server/apps/server/ecosystem.config.js
 
-WORKDIR /var/www/otlplus-server/
+RUN yarn global add pm2
+
+WORKDIR /var/www/otlplus-server/apps/server
 
 EXPOSE 8000
