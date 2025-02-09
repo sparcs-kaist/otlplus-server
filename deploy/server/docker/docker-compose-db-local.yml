@@ -1,0 +1,21 @@
+version: '3.4'
+
+services:
+  db:
+    container_name: otlplus-server-db
+    image: mysql:8.0.36-debian
+    platform: linux/amd64
+    restart: on-failure
+    ports:
+      - '${OTLPLUS_DB_PORT:-43306}:3306'
+    environment:
+      - MYSQL_ROOT_HOSTS=admin
+      - MYSQL_ROOT_PASSWORD=${OTLPLUS_DB_PASSWORD:-password}
+      - MYSQL_DATABASE=otlplus
+      - TZ=Asia/Seoul
+    volumes:
+      - ../../../apps/server/volumes/db:/var/lib/mysql
+      - ../../../apps/server/volumes/dump:/dump
+    command: |
+      --sql_mode=NO_ENGINE_SUBSTITUTION --default_storage_engine=InnoDB 
+      --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
