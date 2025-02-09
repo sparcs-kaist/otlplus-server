@@ -50,7 +50,7 @@ export class CourseRepository {
 
   public async getCourseById(id: number): Promise<ECourse.Details | null> {
     return await this.prisma.subject_course.findUnique({
-      relationLoadStrategy: 'query',
+      // relationLoadStrategy: 'query',
       include: ECourse.Details.include,
       where: {
         id: id,
