@@ -4,11 +4,8 @@ import { ReviewProhibited } from '@src/common/decorators/prohibit-review.decorat
 import { GetUser } from '@src/common/decorators/get-user.decorator';
 import { Public } from '@src/common/decorators/skip-auth.decorator';
 import { ReviewsService } from './reviews.service';
-import EReviewVote = EReview.EReviewVote;
-import { EReview } from '@otl/api-interface/src/entities/EReview';
 import { IReview } from '@otl/api-interface/src/interfaces';
 import { toJsonReviewVote } from '@src/common/serializer/review.serializer';
-import IReviewVote = IReview.IReviewVote;
 
 @Controller('api/reviews')
 export class ReviewsController {
@@ -70,7 +67,7 @@ export class ReviewsController {
   async likeReviewInstance(
     @Param('reviewId') reviewId: number,
     @GetUser() user: session_userprofile,
-  ): Promise<IReviewVote.Basic> {
+  ): Promise<IReview.IReviewVote.Basic> {
     const reviewVote = await this.reviewsService.findReviewVote(reviewId, user);
     if (reviewVote) {
       throw new HttpException('Already Liked', HttpStatus.BAD_REQUEST);

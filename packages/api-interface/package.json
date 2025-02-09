@@ -10,11 +10,14 @@
     "mock:back": "node_modules/.bin/tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")",
     "typecheck": "node_modules/.bin/tsc",
     "build": "node_modules/.bin/tsc",
+    "api-docs:build": "ts-node src/docs/server-nest/docs-generator.ts",
     "clean": "rm -rf dist"
   },
   "exports": {
     ".": "./dist/index.js",
     "./*": "./dist/*.js",
+    "./src/docs": "./dist/src/docs/index.js",
+    "./src/docs/server-nest": "./dist/src/docs/server-nest/index.js",
     "./src/entities": "./dist/src/entities/index.js",
     "./src/interfaces": "./dist/src/interfaces/index.js",
     "./src": "./dist/src/index.js"
@@ -27,9 +30,9 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "4.2.0",
     "typescript": "^5.7.2",
+    "ts-morph": "^23.0.0",
     "@prisma/client": "^6.1.0",
     "cron-validator": "^1.3.1",
-
     "prisma": "^6.1.0"
   },
   "devDependencies": {
