@@ -29,7 +29,6 @@ export class IsReviewProhibitedCommand implements AuthCommand {
           throw new Error('lecture info are not found from request');
         }
         const lecture = await this.lectureService.getLectureById(reviewsBody.lecture);
-
         const semester = await this.prismaService.subject_semester.findFirst({
           where: {
             AND: [{ year: lecture.year }, { semester: lecture.semester }],
