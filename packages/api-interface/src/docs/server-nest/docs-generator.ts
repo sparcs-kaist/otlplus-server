@@ -7,7 +7,7 @@ const project = new Project({
   skipFileDependencyResolution: true,
 });
 
-const outputDir = resolve(__dirname, './docs');
+const outputDir = resolve(__dirname, './generated');
 if (!fs.existsSync(outputDir)) {
   fs.mkdirSync(outputDir, { recursive: true });
 }

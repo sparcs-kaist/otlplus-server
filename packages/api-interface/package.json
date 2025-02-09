@@ -17,7 +17,7 @@
     ".": "./dist/index.js",
     "./*": "./dist/*.js",
     "./src/docs": "./dist/src/docs/index.js",
-    "./src/docs/server-nest": "./dist/src/docs/server-nest/index.js",
+    "./src/docs/server-nest": "./dist/src/docs/server-nest/generated/index.js",
     "./src/entities": "./dist/src/entities/index.js",
     "./src/interfaces": "./dist/src/interfaces/index.js",
     "./src": "./dist/src/index.js"
