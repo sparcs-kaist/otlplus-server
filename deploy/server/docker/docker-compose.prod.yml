@@ -19,5 +19,5 @@ services:
       - '58000:8000'
     volumes:
       - '/etc/timezone:/etc/timezone:ro'
-    working_dir: /var/www/otlplus-server
-    command: node apps/server/dist/src/bootstrap/bootstrap.js
+    working_dir: /var/www/otlplus-server/apps/server
+    command: pm2-runtime start ecosystem.config.js --only @otl/server-nest  --node-args="max-old-space-size=40920"

@@ -40,4 +40,5 @@ lerna-debug.log*
 !.vscode/extensions.json
 
 apps/server/volumes
+volumes
 .clinic
