@@ -11,6 +11,7 @@ import ScholarAttendType = IScholar.ScholarAttendType;
 import ScholarChargeType = IScholar.ScholarChargeType;
 import ScholarDegreeType = IScholar.ScholarDegreeType;
 import ScholarOtherMajorType = IScholar.ScholarOtherMajorType;
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class ScholarApiClient {
@@ -63,7 +64,9 @@ export class ScholarApiClient {
       lectureTerm: lectureTerm,
     };
     const data = await this._get(`/lecture_type2`, params);
-    return data?.OutBlock_1;
+    return plainToInstance<ScholarLectureType, any[]>(ScholarLectureType, data?.OutBlock_1 || [], {
+      excludeExtraneousValues: true,
+    });
   }
 
   async getExamTimeType(lectureYear?: number, lectureTerm?: number): Promise<ScholarExamtimeType[]> {
@@ -72,7 +75,10 @@ export class ScholarApiClient {
       lectureTerm: lectureTerm,
     };
     const data = await this._get(`/exam_time_type2`, params);
-    return data?.OutBlock_1;
+    // return data?.OutBlock_1;
+    return plainToInstance<ScholarExamtimeType, any[]>(ScholarExamtimeType, data?.OutBlock_1 || [], {
+      excludeExtraneousValues: true,
+    });
   }
 
   async getClassTimeType(lectureYear?: number, lectureTerm?: number): Promise<ScholarClasstimeType[]> {
@@ -81,7 +87,10 @@ export class ScholarApiClient {
       lectureTerm: lectureTerm,
     };
     const data = await this._get(`/time_type2`, params);
-    return data?.OutBlock_1;
+    // return data?.OutBlock_1;
+    return plainToInstance<ScholarClasstimeType, any[]>(ScholarClasstimeType, data?.OutBlock_1 || [], {
+      excludeExtraneousValues: true,
+    });
   }
 
   async getAttendType(lectureYear?: number, lectureTerm?: number, studentNo?: number): Promise<ScholarAttendType[]> {
@@ -91,7 +100,10 @@ export class ScholarApiClient {
       studentNo: studentNo,
     };
     const data = await this._get(`/attend_type2`, params);
-    return data?.OutBlock_1;
+    // return data?.OutBlock_1;
+    return plainToInstance<ScholarAttendType, any[]>(ScholarAttendType, data?.OutBlock_1 || [], {
+      excludeExtraneousValues: true,
+    });
   }
 
   async getDegree(studentNo?: number): Promise<ScholarDegreeType[]> {
@@ -99,11 +111,17 @@ export class ScholarApiClient {
       studentNo: studentNo,
     };
     const data = await this._get(`/report_e_degree_k`, params);
-    return data?.OutBlock_1;
+    // return data?.OutBlock_1;
+    return plainToInstance<ScholarDegreeType, any[]>(ScholarDegreeType, data?.OutBlock_1 || [], {
+      excludeExtraneousValues: true,
+    });
   }
 
   async getKdsStudentsOtherMajor(): Promise<ScholarOtherMajorType[]> {
     const data = await this._get('/kds_students_other_major');
-    return data?.OutBlock_1;
+    // return data?.OutBlock_1;
+    return plainToInstance<ScholarOtherMajorType, any[]>(ScholarOtherMajorType, data?.OutBlock_1 || [], {
+      excludeExtraneousValues: true,
+    });
   }
 }
