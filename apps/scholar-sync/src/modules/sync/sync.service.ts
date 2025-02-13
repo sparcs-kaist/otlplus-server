@@ -117,6 +117,8 @@ export class SyncService {
       `Department created: ${result.departments.created.length}, updated: ${result.departments.updated.length}, errors: ${result.departments.errors.length}`,
     );
 
+    console.log('Department Sync Result', result.departments);
+
     /// Course update
     // TODO: OLD_NO may not be available later, need to change to use new code
     // -> SUBJECT_NO(DB의 code 및 new_code) 사용으로 수정
@@ -149,6 +151,8 @@ export class SyncService {
     this.slackNoti.sendSyncNoti(
       `Course created: ${result.courses.created.length}, updated: ${result.courses.updated.length}, errors: ${result.courses.errors.length}`,
     );
+
+    console.log('Course Sync Result', result.courses);
 
     // Professor update
     const existingProfessors = await this.syncRepository.getExistingProfessorsById(data.charges.map((c) => c.PROF_ID));
@@ -186,6 +190,8 @@ export class SyncService {
     this.slackNoti.sendSyncNoti(
       `Professor created: ${result.professors.created.length}, updated: ${result.professors.updated.length}, errors: ${result.professors.errors.length}`,
     );
+
+    console.log('Professor Sync Result', result.professors);
 
     /// Lecture update
     const existingLectures = await this.syncRepository.getExistingDetailedLectures({
@@ -264,6 +270,8 @@ export class SyncService {
     this.slackNoti.sendSyncNoti(
       `Lecture created: ${result.lectures.created.length}, updated: ${result.lectures.updated.length}, errors: ${result.lectures.errors.length}`,
     );
+
+    console.log('Lecture Sync Result', result.lectures);
 
     return result;
   }
