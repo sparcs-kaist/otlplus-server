@@ -109,6 +109,7 @@ export class SyncSchedule {
   })
   async syncDegree() {
     const degrees = await this.scholarApiClient.getDegree();
+    console.log(degrees);
     await this.syncService.syncDegree(degrees);
   }
 
@@ -119,6 +120,7 @@ export class SyncSchedule {
   })
   async syncMajor() {
     const majors = await this.scholarApiClient.getKdsStudentsOtherMajor();
+    console.log(majors);
     await this.syncService.syncOtherMajor(majors);
   }
 
