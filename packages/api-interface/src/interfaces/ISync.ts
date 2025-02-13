@@ -410,16 +410,20 @@ export namespace ISync {
   }
 
   export class SyncTerm{
-    @IsInt()
-    @Transform(({ value }) => parseInt(value))
+    @IsOptional()
+    @IsNumber()
+    @Type(() => Number)
     year!: number;
 
+    @IsOptional()
     @IsIn([1, 2, 3, 4])
-    @Transform(({ value }) => parseInt(value))
-    semester!: number;
+    @IsNumber()
+    @Type(() => Number)
+    semester!: 1 | 2 | 3 | 4;
 
-    @IsInt()
-    @Transform(({ value }) => parseInt(value))
-    interval!: number
+    @IsOptional()
+    @IsNumber()
+    @Type(() => Number)
+    interval!: number;
   }
 }
