@@ -17,12 +17,6 @@ export class SyncDynamicController {
     private readonly schedulerRegistry: SchedulerRegistry,
   ) {}
 
-  @Cron('* * 0 * * *', {
-    name: 'notifications',
-    timeZone: 'Europe/Paris',
-  })
-  triggerNotifications() {}
-
   @Get('jobs')
   @Public()
   getCrons() {
