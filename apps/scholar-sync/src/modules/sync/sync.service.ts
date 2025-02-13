@@ -181,6 +181,7 @@ export class SyncService {
           professorMap.set(charge.PROF_ID, updatedProfessor);
           result.professors.updated.push([professor, updatedProfessor]);
         }
+        console.log('ProfessorInfo', derivedProfessor);
       } catch (e: any) {
         result.professors.errors.push({
           prof_id: charge.PROF_ID,
