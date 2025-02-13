@@ -7,9 +7,10 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthModule } from '@otl/scholar-sync/modules/auth/auth.module';
 import { AuthConfig } from '@otl/scholar-sync/modules/auth/auth.config';
 import { AuthGuard } from '@otl/scholar-sync/modules/auth/guard/auth.guard';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
-  imports: [PrismaModule, SyncModule, AuthModule],
+  imports: [PrismaModule, SyncModule, AuthModule, ScheduleModule.forRoot()],
   controllers: [AppController],
   providers: [
     AppService,
