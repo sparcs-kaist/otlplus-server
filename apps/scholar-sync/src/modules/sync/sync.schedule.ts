@@ -25,7 +25,7 @@ export class SyncSchedule {
       const charges = await this.scholarApiClient.getChargeType(year, semester);
       console.log(charges);
       const syncResult = await this.syncService.syncScholarDB({ year, semester, lectures, charges });
-      this.logger.log(`Synced ${syncResult} lectures and charges for ${year} ${semester}`);
+      this.logger.log(`Synced ${syncResult.lectures.length} lectures and charges for ${year} ${semester}`);
 
       await Promise.all([
         this.syncExamTime(year, semester),
@@ -62,7 +62,7 @@ export class SyncSchedule {
     for (const [year, semester] of [...semesters].reverse()) {
       const examtimes = await this.scholarApiClient.getExamTimeType(year, semester);
       const syncResultExamTime = await this.syncService.syncExamTime({ year, semester, examtimes });
-      this.logger.log(`Synced ${syncResultExamTime} examTime for ${year} ${semester}`);
+      this.logger.log(`Synced ${syncResultExamTime.length} examTime for ${year} ${semester}`);
     }
   }
 
@@ -76,7 +76,11 @@ export class SyncSchedule {
     for (const [year, semester] of [...semesters].reverse()) {
       const classtimes = await this.scholarApiClient.getClassTimeType(year, semester);
       const syncResultClassTime = await this.syncService.syncClassTime({ year, semester, classtimes });
-      this.logger.log(`Synced ${syncResultClassTime} classTime for ${year} ${semester}`);
+      this.logger.log(
+        `Synced updated: ${
+          syncResultClassTime.updated.length
+        }, skipped: ${syncResultClassTime.skipped.length}, errors: ${syncResultClassTime.errors.length}\` classTime for ${year} ${semester}`,
+      );
     }
   }
 
@@ -90,7 +94,11 @@ export class SyncSchedule {
     for (const [year, semester] of [...semesters].reverse()) {
       const takenLectures = await this.scholarApiClient.getAttendType(year, semester);
       const syncResultTakenLecture = await this.syncService.syncTakenLecture({ year, semester, attend: takenLectures });
-      this.logger.log(`Synced ${syncResultTakenLecture} takenLecture for ${year} ${semester}`);
+      this.logger.log(
+        `Synced ${
+          syncResultTakenLecture.updated.length
+        }, skipped: ${syncResultTakenLecture.skipped.length}, errors: ${syncResultTakenLecture.errors.length}\` takenLecture for ${year} ${semester}`,
+      );
     }
   }
 
