@@ -2,14 +2,18 @@
   "name": "@otl/api-interface",
   "version": "1.0.0",
   "license": "MIT",
-  "private": true,
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "scripts": {
     "prepare": "pnpm build",
-    "dev": "node_modules/.bin/tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")",
-    "mock:front": "node_modules/.bin/tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")",
-    "mock:back": "node_modules/.bin/tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")",
-    "typecheck": "node_modules/.bin/tsc",
-    "build": "node_modules/.bin/tsc",
+    "dev": "tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")",
+    "mock:front": "tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")",
+    "mock:back": "tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")",
+    "typecheck": "tsc",
+    "build": "tsc",
     "api-docs:build": "ts-node src/docs/server-nest/docs-generator.ts",
     "clean": "rm -rf dist"
   },
@@ -37,5 +41,8 @@
   },
   "devDependencies": {
     "prisma": "^6.1.0"
-  }
+  },
+  "main": "index.js",
+  "author": "",
+  "description": ""
 }
