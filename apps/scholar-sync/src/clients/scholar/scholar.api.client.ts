@@ -64,7 +64,7 @@ export class ScholarApiClient {
       lectureTerm: lectureTerm,
     };
     const data = await this._get(`/lecture_type2`, params);
-    return plainToInstance<ScholarLectureType, any[]>(ScholarLectureType, data?.OutBlock_1 || [], {
+    return plainToInstance<ScholarLectureType, any>(ScholarLectureType, (data?.OutBlock_1 as any[]) || [], {
       excludeExtraneousValues: true,
     });
   }
