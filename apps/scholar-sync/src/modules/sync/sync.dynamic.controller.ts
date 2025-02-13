@@ -5,6 +5,7 @@ import { SyncSchedule } from '@otl/scholar-sync/modules/sync/sync.schedule';
 import { SyncApiKeyAuth } from '@otl/scholar-sync/common/decorators/sync-api-key-auth.decorator';
 import Cron from 'cron';
 import { ISync } from '@otl/api-interface/src/interfaces/ISync';
+import { Public } from '@otl/scholar-sync/common/decorators/skip-auth.decorator';
 
 @Controller('api/dynamic-sync')
 export class SyncController {
@@ -16,6 +17,7 @@ export class SyncController {
     private readonly schedulerRegistry: SchedulerRegistry,
   ) {}
 
+  @Public()
   @Get('jobs')
   getCrons() {
     const jobs = this.schedulerRegistry.getCronJobs();
