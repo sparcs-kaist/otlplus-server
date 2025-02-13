@@ -38,6 +38,7 @@ export class SyncSchedule {
   @Cron(CronExpression.EVERY_HOUR, {
     name: 'syncScholarDB',
     timeZone: 'Asia/Seoul',
+    disabled: true,
   })
   async syncScholarDB(year?: number, semester?: number, interval?: number) {
     const semesters = await this.determineTargetSemesters(year, semester, interval);

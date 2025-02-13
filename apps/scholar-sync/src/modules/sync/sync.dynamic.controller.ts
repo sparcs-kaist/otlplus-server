@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Logger, Param, Patch, Query } from '@nestjs/common';
 import { SyncService } from '@otl/scholar-sync/modules/sync/sync.service';
-import { SchedulerRegistry } from '@nestjs/schedule';
+import { Cron, SchedulerRegistry } from '@nestjs/schedule';
 import { SyncSchedule } from '@otl/scholar-sync/modules/sync/sync.schedule';
 import { SyncApiKeyAuth } from '@otl/scholar-sync/common/decorators/sync-api-key-auth.decorator';
-import Cron from 'cron';
+import CronTime from 'cron';
 import { ISync } from '@otl/api-interface/src/interfaces/ISync';
 import { Public } from '@otl/scholar-sync/common/decorators/skip-auth.decorator';
 
@@ -17,10 +17,17 @@ export class SyncDynamicController {
     private readonly schedulerRegistry: SchedulerRegistry,
   ) {}
 
-  @Public()
+  @Cron('* * 0 * * *', {
+    name: 'notifications',
+    timeZone: 'Europe/Paris',
+  })
+  triggerNotifications() {}
+
   @Get('jobs')
+  @Public()
   getCrons() {
     const jobs = this.schedulerRegistry.getCronJobs();
+    console.log(jobs);
     const jobResults = [];
     jobs.forEach((value, key, map) => {
       let next;
@@ -103,7 +110,7 @@ export class SyncDynamicController {
     if (!job) {
       throw new Error(`Job ${jobName} not found`);
     }
-    job.setTime(new Cron.CronTime(cron));
+    job.setTime(new CronTime.CronTime(cron));
     this.logger.log(`Job ${jobName} set to ${cron}`);
   }
 }

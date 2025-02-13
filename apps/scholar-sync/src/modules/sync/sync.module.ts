@@ -6,12 +6,12 @@ import { SyncSchedule } from '@otl/scholar-sync/modules/sync/sync.schedule';
 import { ScholarModule } from '@otl/scholar-sync/clients/scholar/scholar.module';
 import { SlackModule } from '@otl/scholar-sync/clients/slack/slack.module';
 import { SyncDynamicController } from '@otl/scholar-sync/modules/sync/sync.dynamic.controller';
-import { SchedulerRegistry } from '@nestjs/schedule';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
-  imports: [PrismaModule, SlackModule, ScholarModule],
+  imports: [PrismaModule, SlackModule, ScholarModule, ScheduleModule],
   controllers: [SyncController, SyncDynamicController],
-  providers: [SyncService, SyncSchedule, SchedulerRegistry],
+  providers: [SyncService, SyncSchedule],
   exports: [SyncService, SyncSchedule],
 })
 export class SyncModule {}
