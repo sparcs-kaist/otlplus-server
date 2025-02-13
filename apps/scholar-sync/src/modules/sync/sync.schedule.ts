@@ -21,7 +21,9 @@ export class SyncSchedule {
     const semesters = await this.determineTargetSemesters(year, semester, interval);
     for (const [year, semester] of [...semesters].reverse()) {
       const lectures = await this.scholarApiClient.getLectureType(year, semester);
+      console.log(lectures);
       const charges = await this.scholarApiClient.getChargeType(year, semester);
+      console.log(charges);
       const syncResult = await this.syncService.syncScholarDB({ year, semester, lectures, charges });
       this.logger.log(`Synced ${syncResult} lectures and charges for ${year} ${semester}`);
 
