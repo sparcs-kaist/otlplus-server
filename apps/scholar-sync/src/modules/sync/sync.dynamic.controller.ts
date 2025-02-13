@@ -66,6 +66,18 @@ export class SyncDynamicController {
     await this.syncSchedule.syncTakenLecture(query.year, query.semester, query.interval);
   }
 
+  @Get('degree')
+  @SyncApiKeyAuth()
+  async syncDegree() {
+    await this.syncSchedule.syncDegree();
+  }
+
+  @Get('major')
+  @SyncApiKeyAuth()
+  async syncMajor() {
+    await this.syncSchedule.syncMajor();
+  }
+
   @Patch('toggle/:jobName')
   @SyncApiKeyAuth()
   async toggleJob(@Param('jobName') jobName: string) {
