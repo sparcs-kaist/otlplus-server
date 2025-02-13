@@ -61,8 +61,8 @@ export class ScholarApiClient {
 
   async getLectureType(lectureYear?: number, lectureTerm?: number): Promise<ScholarLectureType[]> {
     const params = {
-      lectureYear: lectureYear,
-      lectureTerm: lectureTerm,
+      lecture_year: lectureYear,
+      lecture_term: lectureTerm,
     };
     const data = await this._get(`/lecture_type2`, params);
     // console.log(data?.OutBlock_1);
@@ -71,8 +71,8 @@ export class ScholarApiClient {
 
   async getExamTimeType(lectureYear?: number, lectureTerm?: number): Promise<ScholarExamtimeType[]> {
     const params = {
-      lectureYear: lectureYear,
-      lectureTerm: lectureTerm,
+      lecture_year: lectureYear,
+      lecture_term: lectureTerm,
     };
     const data = await this._get(`/exam_time_type2`, params);
     // return data?.OutBlock_1;
@@ -81,8 +81,8 @@ export class ScholarApiClient {
 
   async getClassTimeType(lectureYear?: number, lectureTerm?: number): Promise<ScholarClasstimeType[]> {
     const params = {
-      lectureYear: lectureYear,
-      lectureTerm: lectureTerm,
+      lecture_year: lectureYear,
+      lecture_term: lectureTerm,
     };
     const data = await this._get(`/time_type2`, params);
     // return data?.OutBlock_1;
@@ -91,9 +91,9 @@ export class ScholarApiClient {
 
   async getAttendType(lectureYear?: number, lectureTerm?: number, studentNo?: number): Promise<ScholarAttendType[]> {
     const params = {
-      lectureYear: lectureYear,
-      lectureTerm: lectureTerm,
-      studentNo: studentNo,
+      lecture_year: lectureYear,
+      lecture_term: lectureTerm,
+      student_no: studentNo,
     };
     const data = await this._get(`/attend_type2`, params);
     // return data?.OutBlock_1;
@@ -102,7 +102,7 @@ export class ScholarApiClient {
 
   async getDegree(studentNo?: number): Promise<ScholarDegreeType[]> {
     const params = {
-      studentNo: studentNo,
+      student_no: studentNo,
     };
     const data = await this._get(`/report_e_degree_k`, params);
     // return data?.OutBlock_1;
