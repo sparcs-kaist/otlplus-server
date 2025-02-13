@@ -8,8 +8,8 @@ import { ISync } from '@otl/api-interface/src/interfaces/ISync';
 import { Public } from '@otl/scholar-sync/common/decorators/skip-auth.decorator';
 
 @Controller('api/dynamic-sync')
-export class SyncController {
-  private readonly logger = new Logger(SyncController.name);
+export class SyncDynamicController {
+  private readonly logger = new Logger(SyncDynamicController.name);
 
   constructor(
     private readonly syncSchedule: SyncSchedule,
