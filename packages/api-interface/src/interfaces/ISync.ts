@@ -411,12 +411,15 @@ export namespace ISync {
 
   export class SyncTerm{
     @IsInt()
+    @Transform(({ value }) => parseInt(value))
     year!: number;
 
     @IsIn([1, 2, 3, 4])
+    @Transform(({ value }) => parseInt(value))
     semester!: number;
 
     @IsInt()
+    @Transform(({ value }) => parseInt(value))
     interval!: number
   }
 }
