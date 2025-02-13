@@ -85,6 +85,7 @@ export class SyncService {
 
         const departmentInfo = DepartmentInfo.deriveDepartmentInfo(lecture);
         const foundDepartment = departmentMap[lecture.DEPT_ID];
+        console.log('DepartmentInfo', departmentInfo);
 
         // No department found, create new department
         if (!foundDepartment) {
