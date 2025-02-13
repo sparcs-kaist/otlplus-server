@@ -36,7 +36,8 @@ export class SyncDynamicController {
       } catch (e) {
         next = 'error: next fire date is in the past!';
       }
-      jobResults.push({ key, next });
+      const running = value.running;
+      jobResults.push({ key, running, next });
       this.logger.log(`job: ${key} -> next: ${next}`);
     });
     return jobResults;
