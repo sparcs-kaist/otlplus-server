@@ -27,21 +27,22 @@ export class ScholarApiClient {
     this.baseUrl = this.syncConfig.scholarUrl;
   }
 
-  private async _get(fullUrl: string, params?: any): Promise<any> {
+  private async _get(path: string, params?: any): Promise<any> {
     try {
       // In the Python code, "verify=False" was used. We can replicate ignoring TLS in axios if needed.
       // But you might not want to do that in production.
+      const fullUrl = `${this.baseUrl}${path}`;
       const response = await axios.get(fullUrl, {
         headers: {
           AUTH_KEY: this.apiKey,
           'Content-Type': 'application/json',
         },
         params: params,
-        // httpsAgent: new https.Agent({ rejectUnauthorized: false }), // if ignoring SSL errors
+        httpsAgent: new https.Agent({ rejectUnauthorized: false }), // if ignoring SSL errors
       });
       return response.data;
     } catch (error) {
-      this.logger.error(`Failed to GET from ${fullUrl}`, error);
+      this.logger.error(`Failed to GET from ${path}`, error);
       throw error;
     }
   }
