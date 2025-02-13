@@ -19,6 +19,8 @@ export class MajorInfo<TYPE extends APPLICATION_TYPE> {
     type: T,
     departmentMap: { [key: string]: EDepartment.Basic },
   ): MajorInfo<T> {
+    console.log(otherMajor);
+    console.log(departmentMap);
     return {
       student_id: `${otherMajor.STUDENT_ID}`,
       department_name: `${otherMajor.ID}`,

@@ -872,5 +872,8 @@ export class SyncService {
         }
       }
     }
+    this.slackNoti.sendSyncNoti(
+      `otherMajor updated: ${result.updated.length} / ${toUpdate.major.length + toUpdate.minor.length}, errors: ${result.errors.length}`,
+    );
   }
 }
