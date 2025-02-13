@@ -27,7 +27,6 @@ export class SyncDynamicController {
   @Public()
   getCrons() {
     const jobs = this.schedulerRegistry.getCronJobs();
-    console.log(jobs);
     const jobResults = [];
     jobs.forEach((value, key, map) => {
       let next;
