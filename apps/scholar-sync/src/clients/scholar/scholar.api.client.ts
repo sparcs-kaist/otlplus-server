@@ -55,7 +55,8 @@ export class ScholarApiClient {
     };
     // in python: return _get(f"/charge_type2?{'&'.join(params)}")["OutBlock_1"]
     const data = await this._get(`/charge_type2`, params);
-    return data?.OutBlock_1;
+    // return data?.OutBlock_1;
+    return plainToInstance<ScholarChargeType, any[]>(ScholarChargeType, data?.OutBlock_1 || []);
   }
 
   async getLectureType(lectureYear?: number, lectureTerm?: number): Promise<ScholarLectureType[]> {
@@ -64,7 +65,7 @@ export class ScholarApiClient {
       lectureTerm: lectureTerm,
     };
     const data = await this._get(`/lecture_type2`, params);
-    console.log(data?.OutBlock_1);
+    // console.log(data?.OutBlock_1);
     return plainToInstance<ScholarLectureType, any>(ScholarLectureType, (data?.OutBlock_1 as any[]) || []);
   }
 
