@@ -1,0 +1,14 @@
+code .npmignore
+*~
+*.iml
+.coveralls.yml
+.eslintignore
+.eslintrc.json
+.idea
+.nyc_output
+.travis.yml
+node_modules
+npm-debug.log
+src
+dist/src/entities
+test

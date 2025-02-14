@@ -62,11 +62,6 @@ export class AuthController {
     response.cookie('accessToken', accessToken, accessTokenOptions);
     response.cookie('refreshToken', refreshToken, refreshTokenOptions);
 
-    /*
-    @Todo
-    call import_student_lectures(studentId)
-     */
-
     const next_url = session['next'] ?? '/';
     response.redirect(next_url);
   }
