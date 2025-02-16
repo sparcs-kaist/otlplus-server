@@ -11,9 +11,12 @@ import { ExamtimeInfo } from '@otl/scholar-sync/common/domain/ExamTimeInfo';
 import { LectureInfo } from '@otl/scholar-sync/common/domain/LectureInfo';
 import { APPLICATION_TYPE, MajorInfo } from '@otl/scholar-sync/common/domain/MajorInfo';
 import { ProfessorInfo } from '@otl/scholar-sync/common/domain/ProfessorInfo';
-import { groupBy, normalizeArray } from '@otl/scholar-sync/modules/sync/util';
+import { groupBy, normalizeArray, summarizeSyncResult } from '@otl/scholar-sync/modules/sync/util';
 import { SyncRepository } from '@otl/scholar-sync/prisma/repositories/sync.repository';
-import { review_review } from '@prisma/client';
+import { review_review, SyncType } from '@prisma/client';
+import { ISync } from '@otl/api-interface/src/interfaces/ISync';
+import SyncResultDetail = ISync.SyncResultDetail;
+import SyncTimeType = ISync.SyncTimeType;
 
 @Injectable()
 export class SyncService {
@@ -26,44 +29,22 @@ export class SyncService {
     private readonly slackNoti: SlackNotiService,
   ) {}
 
-  async getDefaultSemester(): Promise<ESemester.Basic> {
-    return await this.syncRepository.getDefaultSemester();
-  }
-
   async getSemesters(take?: number): Promise<ESemester.Basic[]> {
     return await this.syncRepository.getSemesters(take);
   }
 
-  async syncScholarDB(data: IScholar.ScholarDBBody) {
-    this.slackNoti.sendSyncNoti(
+  async syncScholarDB(data: IScholar.ScholarDBBody): Promise<ISync.SyncResultDetails> {
+    await this.slackNoti.sendSyncNoti(
       `syncScholarDB ${data.year}-${data.semester}: ${data.lectures.length} lectures, ${data.charges.length} charges`,
     );
-    const result: any = {
-      time: new Date().toISOString(),
-      departments: {
-        created: [],
-        updated: [],
-        errors: [],
-      },
-      courses: {
-        created: [],
-        updated: [],
-        errors: [],
-      },
-      professors: {
-        created: [],
-        updated: [],
-        errors: [],
-      },
-      lectures: {
-        created: [],
-        updated: [],
-        chargeUpdated: [],
-        deleted: [],
-        errors: [],
-      },
+    const result: ISync.SyncResultDetails = {
+      time: new Date(),
+      year: data.year,
+      semester: data.semester,
+      results: [],
     };
 
+    const departmentSyncResultDetail = new SyncResultDetail(SyncType.DEPARTMENT);
     const staffProfessor = await this.syncRepository.getOrCreateStaffProfessor();
 
     /// Department update
@@ -76,7 +57,8 @@ export class SyncService {
     const departmentMap: Record<number, EDepartment.Basic> = Object.fromEntries(
       existingDepartments.map((dept) => [dept.id, dept]),
     );
-    this.slackNoti.sendSyncNoti(`Found ${existingDepartments.length} existing departments, updating...`);
+    await this.slackNoti.sendSyncNoti(`Found ${existingDepartments.length} existing departments, updating...`);
+    const startLog = await this.syncRepository.logSyncStartPoint(SyncType.DEPARTMENT, data.year, data.semester);
     const processedDepartmentIds = new Set<number>();
     for (const lecture of data.lectures) {
       try {
@@ -85,13 +67,12 @@ export class SyncService {
 
         const departmentInfo = DepartmentInfo.deriveDepartmentInfo(lecture);
         const foundDepartment = departmentMap[lecture.DEPT_ID];
-        console.log('DepartmentInfo', departmentInfo);
 
         // No department found, create new department
         if (!foundDepartment) {
           const newDept = await this.syncRepository.createDepartment(departmentInfo);
           departmentMap[newDept.id] = newDept;
-          result.departments.created.push(newDept);
+          departmentSyncResultDetail.created.push(newDept);
 
           const deptsToMakeInvisible = existingDepartments.filter((l) => l.code === newDept.code && l.visible);
           await Promise.all(
@@ -105,27 +86,34 @@ export class SyncService {
             name_en: departmentInfo.name_en,
           });
           departmentMap[foundDepartment.id] = updated;
-          result.departments.updated.push([foundDepartment, updated]);
+          departmentSyncResultDetail.updated.push([foundDepartment, updated]);
         }
       } catch (e: any) {
-        result.departments.errors.push({
+        departmentSyncResultDetail.errors.push({
           dept_id: lecture.DEPT_ID,
           error: e.message || 'Unknown error',
         });
       }
     }
-    this.slackNoti.sendSyncNoti(
-      `Department created: ${result.departments.created.length}, updated: ${result.departments.updated.length}, errors: ${result.departments.errors.length}`,
+    await this.slackNoti.sendSyncNoti(
+      `Department created: ${departmentSyncResultDetail.created.length}, updated: ${departmentSyncResultDetail.updated.length}, errors: ${departmentSyncResultDetail.errors.length}`,
     );
-
-    console.log('Department Sync Result', result.departments);
+    const departmentDndTime = new Date();
+    await this.syncRepository.logSyncEndPoint(
+      startLog.id,
+      departmentDndTime,
+      summarizeSyncResult(departmentSyncResultDetail),
+    );
 
     /// Course update
     // TODO: OLD_NO may not be available later, need to change to use new code
     // -> SUBJECT_NO(DB의 code 및 new_code) 사용으로 수정
+    const courseSyncResultDetail = new SyncResultDetail(SyncType.COURSE);
     const lectureByCode = new Map(data.lectures.map((l) => [l.SUBJECT_NO, l] as const));
     const existingCourses = await this.syncRepository.getExistingCoursesByNewCodes(Array.from(lectureByCode.keys()));
-    this.slackNoti.sendSyncNoti(`Found ${existingCourses.length} existing related courses, updating...`);
+    await this.slackNoti.sendSyncNoti(`Found ${existingCourses.length} existing related courses, updating...`);
+    await this.syncRepository.logSyncStartPoint(SyncType.COURSE, data.year, data.semester);
+
     const courseMap = new Map(existingCourses.map((l) => [l.new_code, l] as const));
     for (const [new_code, lecture] of lectureByCode.entries()) {
       try {
@@ -133,32 +121,41 @@ export class SyncService {
         const derivedCourse = CourseInfo.deriveCourseInfo(lecture);
         if (!foundCourse) {
           const newCourse = await this.syncRepository.createCourse(derivedCourse);
-          result.courses.created.push(newCourse);
+          courseSyncResultDetail.created.push(newCourse);
           courseMap.set(new_code, newCourse);
         } else {
           if (!CourseInfo.equals(derivedCourse, foundCourse)) {
             const updatedCourse = await this.syncRepository.updateCourse(foundCourse.id, derivedCourse);
-            result.courses.updated.push([foundCourse, updatedCourse]);
+            courseSyncResultDetail.updated.push([foundCourse, updatedCourse]);
             courseMap.set(new_code, updatedCourse);
           }
         }
       } catch (e: any) {
-        result.courses.errors.push({
+        courseSyncResultDetail.errors.push({
           new_code,
           error: e.message || 'Unknown error',
         });
       }
     }
-    this.slackNoti.sendSyncNoti(
-      `Course created: ${result.courses.created.length}, updated: ${result.courses.updated.length}, errors: ${result.courses.errors.length}`,
+    await this.slackNoti.sendSyncNoti(
+      `Course created: ${courseSyncResultDetail.created.length}, updated: ${courseSyncResultDetail.updated.length}, errors: ${courseSyncResultDetail.errors.length}`,
     );
-
-    console.log('Course Sync Result', result.courses);
+    const courseEndTime = new Date();
+    await this.syncRepository.logSyncEndPoint(startLog.id, courseEndTime, summarizeSyncResult(courseSyncResultDetail));
 
     // Professor update
+    const professorSyncResultDetail = {
+      type: SyncType.PROFESSOR,
+      created: [],
+      updated: [],
+      deleted: [],
+      skipped: [],
+      errors: [],
+    };
     const existingProfessors = await this.syncRepository.getExistingProfessorsById(data.charges.map((c) => c.PROF_ID));
     const professorMap = new Map(existingProfessors.map((p) => [p.professor_id, p]));
-    this.slackNoti.sendSyncNoti(`Found ${existingProfessors.length} existing related professors, updating...`);
+    await this.slackNoti.sendSyncNoti(`Found ${existingProfessors.length} existing related professors, updating...`);
+    await this.syncRepository.logSyncStartPoint(SyncType.PROFESSOR, data.year, data.semester);
     const processedProfessorIds = new Set<number>();
     for (const charge of data.charges) {
       try {
@@ -175,32 +172,38 @@ export class SyncService {
         if (!professor) {
           const newProfessor = await this.syncRepository.createProfessor(derivedProfessor);
           professorMap.set(charge.PROF_ID, newProfessor);
-          result.professors.created.push(newProfessor);
+          professorSyncResultDetail.created.push(newProfessor);
         } else if (!ProfessorInfo.equals(professor, derivedProfessor)) {
           const updatedProfessor = await this.syncRepository.updateProfessor(professor.id, derivedProfessor);
           professorMap.set(charge.PROF_ID, updatedProfessor);
-          result.professors.updated.push([professor, updatedProfessor]);
+          professorSyncResultDetail.updated.push([professor, updatedProfessor]);
         }
-        console.log('ProfessorInfo', derivedProfessor);
       } catch (e: any) {
-        result.professors.errors.push({
+        professorSyncResultDetail.errors.push({
           prof_id: charge.PROF_ID,
           error: e.message || 'Unknown error',
         });
       }
     }
-    this.slackNoti.sendSyncNoti(
-      `Professor created: ${result.professors.created.length}, updated: ${result.professors.updated.length}, errors: ${result.professors.errors.length}`,
+    await this.slackNoti.sendSyncNoti(
+      `Professor created: ${professorSyncResultDetail.created.length}, updated: ${professorSyncResultDetail.updated.length}, errors: ${professorSyncResultDetail.errors.length}`,
+    );
+    const professorEndTime = new Date();
+    await this.syncRepository.logSyncEndPoint(
+      startLog.id,
+      professorEndTime,
+      summarizeSyncResult(professorSyncResultDetail),
     );
 
-    console.log('Professor Sync Result', result.professors);
-
     /// Lecture update
+    const lecturesSyncResultDetail = new SyncResultDetail(SyncType.LECTURE);
+    const chargesSyncResultDetail = new SyncResultDetail(SyncType.CHARGE);
     const existingLectures = await this.syncRepository.getExistingDetailedLectures({
       year: data.year,
       semester: data.semester,
     });
-    this.slackNoti.sendSyncNoti(`Found ${existingLectures.length} existing lectures, updating...`);
+    await this.slackNoti.sendSyncNoti(`Found ${existingLectures.length} existing lectures, updating...`);
+    await this.syncRepository.logSyncStartPoint(SyncType.LECTURE, data.year, data.semester);
     const notExistingLectures = new Set(existingLectures.map((l) => l.id));
     for (const lecture of data.lectures) {
       try {
@@ -222,7 +225,7 @@ export class SyncService {
           notExistingLectures.delete(foundLecture.id);
           if (LectureInfo.equals(foundLecture, derivedLecture)) {
             const updatedLecture = await this.syncRepository.updateLecture(foundLecture.id, derivedLecture);
-            result.lectures.updated.push([foundLecture, updatedLecture]);
+            lecturesSyncResultDetail.updated.push([foundLecture, updatedLecture]);
           }
           const { addedIds, removedIds } = this.lectureProfessorsChanges(foundLecture, professorCharges, professorMap);
 
@@ -231,9 +234,12 @@ export class SyncService {
               added: addedIds,
               removed: removedIds,
             });
-            result.lectures.chargeUpdated.push({
+            chargesSyncResultDetail.created.push({
               lecture: foundLecture,
               added: addedIds.map((id) => professorMap.get(id)),
+            });
+            chargesSyncResultDetail.deleted.push({
+              lecture: foundLecture.id,
               removed: removedIds.map((id) => professorMap.get(id) || { id }),
             });
           }
@@ -245,10 +251,10 @@ export class SyncService {
             added: addedIds,
             removed: [],
           });
-          result.lectures.created.push({ ...newLecture, professors: addedIds });
+          lecturesSyncResultDetail.created.push({ ...newLecture, professors: addedIds });
         }
       } catch (e: any) {
-        result.lectures.errors.push({
+        lecturesSyncResultDetail.errors.push({
           lecture: {
             code: lecture.SUBJECT_NO,
             class_no: lecture.LECTURE_CLASS,
@@ -261,20 +267,28 @@ export class SyncService {
     // Remove not existing lectures
     try {
       await this.syncRepository.markLecturesDeleted(Array.from(notExistingLectures));
-      result.lectures.deleted = Array.from(notExistingLectures);
+      lecturesSyncResultDetail.deleted = Array.from(notExistingLectures);
     } catch (e: any) {
-      result.lectures.errors.push({
+      lecturesSyncResultDetail.errors.push({
         lecturesToDelete: Array.from(notExistingLectures),
         error: e.message || 'Unknown error',
       });
     }
 
-    this.slackNoti.sendSyncNoti(
-      `Lecture created: ${result.lectures.created.length}, updated: ${result.lectures.updated.length}, errors: ${result.lectures.errors.length}`,
+    await this.slackNoti.sendSyncNoti(
+      `Lecture created: ${lecturesSyncResultDetail.created.length}, updated: ${lecturesSyncResultDetail.updated.length}, errors: ${lecturesSyncResultDetail.errors.length}`,
     );
-
-    console.log('Lecture Sync Result', result.lectures);
-
+    const lectureEndTime = new Date();
+    await this.syncRepository.logSyncEndPoint(
+      startLog.id,
+      lectureEndTime,
+      summarizeSyncResult(lecturesSyncResultDetail),
+    );
+    result.results.push(departmentSyncResultDetail);
+    result.results.push(courseSyncResultDetail);
+    result.results.push(professorSyncResultDetail);
+    result.results.push(lecturesSyncResultDetail);
+    result.results.push(chargesSyncResultDetail);
     return result;
   }
 
@@ -300,7 +314,7 @@ export class SyncService {
       data.year,
       data.semester,
       data.examtimes,
-      'examtime',
+      SyncType.EXAMTIME,
       ExamtimeInfo.deriveExamtimeInfo,
       ExamtimeInfo.equals,
     );
@@ -311,16 +325,16 @@ export class SyncService {
       data.year,
       data.semester,
       data.classtimes,
-      'classtime',
+      SyncType.CLASSTIME,
       ClassTimeInfo.deriveClasstimeInfo,
       ClassTimeInfo.equals,
     );
   }
 
   async syncTime<
-    TYPE extends 'examtime' | 'classtime',
-    T extends TYPE extends 'examtime' ? IScholar.ScholarExamtimeType : IScholar.ScholarClasstimeType,
-    D extends TYPE extends 'examtime' ? ExamtimeInfo : ClassTimeInfo,
+    TYPE extends SyncTimeType,
+    T extends TYPE extends typeof SyncType.EXAMTIME ? IScholar.ScholarExamtimeType : IScholar.ScholarClasstimeType,
+    D extends TYPE extends typeof SyncType.EXAMTIME ? ExamtimeInfo : ClassTimeInfo,
   >(
     year: number,
     semester: number,
@@ -329,21 +343,21 @@ export class SyncService {
     deriveInfo: (time: T) => D,
     matches: (derivedTime: D, existingTime: any) => boolean,
   ) {
-    this.slackNoti.sendSyncNoti(`sync ${type} ${year}-${semester}: ${data.length} ${type}s`);
-    const result: any = {
-      time: new Date().toISOString(),
-      updated: [],
-      skipped: [],
-      errors: [],
+    const result: ISync.SyncResultDetails = {
+      time: new Date(),
+      year: year,
+      semester: semester,
+      results: [],
     };
-
+    await this.slackNoti.sendSyncNoti(`sync ${type} ${year}-${semester}: ${data.length} ${type}s`);
+    const startLog = await this.syncRepository.logSyncStartPoint(type, year, semester);
+    const timeResultDetail = new SyncResultDetail(type);
     const existingLectures = await this.syncRepository.getExistingDetailedLectures({
       year: year,
       semester: semester,
     });
 
-    this.slackNoti.sendSyncNoti(`Found ${existingLectures.length} existing lectures, updating ${type}s...`);
-
+    await this.slackNoti.sendSyncNoti(`Found ${existingLectures.length} existing lectures, updating ${type}s...`);
     const lecturePairMap = new Map<number, [ELecture.Details, T[]]>(existingLectures.map((l) => [l.id, [l, []]]));
 
     for (const time of data) {
@@ -351,7 +365,7 @@ export class SyncService {
         (l) => l.code === time.SUBJECT_NO && l.class_no.trim() === time.LECTURE_CLASS.trim(),
       );
       if (!lecture) {
-        result.skipped.push({
+        timeResultDetail.skipped.push({
           subject_no: time.SUBJECT_NO,
           lecture_class: time.LECTURE_CLASS,
           error: 'Lecture not found',
@@ -365,7 +379,7 @@ export class SyncService {
     for (const [lecture, times] of lecturePairMap.values()) {
       try {
         const derivedTimes = times.map(deriveInfo);
-        const existingTimes = type === 'examtime' ? lecture.subject_examtime : lecture.subject_classtime;
+        const existingTimes = type === SyncType.EXAMTIME ? lecture.subject_examtime : lecture.subject_classtime;
         const timesToRemove = [];
 
         for (const existing of existingTimes) {
@@ -374,7 +388,7 @@ export class SyncService {
           else derivedTimes.splice(idx, 1); // remove matched time
         }
         const timesToAdd = derivedTimes;
-        if (type === 'examtime')
+        if (type === SyncType.EXAMTIME)
           await this.syncRepository.updateLectureExamtimes(lecture.id, {
             added: timesToAdd,
             removed: timesToRemove,
@@ -386,7 +400,7 @@ export class SyncService {
           });
 
         if (timesToAdd.length > 0 || timesToRemove.length > 0) {
-          result.updated.push({
+          timeResultDetail.updated.push({
             lecture: lecture.code,
             class_no: lecture.class_no,
             previous: existingTimes,
@@ -395,7 +409,7 @@ export class SyncService {
           });
         }
       } catch (e: any) {
-        result.errors.push({
+        timeResultDetail.errors.push({
           lecture: {
             code: lecture.code,
             class_no: lecture.class_no,
@@ -405,12 +419,14 @@ export class SyncService {
       }
     }
 
-    this.slackNoti.sendSyncNoti(
+    await this.slackNoti.sendSyncNoti(
       `${type.charAt(0).toUpperCase() + type.slice(1)} updated: ${
-        result.updated.length
-      }, skipped: ${result.skipped.length}, errors: ${result.errors.length}`,
+        timeResultDetail.updated.length
+      }, skipped: ${timeResultDetail.skipped.length}, errors: ${timeResultDetail.errors.length}`,
     );
-
+    const endTime = new Date();
+    await this.syncRepository.logSyncEndPoint(startLog.id, endTime, summarizeSyncResult(timeResultDetail));
+    result.results.push(timeResultDetail);
     return result;
   }
 
@@ -418,12 +434,15 @@ export class SyncService {
     this.slackNoti.sendSyncNoti(
       `syncTakenLecture: ${data.year}-${data.semester}: ${data.attend.length} attend records`,
     );
+    const startLog = await this.syncRepository.logSyncStartPoint(SyncType.TAKEN_LECTURES, data.year, data.semester);
 
-    const result: any = {
-      time: new Date().toISOString(),
-      updated: [],
-      errors: [],
+    const result: ISync.SyncResultDetails = {
+      time: new Date(),
+      year: data.year,
+      semester: data.semester,
+      results: [],
     };
+    const resultDetail = new SyncResultDetail(SyncType.TAKEN_LECTURES);
 
     const existingLectures = await this.syncRepository.getExistingDetailedLectures({
       year: data.year,
@@ -435,7 +454,7 @@ export class SyncService {
         semester: data.semester,
       })
     ).filter((u) => !Number.isNaN(parseInt(u.student_id)));
-    this.slackNoti.sendSyncNoti(
+    await this.slackNoti.sendSyncNoti(
       `Found ${existingLectures.length} existing lectures, ${existingUserTakenLectures.length} existing user with taken records`,
     );
     const studentIds = Array.from(
@@ -469,7 +488,7 @@ export class SyncService {
         const pair = studentPairMap.get(attend.STUDENT_NO)!;
         pair[1].push(lectureId);
       } else
-        result.errors.push({
+        resultDetail.errors.push({
           student_no: attend.STUDENT_NO,
           attend,
           error: 'lecture not found',
@@ -513,7 +532,7 @@ export class SyncService {
               remove: recordIdsToRemove,
               add: recordsToAdd,
             });
-            result.updated.push({
+            resultDetail.updated.push({
               studentId,
               remove: recordIdsToRemove.map((id) => existingTakenLectures.find((e) => e.id === id)?.lecture_id),
               add: recordsToAdd,
@@ -521,7 +540,7 @@ export class SyncService {
           }
         }
       } catch (e: any) {
-        result.errors.push({ studentId, error: e.message || 'Unknown error' });
+        resultDetail.errors.push({ studentId, error: e.message || 'Unknown error' });
       }
     }
 
@@ -530,9 +549,12 @@ export class SyncService {
       semester: data.semester,
     });
 
-    this.slackNoti.sendSyncNoti(
-      `syncTakenLecture: ${result.updated.length} updated, ${skipCount} skipped, ${result.errors.length} errors`,
+    await this.slackNoti.sendSyncNoti(
+      `syncTakenLecture: ${resultDetail.updated.length} updated, ${skipCount} skipped, ${resultDetail.errors.length} errors`,
     );
+    const endTime = new Date();
+    await this.syncRepository.logSyncEndPoint(startLog.id, endTime, summarizeSyncResult(resultDetail));
+    result.results.push(resultDetail);
 
     return result;
   }
@@ -604,16 +626,14 @@ export class SyncService {
 
   async syncDegree(data: IScholar.ScholarDegreeType[]) {
     this.slackNoti.sendSyncNoti(`syncDegree: ${data.length} degrees`);
-
-    const result: {
-      time: string;
-      updated: { userId: number; departmentId: number }[];
-      errors: { userId: number; departmentId: number }[];
-    } = {
-      time: new Date().toISOString(),
-      updated: [],
-      errors: [],
+    const startLog = await this.syncRepository.logSyncStartPoint(SyncType.DEGREE, 0, 0);
+    const result: ISync.SyncResultDetails = {
+      time: new Date(),
+      year: 0,
+      semester: 0,
+      results: [],
     };
+    const degreeSyncResultDetail = new SyncResultDetail(SyncType.DEGREE);
 
     // 1. Collect all student numbers and map them to their degree info
     const studentIds = Array.from(new Set(data.map((d) => `${d.STUDENT_NO}`)));
@@ -652,8 +672,6 @@ export class SyncService {
         };
       });
 
-    console.log(toUpdate);
-
     for (let i = 0; i < toUpdate.length; i += BATCH_SIZE) {
       // Take a batch of up to 1,000 users
       const chunk = toUpdate.slice(i, i + this.BATCH_SIZE);
@@ -663,37 +681,34 @@ export class SyncService {
         await Promise.all(
           concurrencyChunk.map(async (item) => {
             try {
-              this.syncRepository.updateUserDepartment(item.userId, item.departmentId);
-              result.updated.push(item);
+              await this.syncRepository.updateUserDepartment(item.userId, item.departmentId);
+              degreeSyncResultDetail.updated.push(item);
             } catch (error) {
-              result.errors.push(item);
+              degreeSyncResultDetail.errors.push(item);
             }
           }),
         );
       }
     }
-    this.slackNoti.sendSyncNoti(
-      `Degree updated: ${result.updated.length} / ${toUpdate.length}, errors: ${result.errors.length}`,
+    await this.slackNoti.sendSyncNoti(
+      `Degree updated: ${degreeSyncResultDetail.updated.length} / ${toUpdate.length}, errors: ${degreeSyncResultDetail.errors.length}`,
     );
+    const endTime = new Date();
+    await this.syncRepository.logSyncEndPoint(startLog.id, endTime, degreeSyncResultDetail);
+    result.results.push(degreeSyncResultDetail);
     return result;
   }
 
   async syncOtherMajor(data: IScholar.ScholarOtherMajorType[]) {
-    this.slackNoti.sendSyncNoti(`syncOtherMajor: ${data.length} other majors`);
-
-    const result: {
-      time: string;
-      updated: { userId: number; departmentId: number }[];
-      add: { userId: number; departmentId: number }[];
-      removed: { userId: number; departmentId: number }[];
-      errors: { userId: number; departmentId: number }[];
-    } = {
-      time: new Date().toISOString(),
-      updated: [],
-      add: [],
-      removed: [],
-      errors: [],
+    await this.slackNoti.sendSyncNoti(`syncOtherMajor: ${data.length} other majors`);
+    const startLog = await this.syncRepository.logSyncStartPoint(SyncType.MAJORS, 0, 0);
+    const result: ISync.SyncResultDetails = {
+      time: new Date(),
+      year: 0,
+      semester: 0,
+      results: [],
     };
+    const majorSyncResultDetail = new SyncResultDetail(SyncType.MAJORS);
 
     const departments = await this.syncRepository.getDepartments();
     const departmentMap = normalizeArray<EDepartment.Basic>(departments, (d) => d.name);
@@ -725,7 +740,6 @@ export class SyncService {
 
     const currentSemesterYear = (await this.syncRepository.getDefaultSemester()).year;
     const updateYearThreshold = currentSemesterYear - 15;
-    console.log(updateYearThreshold);
 
     const toUpdate = {
       major: existingUsersWithMajors
@@ -758,14 +772,11 @@ export class SyncService {
         }),
     };
 
-    console.log(toUpdate);
-
     const majorUpdate = {
       add: [] as { userId: number; departmentId: number }[],
       remove: [] as { userId: number; departmentId: number }[],
     };
     toUpdate.major.forEach((userMajorInfo) => {
-      console.log(userMajorInfo);
       const userId = userMajorInfo.userId;
       const existingMajorInfo = existingUsersWithMajorsMap[userId].session_userprofile_majors;
       const majorInfoList = userMajorInfo.majorInfoList;
@@ -801,7 +812,6 @@ export class SyncService {
       remove: [] as { userId: number; departmentId: number }[],
     };
     toUpdate.minor.forEach((userMinorInfo) => {
-      console.log(userMinorInfo);
       const userId = userMinorInfo.userId;
       const existingMinorInfo = existingUsersWithMinorsMap[userId].session_userprofile_minors;
       const minorInfoList = userMinorInfo.minorInfoList;
@@ -847,10 +857,10 @@ export class SyncService {
           } else {
             await this.syncRepository.createManyUserMinor(chunk);
           }
-          result.updated = result.updated.concat(chunk);
-          result.add = result.add.concat(chunk);
+          majorSyncResultDetail.updated = majorSyncResultDetail.updated.concat(chunk);
+          majorSyncResultDetail.created = majorSyncResultDetail.created.concat(chunk);
         } catch (error) {
-          result.errors = result.errors.concat(chunk);
+          majorSyncResultDetail.errors = majorSyncResultDetail.errors.concat(chunk);
         }
       }
 
@@ -861,43 +871,28 @@ export class SyncService {
         for (let j = 0; j < chunk.length; j += this.CONCURRENCY_LIMIT) {
           const concurrencyChunk = chunk.slice(j, j + this.CONCURRENCY_LIMIT);
 
-          // Parallel update each sub-chunk
-          // for (let item of concurrencyChunk){
-          //   try {
-          //     // Your single-row update method
-          //     if (update === majorUpdate) {
-          //       console.log(item.userId, item.departmentId)
-          //       await this.syncRepository.deleteUserMajor(item.userId, item.departmentId);
-          //     } else {
-          //       console.log(item.userId, item.departmentId)
-          //       await this.syncRepository.deleteUserMinor(item.userId, item.departmentId);
-          //     }
-          //     result.updated.push(item);
-          //   } catch (error) {
-          //     result.errors.push(item);
-          //   }
-          // }
-
           concurrencyChunk.map(async (item) => {
             try {
               // Your single-row update method
               if (update === majorUpdate) {
-                console.log(item.userId, item.departmentId);
                 await this.syncRepository.deleteUserMajor(item.userId, item.departmentId);
               } else {
-                console.log(item.userId, item.departmentId);
                 await this.syncRepository.deleteUserMinor(item.userId, item.departmentId);
               }
-              result.updated.push(item);
+              majorSyncResultDetail.updated.push(item);
             } catch (error) {
-              result.errors.push(item);
+              majorSyncResultDetail.errors.push(item);
             }
           });
         }
       }
     }
-    this.slackNoti.sendSyncNoti(
-      `otherMajor updated: ${result.updated.length} / ${toUpdate.major.length + toUpdate.minor.length}, errors: ${result.errors.length}`,
+    await this.slackNoti.sendSyncNoti(
+      `otherMajor updated: ${majorSyncResultDetail.updated.length} / ${toUpdate.major.length + toUpdate.minor.length}, errors: ${majorSyncResultDetail.errors.length}`,
     );
+    const endTime = new Date();
+    await this.syncRepository.logSyncEndPoint(startLog.id, endTime, summarizeSyncResult(majorSyncResultDetail));
+    result.results.push(majorSyncResultDetail);
+    return result;
   }
 }

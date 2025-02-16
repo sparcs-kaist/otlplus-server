@@ -8,6 +8,7 @@ import {
   ESemester,
   EUser,
   EUserProfile,
+  ESync,
 } from '@otl/api-interface/src/entities';
 import { ClassTimeInfo } from '@otl/scholar-sync/common/domain/ClassTimeInfo';
 import { CourseInfo } from '@otl/scholar-sync/common/domain/CourseInfo';
@@ -16,6 +17,7 @@ import { ExamtimeInfo } from '@otl/scholar-sync/common/domain/ExamTimeInfo';
 import { LectureInfo } from '@otl/scholar-sync/common/domain/LectureInfo';
 import { ProfessorInfo } from '@otl/scholar-sync/common/domain/ProfessorInfo';
 import { PrismaService } from '../prisma.service';
+import { SyncType } from '@prisma/client';
 
 @Injectable()
 export class SyncRepository {
@@ -456,6 +458,27 @@ export class SyncRepository {
           userprofile_id: userId,
           department_id: departmentId,
         },
+      },
+    });
+  }
+
+  async logSyncStartPoint(type: SyncType, year?: number, semester?: number): Promise<ESync.History.Basic> {
+    return this.prisma.sync_history.create({
+      data: {
+        type: type,
+        startTime: new Date(),
+        year: year,
+        semester: semester,
+      },
+    });
+  }
+
+  async logSyncEndPoint(id: number, endTime: Date, data: any) {
+    return this.prisma.sync_history.update({
+      where: { id },
+      data: {
+        endTime,
+        data,
       },
     });
   }

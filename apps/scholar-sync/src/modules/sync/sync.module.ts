@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { SyncController } from './sync.controller';
 import { PrismaModule } from '@otl/scholar-sync/prisma/prisma.module';
 import { SyncService } from '@otl/scholar-sync/modules/sync/sync.service';
 import { SyncSchedule } from '@otl/scholar-sync/modules/sync/sync.schedule';
@@ -10,7 +9,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [PrismaModule, SlackModule, ScholarModule, ScheduleModule],
-  controllers: [SyncController, SyncDynamicController],
+  controllers: [SyncDynamicController],
   providers: [SyncService, SyncSchedule],
   exports: [SyncService, SyncSchedule],
 })

@@ -1,3 +1,5 @@
+import { ISync } from '@otl/api-interface/src/interfaces/ISync';
+
 export function putPreviousSemester(semesters: [number, number][], count: number) {
   if (count === 0) return;
   const [year, semester] = semesters[semesters.length - 1];
@@ -36,4 +38,24 @@ export function groupBy<T, K extends keyof any>(arr: T[], selector: (i: T) => K)
     },
     {} as Record<K, T[] | undefined>,
   );
+}
+
+export function summarizeSyncResult(syncResult: ISync.SyncResultDetail): ISync.SyncResultSummary {
+  return {
+    type: syncResult.type,
+    created: syncResult.created.length,
+    updated: syncResult.updated.length,
+    skipped: syncResult.skipped.length,
+    errors: syncResult.errors.length,
+    deleted: syncResult.deleted.length,
+  };
+}
+
+export function summarizeSyncResults(syncResults: ISync.SyncResultDetails): ISync.SyncResultSummaries {
+  return {
+    time: syncResults.time,
+    year: syncResults.year,
+    semester: syncResults.semester,
+    results: syncResults.results.map(summarizeSyncResult),
+  };
 }

@@ -2,7 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ScholarApiClient } from '@otl/scholar-sync/clients/scholar/scholar.api.client';
 import { SyncService } from '@otl/scholar-sync/modules/sync/sync.service';
-import { putPreviousSemester } from '@otl/scholar-sync/modules/sync/util';
+import { putPreviousSemester, summarizeSyncResults } from '@otl/scholar-sync/modules/sync/util';
+import { SyncType } from '@prisma/client';
+import { ISync } from '@otl/api-interface/src/interfaces/ISync';
+import { SlackNotiService } from '@otl/scholar-sync/clients/slack/slackNoti.service';
 
 @Injectable()
 export class SyncSchedule {
@@ -11,6 +14,7 @@ export class SyncSchedule {
   constructor(
     private readonly scholarApiClient: ScholarApiClient,
     private readonly syncService: SyncService,
+    private readonly slackNoti: SlackNotiService,
   ) {}
 
   @Cron(CronExpression.EVERY_HOUR, {
@@ -21,12 +25,16 @@ export class SyncSchedule {
     const semesters = await this.determineTargetSemesters(year, semester, interval);
     for (const [year, semester] of [...semesters].reverse()) {
       const lectures = await this.scholarApiClient.getLectureType(year, semester);
-      console.log(lectures);
       const charges = await this.scholarApiClient.getChargeType(year, semester);
-      console.log(charges);
-      const syncResult = await this.syncService.syncScholarDB({ year, semester, lectures, charges });
-      this.logger.log(`Synced ${syncResult.lectures.length} lectures and charges for ${year} ${semester}`);
-
+      const syncResults: ISync.SyncResultDetails = await this.syncService.syncScholarDB({
+        year,
+        semester,
+        lectures,
+        charges,
+      });
+      const syncResultSummaries = summarizeSyncResults(syncResults);
+      await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2));
+      this.logger.log(JSON.stringify(syncResults, null, 2));
       await Promise.all([
         this.syncExamTime(year, semester),
         this.syncClassTime(year, semester),
@@ -47,8 +55,15 @@ export class SyncSchedule {
     for (const [year, semester] of [...semesters].reverse()) {
       const lectures = await this.scholarApiClient.getLectureType(year, semester);
       const charges = await this.scholarApiClient.getChargeType(year, semester);
-      const syncResult = await this.syncService.syncScholarDB({ year, semester, lectures, charges });
-      this.logger.log(`Synced ${syncResult} lectures and charges for ${year} ${semester}`);
+      const syncResultDetails: ISync.SyncResultDetails = await this.syncService.syncScholarDB({
+        year,
+        semester,
+        lectures,
+        charges,
+      });
+      const syncResultSummaries = summarizeSyncResults(syncResultDetails);
+      await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2));
+      this.logger.log(JSON.stringify(syncResultDetails, null, 2));
     }
   }
 
@@ -61,8 +76,10 @@ export class SyncSchedule {
     const semesters = await this.determineTargetSemesters(year, semester, interval);
     for (const [year, semester] of [...semesters].reverse()) {
       const examtimes = await this.scholarApiClient.getExamTimeType(year, semester);
-      const syncResultExamTime = await this.syncService.syncExamTime({ year, semester, examtimes });
-      this.logger.log(`Synced ${syncResultExamTime.length} examTime for ${year} ${semester}`);
+      const syncResultDetail = await this.syncService.syncExamTime({ year, semester, examtimes });
+      const syncResultSummaries = summarizeSyncResults(syncResultDetail);
+      await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2));
+      this.logger.log(JSON.stringify(syncResultDetail, null, 2));
     }
   }
 
@@ -75,12 +92,10 @@ export class SyncSchedule {
     const semesters = await this.determineTargetSemesters(year, semester, interval);
     for (const [year, semester] of [...semesters].reverse()) {
       const classtimes = await this.scholarApiClient.getClassTimeType(year, semester);
-      const syncResultClassTime = await this.syncService.syncClassTime({ year, semester, classtimes });
-      this.logger.log(
-        `Synced updated: ${
-          syncResultClassTime.updated.length
-        }, skipped: ${syncResultClassTime.skipped.length}, errors: ${syncResultClassTime.errors.length}\` classTime for ${year} ${semester}`,
-      );
+      const syncResultDetail = await this.syncService.syncClassTime({ year, semester, classtimes });
+      const syncResultSummaries = summarizeSyncResults(syncResultDetail);
+      await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2));
+      this.logger.log(JSON.stringify(syncResultDetail, null, 2));
     }
   }
 
@@ -93,12 +108,10 @@ export class SyncSchedule {
     const semesters = await this.determineTargetSemesters(year, semester, interval);
     for (const [year, semester] of [...semesters].reverse()) {
       const takenLectures = await this.scholarApiClient.getAttendType(year, semester);
-      const syncResultTakenLecture = await this.syncService.syncTakenLecture({ year, semester, attend: takenLectures });
-      this.logger.log(
-        `Synced ${
-          syncResultTakenLecture.updated.length
-        }, skipped: ${syncResultTakenLecture.skipped.length}, errors: ${syncResultTakenLecture.errors.length}\` takenLecture for ${year} ${semester}`,
-      );
+      const syncResultDetail = await this.syncService.syncTakenLecture({ year, semester, attend: takenLectures });
+      const syncResultSummaries = summarizeSyncResults(syncResultDetail);
+      await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2));
+      this.logger.log(JSON.stringify(syncResultDetail, null, 2));
     }
   }
 
@@ -109,7 +122,10 @@ export class SyncSchedule {
   })
   async syncDegree() {
     const degrees = await this.scholarApiClient.getDegree();
-    await this.syncService.syncDegree(degrees);
+    const syncResultDetail = await this.syncService.syncDegree(degrees);
+    const syncResultSummaries = summarizeSyncResults(syncResultDetail);
+    await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2));
+    this.logger.log(JSON.stringify(syncResultDetail, null, 2));
   }
 
   @Cron(CronExpression.EVERY_HOUR, {
@@ -119,8 +135,10 @@ export class SyncSchedule {
   })
   async syncMajor() {
     const majors = await this.scholarApiClient.getKdsStudentsOtherMajor();
-    console.log(majors);
-    await this.syncService.syncOtherMajor(majors);
+    const syncResultDetail = await this.syncService.syncOtherMajor(majors);
+    const syncResultSummaries = summarizeSyncResults(syncResultDetail);
+    await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2));
+    this.logger.log(JSON.stringify(syncResultDetail, null, 2));
   }
 
   @Cron(CronExpression.EVERY_WEEKEND, {
