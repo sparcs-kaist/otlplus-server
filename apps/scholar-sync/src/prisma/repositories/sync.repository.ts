@@ -473,12 +473,12 @@ export class SyncRepository {
     });
   }
 
-  async logSyncEndPoint(id: number, endTime: Date, data: any) {
+  async logSyncEndPoint(id: number, endTime: Date, data: object) {
     return this.prisma.sync_history.update({
       where: { id },
       data: {
-        endTime,
-        data,
+        endTime: endTime,
+        data: JSON.stringify(data, null, 2),
       },
     });
   }
