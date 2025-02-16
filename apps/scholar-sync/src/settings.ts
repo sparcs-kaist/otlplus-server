@@ -100,13 +100,14 @@ const getSwaggerConfig = () => {
 };
 
 function getLoggingConfig() {
-  const logDir = __dirname + '/../logs'; // log 파일을 관리할 폴더
+  const logDir = __dirname + '/../../logs'; // log 파일을 관리할 폴더
+  console.log(logDir);
   const { NODE_ENV } = process.env;
   const dailyOptions = (level: string) => {
     return {
       level,
       datePattern: 'YYYY-MM-DD',
-      dirname: logDir + `/${level}`,
+      dirname: logDir + `/${NODE_ENV}`,
       filename: `%DATE%.${level}.log`,
       maxFiles: 30, //30일치 로그파일 저장
       zippedArchive: true, // 로그가 쌓이면 압축하여 관리
