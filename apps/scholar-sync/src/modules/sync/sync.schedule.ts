@@ -11,6 +11,7 @@ import fs from 'fs';
 @Injectable()
 export class SyncSchedule {
   private readonly logger = new Logger(SyncSchedule.name);
+  private readonly logFileDir = __dirname + '/../../logs'; // log 파일을 관리할 폴더
 
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER) private readonly winstonLogger: WinstonLogger,
@@ -37,7 +38,7 @@ export class SyncSchedule {
       const syncResultSummaries = summarizeSyncResults(syncResults);
       await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2));
       fs.writeFileSync(
-        `../logs/scholar-${year}-${semester}-${syncResultSummaries.time}.json`,
+        `${this.logFileDir}/scholar-${year}-${semester}-${syncResultSummaries.time}.json`,
         JSON.stringify(syncResults, null, 2),
       );
       await this.syncExamTime(year, semester);
@@ -66,7 +67,10 @@ export class SyncSchedule {
       });
       const syncResultSummaries = summarizeSyncResults(syncResultDetails);
       await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2));
-      fs.writeFileSync(`../logs/scholar-${syncResultSummaries.time}.json`, JSON.stringify(syncResultDetails, null, 2));
+      fs.writeFileSync(
+        `${this.logFileDir}/scholar-${syncResultSummaries.time}.json`,
+        JSON.stringify(syncResultDetails, null, 2),
+      );
     }
   }
 
@@ -83,7 +87,7 @@ export class SyncSchedule {
       const syncResultSummaries = summarizeSyncResults(syncResultDetail);
       await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2));
       fs.writeFileSync(
-        `../logs/examTime-${year}-${semester}-${syncResultSummaries.time}.json`,
+        `${this.logFileDir}/examTime-${year}-${semester}-${syncResultSummaries.time}.json`,
         JSON.stringify(syncResultDetail, null, 2),
       );
     }
@@ -102,7 +106,7 @@ export class SyncSchedule {
       const syncResultSummaries = summarizeSyncResults(syncResultDetail);
       await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2));
       fs.writeFileSync(
-        `../logs/classTime-${year}-${semester}-${syncResultSummaries.time}.json`,
+        `${this.logFileDir}/classTime-${year}-${semester}-${syncResultSummaries.time}.json`,
         JSON.stringify(syncResultDetail, null, 2),
       );
     }
@@ -121,7 +125,7 @@ export class SyncSchedule {
       const syncResultSummaries = summarizeSyncResults(syncResultDetail);
       await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2));
       fs.writeFileSync(
-        `../logs/taken_lecture-${year}-${semester}-${syncResultSummaries.time}.json`,
+        `${this.logFileDir}/taken_lecture-${year}-${semester}-${syncResultSummaries.time}.json`,
         JSON.stringify(syncResultDetail, null, 2),
       );
     }
@@ -137,7 +141,10 @@ export class SyncSchedule {
     const syncResultDetail = await this.syncService.syncDegree(degrees);
     const syncResultSummaries = summarizeSyncResults(syncResultDetail);
     await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2));
-    fs.writeFileSync(`../logs/degree-${syncResultSummaries.time}.json`, JSON.stringify(syncResultDetail, null, 2));
+    fs.writeFileSync(
+      `${this.logFileDir}/degree-${syncResultSummaries.time}.json`,
+      JSON.stringify(syncResultDetail, null, 2),
+    );
   }
 
   @Cron(CronExpression.EVERY_HOUR, {
@@ -150,7 +157,10 @@ export class SyncSchedule {
     const syncResultDetail = await this.syncService.syncOtherMajor(majors);
     const syncResultSummaries = summarizeSyncResults(syncResultDetail);
     await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2));
-    fs.writeFileSync(`../logs/major-${syncResultSummaries.time}.json`, JSON.stringify(syncResultDetail, null, 2));
+    fs.writeFileSync(
+      `${this.logFileDir}/major-${syncResultSummaries.time}.json`,
+      JSON.stringify(syncResultDetail, null, 2),
+    );
   }
 
   @Cron(CronExpression.EVERY_WEEKEND, {
