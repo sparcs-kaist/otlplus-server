@@ -1,17 +1,18 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { ISync } from '@otl/api-interface/src/interfaces/ISync';
 import { ScholarApiClient } from '@otl/scholar-sync/clients/scholar/scholar.api.client';
+import { SlackNotiService } from '@otl/scholar-sync/clients/slack/slackNoti.service';
 import { SyncService } from '@otl/scholar-sync/modules/sync/sync.service';
 import { putPreviousSemester, summarizeSyncResults } from '@otl/scholar-sync/modules/sync/util';
-import { ISync } from '@otl/api-interface/src/interfaces/ISync';
-import { SlackNotiService } from '@otl/scholar-sync/clients/slack/slackNoti.service';
-import { WINSTON_MODULE_PROVIDER, WinstonLogger } from 'nest-winston';
+import settings from '@otl/scholar-sync/settings';
 import fs from 'fs';
+import { WINSTON_MODULE_PROVIDER, WinstonLogger } from 'nest-winston';
 
 @Injectable()
 export class SyncSchedule {
   private readonly logger = new Logger(SyncSchedule.name);
-  private readonly logFileDir = __dirname + '/../../logs'; // log 파일을 관리할 폴더
+  private readonly logFileDir = settings().loggingConfig().logDir + `/${process.env.NODE_ENV}`;
 
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER) private readonly winstonLogger: WinstonLogger,
@@ -22,6 +23,7 @@ export class SyncSchedule {
     if (!fs.existsSync(this.logFileDir)) {
       fs.mkdirSync(this.logFileDir, { recursive: true });
     }
+    console.log(this.logFileDir);
   }
 
   @Cron(CronExpression.EVERY_HOUR, {

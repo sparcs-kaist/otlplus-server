@@ -101,7 +101,6 @@ const getSwaggerConfig = () => {
 
 function getLoggingConfig() {
   const logDir = __dirname + '/../../logs'; // log 파일을 관리할 폴더
-  console.log(logDir);
   const { NODE_ENV } = process.env;
   const dailyOptions = (level: string) => {
     return {
@@ -114,6 +113,7 @@ function getLoggingConfig() {
     };
   };
   return {
+    logDir: logDir,
     transports: [
       new winston.transports.Console({
         level: NODE_ENV === 'prod' ? 'http' : 'silly',
