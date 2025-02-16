@@ -37,13 +37,11 @@ export class SyncSchedule {
       const syncResultSummaries = summarizeSyncResults(syncResults);
       await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2));
       this.winstonLogger.log('info', JSON.stringify(syncResults, null, 2));
-      await Promise.all([
-        this.syncExamTime(year, semester),
-        this.syncClassTime(year, semester),
-        this.syncTakenLecture(year, semester),
-        this.syncDegree(),
-        this.syncMajor(),
-      ]);
+      await this.syncExamTime(year, semester);
+      await this.syncClassTime(year, semester);
+      await this.syncTakenLecture(year, semester);
+      await this.syncDegree();
+      await this.syncMajor();
     }
   }
 
