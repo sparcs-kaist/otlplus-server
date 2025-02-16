@@ -3,10 +3,10 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { ScholarApiClient } from '@otl/scholar-sync/clients/scholar/scholar.api.client';
 import { SyncService } from '@otl/scholar-sync/modules/sync/sync.service';
 import { putPreviousSemester, summarizeSyncResults } from '@otl/scholar-sync/modules/sync/util';
-import { SyncType } from '@prisma/client';
 import { ISync } from '@otl/api-interface/src/interfaces/ISync';
 import { SlackNotiService } from '@otl/scholar-sync/clients/slack/slackNoti.service';
 import { WINSTON_MODULE_PROVIDER, WinstonLogger } from 'nest-winston';
+import fs from 'fs';
 
 @Injectable()
 export class SyncSchedule {
@@ -36,7 +36,10 @@ export class SyncSchedule {
       });
       const syncResultSummaries = summarizeSyncResults(syncResults);
       await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2));
-      this.winstonLogger.log('info', JSON.stringify(syncResults, null, 2));
+      fs.writeFileSync(
+        `../logs/scholar-${year}-${semester}-${syncResultSummaries.time}.json`,
+        JSON.stringify(syncResults, null, 2),
+      );
       await this.syncExamTime(year, semester);
       await this.syncClassTime(year, semester);
       await this.syncTakenLecture(year, semester);
@@ -63,7 +66,7 @@ export class SyncSchedule {
       });
       const syncResultSummaries = summarizeSyncResults(syncResultDetails);
       await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2));
-      this.winstonLogger.log('info', JSON.stringify(syncResultDetails, null, 2));
+      fs.writeFileSync(`../logs/scholar-${syncResultSummaries.time}.json`, JSON.stringify(syncResultDetails, null, 2));
     }
   }
 
@@ -79,7 +82,10 @@ export class SyncSchedule {
       const syncResultDetail = await this.syncService.syncExamTime({ year, semester, examtimes });
       const syncResultSummaries = summarizeSyncResults(syncResultDetail);
       await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2));
-      this.winstonLogger.log('info', JSON.stringify(syncResultDetail, null, 2));
+      fs.writeFileSync(
+        `../logs/examTime-${year}-${semester}-${syncResultSummaries.time}.json`,
+        JSON.stringify(syncResultDetail, null, 2),
+      );
     }
   }
 
@@ -95,7 +101,10 @@ export class SyncSchedule {
       const syncResultDetail = await this.syncService.syncClassTime({ year, semester, classtimes });
       const syncResultSummaries = summarizeSyncResults(syncResultDetail);
       await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2));
-      this.winstonLogger.log('info', JSON.stringify(syncResultDetail, null, 2));
+      fs.writeFileSync(
+        `../logs/classTime-${year}-${semester}-${syncResultSummaries.time}.json`,
+        JSON.stringify(syncResultDetail, null, 2),
+      );
     }
   }
 
@@ -111,7 +120,10 @@ export class SyncSchedule {
       const syncResultDetail = await this.syncService.syncTakenLecture({ year, semester, attend: takenLectures });
       const syncResultSummaries = summarizeSyncResults(syncResultDetail);
       await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2));
-      this.winstonLogger.log('info', JSON.stringify(syncResultDetail, null, 2));
+      fs.writeFileSync(
+        `../logs/taken_lecture-${year}-${semester}-${syncResultSummaries.time}.json`,
+        JSON.stringify(syncResultDetail, null, 2),
+      );
     }
   }
 
@@ -125,7 +137,7 @@ export class SyncSchedule {
     const syncResultDetail = await this.syncService.syncDegree(degrees);
     const syncResultSummaries = summarizeSyncResults(syncResultDetail);
     await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2));
-    this.winstonLogger.log('info', JSON.stringify(syncResultDetail, null, 2));
+    fs.writeFileSync(`../logs/degree-${syncResultSummaries.time}.json`, JSON.stringify(syncResultDetail, null, 2));
   }
 
   @Cron(CronExpression.EVERY_HOUR, {
@@ -138,7 +150,7 @@ export class SyncSchedule {
     const syncResultDetail = await this.syncService.syncOtherMajor(majors);
     const syncResultSummaries = summarizeSyncResults(syncResultDetail);
     await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2));
-    this.winstonLogger.log('info', JSON.stringify(syncResultDetail, null, 2));
+    fs.writeFileSync(`../logs/major-${syncResultSummaries.time}.json`, JSON.stringify(syncResultDetail, null, 2));
   }
 
   @Cron(CronExpression.EVERY_WEEKEND, {
