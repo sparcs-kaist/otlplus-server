@@ -33,10 +33,12 @@ export class AuthController {
     if (req.user) {
       return res.redirect(next ?? '/');
     }
-    req.session['next'] = next ?? '/';
+    // req.session['next'] = next ?? '/';
+    res.cookie('next', next ?? '/', { httpOnly: true, secure: true, sameSite: 'strict' });
     const request_url = req.get('host') ?? 'otl.kaist.ac.kr';
     const { url, state } = this.ssoClient.get_login_params(request_url);
-    req.session['sso_state'] = state;
+    res.cookie('sso_state', state, { httpOnly: true, secure: true, sameSite: 'strict' });
+    // req.session['sso_state'] = state;
     if (social_login === '0') {
       return res.redirect(url + '&social_enabled=0&show_disabled_button=0');
     }
@@ -48,10 +50,12 @@ export class AuthController {
   async loginCallback(
     @Query('state') state: string,
     @Query('code') code: string,
+    @Req() req: IAuth.Request,
     @Session() session: Record<string, any>,
     @Res() response: IAuth.Response,
   ): Promise<void> {
-    const stateBefore = session['sso_state'];
+    const stateBefore = req.cookies['sso_state'];
+    // const stateBefore = session['sso_state'];
     if (!stateBefore || stateBefore != state) {
       response.redirect('/error/invalid-login');
     }
@@ -67,7 +71,7 @@ export class AuthController {
     call import_student_lectures(studentId)
      */
 
-    const next_url = session['next'] ?? '/';
+    const next_url = req.cookies['next'] ?? '/';
     response.redirect(next_url);
   }
 
