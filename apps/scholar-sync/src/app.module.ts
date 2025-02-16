@@ -8,9 +8,19 @@ import { AuthModule } from '@otl/scholar-sync/modules/auth/auth.module';
 import { AuthConfig } from '@otl/scholar-sync/modules/auth/auth.config';
 import { AuthGuard } from '@otl/scholar-sync/modules/auth/guard/auth.guard';
 import { ScheduleModule } from '@nestjs/schedule';
+import { WinstonModule } from 'nest-winston';
+import settings from '@otl/scholar-sync/settings';
 
 @Module({
-  imports: [PrismaModule, SyncModule, AuthModule, ScheduleModule.forRoot()],
+  imports: [
+    PrismaModule,
+    SyncModule,
+    AuthModule,
+    ScheduleModule.forRoot(),
+    WinstonModule.forRootAsync({
+      useFactory: () => settings().loggingConfig(),
+    }),
+  ],
   controllers: [AppController],
   providers: [
     AppService,

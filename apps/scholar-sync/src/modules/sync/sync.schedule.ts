@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ScholarApiClient } from '@otl/scholar-sync/clients/scholar/scholar.api.client';
 import { SyncService } from '@otl/scholar-sync/modules/sync/sync.service';
@@ -6,12 +6,14 @@ import { putPreviousSemester, summarizeSyncResults } from '@otl/scholar-sync/mod
 import { SyncType } from '@prisma/client';
 import { ISync } from '@otl/api-interface/src/interfaces/ISync';
 import { SlackNotiService } from '@otl/scholar-sync/clients/slack/slackNoti.service';
+import { WINSTON_MODULE_PROVIDER, WinstonLogger } from 'nest-winston';
 
 @Injectable()
 export class SyncSchedule {
   private readonly logger = new Logger(SyncSchedule.name);
 
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly winstonLogger: WinstonLogger,
     private readonly scholarApiClient: ScholarApiClient,
     private readonly syncService: SyncService,
     private readonly slackNoti: SlackNotiService,
@@ -34,7 +36,7 @@ export class SyncSchedule {
       });
       const syncResultSummaries = summarizeSyncResults(syncResults);
       await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2));
-      this.logger.log(JSON.stringify(syncResults, null, 2));
+      this.winstonLogger.log(JSON.stringify(syncResults, null, 2));
       await Promise.all([
         this.syncExamTime(year, semester),
         this.syncClassTime(year, semester),
@@ -63,7 +65,7 @@ export class SyncSchedule {
       });
       const syncResultSummaries = summarizeSyncResults(syncResultDetails);
       await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2));
-      this.logger.log(JSON.stringify(syncResultDetails, null, 2));
+      this.winstonLogger.log(JSON.stringify(syncResultDetails, null, 2));
     }
   }
 
@@ -79,7 +81,7 @@ export class SyncSchedule {
       const syncResultDetail = await this.syncService.syncExamTime({ year, semester, examtimes });
       const syncResultSummaries = summarizeSyncResults(syncResultDetail);
       await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2));
-      this.logger.log(JSON.stringify(syncResultDetail, null, 2));
+      this.winstonLogger.log(JSON.stringify(syncResultDetail, null, 2));
     }
   }
 
@@ -95,7 +97,7 @@ export class SyncSchedule {
       const syncResultDetail = await this.syncService.syncClassTime({ year, semester, classtimes });
       const syncResultSummaries = summarizeSyncResults(syncResultDetail);
       await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2));
-      this.logger.log(JSON.stringify(syncResultDetail, null, 2));
+      this.winstonLogger.log(JSON.stringify(syncResultDetail, null, 2));
     }
   }
 
@@ -111,7 +113,7 @@ export class SyncSchedule {
       const syncResultDetail = await this.syncService.syncTakenLecture({ year, semester, attend: takenLectures });
       const syncResultSummaries = summarizeSyncResults(syncResultDetail);
       await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2));
-      this.logger.log(JSON.stringify(syncResultDetail, null, 2));
+      this.winstonLogger.log(JSON.stringify(syncResultDetail, null, 2));
     }
   }
 
@@ -125,7 +127,7 @@ export class SyncSchedule {
     const syncResultDetail = await this.syncService.syncDegree(degrees);
     const syncResultSummaries = summarizeSyncResults(syncResultDetail);
     await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2));
-    this.logger.log(JSON.stringify(syncResultDetail, null, 2));
+    this.winstonLogger.log(JSON.stringify(syncResultDetail, null, 2));
   }
 
   @Cron(CronExpression.EVERY_HOUR, {
@@ -138,7 +140,7 @@ export class SyncSchedule {
     const syncResultDetail = await this.syncService.syncOtherMajor(majors);
     const syncResultSummaries = summarizeSyncResults(syncResultDetail);
     await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2));
-    this.logger.log(JSON.stringify(syncResultDetail, null, 2));
+    this.winstonLogger.log(JSON.stringify(syncResultDetail, null, 2));
   }
 
   @Cron(CronExpression.EVERY_WEEKEND, {
