@@ -112,7 +112,7 @@ export class SyncService {
     const lectureByCode = new Map(data.lectures.map((l) => [l.SUBJECT_NO, l] as const));
     const existingCourses = await this.syncRepository.getExistingCoursesByNewCodes(Array.from(lectureByCode.keys()));
     await this.slackNoti.sendSyncNoti(`Found ${existingCourses.length} existing related courses, updating...`);
-    await this.syncRepository.logSyncStartPoint(SyncType.COURSE, data.year, data.semester);
+    const courseStartLog = await this.syncRepository.logSyncStartPoint(SyncType.COURSE, data.year, data.semester);
 
     const courseMap = new Map(existingCourses.map((l) => [l.new_code, l] as const));
     for (const [new_code, lecture] of lectureByCode.entries()) {
@@ -141,7 +141,11 @@ export class SyncService {
       `Course created: ${courseSyncResultDetail.created.length}, updated: ${courseSyncResultDetail.updated.length}, errors: ${courseSyncResultDetail.errors.length}`,
     );
     const courseEndTime = new Date();
-    await this.syncRepository.logSyncEndPoint(startLog.id, courseEndTime, summarizeSyncResult(courseSyncResultDetail));
+    await this.syncRepository.logSyncEndPoint(
+      courseStartLog.id,
+      courseEndTime,
+      summarizeSyncResult(courseSyncResultDetail),
+    );
 
     // Professor update
     const professorSyncResultDetail = {
@@ -155,7 +159,7 @@ export class SyncService {
     const existingProfessors = await this.syncRepository.getExistingProfessorsById(data.charges.map((c) => c.PROF_ID));
     const professorMap = new Map(existingProfessors.map((p) => [p.professor_id, p]));
     await this.slackNoti.sendSyncNoti(`Found ${existingProfessors.length} existing related professors, updating...`);
-    await this.syncRepository.logSyncStartPoint(SyncType.PROFESSOR, data.year, data.semester);
+    const professorStartLog = await this.syncRepository.logSyncStartPoint(SyncType.PROFESSOR, data.year, data.semester);
     const processedProfessorIds = new Set<number>();
     for (const charge of data.charges) {
       try {
@@ -190,7 +194,7 @@ export class SyncService {
     );
     const professorEndTime = new Date();
     await this.syncRepository.logSyncEndPoint(
-      startLog.id,
+      professorStartLog.id,
       professorEndTime,
       summarizeSyncResult(professorSyncResultDetail),
     );
@@ -203,7 +207,8 @@ export class SyncService {
       semester: data.semester,
     });
     await this.slackNoti.sendSyncNoti(`Found ${existingLectures.length} existing lectures, updating...`);
-    await this.syncRepository.logSyncStartPoint(SyncType.LECTURE, data.year, data.semester);
+    const lectureStartLog = await this.syncRepository.logSyncStartPoint(SyncType.LECTURE, data.year, data.semester);
+    const chargeStartLog = await this.syncRepository.logSyncStartPoint(SyncType.CHARGE, data.year, data.semester);
     const notExistingLectures = new Set(existingLectures.map((l) => l.id));
     for (const lecture of data.lectures) {
       try {
@@ -280,9 +285,14 @@ export class SyncService {
     );
     const lectureEndTime = new Date();
     await this.syncRepository.logSyncEndPoint(
-      startLog.id,
+      lectureStartLog.id,
       lectureEndTime,
       summarizeSyncResult(lecturesSyncResultDetail),
+    );
+    await this.syncRepository.logSyncEndPoint(
+      chargeStartLog.id,
+      lectureEndTime,
+      summarizeSyncResult(chargesSyncResultDetail),
     );
     result.results.push(departmentSyncResultDetail);
     result.results.push(courseSyncResultDetail);
