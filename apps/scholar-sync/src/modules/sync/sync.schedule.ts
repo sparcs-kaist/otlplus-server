@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { SyncService } from '@otl/scholar-sync/modules/sync/sync.service';
 import { ScholarApiClient } from '@otl/scholar-sync/clients/scholar/scholar.api.client';
+import { SyncService } from '@otl/scholar-sync/modules/sync/sync.service';
 import { putPreviousSemester } from '@otl/scholar-sync/modules/sync/util';
 
 @Injectable()
@@ -109,7 +109,6 @@ export class SyncSchedule {
   })
   async syncDegree() {
     const degrees = await this.scholarApiClient.getDegree();
-    console.log(degrees);
     await this.syncService.syncDegree(degrees);
   }
 

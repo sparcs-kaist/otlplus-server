@@ -401,38 +401,38 @@ export namespace IScholar {
     /** 학번 */
     @Transform(({ value }) => parseInt(value))
     @IsInt()
-    student_no!: number;
+    STUDENT_NO!: number;
 
     /** 학과 숫자 id */
     @Transform(({ value }) => parseInt(value))
     @IsInt()
-    dept_id!: number;
+    DEPT_ID!: number;
     /** ? 학년 구분이라고 보임. */
     @Transform(({ value }) => parseInt(value))
     @IsInt()
-    course_sect!: number;
+    COURSE_SECT!: number;
 
     /** ? 뭔지 모르겠음. */
     @Transform(({ value }) => parseInt(value))
     @IsInt()
-    status_sect!: number;
+    STATUS_SECT!: number;
 
     /** ? 뭔지 모르겠음. 안 쓰임 */
     @IsString()
-    degree_sect!: string;
+    DEGREE_SECT!: string;
 
     /** ? 뭔지 모르겠음. 안 쓰임 */
     @IsString()
-    e_degree_sname: string;
+    E_DEGREE_SNAME: string;
 
     /** ? 뭔지 모르겠음. 안 쓰임 */
     @IsString()
-    e_degree_name: string;
+    E_DEGREE_NAME: string;
 
     /** ? 뭔지 모르겠음. 안 쓰임 */
     @IsString()
     @IsIn(['N', 'Y'])
-    manual_flag: string;
+    MANUAL_FLAG: string;
   }
 
   export class ScholarOtherMajorType {

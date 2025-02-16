@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma.service';
+import { STAFF_ID } from '@otl/api-interface/src';
 import {
   EDepartment,
   ELecture,
@@ -9,14 +9,13 @@ import {
   EUser,
   EUserProfile,
 } from '@otl/api-interface/src/entities';
-import { STAFF_ID } from '@otl/api-interface/src';
-import { DepartmentInfo } from '@otl/scholar-sync/common/domain/DepartmentInfo';
-import { CourseInfo } from '@otl/scholar-sync/common/domain/CourseInfo';
-import { ProfessorInfo } from '@otl/scholar-sync/common/domain/ProfessorInfo';
-import { LectureInfo } from '@otl/scholar-sync/common/domain/LectureInfo';
-import { ExamtimeInfo } from '@otl/scholar-sync/common/domain/ExamTimeInfo';
 import { ClassTimeInfo } from '@otl/scholar-sync/common/domain/ClassTimeInfo';
-import { session_userprofile } from '@prisma/client';
+import { CourseInfo } from '@otl/scholar-sync/common/domain/CourseInfo';
+import { DepartmentInfo } from '@otl/scholar-sync/common/domain/DepartmentInfo';
+import { ExamtimeInfo } from '@otl/scholar-sync/common/domain/ExamTimeInfo';
+import { LectureInfo } from '@otl/scholar-sync/common/domain/LectureInfo';
+import { ProfessorInfo } from '@otl/scholar-sync/common/domain/ProfessorInfo';
+import { PrismaService } from '../prisma.service';
 
 @Injectable()
 export class SyncRepository {

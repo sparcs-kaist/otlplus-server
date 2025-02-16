@@ -1,19 +1,19 @@
-import { SyncRepository } from '@otl/scholar-sync/prisma/repositories/sync.repository';
-import { SlackNotiService } from '@otl/scholar-sync/clients/slack/slackNoti.service';
-import { EDepartment, ELecture, EProfessor, EReview, ETakenLecture, EUser } from '@otl/api-interface/src/entities';
 import { Injectable, Logger } from '@nestjs/common';
-import { review_review } from '@prisma/client';
-import { DepartmentInfo } from '@otl/scholar-sync/common/domain/DepartmentInfo';
-import { CourseInfo } from '@otl/scholar-sync/common/domain/CourseInfo';
-import { ProfessorInfo } from '@otl/scholar-sync/common/domain/ProfessorInfo';
-import { LectureInfo } from '@otl/scholar-sync/common/domain/LectureInfo';
-import { ExamtimeInfo } from '@otl/scholar-sync/common/domain/ExamTimeInfo';
-import { ClassTimeInfo } from '@otl/scholar-sync/common/domain/ClassTimeInfo';
+import { EDepartment, ELecture, EProfessor, EReview, ETakenLecture, EUser } from '@otl/api-interface/src/entities';
 import { ESemester } from '@otl/api-interface/src/entities/ESemester';
 import { IScholar } from '@otl/scholar-sync/clients/scholar/IScholar';
-import { groupBy, normalizeArray } from '@otl/scholar-sync/modules/sync/util';
+import { SlackNotiService } from '@otl/scholar-sync/clients/slack/slackNoti.service';
+import { ClassTimeInfo } from '@otl/scholar-sync/common/domain/ClassTimeInfo';
+import { CourseInfo } from '@otl/scholar-sync/common/domain/CourseInfo';
 import { DegreeInfo } from '@otl/scholar-sync/common/domain/DegreeInfo';
+import { DepartmentInfo } from '@otl/scholar-sync/common/domain/DepartmentInfo';
+import { ExamtimeInfo } from '@otl/scholar-sync/common/domain/ExamTimeInfo';
+import { LectureInfo } from '@otl/scholar-sync/common/domain/LectureInfo';
 import { APPLICATION_TYPE, MajorInfo } from '@otl/scholar-sync/common/domain/MajorInfo';
+import { ProfessorInfo } from '@otl/scholar-sync/common/domain/ProfessorInfo';
+import { groupBy, normalizeArray } from '@otl/scholar-sync/modules/sync/util';
+import { SyncRepository } from '@otl/scholar-sync/prisma/repositories/sync.repository';
+import { review_review } from '@prisma/client';
 
 @Injectable()
 export class SyncService {
@@ -616,7 +616,7 @@ export class SyncService {
     };
 
     // 1. Collect all student numbers and map them to their degree info
-    const studentIds = Array.from(new Set(data.map((d) => `${d.student_no}`)));
+    const studentIds = Array.from(new Set(data.map((d) => `${d.STUDENT_NO}`)));
     const studentDegreeMap = normalizeArray<DegreeInfo>(
       data.map((d) => DegreeInfo.deriveDegreeInfo(d)),
       (d) => `${d.student_no}`,
@@ -631,12 +631,19 @@ export class SyncService {
     // Within each 1,000-chunk, we’ll limit concurrency to 20
     const CONCURRENCY_LIMIT = 10;
 
+    const currentSemesterYear = (await this.syncRepository.getDefaultSemester()).year;
+    const updateYearThreshold = currentSemesterYear - 20;
+    const departments = await this.syncRepository.getDepartments();
+    const departmentMap = normalizeArray<EDepartment.Basic>(departments, (d) => d.id);
+
     const toUpdate = existingUsers
       .filter((user) => {
         const degreeInfo = studentDegreeMap[user.student_id];
         if (!degreeInfo) return false;
         else return !DegreeInfo.equals(degreeInfo, user);
       })
+      .filter((user) => Number(user.student_id.slice(0, 4)) >= updateYearThreshold)
+      .filter((user) => departmentMap[studentDegreeMap[user.student_id].dept_id])
       .map((user) => {
         const degreeInfo = studentDegreeMap[user.student_id];
         return {
@@ -645,30 +652,18 @@ export class SyncService {
         };
       });
 
+    console.log(toUpdate);
+
     for (let i = 0; i < toUpdate.length; i += BATCH_SIZE) {
       // Take a batch of up to 1,000 users
-      const chunk = existingUsers.slice(i, i + BATCH_SIZE);
-
-      // Map the chunk to the update payload
-      const toUpdate = chunk
-        .map((user) => {
-          const degreeInfo = studentDegreeMap[user.student_id];
-          if (!degreeInfo) return null;
-
-          return {
-            userId: user.id,
-            departmentId: degreeInfo.dept_id,
-          };
-        })
-        .filter(Boolean) as { userId: number; departmentId: number }[];
-
-      for (let j = 0; j < toUpdate.length; j += CONCURRENCY_LIMIT) {
-        const concurrencyChunk = toUpdate.slice(j, j + CONCURRENCY_LIMIT);
+      const chunk = toUpdate.slice(i, i + this.BATCH_SIZE);
+      for (let j = 0; j < chunk.length; j += CONCURRENCY_LIMIT) {
+        const concurrencyChunk = chunk.slice(j, j + CONCURRENCY_LIMIT);
 
         await Promise.all(
           concurrencyChunk.map(async (item) => {
             try {
-              await this.syncRepository.updateUserDepartment(item.userId, item.departmentId);
+              this.syncRepository.updateUserDepartment(item.userId, item.departmentId);
               result.updated.push(item);
             } catch (error) {
               result.errors.push(item);
@@ -708,12 +703,14 @@ export class SyncService {
     const majorData = groupBy<MajorInfo<typeof APPLICATION_TYPE.MAJOR>, string>(
       data
         .filter((d) => d.APPLICATION_TYPE === '복수전공신청')
+        .filter((d) => departmentMap[d.ID]?.id)
         .map((d) => MajorInfo.deriveMajorInfo<typeof APPLICATION_TYPE.MAJOR>(d, APPLICATION_TYPE.MAJOR, departmentMap)),
       (d) => `${d.student_id}`,
     );
     const minorData = groupBy<MajorInfo<typeof APPLICATION_TYPE.MINOR>, string>(
       data
         .filter((d) => d.APPLICATION_TYPE === '부전공신청')
+        .filter((d) => departmentMap[d.ID]?.id)
         .map((d) => MajorInfo.deriveMajorInfo<typeof APPLICATION_TYPE.MINOR>(d, APPLICATION_TYPE.MINOR, departmentMap)),
       (d) => `${d.student_id}`,
     );
@@ -721,14 +718,19 @@ export class SyncService {
     // get users with majors
     const existingUsersWithMajors: EUser.WithMajors[] =
       await this.syncRepository.getUsersWithMajorsByStudentIds(studentIds);
-    const existingUsersWithMajorsMap = groupBy(existingUsersWithMajors, (user) => user.id);
+    const existingUsersWithMajorsMap = normalizeArray(existingUsersWithMajors, (user) => user.id);
     const existingUsersWithMinors: EUser.WithMinors[] =
       await this.syncRepository.getUsersWithMinorsByStudentIds(studentIds);
-    const existingUsersWithMinorsMap = groupBy(existingUsersWithMinors, (user) => user.id);
+    const existingUsersWithMinorsMap = normalizeArray(existingUsersWithMinors, (user) => user.id);
+
+    const currentSemesterYear = (await this.syncRepository.getDefaultSemester()).year;
+    const updateYearThreshold = currentSemesterYear - 15;
+    console.log(updateYearThreshold);
 
     const toUpdate = {
       major: existingUsersWithMajors
         .filter((user) => {
+          if (Number(user.student_id.slice(0, 4)) < updateYearThreshold) return false;
           const majorInfo = majorData[user.student_id];
           if (!majorInfo) return false;
           else return !MajorInfo.equals(majorInfo, user);
@@ -742,6 +744,7 @@ export class SyncService {
         }),
       minor: existingUsersWithMinors
         .filter((user) => {
+          if (Number(user.student_id.slice(0, 4)) < updateYearThreshold) return false;
           const minorInfo = minorData[user.student_id];
           if (!minorInfo) return false;
           else return !MajorInfo.equals(minorInfo, user);
@@ -755,13 +758,16 @@ export class SyncService {
         }),
     };
 
+    console.log(toUpdate);
+
     const majorUpdate = {
       add: [] as { userId: number; departmentId: number }[],
       remove: [] as { userId: number; departmentId: number }[],
     };
     toUpdate.major.forEach((userMajorInfo) => {
+      console.log(userMajorInfo);
       const userId = userMajorInfo.userId;
-      const existingMajorInfo = existingUsersWithMajorsMap[userId];
+      const existingMajorInfo = existingUsersWithMajorsMap[userId].session_userprofile_majors;
       const majorInfoList = userMajorInfo.majorInfoList;
 
       // 기존 정보와 새로운 정보를 `department_id` 기준으로 비교
@@ -782,6 +788,7 @@ export class SyncService {
           return { userId: userId, departmentId: m.department_id };
         });
 
+      // console.log('userId', userId, 'toAdd', toAdd, 'toRemove', toRemove);
       if (toAdd.length > 0) {
         majorUpdate.add = majorUpdate.add.concat(toAdd);
       }
@@ -789,15 +796,16 @@ export class SyncService {
         majorUpdate.remove = majorUpdate.remove.concat(toRemove);
       }
     });
-
     const minorUpdate = {
       add: [] as { userId: number; departmentId: number }[],
       remove: [] as { userId: number; departmentId: number }[],
     };
     toUpdate.minor.forEach((userMinorInfo) => {
+      console.log(userMinorInfo);
       const userId = userMinorInfo.userId;
-      const existingMinorInfo = existingUsersWithMinorsMap[userId];
+      const existingMinorInfo = existingUsersWithMinorsMap[userId].session_userprofile_minors;
       const minorInfoList = userMinorInfo.minorInfoList;
+      // console.log('existingMinorInfo', existingMinorInfo, 'minorInfoList', minorInfoList);
 
       // 기존 정보와 새로운 정보를 `department_id` 기준으로 비교
       const existingSet = new Set(existingMinorInfo.map((m) => m.department_id));
@@ -816,7 +824,7 @@ export class SyncService {
         .map((m) => {
           return { userId: userId, departmentId: m.department_id };
         });
-
+      // console.log('userId', userId, 'toAdd', toAdd, 'toRemove', toRemove);
       if (toAdd.length > 0) {
         minorUpdate.add = minorUpdate.add.concat(toAdd);
       }
@@ -854,21 +862,37 @@ export class SyncService {
           const concurrencyChunk = chunk.slice(j, j + this.CONCURRENCY_LIMIT);
 
           // Parallel update each sub-chunk
-          await Promise.all(
-            concurrencyChunk.map(async (item) => {
-              try {
-                // Your single-row update method
-                if (update === majorUpdate) {
-                  await this.syncRepository.deleteUserMajor(item.userId, item.departmentId);
-                } else {
-                  await this.syncRepository.deleteUserMinor(item.userId, item.departmentId);
-                }
-                result.updated.push(item);
-              } catch (error) {
-                result.errors.push(item);
+          // for (let item of concurrencyChunk){
+          //   try {
+          //     // Your single-row update method
+          //     if (update === majorUpdate) {
+          //       console.log(item.userId, item.departmentId)
+          //       await this.syncRepository.deleteUserMajor(item.userId, item.departmentId);
+          //     } else {
+          //       console.log(item.userId, item.departmentId)
+          //       await this.syncRepository.deleteUserMinor(item.userId, item.departmentId);
+          //     }
+          //     result.updated.push(item);
+          //   } catch (error) {
+          //     result.errors.push(item);
+          //   }
+          // }
+
+          concurrencyChunk.map(async (item) => {
+            try {
+              // Your single-row update method
+              if (update === majorUpdate) {
+                console.log(item.userId, item.departmentId);
+                await this.syncRepository.deleteUserMajor(item.userId, item.departmentId);
+              } else {
+                console.log(item.userId, item.departmentId);
+                await this.syncRepository.deleteUserMinor(item.userId, item.departmentId);
               }
-            }),
-          );
+              result.updated.push(item);
+            } catch (error) {
+              result.errors.push(item);
+            }
+          });
         }
       }
     }
