@@ -1,12 +1,13 @@
 import { Type } from 'class-transformer';
 import { IsInt, IsString } from 'class-validator';
 
+import { IDepartment } from '@otl/api-interface/src';
+import { ICourse } from '@otl/api-interface/src/interfaces/ICourse';
+import { IProfessor } from '@otl/api-interface/src/interfaces/IProfessor';
+import { ITimetable } from '@otl/api-interface/src/interfaces/ITimetable';
 import { Transform } from 'class-transformer';
 import { IsNumber, IsOptional } from 'class-validator';
-import { ICourse } from '@otl/api-interface/src/interfaces/ICourse';
-import { ITimetable } from '@otl/api-interface/src/interfaces/ITimetable';
-import { IProfessor } from '@otl/api-interface/src/interfaces/IProfessor';
-import { IDepartment } from '@otl/api-interface/src';
+import { TimeBlock } from './constants';
 
 export namespace ILecture {
   export interface Classtime {
@@ -118,6 +119,24 @@ export namespace ILecture {
     classTime: Classtime;
     department: IDepartment.Basic;
   }
+
+  export interface Summary{
+	  id: number; //lecture.id
+	  
+	  title: string;
+	  title_en: string;
+	  professor_name: string; // 여러명일 경우 join쳐서 줌
+	  professor_name_en: string;
+	  classroom: string;
+	  classroom_en: string;
+	  
+	  timeBlocks: TimeBlock[]
+  }
+  
+  export interface Detail2 extends Detail{
+		// 원래 detail
+		timeBlocks: TimeBlock[]    
+	}
 
   export class QueryDto extends ICourse.Query {
     @IsOptional()

@@ -18,3 +18,6 @@ export * from './IDepartment';
 export * from './validators.decorator'
 export * from './constants'
 export * from './utils'
+export * from './IMeeting';
+export * from './IPersonal';
+export * from './IFriend';

@@ -1,8 +1,9 @@
+import { ILecture } from '@otl/api-interface/src/interfaces/ILecture';
+import { _PROHIBITED_FIELD_PATTERN, OrderDefaultValidator } from '@otl/api-interface/src/interfaces/validators.decorator';
 import { Transform, Type } from 'class-transformer';
 import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
-import { _PROHIBITED_FIELD_PATTERN, OrderDefaultValidator } from '@otl/api-interface/src/interfaces/validators.decorator';
-import { ILecture } from '@otl/api-interface/src/interfaces/ILecture';
-
+import { IMeeting } from './IMeeting';
+import { IPersonal } from './IPersonal';
 
 export const TIMETABLE_MAX_LIMIT = 50;
 
@@ -26,6 +27,23 @@ export namespace ITimetable {
     lectures: ILecture.Detail[] | null | undefined;
     arrange_order: number;
   }
+
+  export interface Summary{
+		id:number | null; // null 이면 학사시간표
+		arrange_order : number ; // 학사시간표이면 0
+		lectures: ILecture.Summary[] ;
+		personals: IPersonal.Block[] ;
+		meetings: IMeeting.Result[] ;
+		
+	}
+	
+	export interface Response2{
+		id: number;
+    lectures: ILecture.Detail2[];
+    personals: IPersonal.Block[] ;
+		meetings: IMeeting.Result[] ;
+    arrange_order: number;
+	}
 
   export class QueryDto {
     @IsOptional()
