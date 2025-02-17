@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { ELecture } from '@otl/api-interface/src/entities/ELecture';
+import { ILecture } from '@otl/api-interface/src/interfaces';
 import { Prisma, session_userprofile } from '@prisma/client';
 import { applyOffset, applyOrder } from '@src/common/utils/search.utils';
 import { groupBy } from '../../common/utils/method.utils';
 import { PrismaService } from '../prisma.service';
 import { CourseRepository } from './course.repository';
-import { ELecture } from '@otl/api-interface/src/entities/ELecture';
-import { ILecture } from '@otl/api-interface/src/interfaces';
 
 @Injectable()
 export class LectureRepository {

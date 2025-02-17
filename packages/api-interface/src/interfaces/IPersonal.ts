@@ -1,4 +1,4 @@
-import { TimeBlock } from "./constants";
+import { TimeBlock, TimeTableColorEnum } from "./constants";
 
 export namespace IPersonal {
 	export interface Block{
@@ -11,5 +11,6 @@ export namespace IPersonal {
 		timeBlocks : TimeBlock[];
 		place: string|null; // 장소
 		description: string|null; // 설명
+		color: TimeTableColorEnum;
 	}
 }

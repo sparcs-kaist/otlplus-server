@@ -9,6 +9,8 @@ export namespace IMeeting {
 		id: number;
 		year: number;
         semester: SemesterEnum;
+		begin: number;
+		end: number;
 		days: TimeBlockDay[];
 		
 		title: string;

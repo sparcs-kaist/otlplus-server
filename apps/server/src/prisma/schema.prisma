@@ -300,6 +300,12 @@ model session_userprofile {
   support_rate                          support_rate[]
   timetable_timetable                   timetable_timetable[]
   timetable_wishlist                    timetable_wishlist?
+  personal_block                        personal_block[]
+  meeting_member                        meeting_member[]
+  meeting_leading_groups                meeting_group[]
+
+  friend_friend_user                    friend_friend[] @relation("friend_friend_user")
+  friend_friend_friend                  friend_friend[] @relation("friend_friend_friend")
 
   @@index([department_id], map: "session_userprofile_department_id_fkey")
   @@index([student_id], map: "session_userprofile_student_id_index")
@@ -649,6 +655,7 @@ model timetable_timetable {
   arrange_order                Int                            @db.SmallInt
   session_userprofile          session_userprofile            @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "timetable_timetable_user_id_0d214170_fk_session_userprofile_id")
   timetable_timetable_lectures timetable_timetable_lectures[]
+  personal_block personal_block[]
 
   @@index([arrange_order], map: "timetable_timetable_arrange_order_84c8935c")
   @@index([semester], map: "timetable_timetable_semester_d8ce5d37_uniq")
@@ -870,4 +877,113 @@ enum SyncType {
   CLASSTIME
   TAKEN_LECTURES
   CHARGE
+}
+
+model personal_block{ 
+  id Int @id @default(autoincrement())
+  year Int
+  semester Int 
+  user_id Int // 1(session_userprofile) : N(personal_block)
+
+  title String @db.VarChar(20)
+  place String? @db.VarChar(100)
+  description String? @db.VarChar(100)
+  color Int
+  
+  timetable_id Int? // 1(timetable) : N(personal_block)
+  // TODO: user_id, timetable_id foreign key 추가 필요
+  session_userprofile session_userprofile @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "personal_block_user_id_fk_session_userprofile_id")
+  timetable_timetable timetable_timetable? @relation(fields: [timetable_id], references: [id], onUpdate: Restrict, map: "personal_block_timetable_id_fk_timetable_id")
+  personal_timeblocks personal_timeblock[]
+
+}
+
+model personal_timeblock{
+  id Int @id @default(autoincrement())
+  day Int?
+  weekday Int? // day 와 weekday 중 하나의 값을 가짐
+  time_index Int
+  personal_block_id Int // 1(personal_block) : N(personal_timeblock)
+  // TODO: personal_block_id foreign key 추가 필요
+  personal_block personal_block @relation(fields: [personal_block_id], references: [id], onUpdate: Restrict, map: "personal_timeblock_personal_block_id_fk_personal_block_id")
+}
+
+model meeting_group{
+  id Int @id @default(autoincrement())
+  year Int
+  semester Int
+  begin Int
+  end Int
+
+  title String @db.VarChar(20)
+  leader_user_id Int // 리더의 id, 1(session_userprofile) : N(meeting_group)
+  max_member Int
+  
+  members                meeting_member[]
+  result                 meeting_result?          // Optional
+  days                   meeting_group_day[]   
+  
+  // TODO: leader_user_id foreign key 추가 필요
+  leader_session_userprofile session_userprofile @relation(fields: [leader_user_id], references: [id], onUpdate: Restrict, map: "meeting_group_leader_user_id_fk_session_userprofile_id")
+}
+
+model meeting_group_day {
+  id Int @id @default(autoincrement())
+  meeting_group_id Int // 1(meeting_group) : N(meeting_group_day)
+  day Int?
+  weekday Int?
+
+  meeting_group meeting_group @relation(fields: [meeting_group_id], references: [id], onUpdate: Restrict, map: "meeting_group_day_meeting_group_id_fk_meeting_group_id")
+
+}
+
+model meeting_member{
+  id Int @id @default(autoincrement())
+  meeting_group_id Int
+  user_id Int?
+  student_number String @db.VarChar(10)
+  name String @db.VarChar(20)
+
+  meeting_group meeting_group @relation(fields: [meeting_group_id], references: [id], onUpdate: Restrict, map: "meeting_member_meeting_group_id_fk_meeting_group_id")
+  session_userprofile session_userprofile? @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "meeting_member_user_id_fk_session_userprofile_id")
+  timeblocks meeting_member_timeblock[] 
+
+}
+
+model meeting_member_timeblock{
+  id Int @id @default(autoincrement())
+  meeting_member_id Int
+  day Int?
+  weekday Int?
+  meeting_member meeting_member @relation(fields: [meeting_member_id], references: [id], onUpdate: Restrict, map: "meeting_member_timeblock_meeting_member_id_fk_meeting_member_id")
+  is_available Boolean
+}
+
+model meeting_result{
+  id Int @id @default(autoincrement())
+  meeting_group_id Int
+  meeting_group meeting_group @relation(fields: [meeting_group_id], references: [id], onUpdate: Restrict, map: "meeting_result_meeting_group_id_fk_meeting_group_id")
+  timeblocks meeting_result_timeblock[]
+  place String?
+  description String?
+  color Int
+  @@unique([meeting_group_id])
+}
+
+model meeting_result_timeblock{
+  id Int @id @default(autoincrement())
+  meeting_result_id Int
+  day Int
+  weekday Int
+  meeting_result meeting_result @relation(fields: [meeting_result_id], references: [id], onUpdate: Restrict, map: "meeting_result_timeblock_meeting_result_id_fk_meeting_result_id")
+}
+
+model friend_friend{
+  id Int @id @default(autoincrement())
+  user_id Int
+  friend_id Int
+  is_favorite Boolean
+  user session_userprofile @relation("friend_friend_user", fields: [user_id], references: [id], onUpdate: Restrict, map: "friend_relation_user_id_fk_session_userprofile_id")
+  friend session_userprofile @relation("friend_friend_friend", fields: [friend_id], references: [id], onUpdate: Restrict, map: "friend_relation_friend_id_fk_session_userprofile_id")
+  @@unique([user_id, friend_id])
 }
