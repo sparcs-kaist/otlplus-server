@@ -861,23 +861,26 @@ model sync_history {
 }
 
 model papers {
-  id             Int    @id @default(autoincrement())
-  professor_name String @db.VarChar(255)
-  title          String @db.VarChar(300)
-  abstract       String @db.Text
-  keywords       String @db.Text
-  category       String @db.VarChar(100)
-  doi            String @db.VarChar(100)
-  pdf_link       String @db.VarChar(255)
-  xml_link       String @db.VarChar(255)
-  url            String @db.VarChar(255)
+  id           Int                @id @default(autoincrement())
+  professor_id Int
+  title        String             @db.VarChar(300)
+  abstract     String             @db.Text
+  keywords     String             @db.Text
+  category     String             @db.VarChar(100)
+  doi          String             @db.VarChar(100)
+  pdf_link     String             @db.VarChar(255)
+  xml_link     String             @db.VarChar(255)
+  url          String             @db.VarChar(255)
+  professor    prof_names_to_prof @relation(fields: [professor_id], references: [id], onUpdate: Restrict)
 }
 
 model prof_names_to_prof {
   id             Int               @id @default(autoincrement())
-  professor_nmae String            @db.VarChar(255)
+  professor_name String            @db.VarChar(255)
   professor_id   Int
   professor      subject_professor @relation(fields: [professor_id], references: [id], onUpdate: Restrict)
+
+  papers papers[]
 }
 
 enum SyncType {
