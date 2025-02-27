@@ -578,7 +578,7 @@ model subject_professor {
   speech                     Float
   subject_course_professors  subject_course_professors[]
   subject_lecture_professors subject_lecture_professors[]
-  prof_names_to_prof         prof_names_to_prof[]
+  paper_prof_to_subject_prof paper_prof_to_subject_prof[]
 }
 
 model subject_semester {
@@ -860,27 +860,33 @@ model sync_history {
   data      String?
 }
 
-model papers {
-  id           Int                @id @default(autoincrement())
-  professor_id Int
-  title        String             @db.VarChar(300)
-  abstract     String             @db.Text
-  keywords     String             @db.Text
-  category     String             @db.VarChar(100)
-  doi          String             @db.VarChar(100)
-  pdf_link     String             @db.VarChar(255)
-  xml_link     String             @db.VarChar(255)
-  url          String             @db.VarChar(255)
-  professor    prof_names_to_prof @relation(fields: [professor_id], references: [id], onUpdate: Restrict)
+model paper_prof_to_subject_prof {
+  id                   Int               @id @default(autoincrement())
+  subject_professor_id Int
+  paper_professor_id   Int
+  subject_professor    subject_professor @relation(fields: [subject_professor_id], references: [id], onUpdate: Restrict)
+  paper_professor      paper_professor   @relation(fields: [paper_professor_id], references: [id], onUpdate: Restrict)
 }
 
-model prof_names_to_prof {
-  id             Int               @id @default(autoincrement())
-  professor_name String            @db.VarChar(255)
-  professor_id   Int
-  professor      subject_professor @relation(fields: [professor_id], references: [id], onUpdate: Restrict)
+model paper_professor {
+  id                      Int                          @id @default(autoincrement())
+  professor_name          String                       @db.VarChar(255)
+  papers                  paper[]
+  prof_names_to_prof_link paper_prof_to_subject_prof[]
+}
 
-  papers papers[]
+model paper {
+  id           Int             @id @default(autoincrement())
+  professor_id Int
+  title        String          @db.VarChar(300)
+  abstract     String          @db.Text
+  keywords     String          @db.Text
+  category     String          @db.VarChar(100)
+  doi          String          @db.VarChar(100)
+  pdf_link     String          @db.VarChar(255)
+  xml_link     String          @db.VarChar(255)
+  url          String          @db.VarChar(255)
+  professor    paper_professor @relation(fields: [professor_id], references: [id], onUpdate: Restrict)
 }
 
 enum SyncType {
