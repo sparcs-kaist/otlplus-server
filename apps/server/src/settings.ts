@@ -18,6 +18,7 @@ export default () => {
     getVersion: () => getVersion(),
     getStaticConfig: () => staticConfig(),
     getSwaggerConfig: () => getSwaggerConfig(),
+    getDeeplConfig: () => getDeeplConfig(),
   };
 };
 
@@ -128,5 +129,11 @@ const getSwaggerConfig = () => {
 const staticConfig = (): any => {
   return {
     file_path: process.env.DOCKER_DEPLOY === 'true' ? '/var/www/otlplus-server/apps/server/static/' : 'static/',
+  };
+};
+
+const getDeeplConfig = () => {
+  return {
+    apiKey: process.env.DEEPL_API_KEY,
   };
 };

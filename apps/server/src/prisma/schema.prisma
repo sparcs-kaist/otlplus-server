@@ -870,23 +870,26 @@ model paper_prof_to_subject_prof {
 
 model paper_professor {
   id                      Int                          @id @default(autoincrement())
-  professor_name          String                       @db.VarChar(255)
+  professor_name          String?                      @db.VarChar(255)
+  professor_name_en       String?                      @db.VarChar(255)
+  department              String?                      @db.VarChar(255)
   papers                  paper[]
   prof_names_to_prof_link paper_prof_to_subject_prof[]
 }
 
 model paper {
-  id           Int             @id @default(autoincrement())
-  professor_id Int
-  title        String          @db.VarChar(300)
-  abstract     String          @db.Text
-  keywords     String          @db.Text
-  category     String          @db.VarChar(100)
-  doi          String          @db.VarChar(100)
-  pdf_link     String          @db.VarChar(255)
-  xml_link     String          @db.VarChar(255)
-  url          String          @db.VarChar(255)
-  professor    paper_professor @relation(fields: [professor_id], references: [id], onUpdate: Restrict)
+  id             Int              @id @default(autoincrement())
+  professor_id   Int?
+  professor_name String           @db.VarChar(255)
+  title          String?          @db.VarChar(300)
+  abstract       String?          @db.Text
+  keywords       String?          @db.Text
+  category       String?          @db.VarChar(100)
+  doi            String?          @db.VarChar(100)
+  pdf_link       String?          @db.VarChar(255)
+  xml_link       String?          @db.VarChar(255)
+  url            String?          @db.VarChar(255)
+  professor      paper_professor? @relation(fields: [professor_id], references: [id], onUpdate: Restrict)
 }
 
 enum SyncType {
