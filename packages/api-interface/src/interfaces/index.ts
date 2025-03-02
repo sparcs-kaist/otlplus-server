@@ -15,6 +15,7 @@ export * from './IUser';
 export * from './IPlanner';
 export * from './IWishlist';
 export * from './IDepartment';
+export * from './ISync';
 export * from './validators.decorator'
 export * from './constants'
 export * from './utils'
