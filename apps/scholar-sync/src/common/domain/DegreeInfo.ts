@@ -7,8 +7,8 @@ export class DegreeInfo {
 
   public static deriveDegreeInfo(student: IScholar.ScholarDegreeType): DegreeInfo {
     return {
-      student_no: `${student.student_no}`,
-      dept_id: student.dept_id,
+      student_no: `${student.STUDENT_NO}`,
+      dept_id: student.DEPT_ID,
     };
   }
 

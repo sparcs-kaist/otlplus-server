@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma.service';
+import { STAFF_ID } from '@otl/api-interface/src';
 import {
   EDepartment,
   ELecture,
@@ -8,15 +8,16 @@ import {
   ESemester,
   EUser,
   EUserProfile,
+  ESync,
 } from '@otl/api-interface/src/entities';
-import { STAFF_ID } from '@otl/api-interface/src';
-import { DepartmentInfo } from '@otl/scholar-sync/common/domain/DepartmentInfo';
-import { CourseInfo } from '@otl/scholar-sync/common/domain/CourseInfo';
-import { ProfessorInfo } from '@otl/scholar-sync/common/domain/ProfessorInfo';
-import { LectureInfo } from '@otl/scholar-sync/common/domain/LectureInfo';
-import { ExamtimeInfo } from '@otl/scholar-sync/common/domain/ExamTimeInfo';
 import { ClassTimeInfo } from '@otl/scholar-sync/common/domain/ClassTimeInfo';
-import { session_userprofile } from '@prisma/client';
+import { CourseInfo } from '@otl/scholar-sync/common/domain/CourseInfo';
+import { DepartmentInfo } from '@otl/scholar-sync/common/domain/DepartmentInfo';
+import { ExamtimeInfo } from '@otl/scholar-sync/common/domain/ExamTimeInfo';
+import { LectureInfo } from '@otl/scholar-sync/common/domain/LectureInfo';
+import { ProfessorInfo } from '@otl/scholar-sync/common/domain/ProfessorInfo';
+import { PrismaService } from '../prisma.service';
+import { SyncType } from '@prisma/client';
 
 @Injectable()
 export class SyncRepository {
@@ -457,6 +458,27 @@ export class SyncRepository {
           userprofile_id: userId,
           department_id: departmentId,
         },
+      },
+    });
+  }
+
+  async logSyncStartPoint(type: SyncType, year?: number, semester?: number): Promise<ESync.History.Basic> {
+    return this.prisma.sync_history.create({
+      data: {
+        type: type,
+        startTime: new Date(),
+        year: year,
+        semester: semester,
+      },
+    });
+  }
+
+  async logSyncEndPoint(id: number, endTime: Date, data: object) {
+    return this.prisma.sync_history.update({
+      where: { id },
+      data: {
+        endTime: endTime,
+        data: JSON.stringify(data, null, 2),
       },
     });
   }

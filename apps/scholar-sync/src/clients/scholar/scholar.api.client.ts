@@ -11,6 +11,7 @@ import ScholarAttendType = IScholar.ScholarAttendType;
 import ScholarChargeType = IScholar.ScholarChargeType;
 import ScholarDegreeType = IScholar.ScholarDegreeType;
 import ScholarOtherMajorType = IScholar.ScholarOtherMajorType;
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class ScholarApiClient {
@@ -27,21 +28,22 @@ export class ScholarApiClient {
     this.baseUrl = this.syncConfig.scholarUrl;
   }
 
-  private async _get(fullUrl: string, params?: any): Promise<any> {
+  private async _get(path: string, params?: any): Promise<any> {
     try {
       // In the Python code, "verify=False" was used. We can replicate ignoring TLS in axios if needed.
       // But you might not want to do that in production.
+      const fullUrl = `${this.baseUrl}${path}`;
       const response = await axios.get(fullUrl, {
         headers: {
           AUTH_KEY: this.apiKey,
           'Content-Type': 'application/json',
         },
         params: params,
-        // httpsAgent: new https.Agent({ rejectUnauthorized: false }), // if ignoring SSL errors
+        httpsAgent: new https.Agent({ rejectUnauthorized: false }), // if ignoring SSL errors
       });
       return response.data;
     } catch (error) {
-      this.logger.error(`Failed to GET from ${fullUrl}`, error);
+      this.logger.error(`Failed to GET from ${path}`, error);
       throw error;
     }
   }
@@ -53,56 +55,63 @@ export class ScholarApiClient {
     };
     // in python: return _get(f"/charge_type2?{'&'.join(params)}")["OutBlock_1"]
     const data = await this._get(`/charge_type2`, params);
-    return data?.OutBlock_1;
+    // return data?.OutBlock_1;
+    return plainToInstance<ScholarChargeType, any>(ScholarChargeType, (data?.OutBlock_1 as any[]) || []);
   }
 
   async getLectureType(lectureYear?: number, lectureTerm?: number): Promise<ScholarLectureType[]> {
     const params = {
-      lectureYear: lectureYear,
-      lectureTerm: lectureTerm,
+      lecture_year: lectureYear,
+      lecture_term: lectureTerm,
     };
     const data = await this._get(`/lecture_type2`, params);
-    return data?.OutBlock_1;
+    // console.log(data?.OutBlock_1);
+    return plainToInstance<ScholarLectureType, any>(ScholarLectureType, (data?.OutBlock_1 as any[]) || []);
   }
 
   async getExamTimeType(lectureYear?: number, lectureTerm?: number): Promise<ScholarExamtimeType[]> {
     const params = {
-      lectureYear: lectureYear,
-      lectureTerm: lectureTerm,
+      lecture_year: lectureYear,
+      lecture_term: lectureTerm,
     };
     const data = await this._get(`/exam_time_type2`, params);
-    return data?.OutBlock_1;
+    // return data?.OutBlock_1;
+    return plainToInstance<ScholarExamtimeType, any>(ScholarExamtimeType, (data?.OutBlock_1 as any[]) || []);
   }
 
   async getClassTimeType(lectureYear?: number, lectureTerm?: number): Promise<ScholarClasstimeType[]> {
     const params = {
-      lectureYear: lectureYear,
-      lectureTerm: lectureTerm,
+      lecture_year: lectureYear,
+      lecture_term: lectureTerm,
     };
     const data = await this._get(`/time_type2`, params);
-    return data?.OutBlock_1;
+    // return data?.OutBlock_1;
+    return plainToInstance<ScholarClasstimeType, any>(ScholarClasstimeType, (data?.OutBlock_1 as any[]) || []);
   }
 
   async getAttendType(lectureYear?: number, lectureTerm?: number, studentNo?: number): Promise<ScholarAttendType[]> {
     const params = {
-      lectureYear: lectureYear,
-      lectureTerm: lectureTerm,
-      studentNo: studentNo,
+      lecture_year: lectureYear,
+      lecture_term: lectureTerm,
+      student_no: studentNo,
     };
     const data = await this._get(`/attend_type2`, params);
-    return data?.OutBlock_1;
+    // return data?.OutBlock_1;
+    return plainToInstance<ScholarAttendType, any>(ScholarAttendType, (data?.OutBlock_1 as any[]) || []);
   }
 
   async getDegree(studentNo?: number): Promise<ScholarDegreeType[]> {
     const params = {
-      studentNo: studentNo,
+      student_no: studentNo,
     };
     const data = await this._get(`/report_e_degree_k`, params);
-    return data?.OutBlock_1;
+    // return data?.OutBlock_1;
+    return plainToInstance<ScholarDegreeType, any>(ScholarDegreeType, (data?.OutBlock_1 as any[]) || []);
   }
 
   async getKdsStudentsOtherMajor(): Promise<ScholarOtherMajorType[]> {
     const data = await this._get('/kds_students_other_major');
-    return data?.OutBlock_1;
+    // return data?.OutBlock_1;
+    return plainToInstance<ScholarOtherMajorType, any>(ScholarOtherMajorType, (data?.OutBlock_1 as any[]) || []);
   }
 }

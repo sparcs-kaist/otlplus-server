@@ -1,5 +1,5 @@
-import { IScholar } from '@otl/scholar-sync/clients/scholar/IScholar';
 import { EDepartment, EUser } from '@otl/api-interface/src';
+import { IScholar } from '@otl/scholar-sync/clients/scholar/IScholar';
 
 export const APPLICATION_TYPE = {
   MAJOR: '복수전공신청',
@@ -19,12 +19,14 @@ export class MajorInfo<TYPE extends APPLICATION_TYPE> {
     type: T,
     departmentMap: { [key: string]: EDepartment.Basic },
   ): MajorInfo<T> {
-    return {
-      student_id: `${otherMajor.STUDENT_ID}`,
-      department_name: `${otherMajor.ID}`,
-      department_id: departmentMap[otherMajor.ID].id,
-      application_type: otherMajor.APPLICATION_TYPE as T,
-    };
+    if (departmentMap[otherMajor.ID]?.id) {
+      return {
+        student_id: `${otherMajor.STUDENT_ID}`,
+        department_name: `${otherMajor.ID}`,
+        department_id: departmentMap[otherMajor.ID].id,
+        application_type: otherMajor.APPLICATION_TYPE as T,
+      };
+    }
   }
 
   static equals<

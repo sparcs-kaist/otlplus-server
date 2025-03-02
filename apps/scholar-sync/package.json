@@ -22,18 +22,18 @@
     "ts-node": "cross-env NODE_ENV=local node -r ts-node/register -r tsconfig-paths/register "
   },
   "dependencies": {
+    "@nestjs/cli": "^10.0.0",
     "@nestjs/common": "^10.4.15",
     "@nestjs/config": "^3.3.0",
     "@nestjs/core": "^10.4.15",
-    "@nestjs/cli": "^10.0.0",
     "@nestjs/jwt": "^10.2.0",
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.4.15",
     "@nestjs/schedule": "^4.1.2",
     "@nestjs/swagger": "^8.1.0",
+    "@otl/api-interface": "*",
     "@prisma/client": "^6.1.0",
     "@slack/web-api": "^7.8.0",
-    "@otl/api-interface": "*",
     "@types/cookie-parser": "^1.4.8",
     "axios": "^1.7.9",
     "bcrypt": "^5.1.1",
@@ -43,9 +43,12 @@
     "dotenv": "^16.4.7",
     "dotenv-cli": "^8.0.0",
     "moment-timezone": "^0.5.47",
+    "nest-winston": "^1.10.2",
     "qs": "^6.14.0",
     "reflect-metadata": "^0.2.0",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
     "@nestjs/schematics": "^10.0.0",

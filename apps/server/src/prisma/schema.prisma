@@ -848,3 +848,26 @@ model sync_taken_lectures {
   @@unique([student_id, lecture_id])
   @@index([year, semester])
 }
+
+model sync_history {
+  id        Int       @id @default(autoincrement())
+  type      SyncType
+  startTime DateTime  @default(now()) @db.DateTime(0)
+  endTime   DateTime?
+  year      Int?
+  semester  Int?
+  data      String?
+}
+
+enum SyncType {
+  DEPARTMENT
+  COURSE
+  LECTURE
+  PROFESSOR
+  MAJORS
+  DEGREE
+  EXAMTIME
+  CLASSTIME
+  TAKEN_LECTURES
+  CHARGE
+}

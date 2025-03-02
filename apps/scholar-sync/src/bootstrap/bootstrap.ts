@@ -41,29 +41,29 @@ async function bootstrap() {
     }),
   );
   // Logs requests
-  // app.use(
-  //   morgan(':method :url OS/:req[client-os] Ver/:req[client-api-version]', {
-  //     // https://github.com/expressjs/morgan#immediate
-  //     immediate: true,
-  //     stream: {
-  //       write: (message) => {
-  //         console.info(message.trim());
-  //       },
-  //     },
-  //   }),
-  // );
+  app.use(
+    morgan(':method :url OS/:req[client-os] Ver/:req[client-api-version]', {
+      // https://github.com/expressjs/morgan#immediate
+      immediate: true,
+      stream: {
+        write: (message) => {
+          console.info(message.trim());
+        },
+      },
+    }),
+  );
 
   // Logs responses
-  // app.use(
-  //   morgan(':method :url :status :res[content-length] :response-time ms', {
-  //     stream: {
-  //       write: (message) => {
-  //         // console.log(formatMemoryUsage())
-  //         console.info(message.trim());
-  //       },
-  //     },
-  //   }),
-  // );
+  app.use(
+    morgan(':method :url :status :res[content-length] :response-time ms', {
+      stream: {
+        write: (message) => {
+          // console.log(formatMemoryUsage())
+          console.info(message.trim());
+        },
+      },
+    }),
+  );
 
   const document = SwaggerModule.createDocument(app, settings().getSwaggerConfig());
   SwaggerModule.setup('docs', app, document);

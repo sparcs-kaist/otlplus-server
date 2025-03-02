@@ -1,0 +1,39 @@
+FROM node:20 AS build
+
+RUN mkdir -p /var/www/otlplus
+RUN mkdir -p /var/www/otlplus/apps
+RUN mkdir -p /var/www/otlplus/packages
+WORKDIR /var/www/otlplus
+
+COPY package.json yarn.lock* package-lock.json* tsconfig.base.json ./
+COPY ./apps/server/package.json ./apps/server/package.json
+COPY ./apps/scholar-sync/package.json ./apps/scholar-sync/package.json
+COPY ./packages/api-interface/package.json ./packages/api-interface/package.json
+
+RUN yarn workspaces info
+RUN yarn --production
+
+COPY ./apps/server ./apps/server
+COPY ./apps/scholar-sync ./apps/scholar-sync
+COPY ./packages/api-interface ./packages/api-interface
+
+
+RUN yarn workspace @otl/server-nest run client:generate
+RUN yarn workspace @otl/api-interface build
+RUN yarn workspace @otl/scholar-sync run build
+# RUN /usr/local/bin/node-prune
+
+FROM node:20-slim AS server
+RUN apt-get update -y && apt-get install -y openssl
+
+# COPY --from=build /var/www/otlplus/apps/server/dist /var/www/otlplus/apps/server/dist
+# COPY --from=build /var/www/otlplus/apps/server/static /var/www/otlplus/apps/server/static
+COPY --from=build /var/www/otlplus/apps/scholar-sync/dist /var/www/otlplus/apps/scholar-sync/dist
+COPY --from=build /var/www/otlplus/packages/api-interface /var/www/otlplus/packages/api-interface
+COPY --from=build /var/www/otlplus/node_modules /var/www/otlplus/node_modules
+
+# RUN yarn global add pm2
+
+WORKDIR /var/www/otlplus-server/apps/server
+
+EXPOSE 8000

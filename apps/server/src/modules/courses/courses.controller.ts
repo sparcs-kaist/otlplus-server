@@ -5,6 +5,7 @@ import { Public } from '@src/common/decorators/skip-auth.decorator';
 import { CoursesService } from './courses.service';
 import { CourseIdPipe } from '@src/common/pipe/courseId.pipe';
 import { ICourse, ILecture, IReview } from '@otl/api-interface/src/interfaces';
+import ICourseUser = ICourse.ICourseUser;
 
 @Controller('api/courses')
 export class CourseController {
@@ -59,7 +60,7 @@ export class CourseController {
   async readCourse(
     @Param('id', CourseIdPipe) id: number,
     @GetUser() user: session_userprofile,
-  ): Promise<ICourse.ICourseUser.Basic> {
+  ): Promise<ICourseUser.Basic> {
     return await this.coursesService.readCourse(user.id, id);
   }
 }

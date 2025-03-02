@@ -1,14 +1,15 @@
 import { Body, Controller, Get, Logger, Param, Patch, Query } from '@nestjs/common';
 import { SyncService } from '@otl/scholar-sync/modules/sync/sync.service';
-import { SchedulerRegistry } from '@nestjs/schedule';
+import { Cron, SchedulerRegistry } from '@nestjs/schedule';
 import { SyncSchedule } from '@otl/scholar-sync/modules/sync/sync.schedule';
 import { SyncApiKeyAuth } from '@otl/scholar-sync/common/decorators/sync-api-key-auth.decorator';
-import Cron from 'cron';
+import CronTime from 'cron';
 import { ISync } from '@otl/api-interface/src/interfaces/ISync';
+import { Public } from '@otl/scholar-sync/common/decorators/skip-auth.decorator';
 
 @Controller('api/dynamic-sync')
-export class SyncController {
-  private readonly logger = new Logger(SyncController.name);
+export class SyncDynamicController {
+  private readonly logger = new Logger(SyncDynamicController.name);
 
   constructor(
     private readonly syncSchedule: SyncSchedule,
@@ -17,6 +18,7 @@ export class SyncController {
   ) {}
 
   @Get('jobs')
+  @Public()
   getCrons() {
     const jobs = this.schedulerRegistry.getCronJobs();
     const jobResults = [];
@@ -27,7 +29,8 @@ export class SyncController {
       } catch (e) {
         next = 'error: next fire date is in the past!';
       }
-      jobResults.push({ key, next });
+      const running = value.running;
+      jobResults.push({ key, running, next });
       this.logger.log(`job: ${key} -> next: ${next}`);
     });
     return jobResults;
@@ -61,6 +64,18 @@ export class SyncController {
   @SyncApiKeyAuth()
   async syncTakenLecture(@Query() query: ISync.SyncTerm) {
     await this.syncSchedule.syncTakenLecture(query.year, query.semester, query.interval);
+  }
+
+  @Get('degree')
+  @SyncApiKeyAuth()
+  async syncDegree() {
+    await this.syncSchedule.syncDegree();
+  }
+
+  @Get('major')
+  @SyncApiKeyAuth()
+  async syncMajor() {
+    await this.syncSchedule.syncMajor();
   }
 
   @Patch('toggle/:jobName')
@@ -101,7 +116,7 @@ export class SyncController {
     if (!job) {
       throw new Error(`Job ${jobName} not found`);
     }
-    job.setTime(new Cron.CronTime(cron));
+    job.setTime(new CronTime.CronTime(cron));
     this.logger.log(`Job ${jobName} set to ${cron}`);
   }
 }

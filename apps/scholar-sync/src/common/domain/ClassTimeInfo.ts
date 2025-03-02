@@ -1,5 +1,5 @@
-import { ISync } from '@otl/api-interface/src/interfaces/ISync';
-import { ELecture } from '@otl/api-interface/src';
+import { ISync } from '@otl/api-interface/dist/src/interfaces/ISync';
+import { ELecture } from '@otl/api-interface/dist/src';
 
 export class ClassTimeInfo {
   day: number;
