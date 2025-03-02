@@ -1,7 +1,9 @@
 # compiled output
 /dist
 /node_modules
-/apps/server/src/common/node_modules
+/apps/scholar-sync/node_modules
+/apps/server/node_modules
+/packages/
 
 #
 /env/*
