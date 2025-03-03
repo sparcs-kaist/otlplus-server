@@ -39,7 +39,6 @@ export class AuthController {
     const { url, state } = this.ssoClient.get_login_params(request_url);
     res.cookie('sso_state', state, { httpOnly: true, secure: true, sameSite: 'strict' });
     // req.session['sso_state'] = state;
-    console.log(url, state);
     if (social_login === '0') {
       return res.redirect(url + '&social_enabled=0&show_disabled_button=0');
     }
@@ -58,7 +57,6 @@ export class AuthController {
     const stateBefore = req.cookies['sso_state'];
     // const stateBefore = session['sso_state'];
     // response.clearCookie('sso_state', { path: '/', maxAge: 0, httpOnly: true });
-    console.log(stateBefore, state);
     // if (!stateBefore || stateBefore != state) {
     //   response.redirect('/error/invalid-login');
     // }
