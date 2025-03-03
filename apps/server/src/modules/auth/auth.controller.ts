@@ -39,6 +39,7 @@ export class AuthController {
     const { url, state } = this.ssoClient.get_login_params(request_url);
     res.cookie('sso_state', state, { httpOnly: true, secure: true, sameSite: 'strict' });
     // req.session['sso_state'] = state;
+    console.log(url, state);
     if (social_login === '0') {
       return res.redirect(url + '&social_enabled=0&show_disabled_button=0');
     }
