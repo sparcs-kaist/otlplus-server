@@ -56,6 +56,7 @@ export class AuthController {
   ): Promise<void> {
     const stateBefore = req.cookies['sso_state'];
     // const stateBefore = session['sso_state'];
+    console.log(stateBefore, state);
     if (!stateBefore || stateBefore != state) {
       response.redirect('/error/invalid-login');
     }
