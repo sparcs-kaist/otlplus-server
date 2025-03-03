@@ -55,6 +55,7 @@ export class AuthController {
     @Res() response: IAuth.Response,
   ): Promise<void> {
     const stateBefore = req.cookies['sso_state'];
+    response.clearCookie('sso_state', { path: '/', maxAge: 0, httpOnly: true });
     // const stateBefore = session['sso_state'];
     console.log(stateBefore, state);
     if (!stateBefore || stateBefore != state) {
@@ -111,7 +112,7 @@ export class AuthController {
 
       res.clearCookie('accessToken', { path: '/', maxAge: 0, httpOnly: true });
       res.clearCookie('refreshToken', { path: '/', maxAge: 0, httpOnly: true });
-
+      res.clearCookie('sso_state', { path: '/', maxAge: 0, httpOnly: true });
       return res.redirect(logoutUrl);
     }
 
