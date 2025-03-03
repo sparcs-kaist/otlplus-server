@@ -73,7 +73,7 @@ export class AuthController {
     @Todo
     call import_student_lectures(studentId)
      */
-
+    console.log(req.cookies['next']);
     const next_url = req.cookies['next'] ?? '/';
     response.redirect(next_url);
   }
