@@ -325,13 +325,13 @@ export class ShareService {
         );
 
         const event = calendar.createEvent({
-          start: eventStart.toDate(),
-          end: eventEnd.toDate(),
+          start: eventStart,
+          end: eventEnd,
           summary: isEnglish ? lecture.title_en : lecture.title,
           location: classroomShortStr,
           repeating: {
             freq: ICalEventRepeatingFreq.WEEKLY,
-            until: moment(semesterObject.end).toDate(),
+            until: moment(semesterObject.end),
           },
           timezone: 'Asia/Seoul',
         });
