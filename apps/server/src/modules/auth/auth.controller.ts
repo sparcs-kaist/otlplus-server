@@ -55,12 +55,12 @@ export class AuthController {
     @Res() response: IAuth.Response,
   ): Promise<void> {
     const stateBefore = req.cookies['sso_state'];
-    response.clearCookie('sso_state', { path: '/', maxAge: 0, httpOnly: true });
     // const stateBefore = session['sso_state'];
     console.log(stateBefore, state);
     if (!stateBefore || stateBefore != state) {
       response.redirect('/error/invalid-login');
     }
+    response.clearCookie('sso_state', { path: '/', maxAge: 0, httpOnly: true });
     const ssoProfile: ESSOUser.SSOUser = await this.ssoClient.get_user_info(code);
     const { accessToken, accessTokenOptions, refreshToken, refreshTokenOptions } =
       await this.authService.ssoLogin(ssoProfile);
