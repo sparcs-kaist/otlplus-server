@@ -1,4 +1,4 @@
-import settings from '@src/settings';
+import settings from '@otl/server-nest/src/settings';
 import { PrismaClient, session_userprofile } from '@prisma/client';
 import * as readline from 'readline';
 import { prompt } from 'enquirer';
