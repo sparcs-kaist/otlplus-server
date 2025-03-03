@@ -57,11 +57,11 @@ export class AuthController {
   ): Promise<void> {
     const stateBefore = req.cookies['sso_state'];
     // const stateBefore = session['sso_state'];
-    response.clearCookie('sso_state', { path: '/', maxAge: 0, httpOnly: true });
+    // response.clearCookie('sso_state', { path: '/', maxAge: 0, httpOnly: true });
     console.log(stateBefore, state);
-    if (!stateBefore || stateBefore != state) {
-      response.redirect('/error/invalid-login');
-    }
+    // if (!stateBefore || stateBefore != state) {
+    //   response.redirect('/error/invalid-login');
+    // }
     const ssoProfile: ESSOUser.SSOUser = await this.ssoClient.get_user_info(code);
     const { accessToken, accessTokenOptions, refreshToken, refreshTokenOptions } =
       await this.authService.ssoLogin(ssoProfile);
