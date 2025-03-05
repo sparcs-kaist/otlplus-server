@@ -33,12 +33,12 @@ export class AuthController {
     if (req.user) {
       return res.redirect(next ?? '/');
     }
-    req.session['next'] = next ?? '/';
+    // req.session['next'] = next ?? '/';
     res.cookie('next', next ?? '/', { httpOnly: true, secure: true, sameSite: 'strict' });
     const request_url = req.get('host') ?? 'otl.kaist.ac.kr';
     const { url, state } = this.ssoClient.get_login_params(request_url);
     res.cookie('sso_state', state, { httpOnly: true, secure: true, sameSite: 'strict' });
-    req.session['sso_state'] = state;
+    // req.session['sso_state'] = state;
     if (social_login === '0') {
       return res.redirect(url + '&social_enabled=0&show_disabled_button=0');
     }
@@ -54,14 +54,12 @@ export class AuthController {
     @Session() session: Record<string, any>,
     @Res() response: IAuth.Response,
   ): Promise<void> {
-    const stateBeforeFromCookie = req.cookies['sso_state'];
-    const stateBeforeFromSession = session['sso_state'];
-    if (
-      (!stateBeforeFromCookie && !stateBeforeFromSession) ||
-      (stateBeforeFromCookie != state && stateBeforeFromSession != state)
-    ) {
-      response.redirect('/error/invalid-login');
-    }
+    const stateBefore = req.cookies['sso_state'];
+    // const stateBefore = session['sso_state'];
+    // response.clearCookie('sso_state', { path: '/', maxAge: 0, httpOnly: true });
+    // if (!stateBefore || stateBefore != state) {
+    //   response.redirect('/error/invalid-login');
+    // }
     const ssoProfile: ESSOUser.SSOUser = await this.ssoClient.get_user_info(code);
     const { accessToken, accessTokenOptions, refreshToken, refreshTokenOptions } =
       await this.authService.ssoLogin(ssoProfile);
@@ -73,7 +71,7 @@ export class AuthController {
     @Todo
     call import_student_lectures(studentId)
      */
-    const next_url = req.cookies['next'] ?? session['next'] ?? '/';
+    const next_url = req.cookies['next'] ?? process.env.WEB_URL;
     response.redirect(next_url);
   }
 
@@ -112,7 +110,7 @@ export class AuthController {
 
       res.clearCookie('accessToken', { path: '/', maxAge: 0, httpOnly: true });
       res.clearCookie('refreshToken', { path: '/', maxAge: 0, httpOnly: true });
-
+      res.clearCookie('sso_state', { path: '/', maxAge: 0, httpOnly: true });
       return res.redirect(logoutUrl);
     }
 
