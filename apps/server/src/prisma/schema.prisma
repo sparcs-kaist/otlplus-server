@@ -479,6 +479,7 @@ model subject_department {
   session_userprofile_specialized_major    session_userprofile_specialized_major[]
   subject_course                           subject_course[]
   subject_lecture                          subject_lecture[]
+  paper_professor_department               paper_professor_department[]
 }
 
 model subject_examtime {
@@ -868,13 +869,21 @@ model paper_prof_to_subject_prof {
   paper_professor      paper_professor   @relation(fields: [paper_professor_id], references: [id], onUpdate: Restrict)
 }
 
+model paper_professor_department {
+  id                    Int                @id @default(autoincrement())
+  paper_professor_id    Int
+  paper_professor       paper_professor    @relation(fields: [paper_professor_id], references: [id], onUpdate: Restrict)
+  subject_department_id Int
+  subject_department    subject_department @relation(fields: [subject_department_id], references: [id], onUpdate: Restrict)
+}
+
 model paper_professor {
-  id                      Int                          @id @default(autoincrement())
-  professor_name          String?                      @db.VarChar(255)
-  professor_name_en       String?                      @db.VarChar(255)
-  department              String?                      @db.VarChar(255)
-  papers                  paper[]
-  prof_names_to_prof_link paper_prof_to_subject_prof[]
+  id                         Int                          @id @default(autoincrement())
+  professor_name             String?                      @db.VarChar(255)
+  professor_name_en          String?                      @db.VarChar(255)
+  papers                     paper[]
+  prof_names_to_prof_link    paper_prof_to_subject_prof[]
+  paper_professor_department paper_professor_department[]
 }
 
 model paper {
