@@ -11,4 +11,10 @@ export class AppController {
   getHello(): string {
     return this.appService.getHello();
   }
+
+  @Get('/api')
+  @Public()
+  getApiHello(): string {
+    return this.appService.getHello();
+  }
 }
