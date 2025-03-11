@@ -704,7 +704,7 @@ export class SyncService {
       `Degree updated: ${degreeSyncResultDetail.updated.length} / ${toUpdate.length}, errors: ${degreeSyncResultDetail.errors.length}`,
     );
     const endTime = new Date();
-    await this.syncRepository.logSyncEndPoint(startLog.id, endTime, degreeSyncResultDetail);
+    await this.syncRepository.logSyncEndPoint(startLog.id, endTime, summarizeSyncResult(degreeSyncResultDetail));
     result.results.push(degreeSyncResultDetail);
     return result;
   }
