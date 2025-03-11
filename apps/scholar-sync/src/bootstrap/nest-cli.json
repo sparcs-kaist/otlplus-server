@@ -1,8 +1,18 @@
 {
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
+  "monorepo": true,
   "entryFile": "src/bootstrap/bootstrap",
   "compilerOptions": {
-    "plugins": ["@nestjs/swagger/plugin"]
+    "plugins": [
+      {
+        "name": "@nestjs/swagger",
+        "options": {
+          "dtoFileNameSuffix": ["ISync.ts"],
+          "classValidatorShim": true,
+          "introspectComments": true
+        }
+      }
+    ]
   }
 }

@@ -66,7 +66,7 @@ async function bootstrap() {
   );
 
   const document = SwaggerModule.createDocument(app, settings().getSwaggerConfig());
-  SwaggerModule.setup('docs', app, document);
+  SwaggerModule.setup('api/docs', app, document);
 
   app.use('/api/sync', json({ limit: '50mb' }));
   app.use(json({ limit: '100kb' }));

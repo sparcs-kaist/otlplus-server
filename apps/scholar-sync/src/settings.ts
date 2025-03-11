@@ -92,9 +92,15 @@ const getVersion = () => {
 
 const getSwaggerConfig = () => {
   const config = new DocumentBuilder()
-    .setTitle('OTLPlus-server')
-    .setDescription('The OTL-server API description')
+    .setTitle('OTLPlus-Scholar-Sync')
+    .setDescription('The OTL Scholar Sync API description')
     .setVersion('1.0')
+    .addSecurity('x-api-key', {
+      type: 'apiKey',
+      in: 'header',
+      scheme: 'https',
+      description: 'KAIST SCHOLAR API KEY',
+    })
     .build();
   return config;
 };

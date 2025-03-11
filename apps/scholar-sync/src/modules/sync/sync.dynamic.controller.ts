@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Logger, Param, Patch, Query } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Param, Patch, Post, Query } from '@nestjs/common';
 import { SyncService } from '@otl/scholar-sync/modules/sync/sync.service';
 import { Cron, SchedulerRegistry } from '@nestjs/schedule';
 import { SyncSchedule } from '@otl/scholar-sync/modules/sync/sync.schedule';
@@ -6,6 +6,7 @@ import { SyncApiKeyAuth } from '@otl/scholar-sync/common/decorators/sync-api-key
 import CronTime from 'cron';
 import { ISync } from '@otl/api-interface/src/interfaces/ISync';
 import { Public } from '@otl/scholar-sync/common/decorators/skip-auth.decorator';
+import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('api/dynamic-sync')
 export class SyncDynamicController {
@@ -36,46 +37,66 @@ export class SyncDynamicController {
     return jobResults;
   }
 
-  @Get('all')
+  @Post('all')
+  @ApiQuery({ name: 'year', type: Number, required: false })
+  @ApiQuery({ name: 'semester', type: Number, required: false })
+  @ApiQuery({ name: 'interval', type: Number, required: false })
   @SyncApiKeyAuth()
   async syncAll(@Query() query: ISync.SyncTerm) {
     await this.syncSchedule.syncAll(query.year, query.semester, query.interval);
   }
 
-  @Get('scholarDB')
+  @Post('scholarDB')
+  @ApiQuery({ name: 'year', type: Number, required: false })
+  @ApiQuery({ name: 'semester', type: Number, required: false })
+  @ApiQuery({ name: 'interval', type: Number, required: false })
   @SyncApiKeyAuth()
   async syncScholarDB(@Query() query: ISync.SyncTerm) {
     await this.syncSchedule.syncScholarDB(query.year, query.semester, query.interval);
   }
 
-  @Get('examtime')
+  @Post('examtime')
+  @ApiQuery({ name: 'year', type: Number, required: false })
+  @ApiQuery({ name: 'semester', type: Number, required: false })
+  @ApiQuery({ name: 'interval', type: Number, required: false })
   @SyncApiKeyAuth()
   async syncExamtime(@Query() query: ISync.SyncTerm) {
     await this.syncSchedule.syncExamTime(query.year, query.semester, query.interval);
   }
 
-  @Get('classtime')
+  @Post('classtime')
+  @ApiQuery({ name: 'year', type: Number, required: false })
+  @ApiQuery({ name: 'semester', type: Number, required: false })
+  @ApiQuery({ name: 'interval', type: Number, required: false })
   @SyncApiKeyAuth()
   async syncClasstime(@Query() query: ISync.SyncTerm) {
     await this.syncSchedule.syncClassTime(query.year, query.semester, query.interval);
   }
 
-  @Get('takenLecture')
+  @Post('takenLecture')
+  @ApiQuery({ name: 'year', type: Number, required: false })
+  @ApiQuery({ name: 'semester', type: Number, required: false })
+  @ApiQuery({ name: 'interval', type: Number, required: false })
   @SyncApiKeyAuth()
   async syncTakenLecture(@Query() query: ISync.SyncTerm) {
     await this.syncSchedule.syncTakenLecture(query.year, query.semester, query.interval);
   }
 
-  @Get('degree')
+  @Post('degree')
   @SyncApiKeyAuth()
   async syncDegree() {
     await this.syncSchedule.syncDegree();
   }
 
-  @Get('major')
+  @Post('major')
   @SyncApiKeyAuth()
   async syncMajor() {
     await this.syncSchedule.syncMajor();
+  }
+
+  @Post('best-review')
+  async syncBestReview() {
+    await this.syncSchedule.updateReviews();
   }
 
   @Patch('toggle/:jobName')
