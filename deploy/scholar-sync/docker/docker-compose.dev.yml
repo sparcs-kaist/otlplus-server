@@ -16,7 +16,7 @@ services:
     restart: always
     tty: true
     ports:
-      - '59000:9000'
+      - '49000:9000'
     expose:
       - '9000'
     volumes:
