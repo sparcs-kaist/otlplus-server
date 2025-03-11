@@ -1,7 +1,7 @@
 version: '3.4'
 
 services:
-  back:
+  scholar-sync-prod:
     container_name: otlplus-scholar-sync-nest-prod
     platform: linux/amd64
     env_file:
