@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { EUser } from '@otl/api-interface/src/entities/EUser';
 import { Prisma, session_userprofile, subject_semester } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
-import { EUser } from '@otl/api-interface/src/entities/EUser';
 
 @Injectable()
 export class UserRepository {
@@ -67,5 +67,15 @@ export class UserRepository {
     return reviewWritableLecture.filter(
       (takenLecture) => takenLecture.lecture.year >= from && takenLecture.lecture.year <= to,
     );
+  }
+
+  async findByUserId(userId: number): Promise<EUser.Basic> {
+    const user = await this.prisma.session_userprofile.findUnique({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 }

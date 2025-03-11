@@ -983,6 +983,7 @@ model friend_friend{
   user_id Int
   friend_id Int
   is_favorite Boolean
+  begin DateTime @default(now())
   user session_userprofile @relation("friend_friend_user", fields: [user_id], references: [id], onUpdate: Restrict, map: "friend_relation_user_id_fk_session_userprofile_id")
   friend session_userprofile @relation("friend_friend_friend", fields: [friend_id], references: [id], onUpdate: Restrict, map: "friend_relation_friend_id_fk_session_userprofile_id")
   @@unique([user_id, friend_id])
