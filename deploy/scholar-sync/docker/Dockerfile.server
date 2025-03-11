@@ -36,4 +36,4 @@ COPY --from=build /var/www/otlplus/node_modules /var/www/otlplus/node_modules
 
 WORKDIR /var/www/otlplus-server/apps/server
 
-EXPOSE 8000
+EXPOSE 9000
