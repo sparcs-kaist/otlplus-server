@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import axios from 'axios';
+import amqp from 'amqplib';
 import { dotEnvOptions } from '@otl/noti-server/dotenv-options';
 
 dotenv.config(dotEnvOptions);

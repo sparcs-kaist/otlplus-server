@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: "rabbitmq:3-management"
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+
+  token_lookup_worker:
+    build: ./workers/token_lookup  # 개별 Dockerfile 사용
+    container_name: token_lookup_worker
+    restart: always
+    depends_on:
+      - rabbitmq
+    environment:
+      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
+
+  push_notification_worker:
+    build: ./workers/push_notification  # 개별 Dockerfile 사용
+    container_name: push_notification_worker
+    restart: always
+    depends_on:
+      - rabbitmq
+    env_file:
+      - ../../../apps/noti-server/env/.env.prod
+    environment:
+      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
+      FCM_SERVER_KEY: your-fcm-server-key
+
+  auto_scale_scheduler:
+    build: ./workers/auto_scale_scheduler  # 개별 Dockerfile 사용
+    container_name: auto_scale_scheduler
+    restart: always
+    depends_on:
+      - rabbitmq
+    env_file:
+      - ../../../apps/noti-server/env/.env.prod
+    environment:
+      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672
+      RABBITMQ_API: http://rabbitmq:15672/api/queues
+      RABBITMQ_USER: admin
+      RABBITMQ_PASS: admin

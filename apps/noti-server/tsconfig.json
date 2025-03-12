@@ -7,20 +7,23 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
-    "target": "ES2021",
+    "target": "es2020",
+    "esModuleInterop": true,
     "sourceMap": true,
     "outDir": "./dist",
     "rootDir": "./",
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
-    "strictNullChecks": false,
-    "noImplicitAny": false,
-    "strictBindCallApply": false,
-    "forceConsistentCasingInFileNames": false,
+    "strict": true,
+    "alwaysStrict": true,
+    "noImplicitAny": true,
+    "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": false,
     "paths": {
       "@otl/noti-server/*": ["./src/*"]
     }
-  }
+  },
+  "include": ["./src/**/*.ts"],
+  "exclude": ["dist", "node_modules"]
 }

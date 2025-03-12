@@ -4,7 +4,6 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "prepare": "pnpm build",
     "dev": "node_modules/.bin/tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")",
     "mock:front": "node_modules/.bin/tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")",
     "mock:back": "node_modules/.bin/tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")",

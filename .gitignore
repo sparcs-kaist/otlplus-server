@@ -7,6 +7,7 @@
 /env/*
 apps/server/env/*
 apps/scholar-sync/env/*
+apps/noti-server/env/*
 
 .venv
 
