@@ -1,9 +1,9 @@
-import { Transform, Type } from 'class-transformer';
-import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
-import { _PROHIBITED_FIELD_PATTERN, OrderDefaultValidator } from '@otl/api-interface/src/interfaces/validators.decorator';
 import { IDepartment } from '@otl/api-interface/src/interfaces/IDepartment';
 import { ILecture } from '@otl/api-interface/src/interfaces/ILecture';
 import { IReview } from '@otl/api-interface/src/interfaces/IReview';
+import { _PROHIBITED_FIELD_PATTERN, OrderDefaultValidator } from '@otl/api-interface/src/interfaces/validators.decorator';
+import { Transform, Type } from 'class-transformer';
+import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
 
 
 export namespace IUser {
@@ -47,6 +47,8 @@ export namespace IUser {
     date_joined: Date
     first_name: string
     last_name: string
+    name_kor: string
+    name_eng: string
     refresh_token: string | null
   }
 
@@ -56,6 +58,8 @@ export namespace IUser {
     student_id: string;
     firstName: string;
     lastName: string;
+    nameKor: string;
+    nameEng: string;
     department: IDepartment.Basic | null;
     majors: IDepartment.Basic[];
     departments: IDepartment.Basic[];

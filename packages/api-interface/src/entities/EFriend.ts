@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-
+import { EUser } from './EUser';
 export namespace EFriend {
   export const Basic = Prisma.validator<Prisma.friend_friendDefaultArgs>()({
     include: {
@@ -7,7 +7,9 @@ export namespace EFriend {
     },
   });
 
-  export type Basic = Prisma.friend_friendGetPayload<typeof Basic>;
+  export type Basic = Prisma.friend_friendGetPayload<typeof Basic> & {
+    friend: EUser.Basic;
+  };
 
   export const WithLecture = Prisma.validator<Prisma.friend_friendDefaultArgs>()({
     include: {

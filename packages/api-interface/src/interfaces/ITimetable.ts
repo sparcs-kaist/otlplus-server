@@ -30,6 +30,8 @@ export namespace ITimetable {
 
   export interface Summary{
 		id:number | null; // null 이면 학사시간표
+		year: number;
+		semester: number;
 		arrange_order : number ; // 학사시간표이면 0
 		lectures: ILecture.Summary[] ;
 		personals: IPersonal.Block[] ;

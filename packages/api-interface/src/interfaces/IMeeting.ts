@@ -13,6 +13,8 @@ export namespace IMeeting {
 		end: number;
 		days: TimeBlockDay[];
 		
+		start_week: number; // 시작 주차
+		end_week: number; // 종료 주차
 		title: string;
 		leader_user_profile_id: number; //session_user_profile.id
 		schedule: IMeeting.Schedule[]
@@ -43,6 +45,8 @@ export namespace IMeeting {
 		year: number;
         semester: number;
     
+		start_week: number; // 시작 주차
+		end_week: number; // 종료 주차
 		available_members: IMeeting.Member[]; 
 		unavailable_members: IMeeting.Member[];
 		title: string;

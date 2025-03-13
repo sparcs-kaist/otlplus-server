@@ -122,7 +122,7 @@ export namespace ILecture {
 
   export interface Summary{
 	  id: number; //lecture.id
-	  
+	  course_id:number; //course.id, color 표기용
 	  title: string;
 	  title_en: string;
 	  professor_name: string; // 여러명일 경우 join쳐서 줌
