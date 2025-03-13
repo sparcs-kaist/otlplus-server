@@ -284,6 +284,8 @@ model session_userprofile {
   first_name                            String                                     @db.VarChar(30)
   last_name                             String                                     @db.VarChar(150)
   refresh_token                         String?                                    @db.VarChar(255)
+  name_kor                              String?                                     @db.VarChar(30)
+  name_eng                              String?                                     @db.VarChar(100)
   main_ratedailyuserfeed                main_ratedailyuserfeed[]
   main_relatedcoursedailyuserfeed       main_relatedcoursedailyuserfeed[]
   main_reviewwritedailyuserfeed         main_reviewwritedailyuserfeed[]
@@ -915,6 +917,8 @@ model meeting_group{
   begin Int
   end Int
 
+  start_week Int
+  end_week Int
   title String @db.VarChar(20)
   leader_user_id Int // 리더의 id, 1(session_userprofile) : N(meeting_group)
   max_member Int
@@ -963,6 +967,8 @@ model meeting_result{
   id Int @id @default(autoincrement())
   meeting_group_id Int
   meeting_group meeting_group @relation(fields: [meeting_group_id], references: [id], onUpdate: Restrict, map: "meeting_result_meeting_group_id_fk_meeting_group_id")
+  start_week Int
+  end_week Int
   timeblocks meeting_result_timeblock[]
   place String?
   description String?

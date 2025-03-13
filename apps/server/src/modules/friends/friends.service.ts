@@ -31,9 +31,10 @@ export class FriendsService {
     }
 
     const friend = await this.friendsRepository.createFriend(userId, friendId);
+    const friendProfile = await this.userRepository.findByUserId(friendId);
     return {
       id: friend.id,
-      user_profile: friend.friend,
+      user_profile: friendProfile,
       begin: friend.begin,
       isFavorite: friend.is_favorite,
     };

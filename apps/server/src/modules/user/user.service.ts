@@ -1,19 +1,19 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { session_userprofile } from '@prisma/client';
 import { ICourse } from '@otl/api-interface/src/interfaces';
+import { ResearchLecture } from '@otl/api-interface/src/interfaces/constants/lecture';
 import { IReview } from '@otl/api-interface/src/interfaces/IReview';
 import { IUser } from '@otl/api-interface/src/interfaces/IUser';
+import { session_userprofile } from '@prisma/client';
+import { addIsRead, toJsonCourseDetail } from '@src/common/serializer/course.serializer';
+import { toJsonDepartment } from '@src/common/serializer/department.serializer';
+import { toJsonLectureDetail } from '@src/common/serializer/lecture.serializer';
+import { toJsonReview } from '@src/common/serializer/review.serializer';
 import { getRepresentativeLecture } from '@src/common/utils/lecture.utils';
+import { CourseRepository } from '@src/prisma/repositories/course.repository';
 import { DepartmentRepository } from '@src/prisma/repositories/department.repository';
 import { LectureRepository } from '@src/prisma/repositories/lecture.repository';
 import { ReviewsRepository } from '@src/prisma/repositories/review.repository';
 import { UserRepository } from '@src/prisma/repositories/user.repository';
-import { CourseRepository } from '@src/prisma/repositories/course.repository';
-import { ResearchLecture } from '@otl/api-interface/src/interfaces/constants/lecture';
-import { toJsonDepartment } from '@src/common/serializer/department.serializer';
-import { addIsRead, toJsonCourseDetail } from '@src/common/serializer/course.serializer';
-import { toJsonReview } from '@src/common/serializer/review.serializer';
-import { toJsonLectureDetail } from '@src/common/serializer/lecture.serializer';
 
 @Injectable()
 export class UserService {
@@ -62,6 +62,8 @@ export class UserService {
       student_id: user.student_id,
       firstName: user.first_name,
       lastName: user.last_name,
+      nameKor: user.name_kor ?? user.first_name + ' ' + user.last_name,
+      nameEng: user.name_eng ?? user.first_name + ' ' + user.last_name,
       department: department ? toJsonDepartment(department) : null,
       majors: majors.map((major) => toJsonDepartment(major)),
       departments: departments.map((department) => toJsonDepartment(department)),

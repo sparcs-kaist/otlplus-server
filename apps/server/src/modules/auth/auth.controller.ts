@@ -1,4 +1,6 @@
 import { Controller, Get, Query, Req, Res, Session } from '@nestjs/common';
+import { ESSOUser } from '@otl/api-interface/src/entities/ESSOUser';
+import { IAuth, IUser } from '@otl/api-interface/src/interfaces';
 import { session_userprofile } from '@prisma/client';
 import { GetUser } from '@src/common/decorators/get-user.decorator';
 import { Public } from '../../common/decorators/skip-auth.decorator';
@@ -6,8 +8,6 @@ import settings from '../../settings';
 import { UserService } from '../user/user.service';
 import { AuthService } from './auth.service';
 import { Client } from './utils/sparcs-sso';
-import { IAuth, IUser } from '@otl/api-interface/src/interfaces';
-import { ESSOUser } from '@otl/api-interface/src/entities/ESSOUser';
 
 @Controller('session')
 export class AuthController {

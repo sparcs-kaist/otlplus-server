@@ -15,5 +15,7 @@ export const toJsonUser = (user: EUser.Basic): IUser.Basic => {
     first_name: user.first_name,
     last_name: user.last_name,
     refresh_token: user.refresh_token,
+    name_kor: user.name_kor ?? user.first_name + ' ' + user.last_name,
+    name_eng: user.name_eng ?? user.first_name + ' ' + user.last_name,
   };
 };

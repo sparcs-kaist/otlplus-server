@@ -7,10 +7,18 @@ export class FriendsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async getFriends(userId: number): Promise<EFriend.Basic[]> {
-    return await this.prisma.friend_friend.findMany({
+    const friends = await this.prisma.friend_friend.findMany({
       where: { user_id: userId },
       include: EFriend.Basic.include,
     });
+    return friends.map((friend) => ({
+      ...friend,
+      friend: {
+        ...friend.friend,
+        name_kor: friend.friend.name_kor ?? friend.friend.first_name + ' ' + friend.friend.last_name,
+        name_eng: friend.friend.name_eng ?? friend.friend.first_name + ' ' + friend.friend.last_name,
+      },
+    }));
   }
 
   // 겹강인 사람을 찾는 method

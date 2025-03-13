@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ESSOUser } from '@otl/api-interface/src/entities/ESSOUser';
 import { Prisma, session_userprofile } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { UserRepository } from '../../prisma/repositories/user.repository';
 import settings from '../../settings';
 import { SyncTakenLectureService } from '../sync/syncTakenLecture.service';
-import { ESSOUser } from '@otl/api-interface/src/entities/ESSOUser';
 
 @Injectable()
 export class AuthService {
@@ -40,6 +40,8 @@ export class AuthService {
         ssoProfile['first_name'],
         ssoProfile['last_name'],
         encryptedRefreshToken,
+        ssoProfile['kaist_info']['ku_kname'],
+        ssoProfile['kaist_info']['displayname'],
       );
       await this.syncTakenLecturesService.repopulateTakenLectureForStudent(user.id);
     } else {
@@ -113,6 +115,8 @@ export class AuthService {
     firstName: string,
     lastName: string,
     refreshToken: string,
+    nameKor?: string,
+    nameEng?: string,
   ): Promise<session_userprofile> {
     const user = {
       sid: sid,
@@ -122,6 +126,8 @@ export class AuthService {
       date_joined: new Date(),
       student_id: studentId,
       refresh_token: refreshToken,
+      name_kor: nameKor,
+      name_eng: nameEng,
     };
     return await this.userRepository.createUser(user);
   }
