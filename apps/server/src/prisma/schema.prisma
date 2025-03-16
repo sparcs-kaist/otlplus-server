@@ -551,6 +551,7 @@ model subject_lecture {
   @@index([title_no_space], map: "subject_lecture_title_no_space_index")
   @@index([title_en], map: "subject_lecture_title_en_index")
   @@index([title], map: "subject_lecture_title_index")
+  @@index([deleted, year, semester], map: "subject_lecture_year_semester_deleted_index")
 }
 
 model subject_lecture_professors {
