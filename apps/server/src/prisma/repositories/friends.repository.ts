@@ -89,4 +89,15 @@ export class FriendsRepository {
     });
     return friend;
   }
+
+  async deleteFriend(userId: number, friendId: number): Promise<void> {
+    await this.prisma.$transaction([
+      this.prisma.friend_friend.delete({
+        where: { user_id_friend_id: { user_id: userId, friend_id: friendId } },
+      }),
+      this.prisma.friend_friend.delete({
+        where: { user_id_friend_id: { user_id: friendId, friend_id: userId } },
+      }),
+    ]);
+  }
 }

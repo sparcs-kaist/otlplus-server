@@ -49,4 +49,8 @@ export class FriendsService {
       isFavorite: friend.is_favorite,
     };
   }
+
+  async deleteFriend(userId: number, friendId: number): Promise<void> {
+    await this.friendsRepository.deleteFriend(userId, friendId);
+  }
 }
