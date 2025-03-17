@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { IFriend } from '@otl/api-interface/src/interfaces';
 import { FriendsRepository } from '@src/prisma/repositories/friends.repository';
+import { LectureRepository } from '@src/prisma/repositories/lecture.repository';
 import { UserRepository } from '@src/prisma/repositories/user.repository';
 
 @Injectable()
@@ -8,6 +9,7 @@ export class FriendsService {
   constructor(
     private friendsRepository: FriendsRepository,
     private userRepository: UserRepository,
+    private lectureRepository: LectureRepository,
   ) {}
 
   async getFriends(userId: number): Promise<IFriend.Basic[]> {
@@ -52,5 +54,31 @@ export class FriendsService {
 
   async deleteFriend(userId: number, friendId: number): Promise<void> {
     await this.friendsRepository.deleteFriend(userId, friendId);
+  }
+
+  async getFriendsLecture(userId: number, lectureId: number): Promise<IFriend.LectureFriends> {
+    const lecture = await this.lectureRepository.getLectureById(lectureId);
+
+    const [sameLectures, sameProfessor, sameCourse] = await Promise.all([
+      this.friendsRepository.getFriendsWithLecture(userId, lectureId),
+      this.friendsRepository.getFriendsWithLectureProfessor(
+        userId,
+        lecture.year,
+        lecture.semester,
+        lecture.course_id,
+        lecture.subject_lecture_professors.map((professor) => professor.professor_id),
+      ),
+      this.friendsRepository.getFriendsWithCourse(userId, lecture.year, lecture.semester, lecture.course_id),
+    ]);
+
+    return {
+      friendsSameLecture: sameLectures.map((friend) => friend.friend),
+      friendsTakenSameProfessor: sameProfessor
+        .filter((e) => sameLectures.every((friend) => friend.friend_id !== e.friend_id))
+        .map((friend) => friend.friend),
+      friendsTakenOtherProfessor: sameCourse
+        .filter((e) => sameProfessor.every((friend) => friend.friend_id !== e.friend_id))
+        .map((friend) => friend.friend),
+    };
   }
 }

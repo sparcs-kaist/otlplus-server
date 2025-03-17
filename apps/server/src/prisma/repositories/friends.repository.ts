@@ -11,12 +11,7 @@ export class FriendsRepository {
       where: { user_id: userId },
       include: EFriend.Basic.include,
     });
-    return friends.map((friend) => ({
-      ...friend,
-      friend: {
-        ...friend.friend,
-      },
-    }));
+    return friends;
   }
 
   // 겹강인 사람을 찾는 method
@@ -28,10 +23,13 @@ export class FriendsRepository {
   }
 
   // 이전에 그 교수님 수업을 들은 사람을 찾는 method
+  // 과거 수강했던 사람만 조회
   async getFriendsWithLectureProfessor(
     userId: number,
+    year: number,
+    semester: number,
     courseId: number,
-    professorId: number,
+    professorIds: number[],
   ): Promise<EFriend.WithLectureProfessor[]> {
     return await this.prisma.friend_friend.findMany({
       where: {
@@ -39,12 +37,70 @@ export class FriendsRepository {
         friend: {
           taken_lectures: {
             some: {
-              lecture: { subject_lecture_professors: { some: { professor_id: professorId } } },
+              lecture: {
+                subject_lecture_professors: { some: { professor_id: { in: professorIds } } },
+                course_id: courseId,
+                OR: [
+                  {
+                    year: {
+                      lt: year,
+                    },
+                  },
+                  {
+                    year: {
+                      equals: year,
+                    },
+                    semester: {
+                      lt: semester,
+                    },
+                  },
+                ],
+              },
             },
           },
         },
       },
       include: EFriend.WithLectureProfessor.include,
+    });
+  }
+
+  // 같은 강의 중 다른 교수님의 수업이었던 사람을 찾는 method
+  // 과거 수강했던 사람만 조회
+  async getFriendsWithCourse(
+    userId: number,
+    year: number,
+    semester: number,
+    courseId: number,
+  ): Promise<EFriend.WithCourse[]> {
+    return await this.prisma.friend_friend.findMany({
+      where: {
+        user_id: userId,
+        friend: {
+          taken_lectures: {
+            some: {
+              lecture: {
+                course_id: courseId,
+                OR: [
+                  {
+                    year: {
+                      lt: year,
+                    },
+                  },
+                  {
+                    year: {
+                      equals: year,
+                    },
+                    semester: {
+                      lt: semester,
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+      include: EFriend.WithCourse.include,
     });
   }
 

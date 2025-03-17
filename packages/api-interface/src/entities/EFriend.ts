@@ -42,4 +42,19 @@ export namespace EFriend {
     });
 
   export type WithLectureProfessor = Prisma.friend_friendGetPayload<typeof WithLectureProfessor>;
+
+  export const WithCourse = Prisma.validator<Prisma.friend_friendDefaultArgs>()({
+    include: {
+      friend: {
+        include: {
+          taken_lectures: {
+            include: {
+              lecture:true
+            },
+          },
+        },
+      },
+    },
+  });
+  export type WithCourse = Prisma.friend_friendGetPayload<typeof WithCourse>;
 }

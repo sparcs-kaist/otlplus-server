@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { IFriend } from '@otl/api-interface/src/interfaces';
 import { session_userprofile } from '@prisma/client';
 import { GetUser } from '@src/common/decorators/get-user.decorator';
@@ -49,6 +49,25 @@ export class FriendsController {
   async deleteFriend(@GetUser() user: session_userprofile, @Param('friendId') friendId: number): Promise<void> {
     await this.FriendsService.deleteFriend(user.id, friendId);
   }
+
+  /*
+   * @description 수업의 겹강인 친구 목록을 조회합니다.
+   * query에 lectureId 값을 포함합니다.
+   * 해당 수업을 듣는 친구들, 같은 강의에 같은 교수님을 듣는 친구들, 같은 강의 중 다른 교수님의 수업이었던 친구들을 조회합니다.
+   */
+
+  @Get('/lecture')
+  async getFriendsLecture(
+    @GetUser() user: session_userprofile,
+    @Query('lectureId') lectureId: number,
+  ): Promise<IFriend.LectureFriends> {
+    return await this.FriendsService.getFriendsLecture(user.id, lectureId);
+  }
+
+  /*
+   * @description 친구의 시간표를 조회합니다
+   * TODO
+   */
 
   // TODO:
   // 위 api들 테스트 하기

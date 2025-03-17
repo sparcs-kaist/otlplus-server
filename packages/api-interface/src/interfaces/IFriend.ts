@@ -17,6 +17,12 @@ export namespace IFriend {
 		isFavorite: boolean; //즐겨찾기
 	}
 
+	export interface LectureFriends{
+		friendsSameLecture: IUser.Basic[];
+		friendsTakenSameProfessor: IUser.Basic[];	
+		friendsTakenOtherProfessor: IUser.Basic[];
+	}
+	
 	export class CreateDto {
 		@IsNotEmpty()
 		@IsNumber()
