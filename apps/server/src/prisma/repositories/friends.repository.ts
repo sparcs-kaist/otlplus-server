@@ -80,4 +80,13 @@ export class FriendsRepository {
       friend: friendProfile,
     };
   }
+
+  async updateFriendFavorite(userId: number, friendId: number, isFavorite: boolean): Promise<EFriend.Basic> {
+    const friend = await this.prisma.friend_friend.update({
+      where: { user_id_friend_id: { user_id: userId, friend_id: friendId } },
+      data: { is_favorite: isFavorite },
+      include: EFriend.Basic.include,
+    });
+    return friend;
+  }
 }

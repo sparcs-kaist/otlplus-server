@@ -39,4 +39,14 @@ export class FriendsService {
       isFavorite: friend.is_favorite,
     };
   }
+
+  async updateFriendFavorite(userId: number, friendId: number, isFavorite: boolean): Promise<IFriend.Basic> {
+    const friend = await this.friendsRepository.updateFriendFavorite(userId, friendId, isFavorite);
+    return {
+      id: friend.id,
+      user_profile: friend.friend,
+      begin: friend.begin,
+      isFavorite: friend.is_favorite,
+    };
+  }
 }
