@@ -284,8 +284,8 @@ model session_userprofile {
   first_name                            String                                     @db.VarChar(30)
   last_name                             String                                     @db.VarChar(150)
   refresh_token                         String?                                    @db.VarChar(255)
-  name_kor                              String?                                     @db.VarChar(30)
-  name_eng                              String?                                     @db.VarChar(100)
+  name_kor                              String                                     @db.VarChar(100)
+  name_eng                              String                                     @db.VarChar(100)
   main_ratedailyuserfeed                main_ratedailyuserfeed[]
   main_relatedcoursedailyuserfeed       main_relatedcoursedailyuserfeed[]
   main_reviewwritedailyuserfeed         main_reviewwritedailyuserfeed[]

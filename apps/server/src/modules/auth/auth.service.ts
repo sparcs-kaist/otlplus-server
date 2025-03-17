@@ -40,8 +40,8 @@ export class AuthService {
         ssoProfile['first_name'],
         ssoProfile['last_name'],
         encryptedRefreshToken,
-        ssoProfile['kaist_info']['ku_kname'],
-        ssoProfile['kaist_info']['displayname'],
+        ssoProfile['kaist_info']['ku_kname'] ?? ssoProfile['first_name'] + ' ' + ssoProfile['last_name'],
+        ssoProfile['kaist_info']['displayname'] ?? ssoProfile['first_name'] + ' ' + ssoProfile['last_name'],
       );
       await this.syncTakenLecturesService.repopulateTakenLectureForStudent(user.id);
     } else {
@@ -51,6 +51,8 @@ export class AuthService {
         last_name: ssoProfile['last_name'],
         student_id: studentId,
         refresh_token: encryptedRefreshToken,
+        name_kor: ssoProfile['kaist_info']['ku_kname'] ?? ssoProfile['first_name'] + ' ' + ssoProfile['last_name'],
+        name_eng: ssoProfile['kaist_info']['displayname'] ?? ssoProfile['first_name'] + ' ' + ssoProfile['last_name'],
       };
       user = await this.updateUser(user.id, updateData);
       if (prev_student_id !== studentId) {
@@ -115,8 +117,8 @@ export class AuthService {
     firstName: string,
     lastName: string,
     refreshToken: string,
-    nameKor?: string,
-    nameEng?: string,
+    nameKor: string,
+    nameEng: string,
   ): Promise<session_userprofile> {
     const user = {
       sid: sid,

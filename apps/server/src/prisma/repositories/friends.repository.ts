@@ -15,8 +15,6 @@ export class FriendsRepository {
       ...friend,
       friend: {
         ...friend.friend,
-        name_kor: friend.friend.name_kor ?? friend.friend.first_name + ' ' + friend.friend.last_name,
-        name_eng: friend.friend.name_eng ?? friend.friend.first_name + ' ' + friend.friend.last_name,
       },
     }));
   }

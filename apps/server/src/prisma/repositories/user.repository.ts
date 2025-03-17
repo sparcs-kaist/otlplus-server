@@ -14,22 +14,14 @@ export class UserRepository {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    return {
-      ...user,
-      name_kor: user.name_kor ?? user.first_name + ' ' + user.last_name,
-      name_eng: user.name_eng ?? user.first_name + ' ' + user.last_name,
-    };
+    return user;
   }
 
   async createUser(user: Prisma.session_userprofileCreateInput): Promise<EUser.Basic> {
     const createdUser = await this.prisma.session_userprofile.create({
       data: user,
     });
-    return {
-      ...createdUser,
-      name_kor: createdUser.name_kor ?? createdUser.first_name + ' ' + createdUser.last_name,
-      name_eng: createdUser.name_eng ?? createdUser.first_name + ' ' + createdUser.last_name,
-    };
+    return createdUser;
   }
 
   async updateUser(userId: number, user: Prisma.session_userprofileUpdateInput): Promise<EUser.Basic> {
@@ -37,11 +29,7 @@ export class UserRepository {
       data: user,
       where: { id: userId },
     });
-    return {
-      ...updatedUser,
-      name_kor: updatedUser.name_kor ?? updatedUser.first_name + ' ' + updatedUser.last_name,
-      name_eng: updatedUser.name_eng ?? updatedUser.first_name + ' ' + updatedUser.last_name,
-    };
+    return updatedUser;
   }
 
   async changeFavoriteDepartments(userId: number, departmentIds: number[]): Promise<EUser.Basic> {
@@ -56,11 +44,7 @@ export class UserRepository {
         },
       },
     });
-    return {
-      ...user,
-      name_kor: user.name_kor ?? user.first_name + ' ' + user.last_name,
-      name_eng: user.name_eng ?? user.first_name + ' ' + user.last_name,
-    };
+    return user;
   }
 
   async getTakenLectures(userId: number, notWritableSemester?: subject_semester | null) {
@@ -99,10 +83,6 @@ export class UserRepository {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    return {
-      ...user,
-      name_kor: user.name_kor ?? user.first_name + ' ' + user.last_name,
-      name_eng: user.name_eng ?? user.first_name + ' ' + user.last_name,
-    };
+    return user;
   }
 }
