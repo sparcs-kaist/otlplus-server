@@ -15,7 +15,7 @@ export namespace EPlanners {
       export const Extended =
         Prisma.validator<Prisma.planner_futureplanneritemDefaultArgs>()({
           include: {
-            subject_course: ECourse.Details,
+            subject_course: ECourse.Extended,
           },
         });
       export type Extended = Prisma.planner_futureplanneritemGetPayload<
@@ -44,7 +44,7 @@ export namespace EPlanners {
       export const Extended =
         Prisma.validator<Prisma.planner_takenplanneritemDefaultArgs>()({
           include: {
-            subject_lecture: ELecture.Details,
+            subject_lecture: ELecture.Extended,
           },
         });
       export type Extended = Prisma.planner_takenplanneritemGetPayload<
@@ -124,4 +124,21 @@ export namespace EPlanners {
   });
 
   export type Details = Prisma.planner_plannerGetPayload<typeof Details>;
+
+  export const Extended = Prisma.validator<Prisma.planner_plannerDefaultArgs>()({
+    include: {
+      planner_planner_additional_tracks: {
+        include: {
+          graduation_additionaltrack: ETrack.Additional,
+        },
+      },
+      graduation_generaltrack: true,
+      graduation_majortrack: ETrack.Major,
+      planner_takenplanneritem: EPlanners.EItems.Taken.Extended,
+      planner_arbitraryplanneritem: EPlanners.EItems.Arbitrary.Extended,
+      planner_futureplanneritem: EPlanners.EItems.Future.Extended,
+    },
+  });
+
+  export type Extended = Prisma.planner_plannerGetPayload<typeof Extended>;
 }

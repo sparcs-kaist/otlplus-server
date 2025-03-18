@@ -198,7 +198,7 @@ export class PlannersService {
   async updatePlannerItem(
     plannerId: number,
     updateItemDto: IPlanner.UpdateItemBodyDto,
-  ): Promise<EPlanners.EItems.Taken.Details | EPlanners.EItems.Future.Extended | EPlanners.EItems.Arbitrary.Extended> {
+  ): Promise<EPlanners.EItems.Taken.Extended | EPlanners.EItems.Future.Extended | EPlanners.EItems.Arbitrary.Extended> {
     const planner = await this.PlannerRepository.checkPlannerExists(plannerId);
     if (!planner) {
       throw new HttpException("Planner Doesn't exist", HttpStatus.NOT_FOUND);

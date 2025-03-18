@@ -331,7 +331,7 @@ export class PlannerRepository {
     item_type: string,
     item: number,
     updatedFields: Pick<IPlanner.UpdateItemBodyDto, 'semester' | 'is_excluded'>,
-  ): Promise<EPlanners.EItems.Taken.Details | EPlanners.EItems.Future.Extended | EPlanners.EItems.Arbitrary.Extended> {
+  ): Promise<EPlanners.EItems.Taken.Extended | EPlanners.EItems.Future.Extended | EPlanners.EItems.Arbitrary.Extended> {
     if (item_type === PlannerItemType.Taken) {
       return this.prisma.planner_takenplanneritem.update({
         where: {
@@ -340,7 +340,7 @@ export class PlannerRepository {
         data: {
           is_excluded: updatedFields.is_excluded,
         },
-        include: EPlanners.EItems.Taken.Details.include,
+        include: EPlanners.EItems.Taken.Extended.include,
       });
     } else if (item_type === PlannerItemType.Future) {
       return this.prisma.planner_futureplanneritem.update({
