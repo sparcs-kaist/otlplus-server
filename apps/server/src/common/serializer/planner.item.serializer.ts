@@ -1,13 +1,14 @@
 import { BadRequestException } from '@nestjs/common';
-import { toJsonCourseDetail } from './course.serializer';
+import { toJsonCourseBasic, toJsonCourseDetail } from './course.serializer';
 import { toJsonDepartment } from './department.serializer';
-import { toJsonLectureDetail } from './lecture.serializer';
+import { toJsonLectureBasic, toJsonLectureDetail } from './lecture.serializer';
 import { PlannerItemType } from '@otl/api-interface/src/interfaces/constants/planner';
 import { EPlanners } from '@otl/api-interface/src/entities/EPlanners';
 import { IPlanner } from '@otl/api-interface/src/interfaces/IPlanner';
+import { ELecture } from '@otl/api-interface/dist/src';
 
 export function toJsonPlannerItem<IT extends PlannerItemType>(
-  item: EPlanners.EItems.Taken.Details | EPlanners.EItems.Future.Extended | EPlanners.EItems.Arbitrary.Extended,
+  item: EPlanners.EItems.Taken.Extended | EPlanners.EItems.Future.Extended | EPlanners.EItems.Arbitrary.Extended,
   item_type: IT,
 ): IPlanner.IItem.IMutate {
   if (item_type === PlannerItemType.Taken) {
@@ -21,17 +22,13 @@ export function toJsonPlannerItem<IT extends PlannerItemType>(
   }
 }
 
-export const toJsonTakenItem = (taken_item: EPlanners.EItems.Taken.Details): IPlanner.IItem.Taken => {
+export const toJsonTakenItem = (taken_item: EPlanners.EItems.Taken.Extended): IPlanner.IItem.Taken => {
   return {
     id: taken_item.id,
     item_type: 'TAKEN',
     is_excluded: taken_item.is_excluded,
-    lecture: toJsonLectureDetail(taken_item.subject_lecture),
-    course: toJsonCourseDetail(
-      taken_item.subject_lecture.course,
-      taken_item.subject_lecture,
-      taken_item.subject_lecture.course.subject_course_professors.map((x: { professor: any }) => x.professor),
-    ),
+    lecture: toJsonLectureBasic(taken_item.subject_lecture),
+    course: toJsonCourseBasic(taken_item.subject_lecture.course, taken_item.subject_lecture),
   };
 };
 
@@ -57,10 +54,6 @@ export const toJsonFutureItem = (future_item: EPlanners.EItems.Future.Extended):
     is_excluded: future_item.is_excluded,
     year: future_item.year,
     semester: future_item.semester,
-    course: toJsonCourseDetail(
-      future_item.subject_course,
-      future_item.subject_course.lecture[0],
-      future_item.subject_course.subject_course_professors.map((x) => x.professor),
-    ),
+    course: toJsonCourseBasic(future_item.subject_course, future_item.subject_course.lecture[0]),
   };
 };

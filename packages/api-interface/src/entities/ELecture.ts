@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { ECourse } from '@otl/api-interface/src';
 
 export namespace ELecture {
   export const Basic = Prisma.validator<Prisma.subject_lectureDefaultArgs>()(
@@ -15,6 +16,18 @@ export namespace ELecture {
     },
   );
   export type Extended = Prisma.subject_lectureGetPayload<typeof Extended>;
+
+  export const ExtendedWithCourse = Prisma.validator<Prisma.subject_lectureDefaultArgs>()(
+    {
+      include: {
+        ...Extended.include,
+        course: {
+          include: ECourse.Extended.include
+        }
+      },
+    },
+  );
+  export type ExtendedWithCourse = Prisma.subject_lectureGetPayload<typeof Extended>;
 
   export const WithClasstime =
     Prisma.validator<Prisma.subject_lectureDefaultArgs>()({

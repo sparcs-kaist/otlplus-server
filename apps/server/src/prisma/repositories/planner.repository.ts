@@ -12,9 +12,9 @@ import { PlannerItemType } from '@otl/api-interface/src/interfaces/constants/pla
 export class PlannerRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  public async getPlannerByUser(query: IPlanner.QueryDto, user: session_userprofile): Promise<EPlanners.Details[]> {
+  public async getPlannerByUser(query: IPlanner.QueryDto, user: session_userprofile): Promise<EPlanners.Extended[]> {
     return await this.prisma.planner_planner.findMany({
-      ...EPlanners.Details,
+      ...EPlanners.Extended,
       where: {
         user_id: user.id,
       },

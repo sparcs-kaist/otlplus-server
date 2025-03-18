@@ -37,7 +37,7 @@ export function toJsonFeedRelated(course: subject_course): ICourse.FeedRelated {
 }
 
 export function toJsonCourseBasic(
-  course: Omit<ECourse.Details, 'subject_course_professors'>,
+  course: Omit<ECourse.Extended, 'subject_course_professors'>,
   lecture: subject_lecture,
 ): ICourse.Basic {
   return {

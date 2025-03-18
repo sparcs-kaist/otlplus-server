@@ -3,7 +3,7 @@ import { IPlanner } from '@otl/api-interface/src/interfaces/IPlanner';
 import { toJsonArbitraryItem, toJsonFutureItem, toJsonTakenItem } from './planner.item.serializer';
 import { toJsonAdditionalTrack, toJsonGeneralTrack, toJsonMajorTrack } from './track.serializer';
 
-export const toJsonPlanner = (planner: EPlanners.Details): IPlanner.Detail => {
+export const toJsonPlanner = (planner: EPlanners.Extended): IPlanner.Detail => {
   return {
     id: planner.id,
     start_year: planner.start_year,
