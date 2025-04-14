@@ -96,7 +96,7 @@
       "**/*.(t|j)s"
     ],
     "moduleNameMapper": {
-      "^@src(.*)$": "<rootDir>/src$1"
+      "^@otl/scholar-sync/(.*)$": "<rootDir>/$1"
     },
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
