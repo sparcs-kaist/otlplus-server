@@ -98,11 +98,11 @@ const getSwaggerConfig = () => {
     .addApiKey(
       {
         type: 'apiKey',
-        name: 'x-api-key',
+        name: 'X-API-KEY',
         in: 'header',
         description: 'KAIST SCHOLAR API KEY',
       },
-      'scholar-api-key',
+      'X-API-KEY',
     )
     // .addSecurity('x-api-key', {
     //   type: 'apiKey',
