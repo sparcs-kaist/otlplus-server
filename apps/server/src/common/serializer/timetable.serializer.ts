@@ -1,7 +1,6 @@
-import { ELecture } from '@otl/api-interface/src/entities/ELecture';
-import { ETimetable } from '@otl/api-interface/src/entities/ETimetable';
-import { ITimetable } from '@otl/api-interface/src/interfaces/ITimetable';
+import { ELecture, ETimetable } from '@otl/prisma-client/entities';
 import { toJsonLectureDetail } from './lecture.serializer';
+import { ITimetable } from '@otl/server-nest/common/interfaces';
 
 export const toJsonTimetable = (
   timetable: ETimetable.Details | ETimetable.Basic,

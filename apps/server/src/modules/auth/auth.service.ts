@@ -2,10 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma, session_userprofile } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
-import { UserRepository } from '../../prisma/repositories/user.repository';
 import settings from '../../settings';
 import { SyncTakenLectureService } from '../sync/syncTakenLecture.service';
-import { ESSOUser } from '@otl/api-interface/src/entities/ESSOUser';
+import { UserRepository } from '@otl/prisma-client/repositories';
+import { ESSOUser } from '@otl/prisma-client/entities/ESSOUser';
 
 @Injectable()
 export class AuthService {

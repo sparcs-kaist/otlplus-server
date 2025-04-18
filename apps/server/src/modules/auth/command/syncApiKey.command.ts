@@ -1,7 +1,7 @@
 import { ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { USE_SYNC_API_KEY } from '@src/common/decorators/sync-api-key-auth.decorator';
-import settings from '@src/settings';
+import { USE_SYNC_API_KEY } from '@otl/server-nest/common/decorators/sync-api-key-auth.decorator';
+import settings from '@otl/server-nest/settings';
 import { AuthCommand, AuthResult } from '../auth.command';
 
 @Injectable()

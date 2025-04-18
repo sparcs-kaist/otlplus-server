@@ -1,10 +1,9 @@
 import { subject_course, subject_lecture, subject_professor } from '@prisma/client';
-import { ICourse } from '@otl/api-interface/src/interfaces/ICourse';
-import { IProfessor } from '@otl/api-interface/src/interfaces/IProfessor';
 import { toJsonDepartment } from './department.serializer';
 import { toJsonProfessors } from './professor.serializer';
-import { ECourse } from '@otl/api-interface/src/entities/ECourse';
-import { applyOrder } from '@src/common/utils/search.utils';
+import { ICourse, IProfessor } from '@otl/server-nest/common/interfaces';
+import { ECourse } from '@otl/prisma-client/entities';
+import { applyOrder } from '@otl/common/utils/util';
 
 export function toJsonFeedBasic(course: subject_course): ICourse.FeedBasic {
   return {

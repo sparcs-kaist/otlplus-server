@@ -1,5 +1,5 @@
 import { subject_department } from '@prisma/client';
-import { IDepartment } from '@otl/api-interface/src/interfaces/IDepartment';
+import { IDepartment } from '@otl/server-nest/common/interfaces';
 
 export const toJsonDepartment = (department: subject_department, nested = false): IDepartment.Basic => {
   return {

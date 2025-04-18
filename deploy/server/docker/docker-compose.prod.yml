@@ -5,7 +5,7 @@ services:
     container_name: otlplus-server-nest-prod
     platform: linux/amd64
     env_file:
-      - ../../../apps/server/env/.env.prod
+      - ../../../env/.env.prod
     environment:
       - NODE_ENV=prod
       - DOCKER_DEPLOY=true
@@ -19,5 +19,5 @@ services:
       - '58000:8000'
     volumes:
       - '/etc/timezone:/etc/timezone:ro'
-    working_dir: /var/www/otlplus-server/apps/server
+    working_dir: /var/www/otlplus-server
     command: pm2-runtime start ecosystem.config.js --only @otl/server-nest  --node-args="max-old-space-size=40920"

@@ -1,28 +1,28 @@
-import { ISync } from '@otl/api-interface/dist/src/interfaces/ISync';
-import { ELecture } from '@otl/api-interface/dist/src';
+import { ELecture } from '@otl/prisma-client/entities';
+import { IScholar } from '@otl/scholar-sync/clients/scholar/IScholar';
 
 export class LectureInfo {
-  code: string;
-  new_code: string;
-  year: number;
-  semester: number;
-  class_no: string;
-  department_id: number;
-  old_code: string;
-  title: string;
-  title_en: string;
-  type: string;
-  type_en: string;
-  audience: number;
-  limit: number;
-  credit: number;
-  credit_au: number;
-  num_classes: number;
-  num_labs: number;
-  is_english: boolean;
-  course_id: number;
+  code!: string;
+  new_code!: string;
+  year!: number;
+  semester!: number;
+  class_no!: string;
+  department_id!: number;
+  old_code!: string;
+  title!: string;
+  title_en!: string;
+  type!: string;
+  type_en!: string;
+  audience!: number;
+  limit!: number;
+  credit!: number;
+  credit_au!: number;
+  num_classes!: number;
+  num_labs!: number;
+  is_english!: boolean;
+  course_id!: number;
 
-  public static deriveLectureInfo(lecture: ISync.ScholarLectureType, course_id: number): LectureInfo {
+  public static deriveLectureInfo(lecture: IScholar.ScholarLectureType, course_id: number): LectureInfo {
     return {
       code: lecture.SUBJECT_NO,
       new_code: lecture.SUBJECT_NO,

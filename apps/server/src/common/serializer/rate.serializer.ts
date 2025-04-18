@@ -1,5 +1,5 @@
 import { support_rate } from '@prisma/client';
-import { IRate } from '@otl/api-interface/src/interfaces/IRate';
+import { IRate } from '@otl/server-nest/common/interfaces';
 
 export function toJsonRate(rate: support_rate): IRate.Basic {
   return {

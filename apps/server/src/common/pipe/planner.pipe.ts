@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, PipeTransform, ArgumentMetadata } from '@nestjs/common';
-import { PrismaService } from '@src/prisma/prisma.service';
+import { PrismaService } from '@otl/prisma-client/prisma.service';
 
 @Injectable()
 export class PlannerPipe implements PipeTransform {

@@ -1,9 +1,9 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
-import { GetUser } from '@src/common/decorators/get-user.decorator';
-import { Public } from '@src/common/decorators/skip-auth.decorator';
+import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator';
+import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator';
 import { LecturesService } from './lectures.service';
-import { ILecture, IReview } from '@otl/api-interface/src/interfaces';
+import { ILecture, IReview } from '@otl/server-nest/common/interfaces';
 
 @Controller('api/lectures')
 export class LecturesController {

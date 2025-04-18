@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
-
-import { TracksRepository } from '@src/prisma/repositories/track.repository';
-import { toJsonAdditionalTrack, toJsonGeneralTrack, toJsonMajorTrack } from '@src/common/serializer/track.serializer';
-import { IPlanner } from '@otl/api-interface/src/interfaces';
+import { TracksRepository } from '@otl/prisma-client/repositories';
+import { IPlanner } from '../../common/interfaces';
+import { toJsonAdditionalTrack, toJsonGeneralTrack, toJsonMajorTrack } from '../../common/serializer/track.serializer';
 
 @Injectable()
 export class TracksService {

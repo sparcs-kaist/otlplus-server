@@ -1,8 +1,8 @@
 import { Controller, Get } from '@nestjs/common';
-import { Public } from '@src/common/decorators/skip-auth.decorator';
+import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator';
 import { NoticesService } from './notices.service';
-import { toJsonNoticeBasic } from '@src/common/serializer/notices.serializer';
-import { INotice } from '@otl/api-interface/src/interfaces';
+import { toJsonNoticeBasic } from '@otl/server-nest/common/serializer/notices.serializer';
+import { INotice } from '@otl/server-nest/common/interfaces';
 
 @Controller('api/notices')
 export class NoticesController {

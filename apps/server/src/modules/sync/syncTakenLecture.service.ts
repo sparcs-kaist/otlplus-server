@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { ELecture } from '@otl/api-interface/src/entities/ELecture';
-import { ETakenLecture } from '@otl/api-interface/src/entities/ETakenLecture';
-import { ISync } from '@otl/api-interface/src/interfaces/ISync';
-import { SyncRepository } from '@src/prisma/repositories/sync.repository';
 import { SlackNotiService } from './slackNoti.service';
+import { SyncRepository } from '@otl/prisma-client/repositories';
+import { ISync } from '@otl/server-nest/common/interfaces/ISync';
+import { ELecture, ETakenLecture } from '@otl/prisma-client/entities';
 
 @Injectable()
 export class SyncTakenLectureService {

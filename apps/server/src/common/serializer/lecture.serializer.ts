@@ -1,9 +1,9 @@
-import { applyOrder } from '@src/common/utils/search.utils';
+import { ELecture } from '@otl/prisma-client/entities';
 import { toJsonClasstime } from './classtime.serializer';
 import { toJsonExamtime } from './examtime.serializer';
 import { toJsonProfessors } from './professor.serializer';
-import { ELecture } from '@otl/api-interface/src/entities/ELecture';
-import { ILecture } from '@otl/api-interface/src/interfaces/ILecture';
+import { ILecture } from '@otl/server-nest/common/interfaces';
+import { applyOrder } from '@otl/common/utils';
 
 export function toJsonLectureBasic(lecture: ELecture.Extended): ILecture.Basic {
   const professors = lecture.subject_lecture_professors.map((x) => x.professor);

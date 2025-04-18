@@ -1,12 +1,11 @@
 import { Transactional } from '@nestjs-cls/transactional';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { review_review, session_userprofile } from '@prisma/client';
-import { LectureRepository } from '@src/prisma/repositories/lecture.repository';
-import { ReviewsRepository } from '@src/prisma/repositories/review.repository';
+import { IReview } from '@otl/server-nest/common/interfaces';
+import { toJsonReview } from '@otl/server-nest/common/serializer/review.serializer';
+import { LectureRepository, ReviewsRepository } from '@otl/prisma-client/repositories';
+import { EReview } from '@otl/prisma-client/entities';
 import EReviewVote = EReview.EReviewVote;
-import { IReview } from '@otl/api-interface/src/interfaces';
-import { toJsonReview } from '@src/common/serializer/review.serializer';
-import { EReview } from '@otl/api-interface/src/entities/EReview';
 
 @Injectable()
 export class ReviewsService {

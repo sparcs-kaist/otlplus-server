@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Param, Post, UnauthorizedException } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
-import { GetUser } from '@src/common/decorators/get-user.decorator';
-import { IWishlist } from '@otl/api-interface/src/interfaces/IWishlist';
 import { WishlistService } from './wishlist.service';
-import { toJsonWishlist } from '@src/common/serializer/wishlist.serializer';
+import { GetUser } from '../../common/decorators/get-user.decorator';
+import { IWishlist } from '../../common/interfaces';
+import { toJsonWishlist } from '../../common/serializer/wishlist.serializer';
 
 @Controller('api/users/:userId/wishlist')
 export class WishlistController {

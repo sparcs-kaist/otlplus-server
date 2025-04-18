@@ -7,7 +7,6 @@ import session from 'express-session';
 import { AppModule } from '../app.module';
 import settings from '../settings';
 import { SwaggerModule } from '@nestjs/swagger';
-// import { AuthGuard, MockAuthGuard } from '../../common/guards/auth.guard'
 import morgan from 'morgan';
 import * as v8 from 'node:v8';
 

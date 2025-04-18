@@ -1,5 +1,5 @@
-import { ESemester } from '@otl/api-interface/src/entities/ESemester';
-import { ISemester } from '@otl/api-interface/src/interfaces/ISemester';
+import { ESemester } from '@otl/prisma-client/entities';
+import { ISemester } from '@otl/server-nest/common/interfaces';
 
 export const toJsonSemester = (semester: ESemester.Basic): ISemester.Response => {
   return {

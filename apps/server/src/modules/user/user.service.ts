@@ -1,19 +1,19 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
-import { ICourse } from '@otl/api-interface/src/interfaces';
-import { IReview } from '@otl/api-interface/src/interfaces/IReview';
-import { IUser } from '@otl/api-interface/src/interfaces/IUser';
-import { getRepresentativeLecture } from '@src/common/utils/lecture.utils';
-import { DepartmentRepository } from '@src/prisma/repositories/department.repository';
-import { LectureRepository } from '@src/prisma/repositories/lecture.repository';
-import { ReviewsRepository } from '@src/prisma/repositories/review.repository';
-import { UserRepository } from '@src/prisma/repositories/user.repository';
-import { CourseRepository } from '@src/prisma/repositories/course.repository';
-import { ResearchLecture } from '@otl/api-interface/src/interfaces/constants/lecture';
-import { toJsonDepartment } from '@src/common/serializer/department.serializer';
-import { addIsRead, toJsonCourseDetail } from '@src/common/serializer/course.serializer';
-import { toJsonReview } from '@src/common/serializer/review.serializer';
-import { toJsonLectureDetail } from '@src/common/serializer/lecture.serializer';
+import { getRepresentativeLecture } from '@otl/server-nest/common/utils/lecture.utils';
+import { toJsonDepartment } from '@otl/server-nest/common/serializer/department.serializer';
+import { addIsRead, toJsonCourseDetail } from '@otl/server-nest/common/serializer/course.serializer';
+import { toJsonReview } from '@otl/server-nest/common/serializer/review.serializer';
+
+import {
+  CourseRepository,
+  DepartmentRepository,
+  LectureRepository,
+  ReviewsRepository,
+  UserRepository,
+} from '@otl/prisma-client/repositories';
+import { toJsonLectureDetail } from '../../common/serializer/lecture.serializer';
+import { ICourse, IReview, IUser, ResearchLecture } from '@otl/server-nest/common/interfaces';
 
 @Injectable()
 export class UserService {

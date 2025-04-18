@@ -2,10 +2,9 @@ import { Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/commo
 import { session_userprofile } from '@prisma/client';
 import { LecturesService } from '../lectures/lectures.service';
 import { TimetablesService } from './timetables.service';
-import { ITimetable } from '@otl/api-interface/src/interfaces';
-import { GetUser } from '@src/common/decorators/get-user.decorator';
-import { toJsonTimetable } from '@src/common/serializer/timetable.serializer';
-import { ETimetable } from '@otl/api-interface/src/entities/ETimetable';
+import { ITimetable } from '@otl/server-nest/common/interfaces';
+import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator';
+import { toJsonTimetable } from '@otl/server-nest/common/serializer/timetable.serializer';
 
 @Controller('/api/users/:userId/timetables')
 export class TimetablesController {

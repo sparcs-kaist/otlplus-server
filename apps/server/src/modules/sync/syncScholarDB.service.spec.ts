@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { session_userprofile } from '@prisma/client';
-import { AppModule } from '@src/app.module';
-import { PrismaService } from '@src/prisma/prisma.service';
+import { AppModule } from '@otl/server-nest/app.module';
 import { SyncScholarDBService } from './syncScholarDB.service';
+import { PrismaService } from '@otl/prisma-client';
 
 // This tests on test database only. Add `DATABASE_URL` with `otlplus_test` database to run this test.
 

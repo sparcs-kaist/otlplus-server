@@ -7,18 +7,19 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
-import { IPlanner } from '@otl/api-interface/src/interfaces/IPlanner';
-
-import { DepartmentRepository } from '@src/prisma/repositories/department.repository';
-import { LectureRepository } from '@src/prisma/repositories/lecture.repository';
-import { PlannerRepository } from '@src/prisma/repositories/planner.repository';
-import { CourseRepository } from '../../prisma/repositories/course.repository';
 import { Transactional } from '@nestjs-cls/transactional';
-import { SemesterRepository } from '@src/prisma/repositories/semester.repository';
-import { UserRepository } from '@src/prisma/repositories/user.repository';
-import { toJsonPlanner } from '@src/common/serializer/planner.serializer';
-import { toJsonArbitraryItem, toJsonFutureItem } from '@src/common/serializer/planner.item.serializer';
-import { EPlanners } from '@otl/api-interface/src/entities/EPlanners';
+import { toJsonPlanner } from '@otl/server-nest/common/serializer/planner.serializer';
+import { toJsonArbitraryItem, toJsonFutureItem } from '@otl/server-nest/common/serializer/planner.item.serializer';
+import { IPlanner } from '@otl/server-nest/common/interfaces';
+import { EPlanners } from '@otl/prisma-client';
+import {
+  PlannerRepository,
+  LectureRepository,
+  DepartmentRepository,
+  CourseRepository,
+  SemesterRepository,
+  UserRepository,
+} from '@otl/prisma-client/repositories';
 
 @Injectable()
 export class PlannersService {
@@ -44,7 +45,16 @@ export class PlannersService {
   public async postPlanner(body: IPlanner.CreateBodyDto, user: session_userprofile): Promise<IPlanner.Detail> {
     const relatedPlanner = await this.getRelatedPlanner(user);
     const arrangeOrder = relatedPlanner.length == 0 ? 0 : relatedPlanner[relatedPlanner.length - 1].arrange_order + 1;
-    const planner = await this.PlannerRepository.createPlanner(body, arrangeOrder, user);
+    // @Todo: Domain 영역으로 변환하기. Clean Architecture 도입 필요
+    const createBody = {
+      start_year: body.start_year,
+      end_year: body.end_year,
+      general_track: body.general_track,
+      major_track: body.major_track,
+      additional_tracks: body.additional_tracks ?? [],
+      arrange_order: arrangeOrder,
+    };
+    const planner = await this.PlannerRepository.createPlanner(createBody, user);
 
     if (body.should_update_taken_semesters) {
       const takenLectures = await this.LectureRepository.findReviewWritableLectures(user, new Date());

@@ -1,11 +1,10 @@
 import { session_userprofile } from '@prisma/client';
-import { EFeed } from '@otl/api-interface/src/entities/EFeed';
-import { IFeed } from '@otl/api-interface/src/interfaces/IFeed';
 import { toJsonFeedRelated } from './course.serializer';
 import { toJsonDepartment } from './department.serializer';
 import { toJsonLectureBasic } from './lecture.serializer';
 import { toJsonReview } from './review.serializer';
-import { FeedType } from '@otl/api-interface/src/interfaces/constants/feed';
+import { EFeed } from '@otl/prisma-client/entities';
+import { FeedType, IFeed } from '@otl/server-nest/common/interfaces';
 
 export const toJsonFeedDetails = (feed: EFeed.Details, user: session_userprofile): IFeed.Details => {
   if (EFeed.isFamousHumanityReview(feed)) {

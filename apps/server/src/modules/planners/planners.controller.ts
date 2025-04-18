@@ -1,11 +1,11 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UnauthorizedException } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
-import { GetUser } from '@src/common/decorators/get-user.decorator';
-import { IPlanner } from '@otl/api-interface/src/interfaces/IPlanner';
+import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator';
 import { PlannersService } from './planners.service';
-import { PlannerPipe } from '@src/common/pipe/planner.pipe';
-import { toJsonPlanner } from '@src/common/serializer/planner.serializer';
-import { toJsonPlannerItem } from '@src/common/serializer/planner.item.serializer';
+import { PlannerPipe } from '@otl/server-nest/common/pipe/planner.pipe';
+import { toJsonPlanner } from '@otl/server-nest/common/serializer/planner.serializer';
+import { toJsonPlannerItem } from '@otl/server-nest/common/serializer/planner.item.serializer';
+import { IPlanner } from '@otl/server-nest/common/interfaces';
 
 @Controller('api/users/:id/planners')
 export class PlannersController {

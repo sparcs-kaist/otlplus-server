@@ -1,5 +1,5 @@
 import { subject_professor } from '@prisma/client';
-import { IProfessor } from '@otl/api-interface/src/interfaces/IProfessor';
+import { IProfessor } from '@otl/server-nest/common/interfaces';
 
 export const toJsonProfessors = (professors: subject_professor[], nested = false): IProfessor.Basic[] => {
   const result = professors.map((professor) => {

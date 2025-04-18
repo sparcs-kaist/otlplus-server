@@ -1,8 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { IWishlist } from '@otl/api-interface/src/interfaces/IWishlist';
-import { LectureRepository } from '@src/prisma/repositories/lecture.repository';
-import { WishlistRepository } from '@src/prisma/repositories/wishlist.repository';
 import { Transactional } from '@nestjs-cls/transactional';
+import { LectureRepository, WishlistRepository } from '@otl/prisma-client/repositories';
+import { IWishlist } from '@otl/server-nest/common/interfaces';
 
 @Injectable()
 export class WishlistService {

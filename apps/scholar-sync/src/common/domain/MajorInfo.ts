@@ -1,4 +1,4 @@
-import { EDepartment, EUser } from '@otl/api-interface/src';
+import { EDepartment, EUser } from '@otl/prisma-client/entities';
 import { IScholar } from '@otl/scholar-sync/clients/scholar/IScholar';
 
 export const APPLICATION_TYPE = {
@@ -9,16 +9,16 @@ export const APPLICATION_TYPE = {
 export type APPLICATION_TYPE = (typeof APPLICATION_TYPE)[keyof typeof APPLICATION_TYPE];
 
 export class MajorInfo<TYPE extends APPLICATION_TYPE> {
-  student_id: string;
-  department_name: string;
-  department_id: number;
-  application_type: TYPE;
+  student_id!: string;
+  department_name!: string;
+  department_id!: number;
+  application_type!: TYPE;
 
   public static deriveMajorInfo<T extends APPLICATION_TYPE>(
     otherMajor: IScholar.ScholarOtherMajorType,
     type: T,
     departmentMap: { [key: string]: EDepartment.Basic },
-  ): MajorInfo<T> {
+  ): MajorInfo<T> | undefined {
     if (departmentMap[otherMajor.ID]?.id) {
       return {
         student_id: `${otherMajor.STUDENT_ID}`,

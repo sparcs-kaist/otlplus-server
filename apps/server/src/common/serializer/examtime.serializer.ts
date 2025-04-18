@@ -1,5 +1,6 @@
 import { subject_examtime } from '@prisma/client';
-import { getTimeNumeric } from '@src/common/utils/time.utils';
+
+import { getTimeNumeric } from '@otl/common';
 
 export const toJsonExamtime = (examtime: subject_examtime) => {
   const DAY_STR = ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일'];

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { orderFilter } from '@otl/prisma-client/common/util';
+import { SemesterRepository } from '@otl/prisma-client/repositories';
 import { subject_semester } from '@prisma/client';
-import { ISemester } from '@otl/api-interface/src/interfaces/ISemester';
-import { SemesterRepository } from '@src/prisma/repositories/semester.repository';
-import { orderFilter } from '../../common/utils/search.utils';
+import { ISemester } from '@otl/server-nest/common/interfaces';
 
 @Injectable()
 export class SemestersService {

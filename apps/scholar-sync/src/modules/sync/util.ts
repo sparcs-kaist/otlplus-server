@@ -1,4 +1,10 @@
-import { ISync } from '@otl/api-interface/src/interfaces/ISync';
+import {
+  SyncResultDetail,
+  SyncResultDetails,
+  SyncResultSummaries,
+  SyncResultSummary,
+  SyncTimeType,
+} from '@otl/scholar-sync/common/interfaces/ISync';
 
 export function putPreviousSemester(semesters: [number, number][], count: number) {
   if (count === 0) return;
@@ -15,32 +21,7 @@ export function putPreviousSemester(semesters: [number, number][], count: number
   putPreviousSemester(semesters, count - 1);
 }
 
-export function normalizeArray<T>(
-  arr: T[],
-  selector: (item: T) => string | number | symbol | null = (item: any) => item.id,
-  defaultObj?: { [key: string]: T | undefined },
-): { [key: string | number | symbol]: T | undefined } {
-  const normalizeObj: { [key: string | number | symbol]: T | undefined } = defaultObj || {};
-
-  arr.forEach((data) => {
-    const key = selector(data);
-    if (key !== null) normalizeObj[key] = data;
-  });
-
-  return normalizeObj;
-}
-
-export function groupBy<T, K extends keyof any>(arr: T[], selector: (i: T) => K): Record<K, T[] | undefined> {
-  return arr.reduce(
-    (groups: Record<K, T[] | undefined>, item) => {
-      (groups[selector(item)] ??= []).push(item);
-      return groups;
-    },
-    {} as Record<K, T[] | undefined>,
-  );
-}
-
-export function summarizeSyncResult(syncResult: ISync.SyncResultDetail): ISync.SyncResultSummary {
+export function summarizeSyncResult(syncResult: SyncResultDetail): SyncResultSummary {
   return {
     type: syncResult.type,
     created: syncResult.created.length,
@@ -51,7 +32,7 @@ export function summarizeSyncResult(syncResult: ISync.SyncResultDetail): ISync.S
   };
 }
 
-export function summarizeSyncResults(syncResults: ISync.SyncResultDetails): ISync.SyncResultSummaries {
+export function summarizeSyncResults(syncResults: SyncResultDetails): SyncResultSummaries {
   return {
     time: syncResults.time,
     year: syncResults.year,

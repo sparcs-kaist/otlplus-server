@@ -1,9 +1,9 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
-import { GetUser } from '@src/common/decorators/get-user.decorator';
+import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator';
 import { FeedsService } from './feeds.service';
-import { IFeed } from '@otl/api-interface/src/interfaces';
-import { toJsonFeedDetails } from '@src/common/serializer/feeds.serializer';
+import { IFeed } from '@otl/server-nest/common/interfaces';
+import { toJsonFeedDetails } from '@otl/server-nest/common/serializer/feeds.serializer';
 
 @Controller('api/users/:userId/feeds')
 export class FeedsController {

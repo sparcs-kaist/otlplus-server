@@ -1,9 +1,9 @@
 import { session_userprofile } from '@prisma/client';
-import { EReview } from '@otl/api-interface/src/entities/EReview';
-import { getRepresentativeLecture } from '@src/common/utils/lecture.utils';
-import { IReview } from '@otl/api-interface/src/interfaces/IReview';
+import { getRepresentativeLecture } from '@otl/server-nest/common/utils/lecture.utils';
 import { toJsonCourseBasic } from './course.serializer';
 import { toJsonLectureBasic } from './lecture.serializer';
+import { EReview } from '@otl/prisma-client/entities';
+import { IReview } from '@otl/server-nest/common/interfaces';
 
 export const toJsonReview = (review: EReview.Details, user?: session_userprofile): IReview.Basic => {
   const representativeLecture = getRepresentativeLecture(review.course.lecture);

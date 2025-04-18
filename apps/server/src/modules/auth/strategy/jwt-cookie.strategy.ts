@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { IAuth } from '@otl/api-interface/src/interfaces';
-import settings from '../../../settings';
-import { AuthService } from '../auth.service';
+import { AuthService } from '@otl/server-nest/modules/auth/auth.service';
+import settings from '@otl/server-nest/settings';
+import { IAuth } from '@otl/server-nest/common/interfaces';
 
 /*
 

@@ -1,12 +1,12 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { session_userprofile } from '@prisma/client';
-import { ECourse } from '@otl/api-interface/src/entities/ECourse';
-import { CoursesService } from '@src/modules/courses/courses.service';
+import { CoursesService } from '@otl/server-nest/modules/courses/courses.service';
 import { AppModule } from '../src/app.module';
-import { PrismaService } from '../src/prisma/prisma.service';
-import { CourseRepository } from '../src/prisma/repositories/course.repository';
-import { TranManager } from '../src/prisma/transactionManager';
+import { CourseRepository } from '@otl/prisma-client/repositories';
+import { TranManager } from '@otl/prisma-client/transactionManager';
+import { PrismaService } from '@otl/prisma-client/prisma.service';
+import { ECourse } from '@otl/prisma-client/entities';
 
 describe.skip('AppController (e2e)', () => {
   let app: INestApplication;

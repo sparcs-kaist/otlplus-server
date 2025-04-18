@@ -1,6 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { ISync } from '@otl/api-interface/src/interfaces/ISync';
 import { ScholarApiClient } from '@otl/scholar-sync/clients/scholar/scholar.api.client';
 import { SlackNotiService } from '@otl/scholar-sync/clients/slack/slackNoti.service';
 import { SyncService } from '@otl/scholar-sync/modules/sync/sync.service';
@@ -8,6 +7,7 @@ import { putPreviousSemester, summarizeSyncResults } from '@otl/scholar-sync/mod
 import settings from '@otl/scholar-sync/settings';
 import fs from 'fs';
 import { WINSTON_MODULE_PROVIDER, WinstonLogger } from 'nest-winston';
+import { SyncResultDetails } from '@otl/scholar-sync/common/interfaces/ISync';
 
 @Injectable()
 export class SyncSchedule {
@@ -35,7 +35,7 @@ export class SyncSchedule {
     for (const [year, semester] of [...semesters].reverse()) {
       const lectures = await this.scholarApiClient.getLectureType(year, semester);
       const charges = await this.scholarApiClient.getChargeType(year, semester);
-      const syncResults: ISync.SyncResultDetails = await this.syncService.syncScholarDB({
+      const syncResults: SyncResultDetails = await this.syncService.syncScholarDB({
         year,
         semester,
         lectures,
@@ -65,7 +65,7 @@ export class SyncSchedule {
     for (const [year, semester] of [...semesters].reverse()) {
       const lectures = await this.scholarApiClient.getLectureType(year, semester);
       const charges = await this.scholarApiClient.getChargeType(year, semester);
-      const syncResultDetails: ISync.SyncResultDetails = await this.syncService.syncScholarDB({
+      const syncResultDetails: SyncResultDetails = await this.syncService.syncScholarDB({
         year,
         semester,
         lectures,

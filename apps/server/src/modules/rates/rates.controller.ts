@@ -1,9 +1,9 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
-import { GetUser } from '@src/common/decorators/get-user.decorator';
-import { IRate } from '@otl/api-interface/src/interfaces/IRate';
+import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator';
 import { RatesService } from './rates.service';
-import { toJsonRate } from '@src/common/serializer/rate.serializer';
+import { toJsonRate } from '@otl/server-nest/common/serializer/rate.serializer';
+import { IRate } from '@otl/server-nest/common/interfaces';
 
 @Controller('api/rates')
 export class RatesController {

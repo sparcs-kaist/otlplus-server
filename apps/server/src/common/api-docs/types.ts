@@ -14,7 +14,7 @@ import {
   IShare,
   ITimetable,
   IWishlist,
-} from '@otl/api-interface/src/interfaces';
+} from '@otl/server-nest/common/interfaces';
 
 export namespace getHello {
   export type requestParam = never;

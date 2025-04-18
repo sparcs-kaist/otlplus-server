@@ -4,9 +4,9 @@ import { Cron, SchedulerRegistry } from '@nestjs/schedule';
 import { SyncSchedule } from '@otl/scholar-sync/modules/sync/sync.schedule';
 import { SyncApiKeyAuth } from '@otl/scholar-sync/common/decorators/sync-api-key-auth.decorator';
 import CronTime from 'cron';
-import { ISync } from '@otl/api-interface/src/interfaces/ISync';
 import { Public } from '@otl/scholar-sync/common/decorators/skip-auth.decorator';
 import { ApiQuery } from '@nestjs/swagger';
+import { SyncTerm } from '@otl/scholar-sync/common/interfaces/ISync';
 
 @Controller('api/dynamic-sync')
 export class SyncDynamicController {
@@ -22,7 +22,7 @@ export class SyncDynamicController {
   @Public()
   getCrons() {
     const jobs = this.schedulerRegistry.getCronJobs();
-    const jobResults = [];
+    const jobResults: { key: string; running: boolean; next: string | Date }[] = [];
     jobs.forEach((value, key, map) => {
       let next;
       try {
@@ -42,7 +42,7 @@ export class SyncDynamicController {
   @ApiQuery({ name: 'semester', type: Number, required: false })
   @ApiQuery({ name: 'interval', type: Number, required: false })
   @SyncApiKeyAuth()
-  async syncAll(@Query() query: ISync.SyncTerm) {
+  async syncAll(@Query() query: SyncTerm) {
     await this.syncSchedule.syncAll(query.year, query.semester, query.interval);
   }
 
@@ -51,7 +51,7 @@ export class SyncDynamicController {
   @ApiQuery({ name: 'semester', type: Number, required: false })
   @ApiQuery({ name: 'interval', type: Number, required: false })
   @SyncApiKeyAuth()
-  async syncScholarDB(@Query() query: ISync.SyncTerm) {
+  async syncScholarDB(@Query() query: SyncTerm) {
     await this.syncSchedule.syncScholarDB(query.year, query.semester, query.interval);
   }
 
@@ -60,7 +60,7 @@ export class SyncDynamicController {
   @ApiQuery({ name: 'semester', type: Number, required: false })
   @ApiQuery({ name: 'interval', type: Number, required: false })
   @SyncApiKeyAuth()
-  async syncExamtime(@Query() query: ISync.SyncTerm) {
+  async syncExamtime(@Query() query: SyncTerm) {
     await this.syncSchedule.syncExamTime(query.year, query.semester, query.interval);
   }
 
@@ -69,7 +69,7 @@ export class SyncDynamicController {
   @ApiQuery({ name: 'semester', type: Number, required: false })
   @ApiQuery({ name: 'interval', type: Number, required: false })
   @SyncApiKeyAuth()
-  async syncClasstime(@Query() query: ISync.SyncTerm) {
+  async syncClasstime(@Query() query: SyncTerm) {
     await this.syncSchedule.syncClassTime(query.year, query.semester, query.interval);
   }
 
@@ -78,7 +78,7 @@ export class SyncDynamicController {
   @ApiQuery({ name: 'semester', type: Number, required: false })
   @ApiQuery({ name: 'interval', type: Number, required: false })
   @SyncApiKeyAuth()
-  async syncTakenLecture(@Query() query: ISync.SyncTerm) {
+  async syncTakenLecture(@Query() query: SyncTerm) {
     await this.syncSchedule.syncTakenLecture(query.year, query.semester, query.interval);
   }
 

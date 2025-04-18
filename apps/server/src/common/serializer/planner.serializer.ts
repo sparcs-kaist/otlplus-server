@@ -1,7 +1,7 @@
-import { EPlanners } from '@otl/api-interface/src/entities/EPlanners';
-import { IPlanner } from '@otl/api-interface/src/interfaces/IPlanner';
+import { EPlanners } from '@otl/prisma-client/entities/EPlanners';
 import { toJsonArbitraryItem, toJsonFutureItem, toJsonTakenItem } from './planner.item.serializer';
 import { toJsonAdditionalTrack, toJsonGeneralTrack, toJsonMajorTrack } from './track.serializer';
+import { IPlanner } from '@otl/server-nest/common/interfaces';
 
 export const toJsonPlanner = (planner: EPlanners.Details): IPlanner.Detail => {
   return {

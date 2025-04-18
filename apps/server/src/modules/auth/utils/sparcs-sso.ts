@@ -1,7 +1,7 @@
+import { ESSOUser } from '@otl/prisma-client/entities';
 import axios, { AxiosResponse } from 'axios';
 import * as crypto from 'crypto';
 import * as querystring from 'querystring';
-import { ESSOUser } from '@otl/api-interface/src/entities/ESSOUser';
 
 // CONVERT SPARCS SSO V2 Client Version 1.1 TO TYPESCRIPT
 // VALID ONLY AFTER ----(NOT VALID) ----

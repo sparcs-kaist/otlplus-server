@@ -1,12 +1,11 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
-import { GetUser } from '@src/common/decorators/get-user.decorator';
+import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator';
 import { DepartmentsService } from '../departments/departments.service';
 import { SessionService } from './session.service';
-import { IDepartment, ISession, IUser } from '@otl/api-interface/src/interfaces';
-import { toJsonDepartment } from '@src/common/serializer/department.serializer';
-import { EUser } from '@otl/api-interface/src/entities/EUser';
-import { toJsonUser } from '@src/common/serializer/user.serializer';
+import { IDepartment, ISession, IUser } from '@otl/server-nest/common/interfaces';
+import { toJsonDepartment } from '@otl/server-nest/common/serializer/department.serializer';
+import { toJsonUser } from '@otl/server-nest/common/serializer/user.serializer';
 
 @Controller('session')
 export class SessionController {

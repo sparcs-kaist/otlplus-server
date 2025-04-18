@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { NoticesRepository } from '@src/prisma/repositories/notices.repository';
+import { NoticesRepository } from '@otl/prisma-client/repositories';
 
 @Injectable()
 export class NoticesService {

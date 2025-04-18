@@ -1,10 +1,10 @@
 import { ExecutionContext, Injectable } from '@nestjs/common';
-import { IS_REVIEW_PROHIBITED_KEY } from '../../../common/decorators/prohibit-review.decorator';
 import { Reflector } from '@nestjs/core';
 import { AuthCommand, AuthResult } from '../auth.command';
-import { LecturesService } from '@src/modules/lectures/lectures.service';
 import { Request } from 'express';
-import { PrismaService } from '@src/prisma/prisma.service';
+import { PrismaService } from '@otl/prisma-client/prisma.service';
+import { LecturesService } from '../../lectures/lectures.service';
+import { IS_REVIEW_PROHIBITED_KEY } from '@otl/server-nest/common/decorators/prohibit-review.decorator';
 
 @Injectable()
 export class IsReviewProhibitedCommand implements AuthCommand {
