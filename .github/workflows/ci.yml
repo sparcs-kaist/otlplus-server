@@ -10,6 +10,23 @@ env:
   NODE_VERSION: 20
 
 jobs:
+  lint-fix:
+    name: Lint-fix
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'yarn'
+      - name: Install dependencies
+        run: yarn install
+      - name: lint Fix
+        run: yarn run lint:fix
+
   lint:
     name: Lint
     runs-on: ubuntu-latest
