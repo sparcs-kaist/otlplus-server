@@ -34,7 +34,7 @@ def otlplus_redeploy():
         "sudo",
         "/bin/bash",
         "-c",
-        "cd /home/otlplus/otlplus-nest/apps/server && git pull && /home/otlplus/otlplus-nest/deploy/server/deploy.sh -e dev"
+        "cd /home/otlplus/otlplus-nest/apps/server && git pull && cd /home/otlplus/otlplus-nest/deploy && /home/otlplus/otlplus-nest/deploy/server/deploy.sh -e dev"
     )
     return "Done", 200
 
