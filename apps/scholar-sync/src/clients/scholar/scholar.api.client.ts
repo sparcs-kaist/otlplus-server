@@ -50,8 +50,8 @@ export class ScholarApiClient {
 
   async getChargeType(lectureYear?: number, lectureTerm?: number): Promise<ScholarChargeType[]> {
     const params = {
-      lectureYear: lectureYear,
-      lectureTerm: lectureTerm,
+      lecture_year: lectureYear,
+      lecture_term: lectureTerm,
     };
     // in python: return _get(f"/charge_type2?{'&'.join(params)}")["OutBlock_1"]
     const data = await this._get(`/charge_type2`, params);

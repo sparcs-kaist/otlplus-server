@@ -95,12 +95,21 @@ const getSwaggerConfig = () => {
     .setTitle('OTLPlus-Scholar-Sync')
     .setDescription('The OTL Scholar Sync API description')
     .setVersion('1.0')
-    .addSecurity('x-api-key', {
-      type: 'apiKey',
-      in: 'header',
-      scheme: 'https',
-      description: 'KAIST SCHOLAR API KEY',
-    })
+    .addApiKey(
+      {
+        type: 'apiKey',
+        name: 'X-API-KEY',
+        in: 'header',
+        description: 'KAIST SCHOLAR API KEY',
+      },
+      'X-API-KEY',
+    )
+    // .addSecurity('x-api-key', {
+    //   type: 'apiKey',
+    //   in: 'header',
+    //   scheme: 'https',
+    //   description: 'KAIST SCHOLAR API KEY',
+    // })
     .build();
   return config;
 };

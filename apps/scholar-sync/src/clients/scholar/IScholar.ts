@@ -227,7 +227,7 @@ export namespace IScholar {
     @IsInt()
     DEPT_ID!: number;
     /** 시험 요일. 1~6 범위의 값 확인. 월부터 시작. */
-    @Transform(({ value }) => parseInt(value))
+    @Transform(({ value }) => timeDayConverter(value))
     @IsInt()
     EXAM_DAY!: number;
     /** 시험 시작 시간 */

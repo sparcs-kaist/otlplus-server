@@ -5,8 +5,7 @@ import { SyncSchedule } from '@otl/scholar-sync/modules/sync/sync.schedule';
 import { SyncApiKeyAuth } from '@otl/scholar-sync/common/decorators/sync-api-key-auth.decorator';
 import CronTime from 'cron';
 import { Public } from '@otl/scholar-sync/common/decorators/skip-auth.decorator';
-import { ApiQuery } from '@nestjs/swagger';
-import { SyncTerm } from '@otl/scholar-sync/common/interfaces/ISync';
+import { ApiQuery, ApiSecurity } from '@nestjs/swagger';
 
 @Controller('api/dynamic-sync')
 export class SyncDynamicController {
@@ -41,6 +40,7 @@ export class SyncDynamicController {
   @ApiQuery({ name: 'year', type: Number, required: false })
   @ApiQuery({ name: 'semester', type: Number, required: false })
   @ApiQuery({ name: 'interval', type: Number, required: false })
+  @ApiSecurity('X-API-KEY')
   @SyncApiKeyAuth()
   async syncAll(@Query() query: SyncTerm) {
     await this.syncSchedule.syncAll(query.year, query.semester, query.interval);
@@ -50,6 +50,7 @@ export class SyncDynamicController {
   @ApiQuery({ name: 'year', type: Number, required: false })
   @ApiQuery({ name: 'semester', type: Number, required: false })
   @ApiQuery({ name: 'interval', type: Number, required: false })
+  @ApiSecurity('X-API-KEY')
   @SyncApiKeyAuth()
   async syncScholarDB(@Query() query: SyncTerm) {
     await this.syncSchedule.syncScholarDB(query.year, query.semester, query.interval);
@@ -59,6 +60,7 @@ export class SyncDynamicController {
   @ApiQuery({ name: 'year', type: Number, required: false })
   @ApiQuery({ name: 'semester', type: Number, required: false })
   @ApiQuery({ name: 'interval', type: Number, required: false })
+  @ApiSecurity('X-API-KEY')
   @SyncApiKeyAuth()
   async syncExamtime(@Query() query: SyncTerm) {
     await this.syncSchedule.syncExamTime(query.year, query.semester, query.interval);
@@ -68,6 +70,7 @@ export class SyncDynamicController {
   @ApiQuery({ name: 'year', type: Number, required: false })
   @ApiQuery({ name: 'semester', type: Number, required: false })
   @ApiQuery({ name: 'interval', type: Number, required: false })
+  @ApiSecurity('X-API-KEY')
   @SyncApiKeyAuth()
   async syncClasstime(@Query() query: SyncTerm) {
     await this.syncSchedule.syncClassTime(query.year, query.semester, query.interval);
@@ -77,18 +80,21 @@ export class SyncDynamicController {
   @ApiQuery({ name: 'year', type: Number, required: false })
   @ApiQuery({ name: 'semester', type: Number, required: false })
   @ApiQuery({ name: 'interval', type: Number, required: false })
+  @ApiSecurity('X-API-KEY')
   @SyncApiKeyAuth()
   async syncTakenLecture(@Query() query: SyncTerm) {
     await this.syncSchedule.syncTakenLecture(query.year, query.semester, query.interval);
   }
 
   @Post('degree')
+  @ApiSecurity('X-API-KEY')
   @SyncApiKeyAuth()
   async syncDegree() {
     await this.syncSchedule.syncDegree();
   }
 
   @Post('major')
+  @ApiSecurity('X-API-KEY')
   @SyncApiKeyAuth()
   async syncMajor() {
     await this.syncSchedule.syncMajor();
@@ -100,6 +106,7 @@ export class SyncDynamicController {
   }
 
   @Patch('toggle/:jobName')
+  @ApiSecurity('X-API-KEY')
   @SyncApiKeyAuth()
   async toggleJob(@Param('jobName') jobName: string) {
     const job = this.schedulerRegistry.getCronJob(jobName);
@@ -116,6 +123,7 @@ export class SyncDynamicController {
   }
 
   @Patch('toggleAll')
+  @ApiSecurity('X-API-KEY')
   @SyncApiKeyAuth()
   async toggleAllJobs() {
     const jobs = this.schedulerRegistry.getCronJobs();
@@ -131,6 +139,7 @@ export class SyncDynamicController {
   }
 
   @Patch('reset-cron/:jobName')
+  @ApiSecurity('X-API-KEY')
   @SyncApiKeyAuth()
   async cronJob(@Param('jobName') jobName: string, @Body('cron') cron: string) {
     const job = this.schedulerRegistry.getCronJob(jobName);
