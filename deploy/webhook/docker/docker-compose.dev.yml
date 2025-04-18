@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  flask-webhook:
+    build:
+      context: ../../..
+      dockerfile: ./deploy/webhook/docker/Dockerfile
+    container_name: flask-webhook
+    env_file:
+      - ../../../env/.env.dev
+    ports:
+      - '5000:5000'
+    environment:
+      - FLASK_ENV=development
+    volumes:
+      - .:/app
+      - ./env:/app/env
+    restart: unless-stopped
