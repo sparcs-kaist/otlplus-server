@@ -1,9 +1,10 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { PrismaService } from '@otl/server-nest/modules/prisma/prisma.service';
 import axios from 'axios';
+
 import { AppModule } from '../../src/app.module';
 import { UserService } from '../../src/modules/user/user.service';
-import { PrismaService } from '@otl/server-nest/modules/prisma/prisma.service';
 
 describe.skip('AppController (e2e)', () => {
   let app: INestApplication;

@@ -1,10 +1,13 @@
-import { Injectable } from '@nestjs/common';
-import { Prisma, session_userprofile } from '@prisma/client';
-import { applyOffset, applyOrder, groupBy } from '@otl/common/utils/util';
-import { CourseRepository } from './course.repository';
-import { ELecture } from '../entities/ELecture';
-import { LectureQuery } from '@otl/prisma-client/types/query';
-import { PrismaService } from '@otl/prisma-client/prisma.service';
+import { Injectable } from '@nestjs/common'
+import { Prisma, session_userprofile } from '@prisma/client'
+
+import { applyOffset, applyOrder, groupBy } from '@otl/common/utils/util'
+
+import { PrismaService } from '@otl/prisma-client/prisma.service'
+import { LectureQuery } from '@otl/prisma-client/types/query'
+
+import { ELecture } from '../entities/ELecture'
+import { CourseRepository } from './course.repository'
 
 @Injectable()
 export class LectureRepository {
@@ -17,17 +20,17 @@ export class LectureRepository {
     return await this.prisma.subject_lecture.findUniqueOrThrow({
       include: ELecture.Details.include,
       where: {
-        id: id,
+        id,
       },
-    });
+    })
   }
 
   async getLectureBasicById(id: number): Promise<ELecture.Basic> {
     return await this.prisma.subject_lecture.findUniqueOrThrow({
       where: {
-        id: id,
+        id,
       },
-    });
+    })
   }
 
   async getLectureByIds(ids: number[]): Promise<ELecture.Details[]> {
@@ -38,20 +41,20 @@ export class LectureRepository {
           in: ids,
         },
       },
-    });
+    })
   }
 
   async filterByRequest(query: LectureQuery): Promise<ELecture.Details[]> {
-    const DEFAULT_LIMIT = 300;
-    const DEFAULT_ORDER = ['year', 'semester', 'old_code', 'class_no'];
-    const researchTypes = ['Individual Study', 'Thesis Study(Undergraduate)', 'Thesis Research(MA/phD)'];
+    const DEFAULT_LIMIT = 300
+    const DEFAULT_ORDER = ['year', 'semester', 'old_code', 'class_no']
+    const researchTypes = ['Individual Study', 'Thesis Study(Undergraduate)', 'Thesis Research(MA/phD)']
 
-    const semesterFilter = this.semesterFilter(query?.year, query?.semester);
-    const timeFilter = this.timeFilter(query?.day, query?.begin, query?.end);
-    const departmentFilter = this.courseRepository.departmentFilter(query?.department);
-    const typeFilter = this.courseRepository.typeFilter(query?.type);
-    const groupFilter = this.courseRepository.groupFilter(query?.group);
-    const keywordFilter = this.courseRepository.keywordFilter(query?.keyword, false);
+    const semesterFilter = this.semesterFilter(query?.year, query?.semester)
+    const timeFilter = this.timeFilter(query?.day, query?.begin, query?.end)
+    const departmentFilter = this.courseRepository.departmentFilter(query?.department)
+    const typeFilter = this.courseRepository.typeFilter(query?.type)
+    const groupFilter = this.courseRepository.groupFilter(query?.group)
+    const keywordFilter = this.courseRepository.keywordFilter(query?.keyword, false)
     const defaultFilter = {
       AND: [
         {
@@ -63,7 +66,7 @@ export class LectureRepository {
           },
         },
       ],
-    };
+    }
 
     const filters: object[] = [
       semesterFilter,
@@ -73,7 +76,7 @@ export class LectureRepository {
       groupFilter,
       keywordFilter,
       defaultFilter,
-    ].filter((filter): filter is object => filter !== null);
+    ].filter((filter): filter is object => filter !== null)
     const queryResult = await this.prisma.subject_lecture.findMany({
       include: {
         subject_department: true,
@@ -85,19 +88,19 @@ export class LectureRepository {
         AND: filters,
       },
       take: query.limit ?? DEFAULT_LIMIT,
-    });
-    const levelFilteredResult = this.courseRepository.levelFilter<ELecture.Details>(queryResult, query?.level);
+    })
+    const levelFilteredResult = this.courseRepository.levelFilter<ELecture.Details>(queryResult, query?.level)
 
     const orderedQuery = applyOrder<ELecture.Details>(
       levelFilteredResult,
       (query.order ?? DEFAULT_ORDER) as (keyof ELecture.Details)[],
-    );
-    return applyOffset<ELecture.Details>(orderedQuery, query.offset ?? 0);
+    )
+    return applyOffset<ELecture.Details>(orderedQuery, query.offset ?? 0)
   }
 
   async findReviewWritableLectures(user: session_userprofile, date?: Date): Promise<ELecture.Details[]> {
-    type Semester = { semester: number; year: number };
-    const currDate = date ?? new Date();
+    type Semester = { semester: number, year: number }
+    const currDate = date ?? new Date()
     const notWritableSemesters = await this.prisma.subject_semester.findMany({
       where: {
         OR: [
@@ -113,28 +116,26 @@ export class LectureRepository {
           },
         ],
       },
-    });
+    })
     const notWritableYearAndSemester = groupBy<Semester, number>(
-      notWritableSemesters.map((semester) => {
-        return {
-          semester: semester.semester,
-          year: semester.year,
-        };
-      }),
+      notWritableSemesters.map((semester) => ({
+        semester: semester.semester,
+        year: semester.year,
+      })),
       (subject_semester) => subject_semester.year,
-    );
+    )
 
-    const notWritableYearAndSemesterMap: Record<string, Record<string, Semester[] | undefined>> = {};
-    for (const [key, value] of Object.entries(notWritableYearAndSemester)) {
+    const notWritableYearAndSemesterMap: Record<string, Record<string, Semester[] | undefined>> = {}
+    Object.entries(notWritableYearAndSemester).forEach(([key, value]) => {
       if (value) {
-        notWritableYearAndSemesterMap[key] = groupBy<Semester, number>(value, (s) => s.year);
+        notWritableYearAndSemesterMap[key] = groupBy<Semester, number>(value, (s) => s.year)
       }
-    }
+    })
 
-    const takenLectures = await this.getTakenLectures(user);
-    const reviewWritableLectures = takenLectures.filter((lecture) => {
-      return (notWritableYearAndSemesterMap[lecture.year] ?? [lecture.semester]) ? true : false;
-    });
+    const takenLectures = await this.getTakenLectures(user)
+    const reviewWritableLectures = takenLectures.filter(
+      (lecture) => !!(notWritableYearAndSemesterMap[lecture.year] ?? [lecture.semester]),
+    )
 
     // const lectures = await this.prisma.subject_lecture.findMany({
     //   where: {
@@ -142,7 +143,7 @@ export class LectureRepository {
     //   }
     // })
 
-    return reviewWritableLectures;
+    return reviewWritableLectures
   }
 
   getResearchLectureQuery(): Prisma.subject_lectureWhereInput {
@@ -150,7 +151,7 @@ export class LectureRepository {
       type_en: {
         in: ['Individual Study', 'Thesis Study(Undergraduate)', 'Thesis Research(MA/phD)'],
       },
-    };
+    }
   }
 
   async getTakenLectures(user: session_userprofile): Promise<ELecture.Details[]> {
@@ -165,72 +166,73 @@ export class LectureRepository {
           },
         },
       })
-    ).map((takenLecture) => takenLecture.lecture);
+    ).map((takenLecture) => takenLecture.lecture)
 
-    return lectures;
+    return lectures
   }
 
   public semesterFilter(year?: number, semester?: number): object | null {
     if (!year && !semester) {
-      return null;
-    } else if (!year) {
+      return null
+    }
+    if (!year) {
       return {
         semester: {
           in: semester,
         },
-      };
-    } else if (!semester) {
+      }
+    }
+    if (!semester) {
       return {
         years: {
           equals: semester,
         },
-      };
-    } else {
-      return {
-        AND: [
-          {
-            year: {
-              equals: year,
-            },
+      }
+    }
+    return {
+      AND: [
+        {
+          year: {
+            equals: year,
           },
-          {
-            semester: {
-              equals: semester,
-            },
+        },
+        {
+          semester: {
+            equals: semester,
           },
-        ],
-      };
+        },
+      ],
     }
   }
 
   public timeFilter(day?: number, begin?: number, end?: number): object | null {
-    const datetimeBegin = begin !== undefined && begin !== null ? this.datetimeConverter(begin) : undefined;
-    const datetimeEnd = end !== undefined && end !== null ? this.datetimeConverter(end) : undefined;
+    const datetimeBegin = begin !== undefined && begin !== null ? this.datetimeConverter(begin) : undefined
+    const datetimeEnd = end !== undefined && end !== null ? this.datetimeConverter(end) : undefined
 
-    const result: any = {};
+    const result: any = {}
 
     if (day !== undefined && day !== null) {
-      result.day = day;
+      result.day = day
     }
     if (datetimeBegin) {
-      result.begin = { gte: datetimeBegin };
+      result.begin = { gte: datetimeBegin }
     }
     if (datetimeEnd) {
-      result.end = { lte: datetimeEnd };
+      result.end = { lte: datetimeEnd }
     }
 
-    return Object.keys(result).length > 0 ? { subject_classtime: { some: result } } : null;
+    return Object.keys(result).length > 0 ? { subject_classtime: { some: result } } : null
   }
 
   public datetimeConverter(time: number): Date {
-    const hour = Math.floor(time / 2) + 8;
-    const minute = (time % 2) * 30;
+    const hour = Math.floor(time / 2) + 8
+    const minute = (time % 2) * 30
 
     // 1970-01-01 날짜로 고정된 Date 객체 생성
-    const date = new Date('1970-01-01T00:00:00.000Z');
-    date.setUTCHours(hour, minute, 0, 0); // UTC 시간을 설정
+    const date = new Date('1970-01-01T00:00:00.000Z')
+    date.setUTCHours(hour, minute, 0, 0) // UTC 시간을 설정
 
-    return date;
+    return date
   }
 
   async getLectureAutocomplete(year: number, semester: number, keyword: string): Promise<ELecture.Extended | null> {
@@ -258,8 +260,8 @@ export class LectureRepository {
         ],
       },
       include: ELecture.Extended.include,
-    });
-    return candidate;
+    })
+    return candidate
   }
 
   async getUserLecturesByYearSemester(userId: number, year: number, semester: number): Promise<ELecture.UserTaken[]> {
@@ -267,17 +269,17 @@ export class LectureRepository {
       where: {
         userprofile_id: userId,
         lecture: {
-          year: year,
-          semester: semester,
+          year,
+          semester,
           deleted: false,
         },
       },
       include: {
         lecture: ELecture.UserTaken,
       },
-    });
+    })
 
-    return lectures.map((result) => result.lecture);
+    return lectures.map((result) => result.lecture)
   }
 
   async getLectureDetailsForTimetable(lectureIds: number[]) {
@@ -295,6 +297,6 @@ export class LectureRepository {
         },
         subject_classtime: true, // Include classtime details if needed
       },
-    });
+    })
   }
 }

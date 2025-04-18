@@ -1,8 +1,10 @@
-import { Module } from '@nestjs/common';
-import { RatesController } from './rates.controller';
-import { RatesService } from './rates.service';
-import { PrismaModule } from '@otl/prisma-client/prisma.module';
-import { RateRepository } from '@otl/prisma-client/repositories';
+import { Module } from '@nestjs/common'
+
+import { PrismaModule } from '@otl/prisma-client/prisma.module'
+import { RateRepository } from '@otl/prisma-client/repositories'
+
+import { RatesController } from './rates.controller'
+import { RatesService } from './rates.service'
 
 @Module({
   imports: [PrismaModule],

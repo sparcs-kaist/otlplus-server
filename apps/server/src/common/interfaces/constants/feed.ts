@@ -1,4 +1,4 @@
-import { Union } from '@otl/common/utils/type';
+import { Union } from '@otl/common/utils/type'
 
 export const FeedType = {
   FamousHumanityReview: 'FAMOUS_HUMANITY_REVIEW',
@@ -7,5 +7,5 @@ export const FeedType = {
   RelatedCourse: 'RELATED_COURSE',
   RankedReview: 'RANKED_REVIEW',
   Rate: 'RATE',
-};
-export type FeedType = Union<typeof FeedType>;
+}
+export type FeedType = Union<typeof FeedType>

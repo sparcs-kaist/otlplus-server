@@ -1,6 +1,8 @@
-import { Module } from '@nestjs/common';
-import { DepartmentsService } from './departments.service';
-import { PrismaModule } from '@otl/prisma-client/prisma.module';
+import { Module } from '@nestjs/common'
+
+import { PrismaModule } from '@otl/prisma-client/prisma.module'
+
+import { DepartmentsService } from './departments.service'
 
 @Module({
   imports: [PrismaModule],

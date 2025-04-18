@@ -1,19 +1,21 @@
-import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { SyncModule } from '@otl/scholar-sync/modules/sync/sync.module';
-import { APP_GUARD } from '@nestjs/core';
-import { AuthModule } from '@otl/scholar-sync/modules/auth/auth.module';
-import { AuthConfig } from '@otl/scholar-sync/modules/auth/auth.config';
-import { AuthGuard } from '@otl/scholar-sync/modules/auth/guard/auth.guard';
-import { ScheduleModule } from '@nestjs/schedule';
-import settings from '@otl/scholar-sync/settings';
-import { PrismaModule } from '@otl/prisma-client/prisma.module';
-import { WinstonModule } from 'nest-winston';
-import { ClsModule } from 'nestjs-cls';
-import { ClsPluginTransactional } from '@nestjs-cls/transactional';
-import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
-import { PrismaService } from '@otl/prisma-client';
+import { Module } from '@nestjs/common'
+import { APP_GUARD } from '@nestjs/core'
+import { ScheduleModule } from '@nestjs/schedule'
+import { ClsPluginTransactional } from '@nestjs-cls/transactional'
+import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma'
+import { AuthConfig } from '@otl/scholar-sync/modules/auth/auth.config'
+import { AuthModule } from '@otl/scholar-sync/modules/auth/auth.module'
+import { AuthGuard } from '@otl/scholar-sync/modules/auth/guard/auth.guard'
+import { SyncModule } from '@otl/scholar-sync/modules/sync/sync.module'
+import settings from '@otl/scholar-sync/settings'
+import { WinstonModule } from 'nest-winston'
+import { ClsModule } from 'nestjs-cls'
+
+import { PrismaService } from '@otl/prisma-client'
+import { PrismaModule } from '@otl/prisma-client/prisma.module'
+
+import { AppController } from './app.controller'
+import { AppService } from './app.service'
 
 @Module({
   imports: [
@@ -43,9 +45,9 @@ import { PrismaService } from '@otl/prisma-client';
     {
       provide: APP_GUARD,
       useFactory: async (authConfig: AuthConfig) => {
-        const env = process.env.NODE_ENV === undefined ? 'prod' : process.env.NODE_ENV;
-        const authChain = await authConfig.config(env);
-        return new AuthGuard(authChain);
+        const env = process.env.NODE_ENV === undefined ? 'prod' : process.env.NODE_ENV
+        const authChain = await authConfig.config(env)
+        return new AuthGuard(authChain)
       },
       inject: [AuthConfig],
     },

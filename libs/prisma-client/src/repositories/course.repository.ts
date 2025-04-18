@@ -1,13 +1,16 @@
-import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { ECourse } from '../entities/ECourse';
-import ECourseUser = ECourse.ECourseUser;
-import { ELecture } from '../entities/ELecture';
-import { EReview } from '../entities/EReview';
-import { PaginationOption } from '@otl/prisma-client/types';
-import { formatNewLectureCodeWithDot, orderFilter } from '@otl/prisma-client/common';
-import { PrismaService } from '../prisma.service';
-import { applyOrder, applyOffset } from '@otl/common/utils/util';
+import { Injectable } from '@nestjs/common'
+import { Prisma } from '@prisma/client'
+
+import { ECourse } from '../entities/ECourse'
+import ECourseUser = ECourse.ECourseUser
+import { applyOffset, applyOrder } from '@otl/common/utils/util'
+
+import { formatNewLectureCodeWithDot, orderFilter } from '@otl/prisma-client/common'
+import { PaginationOption } from '@otl/prisma-client/types'
+
+import { ELecture } from '../entities/ELecture'
+import { EReview } from '../entities/EReview'
+import { PrismaService } from '../prisma.service'
 
 @Injectable()
 export class CourseRepository {
@@ -23,7 +26,8 @@ export class CourseRepository {
     OE: 'Other Elective',
     ME: 'Major Elective',
     MR: 'Major Required',
-  };
+  }
+
   private MAJOR_ACRONYMS = [
     'CE',
     'MSB',
@@ -46,20 +50,20 @@ export class CourseRepository {
     'BTM',
     'BCS',
     'SS',
-  ];
+  ]
 
   public async getCourseById(id: number): Promise<ECourse.Details | null> {
     return await this.prisma.subject_course.findUnique({
       // relationLoadStrategy: 'query',
       include: ECourse.Details.include,
       where: {
-        id: id,
+        id,
       },
-    });
+    })
   }
 
   public async getLecturesByCourseId(id: number, order?: string[]): Promise<ELecture.Details[]> {
-    const orders = order ? order : ['year', 'semester', 'class_no'];
+    const orders = order || ['year', 'semester', 'class_no']
     const course = await this.prisma.subject_course.findUnique({
       include: {
         lecture: {
@@ -73,11 +77,11 @@ export class CourseRepository {
         },
       },
       where: {
-        id: id,
+        id,
       },
-    });
-    const filteredLecture = course ? course.lecture.filter((lecture) => !lecture.deleted) : [];
-    return filteredLecture;
+    })
+    const filteredLecture = course ? course.lecture.filter((lecture) => !lecture.deleted) : []
+    return filteredLecture
   }
 
   public async getReviewsByCourseId(option: PaginationOption, id: number): Promise<EReview.Details[]> {
@@ -87,23 +91,31 @@ export class CourseRepository {
       take: option.limit,
       skip: option.offset,
       orderBy: orderFilter(option.order),
-    });
-    return review;
+    })
+    return review
   }
 
-  public async getCourses(query: any): Promise<ECourse.Details[]> {
-    const DEFAULT_LIMIT = 150;
-    const DEFAULT_ORDER = ['old_code'];
-
-    const { department, type, level, group, keyword, term, order, offset, limit } = query;
-    const departmentFilter = this.departmentFilter(department);
-    const typeFilter = this.typeFilter(type);
-    const groupFilter = this.groupFilter(group);
-    const keywordFilter = this.keywordFilter(keyword);
-    const term_filter = this.termFilter(term);
+  public async getCourses(
+    department: string[] | undefined,
+    type: string[] | undefined,
+    level: string[] | undefined,
+    group: string[] | undefined,
+    keyword: string | undefined,
+    term: string[] | undefined,
+    order: string[] | undefined,
+    offset: number | undefined,
+    limit: number | undefined,
+  ): Promise<ECourse.Details[]> {
+    const DEFAULT_LIMIT = 150
+    const DEFAULT_ORDER = ['old_code']
+    const departmentFilter = this.departmentFilter(department)
+    const typeFilter = this.typeFilter(type)
+    const groupFilter = this.groupFilter(group)
+    const keywordFilter = this.keywordFilter(keyword)
+    const term_filter = this.termFilter(term)
     const filterList: object[] = [departmentFilter, typeFilter, groupFilter, keywordFilter, term_filter].filter(
       (filter): filter is object => filter !== null,
-    );
+    )
 
     const queryResult = await this.prisma.subject_course.findMany({
       include: ECourse.Details.include,
@@ -111,177 +123,176 @@ export class CourseRepository {
         AND: filterList,
       },
       take: limit ?? DEFAULT_LIMIT,
-    });
-    const levelFilteredResult = this.levelFilter<ECourse.Details>(queryResult, level);
+    })
+    const levelFilteredResult = this.levelFilter<ECourse.Details>(queryResult, level)
 
     // Apply Ordering and Offset
-    const orderedResult = applyOrder<ECourse.Details>(levelFilteredResult, order ?? DEFAULT_ORDER);
-    return applyOffset<ECourse.Details>(orderedResult, offset ?? 0);
+    const orderedResult = applyOrder<ECourse.Details>(levelFilteredResult, order ?? DEFAULT_ORDER)
+    return applyOffset<ECourse.Details>(orderedResult, offset ?? 0)
   }
 
   public departmentFilter(department_names?: string[]): object | null {
     if (!department_names) {
-      return null;
+      return null
     }
     if (department_names.includes('ALL')) {
-      return null;
-    } else if (department_names.includes('ETC')) {
+      return null
+    }
+    if (department_names.includes('ETC')) {
       return {
         subject_department: {
           code: {
             notIn: this.MAJOR_ACRONYMS.filter((x) => department_names.includes(x)),
           },
         },
-      };
-    } else {
-      return {
-        subject_department: {
-          code: {
-            in: this.MAJOR_ACRONYMS.filter((x) => department_names.includes(x)),
-          },
+      }
+    }
+    return {
+      subject_department: {
+        code: {
+          in: this.MAJOR_ACRONYMS.filter((x) => department_names.includes(x)),
         },
-      };
+      },
     }
   }
 
   public typeFilter(types?: string[]): object | null {
     if (!types) {
-      return null;
+      return null
     }
 
     if (types.includes('ALL')) {
-      return null;
-    } else if (types.includes('ETC')) {
+      return null
+    }
+    if (types.includes('ETC')) {
       const unselected_types = Object.keys(this.TYPE_ACRONYMS)
         .filter((type) => !(type in types))
-        .map((type) => this.TYPE_ACRONYMS[type as keyof typeof this.TYPE_ACRONYMS]);
+        .map((type) => this.TYPE_ACRONYMS[type as keyof typeof this.TYPE_ACRONYMS])
       return {
         OR: unselected_types.map((type) => ({
           type_en: {
             contains: type, // OR 조건으로 LIKE와 비슷한 매칭
           },
         })),
-      };
-    } else {
-      return {
-        OR: types.map((type) => ({
-          type_en: {
-            contains: this.TYPE_ACRONYMS[type as keyof typeof this.TYPE_ACRONYMS],
-          },
-        })),
-      };
+      }
+    }
+    return {
+      OR: types.map((type) => ({
+        type_en: {
+          contains: this.TYPE_ACRONYMS[type as keyof typeof this.TYPE_ACRONYMS],
+        },
+      })),
     }
   }
 
   public termFilter(term?: string[]): object | null {
     if (!term) {
-      return null;
+      return null
     }
 
     if (term.includes('ALL')) {
-      return null;
-    } else {
-      const current_year = new Date().getFullYear();
-      const term_number = term.map((x) => parseInt(x))[0] ?? 0;
+      return null
+    }
+    const current_year = new Date().getFullYear()
+    const term_number = term.map((x) => parseInt(x))[0] ?? 0
 
-      const termFilter: Prisma.subject_courseWhereInput = {
-        lecture: {
-          some: {
-            year: {
-              gte: current_year - term_number,
-            },
+    const termFilter: Prisma.subject_courseWhereInput = {
+      lecture: {
+        some: {
+          year: {
+            gte: current_year - term_number,
           },
         },
-      };
-      return termFilter;
+      },
     }
+    return termFilter
   }
 
   public keywordFilter(keyword?: string, isCourse = true): object | null {
     if (!keyword) {
-      return null;
+      return null
     }
 
-    const keyword_trimed = keyword.trim();
-    const keyword_space_removed = keyword_trimed.replace(/\s/g, '');
+    const keyword_trimed = keyword.trim()
+    const keyword_space_removed = keyword_trimed.replace(/\s/g, '')
     const title_filter = {
       title_no_space: {
         contains: keyword_space_removed,
       },
-    };
+    }
     const en_title_filter = {
       title_en_no_space: {
         contains: keyword_space_removed,
       },
-    };
+    }
     const department_name_filter = {
       subject_department: {
         name: keyword_trimed,
       },
-    };
+    }
     const department_name_en_filter = {
       subject_department: {
         name_en: keyword_trimed,
       },
-    };
+    }
     const professors_professor_name_filter = isCourse
       ? {
-          subject_course_professors: {
-            some: {
-              professor: {
-                professor_name: {
-                  contains: keyword_trimed,
-                },
+        subject_course_professors: {
+          some: {
+            professor: {
+              professor_name: {
+                contains: keyword_trimed,
               },
             },
           },
-        }
+        },
+      }
       : {
-          subject_lecture_professors: {
-            some: {
-              professor: {
-                professor_name: {
-                  contains: keyword_trimed,
-                },
+        subject_lecture_professors: {
+          some: {
+            professor: {
+              professor_name: {
+                contains: keyword_trimed,
               },
             },
           },
-        };
+        },
+      }
     const professors_professor_name_en_filter = isCourse
       ? {
-          subject_course_professors: {
-            some: {
-              professor: {
-                professor_name_en: {
-                  contains: keyword_trimed,
-                },
+        subject_course_professors: {
+          some: {
+            professor: {
+              professor_name_en: {
+                contains: keyword_trimed,
               },
             },
           },
-        }
+        },
+      }
       : {
-          subject_lecture_professors: {
-            some: {
-              professor: {
-                professor_name_en: {
-                  contains: keyword_trimed,
-                },
+        subject_lecture_professors: {
+          some: {
+            professor: {
+              professor_name_en: {
+                contains: keyword_trimed,
               },
             },
           },
-        };
+        },
+      }
 
     const old_code_filter = {
       old_code: {
         contains: keyword_space_removed,
       },
-    };
+    }
 
     const new_code_filter = {
       new_code: {
         contains: formatNewLectureCodeWithDot(keyword_space_removed),
       },
-    };
+    }
     return {
       OR: [
         title_filter,
@@ -293,23 +304,23 @@ export class CourseRepository {
         professors_professor_name_filter,
         professors_professor_name_en_filter,
       ],
-    };
+    }
   }
 
   public groupFilter(group?: string[]): object | null {
     if (!group) {
-      return null;
+      return null
     }
 
-    const filters = [];
+    const filters = []
 
     if (group.includes('Basic')) {
-      group.splice(group.indexOf('Basic'), 1);
-      filters.push({ type_en: { in: ['Basic Required', 'Basic Elective'] } });
+      group.splice(group.indexOf('Basic'), 1)
+      filters.push({ type_en: { in: ['Basic Required', 'Basic Elective'] } })
     }
     if (group.includes('Humanity')) {
-      group.splice(group.indexOf('Humanity'), 1);
-      filters.push({ type_en: { startsWith: 'Humanities & Social Elective' } });
+      group.splice(group.indexOf('Humanity'), 1)
+      filters.push({ type_en: { startsWith: 'Humanities & Social Elective' } })
     }
     if (group.length) {
       filters.push({
@@ -317,47 +328,47 @@ export class CourseRepository {
           in: ['Major Required', 'Major Elective', 'Elective(Graduate)'],
         },
         subject_department: { code: { in: group } },
-      });
+      })
     }
 
     return {
       OR: filters,
-    };
+    }
   }
 
   public levelFilter<T extends ECourse.Details | ELecture.Details>(queryResult: T[], levels?: string[]): T[] {
     if (!levels) {
-      return queryResult;
+      return queryResult
     }
 
-    const levelFilters = levels.map((level) => level[0]);
+    const levelFilters = levels.map((level) => level[0])
     if (levels.includes('ALL')) {
-      return queryResult;
-    } else if (levels.includes('ETC')) {
-      return queryResult.filter((item) => {
-        const level = item.old_code.replace(/[^0-9]/g, '')[0];
-        return !levelFilters.includes(level);
-      });
-    } else {
-      return queryResult.filter((item) => {
-        const level = item.old_code.replace(/[^0-9]/g, '')[0];
-        return levelFilters.includes(level);
-      });
+      return queryResult
     }
+    if (levels.includes('ETC')) {
+      return queryResult.filter((item) => {
+        const level = item.old_code.replace(/[^0-9]/g, '')[0]
+        return !levelFilters.includes(level)
+      })
+    }
+    return queryResult.filter((item) => {
+      const level = item.old_code.replace(/[^0-9]/g, '')[0]
+      return levelFilters.includes(level)
+    })
   }
 
   async getUserTakenCourses(takenLecturesId: number[], order: string[]): Promise<ECourse.DetailWithIsRead[]> {
-    const orderFilter: { [key: string]: string }[] = [];
+    const orderFilters: { [key: string]: string }[] = []
     order.forEach((orderList) => {
-      const orderDict: { [key: string]: string } = {};
-      let order = 'asc';
-      const orderBy = orderList.split('-');
-      if (orderBy[0] == '') {
-        order = 'desc';
+      const orderDict: { [key: string]: string } = {}
+      let sorOrder = 'asc'
+      const orderBy = orderList.split('-')
+      if (orderBy[0] === '') {
+        sorOrder = 'desc'
       }
-      orderDict[orderBy[orderBy.length - 1]] = order;
-      orderFilter.push(orderDict);
-    });
+      orderDict[orderBy[orderBy.length - 1]] = sorOrder
+      orderFilters.push(orderDict)
+    })
     return this.prisma.subject_course.findMany({
       where: {
         lecture: {
@@ -368,14 +379,14 @@ export class CourseRepository {
           },
         },
       },
-      orderBy: orderFilter,
+      orderBy: orderFilters,
       include: {
         subject_department: true,
         subject_course_professors: { include: { professor: true } },
         lecture: true,
         subject_courseuser: true,
       },
-    });
+    })
   }
 
   async getCourseAutocomplete(keyword: string): Promise<ECourse.Extended | null> {
@@ -402,12 +413,12 @@ export class CourseRepository {
       },
       include: ECourse.Extended.include,
       orderBy: { old_code: 'asc' },
-    });
-    return candidate;
+    })
+    return candidate
   }
 
   async readCourse(userId: number, courseId: number): Promise<ECourseUser.Basic> {
-    const now = new Date();
+    const now = new Date()
     return await this.prisma.subject_courseuser.upsert({
       create: {
         latest_read_datetime: now,
@@ -423,7 +434,7 @@ export class CourseRepository {
           user_profile_id: userId,
         },
       },
-    });
+    })
   }
 
   public async isUserSpecificRead(courseId: number, userId: number) {
@@ -436,9 +447,9 @@ export class CourseRepository {
         course_id: courseId,
         user_profile_id: userId,
       },
-    });
-    if (!courseUser || !courseUser.subject_course.latest_written_datetime) return false;
+    })
+    if (!courseUser || !courseUser.subject_course.latest_written_datetime) return false
 
-    return courseUser.subject_course.latest_written_datetime <= courseUser.latest_read_datetime;
+    return courseUser.subject_course.latest_written_datetime <= courseUser.latest_read_datetime
   }
 }

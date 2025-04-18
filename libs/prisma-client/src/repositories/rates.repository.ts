@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '@otl/prisma-client/prisma.service';
+import { Injectable } from '@nestjs/common'
+
+import { PrismaService } from '@otl/prisma-client/prisma.service'
 
 @Injectable()
 export class RateRepository {
@@ -12,7 +13,7 @@ export class RateRepository {
         year,
         version,
       },
-    });
+    })
   }
 
   async createRate(userId: number, score: number, year: number, version: string) {
@@ -23,6 +24,6 @@ export class RateRepository {
         score,
         version,
       },
-    });
+    })
   }
 }

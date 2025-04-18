@@ -1,8 +1,11 @@
-import { Controller, Get, HttpException, Param, Query } from '@nestjs/common';
-import { session_userprofile } from '@prisma/client';
-import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator';
-import { ICourse, IReview, IUser } from '@otl/server-nest/common/interfaces';
-import { UserService } from './user.service';
+import {
+  Controller, Get, HttpException, Param, Query,
+} from '@nestjs/common'
+import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
+import { ICourse, IReview, IUser } from '@otl/server-nest/common/interfaces'
+import { session_userprofile } from '@prisma/client'
+
+import { UserService } from './user.service'
 
 @Controller('api/users')
 export class UserController {
@@ -15,10 +18,9 @@ export class UserController {
     @GetUser() user: session_userprofile,
   ): Promise<ICourse.DetailWithIsRead[]> {
     if (userId === user.id) {
-      return await this.userService.getUserTakenCourses(query, user);
-    } else {
-      throw new HttpException("Can't find user", 401);
+      return await this.userService.getUserTakenCourses(query, user)
     }
+    throw new HttpException('Can\'t find user', 401)
   }
 
   @Get(':user_id/liked-reviews')
@@ -28,9 +30,8 @@ export class UserController {
     @GetUser() user: session_userprofile,
   ): Promise<(IReview.Basic & { userspecific_is_liked: boolean })[]> {
     if (userId === user.id) {
-      return await this.userService.getUserLikedReviews(user, userId, query);
-    } else {
-      throw new HttpException("Can't find user", 401);
+      return await this.userService.getUserLikedReviews(user, userId, query)
     }
+    throw new HttpException('Can\'t find user', 401)
   }
 }

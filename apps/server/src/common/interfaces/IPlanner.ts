@@ -1,52 +1,55 @@
-import { Transform, Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsEnum, IsIn, IsInt, IsNumber, IsOptional, IsString } from 'class-validator';
-import { AdditionalTrackType } from '@otl/server-nest/common/interfaces/constants/additional.track.response.dto';
-import { IDepartment } from '@otl/server-nest/common/interfaces/IDepartment';
-import { PlannerItemType, PlannerItemTypeEnum } from '@otl/common/enum/planner';
-import { ICourse } from '@otl/server-nest/common/interfaces/ICourse';
-import { ILecture } from '@otl/server-nest/common/interfaces/ILecture';
+import { AdditionalTrackType } from '@otl/server-nest/common/interfaces/constants/additional.track.response.dto'
+import { ICourse } from '@otl/server-nest/common/interfaces/ICourse'
+import { IDepartment } from '@otl/server-nest/common/interfaces/IDepartment'
+import { ILecture } from '@otl/server-nest/common/interfaces/ILecture'
 import {
-  _PROHIBITED_FIELD_PATTERN,
   OrderDefaultValidator,
-} from '@otl/server-nest/common/interfaces/validators.decorator';
+  PROHIBITED_FIELD_PATTERN,
+} from '@otl/server-nest/common/interfaces/validators.decorator'
+import { Transform, Type } from 'class-transformer'
+import {
+  IsArray, IsBoolean, IsEnum, IsIn, IsInt, IsNumber, IsOptional, IsString,
+} from 'class-validator'
+
+import { PlannerItemType, PlannerItemTypeEnum } from '@otl/common/enum/planner'
 
 export namespace IPlanner {
   export namespace ITrack {
     export interface Additional {
-      id: number;
-      start_year: number;
-      end_year: number;
-      type: AdditionalTrackType;
-      department: IDepartment.Basic | null;
-      major_required: number;
-      major_elective: number;
+      id: number
+      start_year: number
+      end_year: number
+      type: AdditionalTrackType
+      department: IDepartment.Basic | null
+      major_required: number
+      major_elective: number
     }
 
     export interface General {
-      id: number;
-      start_year: number;
-      end_year: number;
-      is_foreign: boolean;
-      total_credit: number;
-      total_au: number;
-      basic_required: number;
-      basic_elective: number;
-      thesis_study: number;
-      thesis_study_doublemajor: number;
-      general_required_credit: number;
-      general_required_au: number;
-      humanities: number;
-      humanities_doublemajor: number;
+      id: number
+      start_year: number
+      end_year: number
+      is_foreign: boolean
+      total_credit: number
+      total_au: number
+      basic_required: number
+      basic_elective: number
+      thesis_study: number
+      thesis_study_doublemajor: number
+      general_required_credit: number
+      general_required_au: number
+      humanities: number
+      humanities_doublemajor: number
     }
 
     export interface Major {
-      id: number;
-      start_year: number;
-      end_year: number;
-      department: IDepartment.Basic;
-      basic_elective_doublemajor: number;
-      major_required: number;
-      major_elective: number;
+      id: number
+      start_year: number
+      end_year: number
+      department: IDepartment.Basic
+      basic_elective_doublemajor: number
+      major_required: number
+      major_elective: number
     }
   }
 
@@ -57,50 +60,50 @@ export namespace IPlanner {
         ? IPlanner.IItem.Future
         : IT extends PlannerItemTypeEnum.Arbitrary
           ? IPlanner.IItem.Arbitrary
-          : IPlanner.IItem.Taken | IPlanner.IItem.Future | IPlanner.IItem.Arbitrary;
+          : IPlanner.IItem.Taken | IPlanner.IItem.Future | IPlanner.IItem.Arbitrary
 
     export interface Basic {
-      id: number;
-      item_type: PlannerItemType;
-      is_excluded: boolean;
+      id: number
+      item_type: PlannerItemType
+      is_excluded: boolean
     }
 
     export interface Future extends Basic {
-      item_type: 'FUTURE';
-      year: number;
-      semester: number;
-      course: ICourse.Basic;
+      item_type: 'FUTURE'
+      year: number
+      semester: number
+      course: ICourse.Basic
     }
 
     export interface Taken extends Basic {
-      item_type: 'TAKEN';
-      lecture: ILecture.Basic;
-      course: ICourse.Basic;
+      item_type: 'TAKEN'
+      lecture: ILecture.Basic
+      course: ICourse.Basic
     }
 
     export interface Arbitrary extends Basic {
-      item_type: 'ARBITRARY';
-      year: number;
-      semester: number;
-      department: IDepartment.Basic | null;
-      type: string;
-      type_en: string;
-      credit: number;
-      credit_au: number;
+      item_type: 'ARBITRARY'
+      year: number
+      semester: number
+      department: IDepartment.Basic | null
+      type: string
+      type_en: string
+      credit: number
+      credit_au: number
     }
   }
 
   export interface Detail {
-    id: number;
-    start_year: number;
-    end_year: number;
-    general_track: ITrack.General;
-    major_track: ITrack.Major;
-    additional_tracks: ITrack.Additional[];
-    taken_items: IItem.Taken[];
-    future_items: IItem.Future[];
-    arbitrary_items: IItem.Arbitrary[];
-    arrange_order: number;
+    id: number
+    start_year: number
+    end_year: number
+    general_track: ITrack.General
+    major_track: ITrack.Major
+    additional_tracks: ITrack.Additional[]
+    taken_items: IItem.Taken[]
+    future_items: IItem.Future[]
+    arbitrary_items: IItem.Arbitrary[]
+    arrange_order: number
   }
 
   export class QueryDto {
@@ -108,95 +111,96 @@ export namespace IPlanner {
     @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
     @IsArray()
     @IsString({ each: true })
-    @OrderDefaultValidator(_PROHIBITED_FIELD_PATTERN)
-    order?: string[];
+    @OrderDefaultValidator(PROHIBITED_FIELD_PATTERN)
+    order?: string[]
 
     @IsOptional()
     @IsNumber()
     @Type(() => Number)
-    offset?: number;
+    offset?: number
 
     @IsOptional()
     @IsNumber()
     @Type(() => Number)
-    limit?: number;
+    limit?: number
   }
 
   export class CreateBodyDto {
     @IsInt()
-    start_year!: number;
+    start_year!: number
 
     @IsInt()
-    end_year!: number;
+    end_year!: number
 
     @IsInt()
-    general_track!: number;
+    general_track!: number
 
     @IsInt()
-    major_track!: number;
+    major_track!: number
 
     @IsOptional()
     @IsArray()
     @IsInt({ each: true })
-    additional_tracks?: number[];
+    additional_tracks?: number[]
 
     @IsOptional()
     @IsBoolean()
-    should_update_taken_semesters?: boolean;
+    should_update_taken_semesters?: boolean
 
     @IsArray()
     @IsInt({ each: true })
-    taken_items_to_copy!: number[];
+    taken_items_to_copy!: number[]
 
     @IsArray()
     @IsInt({ each: true })
-    future_items_to_copy!: number[];
+    future_items_to_copy!: number[]
 
     @IsArray()
     @IsInt({ each: true })
-    arbitrary_items_to_copy!: number[];
+    arbitrary_items_to_copy!: number[]
   }
 
   export class RemoveItemBodyDto {
     @IsInt()
-    item!: number;
+    item!: number
+
     @IsEnum(['TAKEN', 'FUTURE', 'ARBITRARY'])
-    item_type!: 'TAKEN' | 'FUTURE' | 'ARBITRARY';
+    item_type!: 'TAKEN' | 'FUTURE' | 'ARBITRARY'
   }
 
   export class ReorderBodyDto {
     @IsInt()
-    arrange_order!: number;
+    arrange_order!: number
   }
 
   export class UpdateItemBodyDto {
     @IsInt()
-    item!: number;
+    item!: number
 
     @IsEnum(PlannerItemType)
-    item_type!: PlannerItemType;
+    item_type!: PlannerItemType
 
     @IsInt()
     @IsOptional()
-    semester?: number;
+    semester?: number
 
     @IsBoolean()
     @IsOptional()
-    is_excluded?: boolean;
+    is_excluded?: boolean
   }
 
   export class FuturePlannerItemDto {
     @IsInt()
     @Type(() => Number)
-    course!: number;
+    course!: number
 
     @IsInt()
     @Type(() => Number)
-    year!: number;
+    year!: number
 
     @IsIn([1, 2, 3, 4])
     @Type(() => Number)
-    semester!: number;
+    semester!: number
   }
 
   export class AddArbitraryItemDto {
@@ -204,56 +208,56 @@ export namespace IPlanner {
 
     @IsInt()
     @Type(() => Number)
-    year!: number;
+    year!: number
 
     @IsIn([1, 2, 3, 4])
     @Type(() => Number)
-    semester!: 1 | 2 | 3 | 4;
+    semester!: 1 | 2 | 3 | 4
 
     @IsInt()
     @Type(() => Number)
-    department!: number;
+    department!: number
 
     @IsString()
-    type!: string;
+    type!: string
 
     @IsString()
-    type_en!: string;
+    type_en!: string
 
     @IsInt()
     @Type(() => Number)
-    credit!: number;
+    credit!: number
 
     @IsInt()
     @Type(() => Number)
-    credit_au!: number;
+    credit_au!: number
   }
 
   export class UpdateBodyDto {
     // @Todo start_year cannot be greater than end_year, also start_year cannot be greater than now
     @IsInt()
     @Type(() => Number)
-    start_year!: number;
+    start_year!: number
 
     @IsInt()
     @Type(() => Number)
-    end_year!: number;
+    end_year!: number
 
     @IsInt()
     @Type(() => Number)
-    general_track!: number;
+    general_track!: number
 
     @IsInt()
     @Type(() => Number)
-    major_track!: number;
+    major_track!: number
 
     @Transform(({ value }) => (typeof value === 'number' ? [value] : value))
     @IsArray()
     @IsInt({ each: true })
-    additional_tracks!: number[];
+    additional_tracks!: number[]
 
     @IsOptional()
     @IsBoolean()
-    should_update_taken_semesters?: boolean;
+    should_update_taken_semesters?: boolean
   }
 }

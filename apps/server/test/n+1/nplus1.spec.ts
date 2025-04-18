@@ -1,8 +1,9 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { ETimetable } from '@otl/common/entities/ETimetable';
-import { PrismaService } from '@otl/server-nest/modules/prisma/prisma.service';
 import { AppModule } from '@otl/server-nest/app.module';
+import { PrismaService } from '@otl/server-nest/modules/prisma/prisma.service';
+
+import { ETimetable } from '@otl/common/entities/ETimetable';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;

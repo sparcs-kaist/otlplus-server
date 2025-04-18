@@ -1,5 +1,6 @@
-import { Prisma } from '@prisma/client';
-import { ELecture } from './ELecture';
+import { Prisma } from '@prisma/client'
+
+import { ELecture } from './ELecture'
 
 export namespace EWishlist {
   export const WithLectures = Prisma.validator<Prisma.timetable_wishlistDefaultArgs>()({
@@ -13,7 +14,7 @@ export namespace EWishlist {
         where: { subject_lecture: { deleted: false } },
       },
     },
-  });
+  })
 
-  export type WithLectures = Prisma.timetable_wishlistGetPayload<typeof WithLectures>;
+  export type WithLectures = Prisma.timetable_wishlistGetPayload<typeof WithLectures>
 }

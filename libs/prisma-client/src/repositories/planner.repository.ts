@@ -1,12 +1,14 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { Prisma, session_userprofile } from '@prisma/client';
-import { Transactional } from '@nestjs-cls/transactional';
-import { EPlanners } from '../entities/EPlanners';
-import CreateInput = EPlanners.EItems.Arbitrary.CreateInput;
-import { orderFilter } from '@otl/prisma-client/common/util';
-import { PaginationOption } from '@otl/prisma-client/types/pagination';
-import { PlannerItemType } from '@otl/common/enum/planner';
-import { PrismaService } from '@otl/prisma-client/prisma.service';
+import { BadRequestException, Injectable } from '@nestjs/common'
+import { Transactional } from '@nestjs-cls/transactional'
+import { Prisma, session_userprofile } from '@prisma/client'
+
+import { EPlanners } from '../entities/EPlanners'
+import CreateInput = EPlanners.EItems.Arbitrary.CreateInput
+import { PlannerItemType } from '@otl/common/enum/planner'
+
+import { orderFilter } from '@otl/prisma-client/common/util'
+import { PrismaService } from '@otl/prisma-client/prisma.service'
+import { PaginationOption } from '@otl/prisma-client/types/pagination'
 
 @Injectable()
 export class PlannerRepository {
@@ -21,15 +23,15 @@ export class PlannerRepository {
       orderBy: orderFilter(query.order),
       skip: query.offset,
       take: query.limit,
-    });
+    })
   }
 
   public async getBasicPlannerById(id: number): Promise<EPlanners.Basic | null> {
     return await this.prisma.planner_planner.findUnique({
       where: {
-        id: id,
+        id,
       },
-    });
+    })
   }
 
   public async createPlanner(body: EPlanners.CreateBody, user: session_userprofile): Promise<EPlanners.Details> {
@@ -52,21 +54,19 @@ export class PlannerRepository {
           },
         },
         planner_planner_additional_tracks: {
-          create: body?.additional_tracks?.map((t) => {
-            return {
-              graduation_additionaltrack: {
-                connect: {
-                  id: t,
-                },
+          create: body?.additional_tracks?.map((t) => ({
+            graduation_additionaltrack: {
+              connect: {
+                id: t,
               },
-            };
-          }),
+            },
+          })),
         },
         start_year: body.start_year,
         end_year: body.end_year,
         arrange_order: body.arrange_order,
       },
-    });
+    })
   }
 
   public async getPlannerById(user: session_userprofile, id: number): Promise<EPlanners.Details | null> {
@@ -74,9 +74,9 @@ export class PlannerRepository {
       ...EPlanners.Details,
       where: {
         user_id: user.id,
-        id: id,
+        id,
       },
-    });
+    })
   }
 
   public async updateOrder(plannerId: number, order: number): Promise<EPlanners.Details> {
@@ -88,7 +88,7 @@ export class PlannerRepository {
       data: {
         arrange_order: order,
       },
-    });
+    })
   }
 
   public async incrementOrders(plannerIds: number[], from: number, to: number): Promise<void> {
@@ -107,7 +107,7 @@ export class PlannerRepository {
           increment: 1,
         },
       },
-    });
+    })
   }
 
   public async decrementOrders(plannerIds: number[], from: number, to: number): Promise<void> {
@@ -126,7 +126,7 @@ export class PlannerRepository {
           decrement: 1,
         },
       },
-    });
+    })
   }
 
   public async getRelatedPlanner(user: session_userprofile): Promise<EPlanners.Basic[]> {
@@ -137,7 +137,7 @@ export class PlannerRepository {
       orderBy: {
         arrange_order: 'asc',
       },
-    });
+    })
   }
 
   public async getTakenPlannerItemByIds(plannerItemIds: number[]): Promise<EPlanners.EItems.Taken.Details[] | null> {
@@ -148,27 +148,25 @@ export class PlannerRepository {
           in: plannerItemIds,
         },
       },
-    });
-    return plannerItems.length > 0 ? plannerItems : null;
+    })
+    return plannerItems.length > 0 ? plannerItems : null
   }
 
   public async createTakenPlannerItem(
     plannerId: number,
     lectures: {
-      lectureId: number;
-      isExcluded: boolean;
+      lectureId: number
+      isExcluded: boolean
     }[],
   ): Promise<EPlanners.EItems.Taken.Basic[]> {
-    const datas = lectures.map((lecture) => {
-      return {
-        planner_id: plannerId,
-        is_excluded: lecture.isExcluded,
-        lecture_id: lecture.lectureId,
-      };
-    });
+    const datas = lectures.map((lecture) => ({
+      planner_id: plannerId,
+      is_excluded: lecture.isExcluded,
+      lecture_id: lecture.lectureId,
+    }))
     await this.prisma.planner_takenplanneritem.createMany({
       data: datas,
-    });
+    })
     return this.prisma.planner_takenplanneritem.findMany({
       where: {
         planner_id: plannerId,
@@ -176,8 +174,9 @@ export class PlannerRepository {
           in: lectures.map((lecture) => lecture.lectureId),
         },
       },
-    });
+    })
   }
+
   public async getFuturePlannerItemById(futureItemIds: number[]): Promise<EPlanners.EItems.Future.Extended[] | null> {
     const futurePlannerItems = await this.prisma.planner_futureplanneritem.findMany({
       include: EPlanners.EItems.Future.Extended.include,
@@ -186,24 +185,22 @@ export class PlannerRepository {
           in: futureItemIds,
         },
       },
-    });
-    return futurePlannerItems.length > 0 ? futurePlannerItems : null;
+    })
+    return futurePlannerItems.length > 0 ? futurePlannerItems : null
   }
 
   @Transactional()
   public async createFuturePlannerItem(plannerId: number, targetItems: EPlanners.EItems.Future.Extended[]) {
-    const createDatas = targetItems.map((target_item) => {
-      return {
-        planner_id: plannerId,
-        course_id: target_item.course_id,
-        is_excluded: target_item.is_excluded,
-        year: target_item.year,
-        semester: target_item.semester,
-      };
-    });
+    const createDatas = targetItems.map((target_item) => ({
+      planner_id: plannerId,
+      course_id: target_item.course_id,
+      is_excluded: target_item.is_excluded,
+      year: target_item.year,
+      semester: target_item.semester,
+    }))
     return await this.prisma.planner_futureplanneritem.createMany({
       data: createDatas,
-    });
+    })
   }
 
   @Transactional()
@@ -212,7 +209,7 @@ export class PlannerRepository {
       where: {
         id: target_item.id,
       },
-    });
+    })
   }
 
   public async getArbitraryPlannerItemById(
@@ -225,25 +222,25 @@ export class PlannerRepository {
           in: arbitraryItemIds,
         },
       },
-    });
-    return arbitraryItems.length > 0 ? arbitraryItems : null;
+    })
+    return arbitraryItems.length > 0 ? arbitraryItems : null
   }
 
   public async createArbitraryPlannerItem(
     plannerId: number,
     target_items: EPlanners.EItems.Arbitrary.CreateInput[],
-  ): Promise<Prisma.BatchPayload>;
+  ): Promise<Prisma.BatchPayload>
 
   public async createArbitraryPlannerItem(
     plannerId: number,
     target_items: EPlanners.EItems.Arbitrary.CreateInput,
-  ): Promise<EPlanners.EItems.Arbitrary.Extended>;
+  ): Promise<EPlanners.EItems.Arbitrary.Extended>
 
   @Transactional()
   public async createArbitraryPlannerItem<T extends CreateInput | CreateInput[]>(
     plannerId: number,
     target_items: T,
-  ): Promise<any> {
+  ): Promise<Prisma.BatchPayload | EPlanners.EItems.Arbitrary.Extended> {
     if (Array.isArray(target_items)) {
       const createDatas = target_items.map((targetItem: CreateInput) => ({
         planner_id: plannerId,
@@ -255,28 +252,27 @@ export class PlannerRepository {
         type_en: targetItem.type_en,
         credit: targetItem.credit,
         credit_au: targetItem.credit_au,
-      }));
+      }))
 
-      return await this.prisma.planner_arbitraryplanneritem.createMany({
+      return this.prisma.planner_arbitraryplanneritem.createMany({
         data: createDatas,
-      });
-    } else {
-      const targetItem = target_items as CreateInput;
-      return await this.prisma.planner_arbitraryplanneritem.create({
-        include: EPlanners.EItems.Arbitrary.Extended.include,
-        data: {
-          planner_id: plannerId,
-          department_id: targetItem.department_id,
-          is_excluded: targetItem.is_excluded,
-          year: targetItem.year,
-          semester: targetItem.semester,
-          type: targetItem.type,
-          type_en: targetItem.type_en,
-          credit: targetItem.credit,
-          credit_au: targetItem.credit_au,
-        },
-      });
+      })
     }
+    const targetItem = target_items as CreateInput
+    return await this.prisma.planner_arbitraryplanneritem.create({
+      include: EPlanners.EItems.Arbitrary.Extended.include,
+      data: {
+        planner_id: plannerId,
+        department_id: targetItem.department_id,
+        is_excluded: targetItem.is_excluded,
+        year: targetItem.year,
+        semester: targetItem.semester,
+        type: targetItem.type,
+        type_en: targetItem.type_en,
+        credit: targetItem.credit,
+        credit_au: targetItem.credit_au,
+      },
+    })
   }
 
   public async deleteArbitraryPlannerItem(target_item: EPlanners.EItems.Arbitrary.Extended) {
@@ -284,7 +280,7 @@ export class PlannerRepository {
       where: {
         id: target_item.id,
       },
-    });
+    })
   }
 
   public async checkPlannerExists(plannerId: number): Promise<boolean> {
@@ -292,8 +288,8 @@ export class PlannerRepository {
       where: {
         id: plannerId,
       },
-    });
-    return planner ? true : false;
+    })
+    return !!planner
   }
 
   public async createPlannerItem(
@@ -305,8 +301,8 @@ export class PlannerRepository {
     return await this.prisma.planner_futureplanneritem.create({
       ...EPlanners.EItems.Future.Extended,
       data: {
-        year: year,
-        semester: semester,
+        year,
+        semester,
         planner_planner: {
           connect: {
             id: plannerId,
@@ -319,7 +315,7 @@ export class PlannerRepository {
         },
         is_excluded: false,
       },
-    });
+    })
   }
 
   @Transactional()
@@ -341,8 +337,9 @@ export class PlannerRepository {
           is_excluded: updatedFields.is_excluded,
         },
         include: EPlanners.EItems.Taken.Details.include,
-      });
-    } else if (item_type === PlannerItemType.Future) {
+      })
+    }
+    if (item_type === PlannerItemType.Future) {
       return this.prisma.planner_futureplanneritem.update({
         where: {
           id: item,
@@ -352,8 +349,9 @@ export class PlannerRepository {
           semester: updatedFields.semester,
         },
         include: EPlanners.EItems.Future.Extended.include,
-      });
-    } else if (item_type === PlannerItemType.Arbitrary) {
+      })
+    }
+    if (item_type === PlannerItemType.Arbitrary) {
       return this.prisma.planner_arbitraryplanneritem.update({
         where: {
           id: item,
@@ -363,10 +361,9 @@ export class PlannerRepository {
           semester: updatedFields.semester,
         },
         include: EPlanners.EItems.Arbitrary.Extended.include,
-      });
-    } else {
-      throw new BadRequestException('Invalid Planner Item Type');
+      })
     }
+    throw new BadRequestException('Invalid Planner Item Type')
   }
 
   async getTakenPlannerItemByLecture(
@@ -378,7 +375,7 @@ export class PlannerRepository {
         planner_id: plannerId,
         lecture_id: lectureId,
       },
-    });
+    })
   }
 
   async getTakenPlannerItemByLectures(
@@ -392,32 +389,32 @@ export class PlannerRepository {
           in: lectureIds,
         },
       },
-    });
+    })
   }
 
   @Transactional()
   async updatePlanner(
     plannerId: number,
     updateFields: {
-      additional_track_ids: number[];
-      start_year: number;
-      major_track_id: number;
-      general_track_id: number;
-      end_year: number;
+      additional_track_ids: number[]
+      start_year: number
+      major_track_id: number
+      general_track_id: number
+      end_year: number
     },
   ): Promise<EPlanners.Details> {
     const existedAdditonalTracks = await this.prisma.planner_planner_additional_tracks.findMany({
       where: {
         planner_id: plannerId,
       },
-    });
+    })
 
     const disconnectAdditionalTracks = existedAdditonalTracks.filter(
       (track) => !updateFields.additional_track_ids.includes(track.additionaltrack_id),
-    );
+    )
     const connectAdditionalTrackIds = updateFields.additional_track_ids.filter(
       (track) => !existedAdditonalTracks.map((t) => t.additionaltrack_id).includes(track),
-    );
+    )
 
     await this.prisma.planner_planner_additional_tracks.deleteMany({
       where: {
@@ -426,16 +423,14 @@ export class PlannerRepository {
           in: disconnectAdditionalTracks.map((track) => track.additionaltrack_id),
         },
       },
-    });
+    })
 
     await this.prisma.planner_planner_additional_tracks.createMany({
-      data: connectAdditionalTrackIds.map((track) => {
-        return {
-          planner_id: plannerId,
-          additionaltrack_id: track,
-        };
-      }),
-    });
+      data: connectAdditionalTrackIds.map((track) => ({
+        planner_id: plannerId,
+        additionaltrack_id: track,
+      })),
+    })
 
     return this.prisma.planner_planner.update({
       where: {
@@ -456,7 +451,7 @@ export class PlannerRepository {
         },
       },
       include: EPlanners.Details.include,
-    });
+    })
   }
 
   @Transactional()
@@ -469,7 +464,7 @@ export class PlannerRepository {
         },
         planner_id: plannerId,
       },
-    });
+    })
   }
 
   @Transactional()
@@ -482,7 +477,7 @@ export class PlannerRepository {
         },
         planner_id: plannerId,
       },
-    });
+    })
   }
 
   @Transactional()
@@ -497,7 +492,7 @@ export class PlannerRepository {
           ...where,
         },
       },
-    });
+    })
   }
 
   @Transactional()
@@ -506,8 +501,8 @@ export class PlannerRepository {
       where: {
         id: plannerId,
       },
-    });
-    const userId = planner.user_id;
+    })
+    const userId = planner.user_id
     const planners = await this.prisma.planner_planner.findMany({
       where: {
         user_id: userId,
@@ -515,18 +510,18 @@ export class PlannerRepository {
       orderBy: {
         arrange_order: 'asc',
       },
-    });
+    })
     const deletedPlanner = await this.prisma.planner_planner.delete({
       where: {
         id: plannerId,
       },
-    });
-    const needToUpdatePlanners = planners.filter((p) => p.arrange_order > deletedPlanner.arrange_order);
+    })
+    const needToUpdatePlanners = planners.filter((p) => p.arrange_order > deletedPlanner.arrange_order)
     await this.decrementOrders(
       needToUpdatePlanners.map((p) => p.id),
       planner.arrange_order + 1,
       planners.length,
-    );
-    return deletedPlanner;
+    )
+    return deletedPlanner
   }
 }

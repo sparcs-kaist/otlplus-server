@@ -1,10 +1,10 @@
-import { Prisma } from '@prisma/client';
-import { ECourse } from './ECourse';
-import { ELecture } from './ELecture';
+import { Prisma } from '@prisma/client'
+
+import { ECourse } from './ECourse'
+import { ELecture } from './ELecture'
 
 export namespace EReview {
-  export const Basic = Prisma.validator<Prisma.review_reviewDefaultArgs>()({});
-  export type Basic = Prisma.review_reviewGetPayload<typeof Basic>;
+  export type Basic = Prisma.review_reviewGetPayload<Prisma.review_reviewDefaultArgs>
 
   export const Details = Prisma.validator<Prisma.review_reviewDefaultArgs>()({
     include: {
@@ -12,19 +12,19 @@ export namespace EReview {
       lecture: ELecture.Details,
       review_reviewvote: true,
     },
-  });
-  export type Details = Prisma.review_reviewGetPayload<typeof Details>;
+  })
+  export type Details = Prisma.review_reviewGetPayload<typeof Details>
 
   export const WithLectures = Prisma.validator<Prisma.review_reviewDefaultArgs>()({
     include: {
       lecture: ELecture.Basic,
     },
-  });
+  })
 
-  export type WithLectures = Prisma.review_reviewGetPayload<typeof WithLectures>;
+  export type WithLectures = Prisma.review_reviewGetPayload<typeof WithLectures>
 
   export namespace EReviewVote {
-    export const Basic = Prisma.validator<Prisma.review_reviewvoteDefaultArgs>()({});
-    export type Basic = Prisma.review_reviewvoteGetPayload<typeof Basic>;
+    // eslint-disable-next-line no-shadow
+    export type Basic = Prisma.review_reviewvoteGetPayload<Prisma.review_reviewvoteDefaultArgs>
   }
 }

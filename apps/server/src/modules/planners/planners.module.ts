@@ -1,7 +1,9 @@
-import { Module } from '@nestjs/common';
-import { PlannersController } from './planners.controller';
-import { PlannersService } from './planners.service';
-import { PrismaModule } from '@otl/prisma-client/prisma.module';
+import { Module } from '@nestjs/common'
+
+import { PrismaModule } from '@otl/prisma-client/prisma.module'
+
+import { PlannersController } from './planners.controller'
+import { PlannersService } from './planners.service'
 
 @Module({
   imports: [PrismaModule],

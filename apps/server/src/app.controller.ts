@@ -1,6 +1,7 @@
-import { Controller, Get } from '@nestjs/common';
-import { AppService } from './app.service';
-import { Public } from './common/decorators/skip-auth.decorator';
+import { Controller, Get } from '@nestjs/common'
+
+import { AppService } from './app.service'
+import { Public } from './common/decorators/skip-auth.decorator'
 
 @Controller()
 export class AppController {
@@ -9,6 +10,6 @@ export class AppController {
   @Get()
   @Public()
   getHello(): string {
-    return this.appService.getHello();
+    return this.appService.getHello()
   }
 }

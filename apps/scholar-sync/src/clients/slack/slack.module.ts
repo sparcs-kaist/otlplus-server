@@ -1,5 +1,6 @@
-import { SlackNotiService } from './slackNoti.service';
-import { Module } from '@nestjs/common';
+import { Module } from '@nestjs/common'
+
+import { SlackNotiService } from './slackNoti.service'
 
 @Module({
   providers: [SlackNotiService],

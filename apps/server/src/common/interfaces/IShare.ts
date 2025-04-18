@@ -1,85 +1,86 @@
-import { CanvasRenderingContext2D } from 'canvas';
-import { Type } from 'class-transformer';
-import { IsNumber, IsOptional, IsString } from 'class-validator';
-import { ILecture } from './ILecture';
+import { CanvasRenderingContext2D } from 'canvas'
+import { Type } from 'class-transformer'
+import { IsNumber, IsOptional, IsString } from 'class-validator'
+
+import { ILecture } from './ILecture'
 
 export namespace IShare {
   export interface RoundedRectangleOptions {
-    ctx: CanvasRenderingContext2D;
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    radius: number;
-    color: string;
+    ctx: CanvasRenderingContext2D
+    x: number
+    y: number
+    width: number
+    height: number
+    radius: number
+    color: string
   }
 
   export interface TextOptions {
-    ctx: CanvasRenderingContext2D;
-    x: number;
-    y: number;
-    text: string;
-    font: string;
-    fontSize: number;
-    color: string;
-    align?: 'right' | 'left' | 'center'; // Optional parameter
+    ctx: CanvasRenderingContext2D
+    x: number
+    y: number
+    text: string
+    font: string
+    fontSize: number
+    color: string
+    align?: 'right' | 'left' | 'center' // Optional parameter
   }
 
   export interface DrawTileOptions {
-    ctx: CanvasRenderingContext2D;
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    title: string;
-    professor: string;
-    location: string;
-    font: string;
-    fontSize: number;
+    ctx: CanvasRenderingContext2D
+    x: number
+    y: number
+    width: number
+    height: number
+    title: string
+    professor: string
+    location: string
+    font: string
+    fontSize: number
   }
 
   export interface drawTimetableDatas {
-    lectures: ILecture.UserTaken[];
-    timetableType: string;
-    semesterName: string;
-    isEnglish: boolean;
-    semesterFontSize: number;
-    tileFontSize: number;
+    lectures: ILecture.UserTaken[]
+    timetableType: string
+    semesterName: string
+    isEnglish: boolean
+    semesterFontSize: number
+    tileFontSize: number
   }
 
   export class TimetableImageQueryDto {
     @Type(() => Number)
     @IsNumber()
-    timetable!: number;
+    timetable!: number
 
     @Type(() => Number)
     @IsNumber()
-    year!: number;
+    year!: number
 
     @Type(() => Number)
     @IsNumber()
-    semester!: number;
+    semester!: number
 
     @IsString()
     @IsOptional()
-    language?: string;
+    language?: string
   }
 
   export class TimetableIcalQueryDto {
     @Type(() => Number)
     @IsNumber()
-    timetable!: number;
+    timetable!: number
 
     @Type(() => Number)
     @IsNumber()
-    year!: number;
+    year!: number
 
     @Type(() => Number)
     @IsNumber()
-    semester!: number;
+    semester!: number
 
     @IsString()
     @IsOptional()
-    language?: string;
+    language?: string
   }
 }

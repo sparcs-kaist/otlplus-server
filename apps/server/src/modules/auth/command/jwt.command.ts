@@ -1,11 +1,13 @@
-import { ExecutionContext, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
-import { Request } from 'express';
-import settings from '../../../settings';
-import { AuthCommand, AuthResult } from '../auth.command';
-import { AuthService } from '../auth.service';
+import {
+  ExecutionContext, Injectable, InternalServerErrorException, NotFoundException,
+} from '@nestjs/common'
+import { Reflector } from '@nestjs/core'
+import { JwtService } from '@nestjs/jwt'
+import { AuthCommand, AuthResult } from '@otl/server-nest/modules/auth/auth.command'
+import { AuthService } from '@otl/server-nest/modules/auth/auth.service'
+import settings from '@otl/server-nest/settings'
+import * as bcrypt from 'bcrypt'
+import { Request } from 'express'
 
 @Injectable()
 export class JwtCommand implements AuthCommand {
@@ -16,65 +18,69 @@ export class JwtCommand implements AuthCommand {
   ) {}
 
   public async next(context: ExecutionContext, prevResult: AuthResult): Promise<AuthResult> {
-    const request = context.switchToHttp().getRequest<Request>();
-    const response = context.switchToHttp().getResponse<Response>();
-    const accessToken = this.extractTokenFromCookie(request, 'accessToken');
+    const request = context.switchToHttp().getRequest<Request>()
+    const extractedAccessToken = this.extractTokenFromCookie(request, 'accessToken')
 
     try {
-      if (!accessToken) throw new Error('jwt expired');
-      const payload = await this.jwtService.verify(accessToken, {
+      if (!extractedAccessToken) throw new Error('jwt expired')
+      const payload = await this.jwtService.verify(extractedAccessToken, {
         secret: settings().getJwtConfig().secret,
         ignoreExpiration: false,
-      });
-      const user = await this.authService.findBySid(payload.sid);
+      })
+      const user = await this.authService.findBySid(payload.sid)
 
       if (user == null) {
-        throw new NotFoundException('user is not found');
+        throw new NotFoundException('user is not found')
       }
-      request['user'] = user;
-      prevResult.authentication = true;
-      prevResult.authorization = true;
-      return prevResult;
-    } catch (e: any) {
+      request.user = user
+      return {
+        ...prevResult,
+        authentication: true,
+        authorization: true,
+      }
+    }
+    catch (e: any) {
       if (e.message === 'jwt expired') {
         try {
-          const refreshToken = this.extractTokenFromCookie(request, 'refreshToken');
-          if (!refreshToken) return prevResult;
+          const refreshToken = this.extractTokenFromCookie(request, 'refreshToken')
+          if (!refreshToken) return prevResult
           const payload = await this.jwtService.verify(refreshToken, {
             secret: settings().getJwtConfig().secret,
             ignoreExpiration: false,
-          });
-          const user = await this.authService.findBySid(payload.sid);
+          })
+          const user = await this.authService.findBySid(payload.sid)
           if (!user) {
-            throw new NotFoundException('user is not found');
+            throw new NotFoundException('user is not found')
           }
           if (user.refresh_token && (await bcrypt.compare(refreshToken, user.refresh_token))) {
-            const { accessToken, ...accessTokenOptions } = this.authService.getCookieWithAccessToken(payload.sid);
+            const { accessToken, ...accessTokenOptions } = this.authService.getCookieWithAccessToken(payload.sid)
 
             if (!request.res) {
-              throw new InternalServerErrorException('res property is not found in request');
+              throw new InternalServerErrorException('res property is not found in request')
             }
-            request.res.cookie('accessToken', accessToken, accessTokenOptions);
-            request['user'] = user;
-            prevResult.authentication = true;
-            prevResult.authorization = true;
-            return prevResult;
+            request.res.cookie('accessToken', accessToken, accessTokenOptions)
+            request.user = user
+            return {
+              ...prevResult,
+              authentication: true,
+              authorization: true,
+            }
           }
-          return prevResult;
-        } catch (e) {
+        }
+        catch (_e: any) {
           // console.error(e);
-          return prevResult;
+          return prevResult
         }
       }
-      return prevResult;
+      return prevResult
     }
   }
 
   private extractTokenFromCookie(request: Request, type: 'accessToken' | 'refreshToken'): string | undefined {
-    const cookie = request.cookies[type];
+    const cookie = request.cookies[type]
     if (cookie) {
-      return cookie;
+      return cookie
     }
-    return undefined;
+    return undefined
   }
 }

@@ -1,6 +1,8 @@
 import { Prisma, session_userprofile } from '@prisma/client';
-import settings from '../src/settings';
+
 import { PrismaService } from '@otl/prisma-client/prisma.service';
+
+import settings from '../src/settings';
 
 const ormSettings = settings().ormconfig();
 

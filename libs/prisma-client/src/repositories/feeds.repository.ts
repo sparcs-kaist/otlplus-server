@@ -1,14 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common'
 import {
   main_ratedailyuserfeed,
   review_humanitybestreview,
   review_majorbestreview,
   subject_department,
-} from '@prisma/client';
+} from '@prisma/client'
 
-import { EFeed } from '../entities/EFeed';
-import { FeedRateMinDays, FeedVisibleRate } from '@otl/prisma-client/types';
-import { PrismaService } from '@otl/prisma-client/prisma.service';
+import { PrismaService } from '@otl/prisma-client/prisma.service'
+import { FeedRateMinDays, FeedVisibleRate } from '@otl/prisma-client/types'
+
+import { EFeed } from '../entities/EFeed'
 
 @Injectable()
 export class FeedsRepository {
@@ -20,7 +21,7 @@ export class FeedsRepository {
         date,
       },
       include: EFeed.FamousHumanityReviewDetails.include,
-    });
+    })
   }
 
   public async createFamousHumanityReview(date: Date, humanityBestReviews: review_humanitybestreview) {
@@ -36,7 +37,7 @@ export class FeedsRepository {
         },
         visible: Math.random() < FeedVisibleRate.FamousHumanityReview,
       },
-    });
+    })
   }
 
   public async getRankedReview(date: Date) {
@@ -44,7 +45,7 @@ export class FeedsRepository {
       where: {
         date,
       },
-    });
+    })
   }
 
   public async createRankedReview(date: Date) {
@@ -54,7 +55,7 @@ export class FeedsRepository {
         priority: Math.random(),
         visible: Math.random() < FeedVisibleRate.RankedReview,
       },
-    });
+    })
   }
 
   public async getFamousMajorReview(date: Date, department: subject_department) {
@@ -64,7 +65,7 @@ export class FeedsRepository {
         date,
         subject_department: department,
       },
-    });
+    })
   }
 
   public async createFamousMajorReview(
@@ -84,7 +85,7 @@ export class FeedsRepository {
           createMany: { data: majorBestReviews },
         },
       },
-    });
+    })
   }
 
   public async getReviewWrite(date: Date, userId: number) {
@@ -94,7 +95,7 @@ export class FeedsRepository {
         date,
         user_id: userId,
       },
-    });
+    })
   }
 
   public async createReviewWrite(date: Date, userId: number, takenLectureId: number) {
@@ -107,7 +108,7 @@ export class FeedsRepository {
         user_id: userId,
         lecture_id: takenLectureId,
       },
-    });
+    })
   }
 
   public async getRelatedCourse(date: Date, userId: number) {
@@ -117,7 +118,7 @@ export class FeedsRepository {
         date,
         user_id: userId,
       },
-    });
+    })
   }
 
   public async createRelatedCourse(date: Date, userId: number, takenLectureCourseId: number) {
@@ -130,7 +131,7 @@ export class FeedsRepository {
         course_id: takenLectureCourseId,
         user_id: userId,
       },
-    });
+    })
   }
 
   public async getOrCreateRate(date: Date, userId: number): Promise<main_ratedailyuserfeed | null> {
@@ -139,7 +140,7 @@ export class FeedsRepository {
         date,
         user_id: userId,
       },
-    });
+    })
 
     if (!feed) {
       if (
@@ -150,13 +151,13 @@ export class FeedsRepository {
           },
         })
       ) {
-        return null;
+        return null
       }
 
-      const beforeDate = new Date(date);
-      beforeDate.setDate(date.getDate() - FeedRateMinDays);
-      const afterDate = new Date(date);
-      afterDate.setDate(date.getDate() + FeedRateMinDays);
+      const beforeDate = new Date(date)
+      beforeDate.setDate(date.getDate() - FeedRateMinDays)
+      const afterDate = new Date(date)
+      afterDate.setDate(date.getDate() + FeedRateMinDays)
       const weekFeeds = await this.prisma.main_ratedailyuserfeed.findMany({
         where: {
           date: {
@@ -166,9 +167,9 @@ export class FeedsRepository {
           visible: true,
           user_id: userId,
         },
-      });
+      })
       if (weekFeeds.length > 0) {
-        return null;
+        return null
       }
 
       feed = await this.prisma.main_ratedailyuserfeed.create({
@@ -178,9 +179,9 @@ export class FeedsRepository {
           visible: Math.random() < FeedVisibleRate.Rate,
           user_id: userId,
         },
-      });
+      })
     }
 
-    return feed;
+    return feed
   }
 }

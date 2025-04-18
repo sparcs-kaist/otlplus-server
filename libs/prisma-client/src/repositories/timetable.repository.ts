@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { Prisma, PrismaClient, session_userprofile } from '@prisma/client';
-import { ETimetable } from '../entities/ETimetable';
-import { ELecture } from '../entities/ELecture';
-import { PrismaService } from '@otl/prisma-client/prisma.service';
+import { Injectable } from '@nestjs/common'
+import { Prisma, PrismaClient, session_userprofile } from '@prisma/client'
+
+import { PrismaService } from '@otl/prisma-client/prisma.service'
+
+import { ELecture } from '../entities/ELecture'
+import { ETimetable } from '../entities/ETimetable'
 
 @Injectable()
 export class TimetableRepository {
@@ -13,26 +15,26 @@ export class TimetableRepository {
     year?: number | null,
     semester?: number | null,
     paginationAndSorting?: {
-      orderBy?: Prisma.timetable_timetableOrderByWithRelationInput[];
-      skip?: number;
-      take?: number;
+      orderBy?: Prisma.timetable_timetableOrderByWithRelationInput[]
+      skip?: number
+      take?: number
     },
   ): Promise<ETimetable.Details[]> {
-    const skip = paginationAndSorting?.skip;
-    const take = paginationAndSorting?.take;
-    const orderBy = paginationAndSorting?.orderBy;
+    const skip = paginationAndSorting?.skip
+    const take = paginationAndSorting?.take
+    const orderBy = paginationAndSorting?.orderBy
 
-    return await this.prisma.timetable_timetable.findMany({
+    return this.prisma.timetable_timetable.findMany({
       include: ETimetable.Details.include,
       where: {
         year: year ?? undefined,
         semester: semester ?? undefined,
         user_id: user.id,
       },
-      skip: skip,
-      take: take,
-      orderBy: orderBy,
-    });
+      skip,
+      take,
+      orderBy,
+    })
   }
 
   async getTimetableBasics(
@@ -40,25 +42,25 @@ export class TimetableRepository {
     year: number,
     semester: number,
     paginationAndSorting: {
-      orderBy: Prisma.timetable_timetableOrderByWithRelationInput;
-      skip?: number;
-      take?: number;
+      orderBy: Prisma.timetable_timetableOrderByWithRelationInput
+      skip?: number
+      take?: number
     },
   ): Promise<ETimetable.Basic[]> {
-    const skip = paginationAndSorting.skip;
-    const take = paginationAndSorting.take;
-    const orderBy = paginationAndSorting.orderBy;
+    const { skip } = paginationAndSorting
+    const { take } = paginationAndSorting
+    const { orderBy } = paginationAndSorting
 
-    return await this.prisma.timetable_timetable.findMany({
+    return this.prisma.timetable_timetable.findMany({
       where: {
-        year: year,
-        semester: semester,
+        year,
+        semester,
         user_id: user.id,
       },
-      skip: skip,
-      take: take,
-      orderBy: orderBy,
-    });
+      skip,
+      take,
+      orderBy,
+    })
   }
 
   async createTimetable(
@@ -68,95 +70,93 @@ export class TimetableRepository {
     arrangeOrder: number,
     lectures: ELecture.Details[],
   ): Promise<ETimetable.Details> {
-    return await this.prisma.timetable_timetable.create({
+    return this.prisma.timetable_timetable.create({
       data: {
         user_id: user.id,
-        year: year,
-        semester: semester,
+        year,
+        semester,
         arrange_order: arrangeOrder,
         timetable_timetable_lectures: {
           createMany: {
-            data: lectures.map((lecture) => {
-              return {
-                lecture_id: lecture.id,
-              };
-            }),
+            data: lectures.map((lecture) => ({
+              lecture_id: lecture.id,
+            })),
           },
         },
       },
       include: ETimetable.Details.include,
-    });
+    })
   }
 
   async getTimeTableBasicById(timeTableId: number) {
-    return await this.prisma.timetable_timetable.findUniqueOrThrow({
+    return this.prisma.timetable_timetable.findUniqueOrThrow({
       where: {
         id: timeTableId,
       },
-    });
+    })
   }
 
   async addLectureToTimetable(timeTableId: number, lectureId: number) {
-    return await this.prisma.timetable_timetable_lectures.create({
+    return this.prisma.timetable_timetable_lectures.create({
       data: {
         timetable_id: timeTableId,
         lecture_id: lectureId,
       },
-    });
+    })
   }
 
   async getTimeTableById(timeTableId: number): Promise<ETimetable.Details> {
-    return await this.prisma.timetable_timetable.findUniqueOrThrow({
+    return this.prisma.timetable_timetable.findUniqueOrThrow({
       include: ETimetable.Details.include,
       where: {
         id: timeTableId,
       },
-    });
+    })
   }
 
   async removeLectureFromTimetable(timeTableId: number, lectureId: number) {
-    return await this.prisma.timetable_timetable_lectures.delete({
+    return this.prisma.timetable_timetable_lectures.delete({
       where: {
         timetable_id_lecture_id: {
           timetable_id: timeTableId,
           lecture_id: lectureId,
         },
       },
-    });
+    })
   }
 
   async deleteById(timetableId: number, tx?: PrismaClient) {
-    let prismaClient: PrismaClient = this.prisma;
+    let prismaClient: PrismaClient = this.prisma
     if (tx) {
-      prismaClient = tx;
+      prismaClient = tx
     }
     await prismaClient.timetable_timetable_lectures.deleteMany({
       where: {
         timetable_id: timetableId,
       },
-    });
-    return await prismaClient.timetable_timetable.delete({
+    })
+    return prismaClient.timetable_timetable.delete({
       where: {
         id: timetableId,
       },
-    });
+    })
   }
 
   async updateOrder(id: number, arrange_order: number): Promise<ETimetable.Basic> {
-    return await this.prisma.timetable_timetable.update({
+    return this.prisma.timetable_timetable.update({
       where: {
-        id: id,
+        id,
       },
       data: {
-        arrange_order: arrange_order,
+        arrange_order,
       },
-    });
+    })
   }
 
   async getLecturesWithClassTimes(timetableId: number) {
     return this.prisma.timetable_timetable_lectures.findMany({
       where: { timetable_id: timetableId },
       include: ETimetable.WithLectureClasstimes.include,
-    });
+    })
   }
 }

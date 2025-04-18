@@ -14,10 +14,10 @@ export namespace IPrismaMiddleware {
     | 'deleteMany'
     | 'groupBy'
     | 'count'
-    | 'aggregate';
-  export interface IPrismaMiddleware {
-    preExecute: (operations: operationType, args: any) => Promise<boolean>;
+    | 'aggregate'
+  export interface Middleware {
+    preExecute: (operations: operationType, args: any) => Promise<boolean>
 
-    postExecute: (operations: operationType, args: any, result: any) => Promise<boolean>;
+    postExecute: (operations: operationType, args: any, result: any) => Promise<boolean>
   }
 }

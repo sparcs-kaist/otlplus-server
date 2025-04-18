@@ -1,14 +1,21 @@
-import { ECourse } from '@otl/prisma-client/entities';
-import { IScholar } from '@otl/scholar-sync/clients/scholar/IScholar';
+import { IScholar } from '@otl/scholar-sync/clients/scholar/IScholar'
+
+import { ECourse } from '@otl/prisma-client/entities'
 
 export class CourseInfo {
-  old_code!: string;
-  new_code!: string;
-  department_id!: number;
-  type!: string;
-  type_en!: string;
-  title!: string;
-  title_en!: string;
+  old_code!: string
+
+  new_code!: string
+
+  department_id!: number
+
+  type!: string
+
+  type_en!: string
+
+  title!: string
+
+  title_en!: string
 
   public static deriveCourseInfo(lecture: IScholar.ScholarLectureType): CourseInfo {
     return {
@@ -19,16 +26,16 @@ export class CourseInfo {
       type_en: lecture.E_SUBJECT_TYPE,
       title: lecture.SUB_TITLE.split('<')[0].split('[')[0].trim(),
       title_en: lecture.E_SUB_TITLE.split('<')[0].split('[')[0].trim(),
-    };
+    }
   }
 
   public static equals(course: CourseInfo, existing: ECourse.Basic) {
     return (
-      existing.department_id == course.department_id &&
-      existing.type == course.type &&
-      existing.type_en == course.type_en &&
-      existing.title == course.title &&
-      existing.title_en == course.title_en
-    );
+      existing.department_id === course.department_id
+      && existing.type === course.type
+      && existing.type_en === course.type_en
+      && existing.title === course.title
+      && existing.title_en === course.title_en
+    )
   }
 }

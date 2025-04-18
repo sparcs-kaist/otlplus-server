@@ -1,29 +1,29 @@
 export interface LectureQuery {
-  department?: string[];
+  department?: string[]
 
-  type?: string[];
+  type?: string[]
 
-  level?: string[];
+  level?: string[]
 
-  group?: string[];
+  group?: string[]
 
-  keyword?: string;
+  keyword?: string
 
-  term?: string[];
+  term?: string[]
 
-  order?: string[];
+  order?: string[]
 
-  offset?: number;
+  offset?: number
 
-  limit?: number;
+  limit?: number
 
-  year?: number;
+  year?: number
 
-  semester?: number;
+  semester?: number
 
-  day?: number;
+  day?: number
 
-  begin?: number;
+  begin?: number
 
-  end?: number;
+  end?: number
 }

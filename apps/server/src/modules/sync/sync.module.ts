@@ -1,9 +1,11 @@
-import { Module } from '@nestjs/common';
-import { SlackNotiService } from './slackNoti.service';
-import { SyncController } from './sync.controller';
-import { SyncScholarDBService } from './syncScholarDB.service';
-import { SyncTakenLectureService } from './syncTakenLecture.service';
-import { PrismaModule } from '@otl/prisma-client/prisma.module';
+import { Module } from '@nestjs/common'
+
+import { PrismaModule } from '@otl/prisma-client/prisma.module'
+
+import { SlackNotiService } from './slackNoti.service'
+import { SyncController } from './sync.controller'
+import { SyncScholarDBService } from './syncScholarDB.service'
+import { SyncTakenLectureService } from './syncTakenLecture.service'
 
 @Module({
   controllers: [SyncController],

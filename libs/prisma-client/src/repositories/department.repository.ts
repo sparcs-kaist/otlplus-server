@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { session_userprofile, subject_department } from '@prisma/client';
-import { PrismaService } from '@otl/prisma-client/prisma.service';
+import { Injectable } from '@nestjs/common'
+import { session_userprofile, subject_department } from '@prisma/client'
+
+import { PrismaService } from '@otl/prisma-client/prisma.service'
 
 @Injectable()
 export class DepartmentRepository {
@@ -9,18 +10,18 @@ export class DepartmentRepository {
   async getBasicDepartmentById(id: number): Promise<subject_department | null> {
     return this.prisma.subject_department.findUnique({
       where: { id },
-    });
+    })
   }
 
   async getDepartmentOfUser(user: session_userprofile): Promise<subject_department | null> {
-    const departmentId = user.department_id;
+    const departmentId = user.department_id
     if (!departmentId) {
-      return null;
+      return null
     }
 
     return this.prisma.subject_department.findUnique({
       where: { id: departmentId },
-    });
+    })
   }
 
   async getFavoriteDepartments(user: session_userprofile): Promise<subject_department[]> {
@@ -31,8 +32,8 @@ export class DepartmentRepository {
           department: true,
         },
       })
-    ).map((favoriteDepartment) => favoriteDepartment.department);
-    return favoriteDepartments;
+    ).map((favoriteDepartment) => favoriteDepartment.department)
+    return favoriteDepartments
   }
 
   async getMajors(user: session_userprofile): Promise<subject_department[]> {
@@ -43,8 +44,8 @@ export class DepartmentRepository {
           subject_department: true,
         },
       })
-    ).map((major) => major.subject_department);
-    return majors;
+    ).map((major) => major.subject_department)
+    return majors
   }
 
   async getMinors(user: session_userprofile): Promise<subject_department[]> {
@@ -55,8 +56,8 @@ export class DepartmentRepository {
           subject_department: true,
         },
       })
-    ).map((minor) => minor.subject_department);
-    return minors;
+    ).map((minor) => minor.subject_department)
+    return minors
   }
 
   async getSpecializedMajors(user: session_userprofile): Promise<subject_department[]> {
@@ -67,8 +68,8 @@ export class DepartmentRepository {
           subject_department: true,
         },
       })
-    ).map((specializedMajor) => specializedMajor.subject_department);
-    return specializedMajors;
+    ).map((specializedMajor) => specializedMajor.subject_department)
+    return specializedMajors
   }
 
   async getAllDepartmentOptions(excludedDepartmentCodes: string[]): Promise<subject_department[]> {
@@ -78,7 +79,7 @@ export class DepartmentRepository {
         code: { notIn: excludedDepartmentCodes },
       },
       orderBy: { name: 'asc' },
-    });
+    })
   }
 
   async getDepartmentCodesOfRecentLectures(yearThreshold: number): Promise<string[]> {
@@ -93,8 +94,8 @@ export class DepartmentRepository {
       select: {
         code: true,
       },
-    });
-    return res.map((e) => e.code);
+    })
+    return res.map((e) => e.code)
   }
 
   async getRelatedDepartments(user: session_userprofile): Promise<subject_department[]> {
@@ -108,10 +109,10 @@ export class DepartmentRepository {
       ])
     ).flatMap(
       (deps: subject_department | subject_department[] | null): subject_department | subject_department[] => deps ?? [],
-    );
+    )
     const uniqueDepartments: subject_department[] = departments.filter(
       (dep, index, deps) => deps.findIndex((d) => d.id === dep.id) === index,
-    );
-    return uniqueDepartments;
+    )
+    return uniqueDepartments
   }
 }

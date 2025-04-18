@@ -1,21 +1,24 @@
-import { session_userprofile } from '@prisma/client';
-import { getRepresentativeLecture } from '@otl/server-nest/common/utils/lecture.utils';
-import { toJsonCourseBasic } from './course.serializer';
-import { toJsonLectureBasic } from './lecture.serializer';
-import { EReview } from '@otl/prisma-client/entities';
-import { IReview } from '@otl/server-nest/common/interfaces';
+import { IReview } from '@otl/server-nest/common/interfaces'
+import { getRepresentativeLecture } from '@otl/server-nest/common/utils/lecture.utils'
+import { session_userprofile } from '@prisma/client'
+
+import { EReview } from '@otl/prisma-client/entities'
+
+import { toJsonCourseBasic } from './course.serializer'
+import { toJsonLectureBasic } from './lecture.serializer'
 
 export const toJsonReview = (review: EReview.Details, user?: session_userprofile): IReview.Basic => {
-  const representativeLecture = getRepresentativeLecture(review.course.lecture);
+  const representativeLecture = getRepresentativeLecture(review.course.lecture)
 
-  let isLiked = true;
+  let isLiked = true
   if (!user || !review.review_reviewvote) {
-    isLiked = false;
-  } else if (!review.review_reviewvote.find((reviewvote) => reviewvote.userprofile_id === user.id)) {
-    isLiked = false;
+    isLiked = false
+  }
+  else if (!review.review_reviewvote.find((reviewvote) => reviewvote.userprofile_id === user.id)) {
+    isLiked = false
   }
 
-  const courseResult = toJsonCourseBasic(review.course, representativeLecture);
+  const courseResult = toJsonCourseBasic(review.course, representativeLecture)
 
   const result = {
     id: review.id,
@@ -28,15 +31,13 @@ export const toJsonReview = (review: EReview.Details, user?: session_userprofile
     load: Math.round(review.load),
     speech: Math.round(review.speech),
     userspecific_is_liked: isLiked,
-  };
-  return result;
-};
+  }
+  return result
+}
 
-export const toJsonReviewVote = (reviewVote: EReview.EReviewVote.Basic): IReview.IReviewVote.Basic => {
-  return {
-    id: reviewVote.id,
-    review_id: reviewVote.review_id,
-    userprofile_id: reviewVote.userprofile_id,
-    created_datetime: reviewVote.created_datetime,
-  };
-};
+export const toJsonReviewVote = (reviewVote: EReview.EReviewVote.Basic): IReview.IReviewVote.Basic => ({
+  id: reviewVote.id,
+  review_id: reviewVote.review_id,
+  userprofile_id: reviewVote.userprofile_id,
+  created_datetime: reviewVote.created_datetime,
+})

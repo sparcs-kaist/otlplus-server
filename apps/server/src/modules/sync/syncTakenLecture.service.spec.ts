@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '@otl/server-nest/app.module';
+
 import { PrismaService } from '../prisma/prisma.service';
 import { SyncTakenLectureService } from './syncTakenLecture.service';
 

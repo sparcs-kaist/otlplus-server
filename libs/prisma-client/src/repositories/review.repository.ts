@@ -1,14 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common'
 import {
   review_humanitybestreview,
   review_majorbestreview,
   session_userprofile,
   subject_department,
-} from '@prisma/client';
-import { EReview } from '../entities/EReview';
-import { ELecture } from '../entities/ELecture';
-import { orderFilter } from '../common/util';
-import { PrismaService } from '@otl/prisma-client/prisma.service';
+} from '@prisma/client'
+
+import { PrismaService } from '@otl/prisma-client/prisma.service'
+
+import { orderFilter } from '../common/util'
+import { ELecture } from '../entities/ELecture'
+import { EReview } from '../entities/EReview'
 
 @Injectable()
 export class ReviewsRepository {
@@ -36,8 +38,8 @@ export class ReviewsRepository {
         },
         review_reviewvote: true,
       },
-    });
-    return reviews;
+    })
+    return reviews
   }
 
   async getReviewById(reviewId: number): Promise<EReview.Details | null> {
@@ -62,7 +64,7 @@ export class ReviewsRepository {
         },
         review_reviewvote: true,
       },
-    });
+    })
   }
 
   async getReviewsByIds(reviewIds: number[]) {
@@ -73,7 +75,7 @@ export class ReviewsRepository {
         },
       },
       include: EReview.Details.include,
-    });
+    })
   }
 
   public async getReviews(
@@ -83,24 +85,24 @@ export class ReviewsRepository {
     lectureYear?: number,
     lectureSemester?: number,
   ): Promise<EReview.Details[]> {
-    let lectureFilter: object = {};
-    const orderFilter: { [key: string]: string }[] = [];
+    let lectureFilter: object = {}
+    const orderFilters: { [key: string]: string }[] = []
     if (lectureYear) {
-      lectureFilter = { ...lectureFilter, year: lectureYear };
+      lectureFilter = { ...lectureFilter, year: lectureYear }
     }
     if (lectureSemester) {
-      lectureFilter = { ...lectureFilter, semester: lectureSemester };
+      lectureFilter = { ...lectureFilter, semester: lectureSemester }
     }
     order.forEach((orderList) => {
-      const orderDict: { [key: string]: string } = {};
-      let order = 'asc';
-      const orderBy = orderList.split('-');
-      if (orderBy[0] == '') {
-        order = 'desc';
+      const orderDict: { [key: string]: string } = {}
+      let sortOrder = 'asc'
+      const orderBy = orderList.split('-')
+      if (orderBy[0] === '') {
+        sortOrder = 'desc'
       }
-      orderDict[orderBy[orderBy.length - 1]] = order;
-      orderFilter.push(orderDict);
-    });
+      orderDict[orderBy[orderBy.length - 1]] = sortOrder
+      orderFilters.push(orderDict)
+    })
     const reviews = await this.prisma.review_review.findMany({
       where: {
         lecture: lectureFilter,
@@ -142,9 +144,9 @@ export class ReviewsRepository {
         'is_deleted',
         'written_datetime',
       ],
-    });
+    })
 
-    return reviews;
+    return reviews
   }
 
   async getReviewsOfLecture(id: number, order: string[], offset: number, limit: number): Promise<EReview.Details[]> {
@@ -154,7 +156,7 @@ export class ReviewsRepository {
       orderBy: orderFilter(order),
       skip: offset,
       take: limit,
-    });
+    })
   }
 
   public async getRelatedReviewsOfLecture(
@@ -195,7 +197,7 @@ export class ReviewsRepository {
         'is_deleted',
         'written_datetime',
       ],
-    });
+    })
   }
 
   async isLiked(reviewId: number, userId: number): Promise<boolean> {
@@ -206,7 +208,7 @@ export class ReviewsRepository {
           userprofile_id: userId,
         },
       },
-    }));
+    }))
   }
 
   public async getLikedReviews(
@@ -227,26 +229,26 @@ export class ReviewsRepository {
       take: limit,
       skip: offset,
       orderBy: orderFilter(order),
-    });
+    })
 
     // const likedReviews = this.getReviewsByIds(likedReviewIds);
-    return likedReviews;
+    return likedReviews
   }
 
   public async getReviewsCount(lectureYear?: number, lectureSemester?: number): Promise<number> {
-    let lectureFilter: object = {};
+    let lectureFilter: object = {}
     if (lectureYear) {
-      lectureFilter = { ...lectureFilter, year: lectureYear };
+      lectureFilter = { ...lectureFilter, year: lectureYear }
     }
     if (lectureSemester) {
-      lectureFilter = { ...lectureFilter, semester: lectureSemester };
+      lectureFilter = { ...lectureFilter, semester: lectureSemester }
     }
     const reviewsCount = await this.prisma.review_review.count({
       where: {
         lecture: lectureFilter,
       },
-    });
-    return reviewsCount;
+    })
+    return reviewsCount
   }
 
   async upsertReview(
@@ -266,10 +268,10 @@ export class ReviewsRepository {
       create: {
         course: { connect: { id: courseId } },
         lecture: { connect: { id: lectureId } },
-        content: content,
-        grade: grade,
-        load: load,
-        speech: speech,
+        content,
+        grade,
+        load,
+        speech,
         writer: { connect: { id: writerId } },
         writer_label: '무학과 넙죽이',
         written_datetime: new Date(),
@@ -294,7 +296,7 @@ export class ReviewsRepository {
         },
         review_reviewvote: true,
       },
-    });
+    })
   }
 
   async updateReview(
@@ -333,7 +335,7 @@ export class ReviewsRepository {
         },
         review_reviewvote: true,
       },
-    });
+    })
   }
 
   public async getTopLikedReviews(n: number): Promise<EReview.Details[]> {
@@ -343,7 +345,7 @@ export class ReviewsRepository {
         like: 'desc',
       },
       take: n,
-    });
+    })
   }
 
   public async getRandomNHumanityBestReviews(n: number): Promise<review_humanitybestreview> {
@@ -351,7 +353,7 @@ export class ReviewsRepository {
     return await this.prisma.$queryRaw`
       SELECT * FROM review_humanitybestreview 
       ORDER BY RAND() 
-      LIMIT ${n}`;
+      LIMIT ${n}`
   }
 
   public async getRandomNMajorBestReviews(
@@ -365,7 +367,7 @@ export class ReviewsRepository {
       INNER JOIN subject_lecture l ON l.id = r.lecture_id
       WHERE l.department_id = ${department.id}
       ORDER BY RAND() 
-      LIMIT ${n}`;
+      LIMIT ${n}`
   }
 
   async upsertReviewVote(reviewId: number, userId: number): Promise<EReview.EReviewVote.Basic> {
@@ -381,6 +383,6 @@ export class ReviewsRepository {
         review: { connect: { id: reviewId } },
         userprofile: { connect: { id: userId } },
       },
-    });
+    })
   }
 }

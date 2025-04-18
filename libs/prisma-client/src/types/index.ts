@@ -1,19 +1,19 @@
-export * from './pagination';
-export * from './query';
+export * from './pagination'
+export * from './query'
 
 export interface reCalcScoreReturn {
-  reviewNum: number;
-  totalWeight: number;
+  reviewNum: number
+  totalWeight: number
   sums: {
-    gradeSum: number;
-    loadSum: number;
-    speechSum: number;
-  };
+    gradeSum: number
+    loadSum: number
+    speechSum: number
+  }
   avgs: {
-    grade: number;
-    load: number;
-    speech: number;
-  };
+    grade: number
+    load: number
+    speech: number
+  }
 }
 
 export const FeedVisibleRate = {
@@ -23,12 +23,12 @@ export const FeedVisibleRate = {
   RelatedCourse: 0.45,
   RankedReview: 0.15,
   Rate: 0.25,
-};
-export type FeedVisibleRate = Union<typeof FeedVisibleRate>;
+}
+export type FeedVisibleRate = Union<typeof FeedVisibleRate>
 
-export const FeedRateMinDays = 3;
-export const STAFF_ID = 830;
-type ValueType = string | number | boolean;
+export const FeedRateMinDays = 3
+export const STAFF_ID = 830
+type ValueType = string | number | boolean
 
 export type Union<T extends { [key: string]: ValueType } | ReadonlyArray<ValueType>> =
-  T extends ReadonlyArray<ValueType> ? T[number] : T extends { [key: string]: infer U } ? U : never;
+  T extends ReadonlyArray<ValueType> ? T[number] : T extends { [key: string]: infer U } ? U : never

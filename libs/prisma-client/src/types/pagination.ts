@@ -1,7 +1,7 @@
 export interface PaginationOption {
-  order?: string[];
+  order?: string[]
 
-  offset?: number;
+  offset?: number
 
-  limit?: number;
+  limit?: number
 }

@@ -1,9 +1,12 @@
-import { Body, Controller, Get, Param, Post, UnauthorizedException } from '@nestjs/common';
-import { session_userprofile } from '@prisma/client';
-import { WishlistService } from './wishlist.service';
-import { GetUser } from '../../common/decorators/get-user.decorator';
-import { IWishlist } from '../../common/interfaces';
-import { toJsonWishlist } from '../../common/serializer/wishlist.serializer';
+import {
+  Body, Controller, Get, Param, Post, UnauthorizedException,
+} from '@nestjs/common'
+import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
+import { IWishlist } from '@otl/server-nest/common/interfaces'
+import { toJsonWishlist } from '@otl/server-nest/common/serializer/wishlist.serializer'
+import { session_userprofile } from '@prisma/client'
+
+import { WishlistService } from './wishlist.service'
 
 @Controller('api/users/:userId/wishlist')
 export class WishlistController {
@@ -14,9 +17,9 @@ export class WishlistController {
     @Param('userId') userId: number,
     @GetUser() user: session_userprofile,
   ): Promise<IWishlist.WithLectures> {
-    if (userId !== user.id) throw new UnauthorizedException(); // TODO: Better message
-    const wishlist = await this.wishlistService.getWishlistWithLectures(user.id);
-    return toJsonWishlist(wishlist);
+    if (userId !== user.id) throw new UnauthorizedException() // TODO: Better message
+    const wishlist = await this.wishlistService.getWishlistWithLectures(user.id)
+    return toJsonWishlist(wishlist)
   }
 
   @Post('add-lecture')
@@ -25,9 +28,9 @@ export class WishlistController {
     @Body() body: IWishlist.AddLectureDto,
     @GetUser() user: session_userprofile,
   ): Promise<IWishlist.WithLectures> {
-    if (userId !== user.id) throw new UnauthorizedException(); // TODO: Better message
-    const wishlist = await this.wishlistService.addLecture(user.id, body);
-    return toJsonWishlist(wishlist);
+    if (userId !== user.id) throw new UnauthorizedException() // TODO: Better message
+    const wishlist = await this.wishlistService.addLecture(user.id, body)
+    return toJsonWishlist(wishlist)
   }
 
   @Post('remove-lecture')
@@ -36,8 +39,8 @@ export class WishlistController {
     @Body() body: IWishlist.RemoveLectureDto,
     @GetUser() user: session_userprofile,
   ): Promise<IWishlist.WithLectures> {
-    if (userId !== user.id) throw new UnauthorizedException(); // TODO: Better message
-    const wishlist = await this.wishlistService.removeLecture(user.id, body);
-    return toJsonWishlist(wishlist);
+    if (userId !== user.id) throw new UnauthorizedException() // TODO: Better message
+    const wishlist = await this.wishlistService.removeLecture(user.id, body)
+    return toJsonWishlist(wishlist)
   }
 }

@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { EDepartment } from '@otl/prisma-client/entities';
-import { DepartmentRepository } from '@otl/prisma-client/repositories';
+import { Injectable } from '@nestjs/common'
+
+import { EDepartment } from '@otl/prisma-client/entities'
+import { DepartmentRepository } from '@otl/prisma-client/repositories'
 
 const UNDERGRADUATE_DEPARTMENTS = [
   'CE',
@@ -21,7 +22,7 @@ const UNDERGRADUATE_DEPARTMENTS = [
   'AE',
   'CH',
   'TS',
-];
+]
 
 const EXCLUDED_DEPARTMENTS = [
   'AA',
@@ -39,37 +40,39 @@ const EXCLUDED_DEPARTMENTS = [
   'BIO',
   'CLT',
   'PHYS',
-];
+]
 
 @Injectable()
 export class DepartmentsService {
   constructor(private readonly departmentRepository: DepartmentRepository) {}
+
   async getDepartmentOptions() {
-    const yearThreshold = new Date().getFullYear() - 2;
+    const yearThreshold = new Date().getFullYear() - 2
     const [departments, recentDepartmentCodes] = await Promise.all([
       this.departmentRepository.getAllDepartmentOptions(EXCLUDED_DEPARTMENTS),
       this.departmentRepository.getDepartmentCodesOfRecentLectures(yearThreshold),
-    ]);
+    ])
 
-    if (recentDepartmentCodes.length === 0)
-      console.error('recentDepartmentCodes is empty, which indicates something is wrong');
+    if (recentDepartmentCodes.length === 0) console.error('recentDepartmentCodes is empty, which indicates something is wrong')
 
     const result = {
       undergraduate: [] as EDepartment.Basic[],
       recent: [] as EDepartment.Basic[],
       other: [] as EDepartment.Basic[],
-    };
+    }
 
     departments.forEach((department) => {
       if (UNDERGRADUATE_DEPARTMENTS.includes(department.code)) {
-        result.undergraduate.push(department);
-      } else if (recentDepartmentCodes.includes(department.code)) {
-        result.recent.push(department);
-      } else {
-        result.other.push(department);
+        result.undergraduate.push(department)
       }
-    });
+      else if (recentDepartmentCodes.includes(department.code)) {
+        result.recent.push(department)
+      }
+      else {
+        result.other.push(department)
+      }
+    })
 
-    return result;
+    return result
   }
 }

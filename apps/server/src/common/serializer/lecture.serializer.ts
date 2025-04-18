@@ -1,13 +1,16 @@
-import { ELecture } from '@otl/prisma-client/entities';
-import { toJsonClasstime } from './classtime.serializer';
-import { toJsonExamtime } from './examtime.serializer';
-import { toJsonProfessors } from './professor.serializer';
-import { ILecture } from '@otl/server-nest/common/interfaces';
-import { applyOrder } from '@otl/common/utils';
+import { ILecture } from '@otl/server-nest/common/interfaces'
+
+import { applyOrder } from '@otl/common/utils'
+
+import { ELecture } from '@otl/prisma-client/entities'
+
+import { toJsonClasstime } from './classtime.serializer'
+import { toJsonExamtime } from './examtime.serializer'
+import { toJsonProfessors } from './professor.serializer'
 
 export function toJsonLectureBasic(lecture: ELecture.Extended): ILecture.Basic {
-  const professors = lecture.subject_lecture_professors.map((x) => x.professor);
-  const ordered_professors = applyOrder(professors, ['professor_name']);
+  const professors = lecture.subject_lecture_professors.map((x) => x.professor)
+  const ordered_professors = applyOrder(professors, ['professor_name'])
 
   return {
     id: lecture.id,
@@ -39,12 +42,12 @@ export function toJsonLectureBasic(lecture: ELecture.Extended): ILecture.Basic {
     class_title_en: lecture.class_title_en ?? '',
     review_total_weight: lecture.review_total_weight + 0.000001,
     professors: toJsonProfessors(ordered_professors),
-  };
+  }
 }
 
 export function toJsonLectureDetail(lecture: ELecture.Details): ILecture.Detail {
-  const basic = toJsonLectureBasic(lecture);
-  if (!ELecture.isDetails(lecture)) throw new Error("Lecture is not of type 'ELecture.Details'");
+  const basic = toJsonLectureBasic(lecture)
+  if (!ELecture.isDetails(lecture)) throw new Error('Lecture is not of type \'ELecture.Details\'')
 
   return Object.assign(basic, {
     grade: lecture.grade + 0.000001,
@@ -52,5 +55,5 @@ export function toJsonLectureDetail(lecture: ELecture.Details): ILecture.Detail 
     speech: lecture.speech + 0.000001,
     classtimes: lecture.subject_classtime.map((classtime) => toJsonClasstime(classtime)),
     examtimes: lecture.subject_examtime.map((examtime) => toJsonExamtime(examtime)),
-  });
+  })
 }
