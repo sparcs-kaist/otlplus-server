@@ -103,32 +103,14 @@ export class ReviewsRepository {
       orderDict[orderBy[orderBy.length - 1]] = sortOrder
       orderFilters.push(orderDict)
     })
-    const reviews = await this.prisma.review_review.findMany({
+    const reviews: EReview.Details[] = await this.prisma.review_review.findMany({
       where: {
         lecture: lectureFilter,
       },
-      include: {
-        course: {
-          include: {
-            subject_department: true,
-            subject_course_professors: { include: { professor: true } },
-            lecture: true,
-            subject_courseuser: true,
-          },
-        },
-        lecture: {
-          include: {
-            subject_department: true,
-            subject_lecture_professors: { include: { professor: true } },
-            subject_classtime: true,
-            subject_examtime: true,
-          },
-        },
-        review_reviewvote: true,
-      },
+      include: EReview.Details.include,
       skip: offset,
       take: limit,
-      orderBy: orderFilter,
+      orderBy: orderFilters,
       distinct: [
         'id',
         'course_id',

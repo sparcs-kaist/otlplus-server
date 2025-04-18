@@ -20,7 +20,7 @@ export class ReviewsService {
     user: session_userprofile,
   ): Promise<IReview.Basic & { userspecific_is_liked: boolean }> {
     const review = await this.reviewsRepository.getReviewById(reviewId)
-    if (review === undefined) throw new HttpException('Can\'t find review', 404)
+    if (!review) throw new HttpException('Can\'t find review', 404)
     const result = toJsonReview(review)
     if (user) {
       const isLiked: boolean = await this.reviewsRepository.isLiked(review.id, user.id)

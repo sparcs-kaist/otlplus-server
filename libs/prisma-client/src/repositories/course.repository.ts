@@ -107,7 +107,7 @@ export class CourseRepository {
     limit: number | undefined,
   ): Promise<ECourse.Details[]> {
     const DEFAULT_LIMIT = 150
-    const DEFAULT_ORDER = ['old_code']
+    const DEFAULT_ORDER = ['old_code'] satisfies (keyof ECourse.Details)[]
     const departmentFilter = this.departmentFilter(department)
     const typeFilter = this.typeFilter(type)
     const groupFilter = this.groupFilter(group)
@@ -127,7 +127,10 @@ export class CourseRepository {
     const levelFilteredResult = this.levelFilter<ECourse.Details>(queryResult, level)
 
     // Apply Ordering and Offset
-    const orderedResult = applyOrder<ECourse.Details>(levelFilteredResult, order ?? DEFAULT_ORDER)
+    const orderedResult = applyOrder<ECourse.Details>(
+      levelFilteredResult,
+      (order as (keyof ECourse.Details)[]) ?? DEFAULT_ORDER,
+    )
     return applyOffset<ECourse.Details>(orderedResult, offset ?? 0)
   }
 
