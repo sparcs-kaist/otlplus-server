@@ -6,6 +6,7 @@ import { SyncApiKeyAuth } from '@otl/scholar-sync/common/decorators/sync-api-key
 import CronTime from 'cron';
 import { Public } from '@otl/scholar-sync/common/decorators/skip-auth.decorator';
 import { ApiQuery, ApiSecurity } from '@nestjs/swagger';
+import { SyncTerm } from '@otl/scholar-sync/common/interfaces/ISync';
 
 @Controller('api/dynamic-sync')
 export class SyncDynamicController {
