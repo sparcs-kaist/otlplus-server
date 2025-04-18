@@ -1,9 +1,9 @@
+import { EUser } from '@otl/prisma-client/entities';
 import { IScholar } from '@otl/scholar-sync/clients/scholar/IScholar';
-import { EUser } from '@otl/api-interface/dist/src';
 
 export class DegreeInfo {
-  student_no: string;
-  dept_id: number;
+  student_no!: string;
+  dept_id!: number;
 
   public static deriveDegreeInfo(student: IScholar.ScholarDegreeType): DegreeInfo {
     return {

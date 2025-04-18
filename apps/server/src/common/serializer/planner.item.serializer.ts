@@ -2,24 +2,42 @@ import { BadRequestException } from '@nestjs/common';
 import { toJsonCourseDetail } from './course.serializer';
 import { toJsonDepartment } from './department.serializer';
 import { toJsonLectureDetail } from './lecture.serializer';
-import { PlannerItemType } from '@otl/api-interface/src/interfaces/constants/planner';
-import { EPlanners } from '@otl/api-interface/src/entities/EPlanners';
-import { IPlanner } from '@otl/api-interface/src/interfaces/IPlanner';
+import { EPlanners } from '@otl/prisma-client/entities';
+import { IPlanner } from '@otl/server-nest/common/interfaces';
+import { PlannerItemType } from '@otl/common/enum/planner';
 
 export function toJsonPlannerItem<IT extends PlannerItemType>(
   item: EPlanners.EItems.Taken.Details | EPlanners.EItems.Future.Extended | EPlanners.EItems.Arbitrary.Extended,
   item_type: IT,
 ): IPlanner.IItem.IMutate {
-  if (item_type === PlannerItemType.Taken) {
-    return toJsonTakenItem(item as EPlanners.EItems.Taken.Details);
-  } else if (item_type === PlannerItemType.Future) {
-    return toJsonFutureItem(item as EPlanners.EItems.Future.Extended);
-  } else if (item_type === PlannerItemType.Arbitrary) {
-    return toJsonArbitraryItem(item as EPlanners.EItems.Arbitrary.Extended);
-  } else {
-    throw new BadRequestException('Invalid Planner Item Type');
+  const handlers = {
+    [PlannerItemType.Taken]: (item: EPlanners.EItems.Taken.Details) => toJsonTakenItem(item),
+    [PlannerItemType.Future]: (item: EPlanners.EItems.Future.Extended) => toJsonFutureItem(item),
+    [PlannerItemType.Arbitrary]: (item: EPlanners.EItems.Arbitrary.Extended) => toJsonArbitraryItem(item),
+  } satisfies Record<PlannerItemType, (item: any) => IPlanner.IItem.IMutate>;
+
+  const handler = handlers[item_type];
+  if (handler) {
+    return handler(item as any);
   }
+
+  throw new BadRequestException('Invalid Planner Item Type');
 }
+
+// export function toJsonPlannerItem<IT extends PlannerItemType>(
+//   item: EPlanners.EItems.Taken.Details | EPlanners.EItems.Future.Extended | EPlanners.EItems.Arbitrary.Extended,
+//   item_type: IT,
+// ): IPlanner.IItem.IMutate {
+//   if (item_type === PlannerItemType.Taken) {
+//     return toJsonTakenItem(item as EPlanners.EItems.Taken.Details);
+//   } else if (item_type === PlannerItemType.Future) {
+//     return toJsonFutureItem(item as EPlanners.EItems.Future.Extended);
+//   } else if (item_type === PlannerItemType.Arbitrary) {
+//     return toJsonArbitraryItem(item as EPlanners.EItems.Arbitrary.Extended);
+//   } else {
+//     throw new BadRequestException('Invalid Planner Item Type');
+//   }
+// }
 
 export const toJsonTakenItem = (taken_item: EPlanners.EItems.Taken.Details): IPlanner.IItem.Taken => {
   return {

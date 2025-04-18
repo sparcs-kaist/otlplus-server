@@ -1,7 +1,6 @@
-import { ETrack } from '@otl/api-interface/src/entities/ETrack';
-import { IPlanner } from '@otl/api-interface/src/interfaces/IPlanner';
+import { ETrack } from '@otl/prisma-client/entities';
 import { toJsonDepartment } from './department.serializer';
-import { AddtionalTrackTypeNarrower } from '@otl/api-interface/src/interfaces/constants/additional.track.response.dto';
+import { AddtionalTrackTypeNarrower, IPlanner } from '@otl/server-nest/common/interfaces';
 
 export const toJsonGeneralTrack = (generalTrack: ETrack.General): IPlanner.ITrack.General => {
   return {

@@ -1,7 +1,7 @@
-import settings from '@otl/server-nest/src/settings';
 import { PrismaClient, session_userprofile } from '@prisma/client';
 import * as readline from 'readline';
 import { prompt } from 'enquirer';
+import settings from './src/settings';
 
 // readline.Interface 인스턴스 생성
 class PrismaClientMock extends PrismaClient {

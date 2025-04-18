@@ -1,18 +1,18 @@
-import { ISync } from '@otl/api-interface/dist/src/interfaces/ISync';
-import { ELecture } from '@otl/api-interface/dist/src';
+import { ELecture } from '@otl/prisma-client/entities';
+import { IScholar } from '@otl/scholar-sync/clients/scholar/IScholar';
 
 export class ClassTimeInfo {
-  day: number;
-  begin: Date;
-  end: Date;
-  type: 'l' | 'e';
-  building_id: string;
-  room_name: string;
-  building_full_name: string;
-  building_full_name_en: string;
-  unit_time: number | null;
+  day!: number;
+  begin!: Date;
+  end!: Date;
+  type!: 'l' | 'e';
+  building_id!: string;
+  room_name!: string;
+  building_full_name!: string;
+  building_full_name_en!: string;
+  unit_time!: number | null;
 
-  public static deriveClasstimeInfo(classTime: ISync.ClasstimeType): ClassTimeInfo {
+  public static deriveClasstimeInfo(classTime: IScholar.ScholarClasstimeType): ClassTimeInfo {
     return {
       day: classTime.LECTURE_DAY,
       begin: new Date('1970-01-01T' + classTime.LECTURE_BEGIN.slice(11) + 'Z'),

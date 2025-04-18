@@ -1,6 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { EDepartment, ELecture, EProfessor, EReview, ETakenLecture, EUser } from '@otl/api-interface/src/entities';
-import { ESemester } from '@otl/api-interface/src/entities/ESemester';
 import { IScholar } from '@otl/scholar-sync/clients/scholar/IScholar';
 import { SlackNotiService } from '@otl/scholar-sync/clients/slack/slackNoti.service';
 import { ClassTimeInfo } from '@otl/scholar-sync/common/domain/ClassTimeInfo';
@@ -11,12 +9,20 @@ import { ExamtimeInfo } from '@otl/scholar-sync/common/domain/ExamTimeInfo';
 import { LectureInfo } from '@otl/scholar-sync/common/domain/LectureInfo';
 import { APPLICATION_TYPE, MajorInfo } from '@otl/scholar-sync/common/domain/MajorInfo';
 import { ProfessorInfo } from '@otl/scholar-sync/common/domain/ProfessorInfo';
-import { groupBy, normalizeArray, summarizeSyncResult } from '@otl/scholar-sync/modules/sync/util';
-import { SyncRepository } from '@otl/scholar-sync/prisma/repositories/sync.repository';
+import { summarizeSyncResult } from '@otl/scholar-sync/modules/sync/util';
 import { review_review, SyncType } from '@prisma/client';
-import { ISync } from '@otl/api-interface/src/interfaces/ISync';
-import SyncResultDetail = ISync.SyncResultDetail;
-import SyncTimeType = ISync.SyncTimeType;
+import { SyncRepository } from '@otl/prisma-client/repositories';
+import {
+  EDepartment,
+  ELecture,
+  EProfessor,
+  EReview,
+  ESemester,
+  ETakenLecture,
+  EUser,
+} from '@otl/prisma-client/entities';
+import { SyncResultDetail, SyncResultDetails, SyncTimeType } from '@otl/scholar-sync/common/interfaces/ISync';
+import { groupBy, normalizeArray } from '@otl/common/utils/util';
 
 @Injectable()
 export class SyncService {
@@ -33,11 +39,11 @@ export class SyncService {
     return await this.syncRepository.getSemesters(take);
   }
 
-  async syncScholarDB(data: IScholar.ScholarDBBody): Promise<ISync.SyncResultDetails> {
+  async syncScholarDB(data: IScholar.ScholarDBBody): Promise<SyncResultDetails> {
     await this.slackNoti.sendSyncNoti(
       `syncScholarDB ${data.year}-${data.semester}: ${data.lectures.length} lectures, ${data.charges.length} charges`,
     );
-    const result: ISync.SyncResultDetails = {
+    const result: SyncResultDetails = {
       time: new Date(),
       year: data.year,
       semester: data.semester,
@@ -148,7 +154,14 @@ export class SyncService {
     );
 
     // Professor update
-    const professorSyncResultDetail = {
+    const professorSyncResultDetail: {
+      type: SyncType;
+      created: EProfessor.Basic[];
+      updated: EProfessor.Basic[][];
+      deleted: EProfessor.Basic[];
+      skipped: EProfessor.Basic[];
+      errors: Record<string, number>[];
+    } = {
       type: SyncType.PROFESSOR,
       created: [],
       updated: [],
@@ -174,7 +187,7 @@ export class SyncService {
         const derivedProfessor = ProfessorInfo.deriveProfessorInfo(charge);
 
         if (!professor) {
-          const newProfessor = await this.syncRepository.createProfessor(derivedProfessor);
+          const newProfessor: EProfessor.Basic = await this.syncRepository.createProfessor(derivedProfessor);
           professorMap.set(charge.PROF_ID, newProfessor);
           professorSyncResultDetail.created.push(newProfessor);
         } else if (!ProfessorInfo.equals(professor, derivedProfessor)) {
@@ -353,7 +366,7 @@ export class SyncService {
     deriveInfo: (time: T) => D,
     matches: (derivedTime: D, existingTime: any) => boolean,
   ) {
-    const result: ISync.SyncResultDetails = {
+    const result: SyncResultDetails = {
       time: new Date(),
       year: year,
       semester: semester,
@@ -446,7 +459,7 @@ export class SyncService {
     );
     const startLog = await this.syncRepository.logSyncStartPoint(SyncType.TAKEN_LECTURES, data.year, data.semester);
 
-    const result: ISync.SyncResultDetails = {
+    const result: SyncResultDetails = {
       time: new Date(),
       year: data.year,
       semester: data.semester,
@@ -637,7 +650,7 @@ export class SyncService {
   async syncDegree(data: IScholar.ScholarDegreeType[]) {
     this.slackNoti.sendSyncNoti(`syncDegree: ${data.length} degrees`);
     const startLog = await this.syncRepository.logSyncStartPoint(SyncType.DEGREE, 0, 0);
-    const result: ISync.SyncResultDetails = {
+    const result: SyncResultDetails = {
       time: new Date(),
       year: 0,
       semester: 0,
@@ -661,7 +674,8 @@ export class SyncService {
     // Within each 1,000-chunk, we’ll limit concurrency to 20
     const CONCURRENCY_LIMIT = 10;
 
-    const currentSemesterYear = (await this.syncRepository.getDefaultSemester()).year;
+    const curYear = new Date().getFullYear();
+    const currentSemesterYear = (await this.syncRepository.getDefaultSemester())?.year ?? curYear;
     const updateYearThreshold = currentSemesterYear - 20;
     const departments = await this.syncRepository.getDepartments();
     const departmentMap = normalizeArray<EDepartment.Basic>(departments, (d) => d.id);
@@ -673,9 +687,13 @@ export class SyncService {
         else return !DegreeInfo.equals(degreeInfo, user);
       })
       .filter((user) => Number(user.student_id.slice(0, 4)) >= updateYearThreshold)
-      .filter((user) => departmentMap[studentDegreeMap[user.student_id].dept_id])
+      .filter((user) => {
+        const degree = studentDegreeMap[user.student_id];
+        if (!degree) return false;
+        return departmentMap[degree.dept_id] !== undefined;
+      })
       .map((user) => {
-        const degreeInfo = studentDegreeMap[user.student_id];
+        const degreeInfo = studentDegreeMap[user.student_id]!;
         return {
           userId: user.id,
           departmentId: degreeInfo.dept_id,
@@ -712,7 +730,7 @@ export class SyncService {
   async syncOtherMajor(data: IScholar.ScholarOtherMajorType[]) {
     await this.slackNoti.sendSyncNoti(`syncOtherMajor: ${data.length} other majors`);
     const startLog = await this.syncRepository.logSyncStartPoint(SyncType.MAJORS, 0, 0);
-    const result: ISync.SyncResultDetails = {
+    const result: SyncResultDetails = {
       time: new Date(),
       year: 0,
       semester: 0,
@@ -721,7 +739,10 @@ export class SyncService {
     const majorSyncResultDetail = new SyncResultDetail(SyncType.MAJORS);
 
     const departments = await this.syncRepository.getDepartments();
-    const departmentMap = normalizeArray<EDepartment.Basic>(departments, (d) => d.name);
+    const departmentMap = normalizeArray<EDepartment.Basic>(departments, (d) => d.name) as Record<
+      string,
+      EDepartment.Basic
+    >;
 
     // 1. Collect all student numbers and map them to their degree info
     const studentIds = Array.from(new Set(data.map((d) => `${d.STUDENT_ID}`)));
@@ -729,14 +750,19 @@ export class SyncService {
       data
         .filter((d) => d.APPLICATION_TYPE === '복수전공신청')
         .filter((d) => departmentMap[d.ID]?.id)
-        .map((d) => MajorInfo.deriveMajorInfo<typeof APPLICATION_TYPE.MAJOR>(d, APPLICATION_TYPE.MAJOR, departmentMap)),
+        .map(
+          (d) => MajorInfo.deriveMajorInfo<typeof APPLICATION_TYPE.MAJOR>(d, APPLICATION_TYPE.MAJOR, departmentMap)!,
+        ),
       (d) => `${d.student_id}`,
     );
     const minorData = groupBy<MajorInfo<typeof APPLICATION_TYPE.MINOR>, string>(
       data
         .filter((d) => d.APPLICATION_TYPE === '부전공신청')
         .filter((d) => departmentMap[d.ID]?.id)
-        .map((d) => MajorInfo.deriveMajorInfo<typeof APPLICATION_TYPE.MINOR>(d, APPLICATION_TYPE.MINOR, departmentMap)),
+
+        .map(
+          (d) => MajorInfo.deriveMajorInfo<typeof APPLICATION_TYPE.MINOR>(d, APPLICATION_TYPE.MINOR, departmentMap)!,
+        ),
       (d) => `${d.student_id}`,
     );
 
@@ -748,7 +774,8 @@ export class SyncService {
       await this.syncRepository.getUsersWithMinorsByStudentIds(studentIds);
     const existingUsersWithMinorsMap = normalizeArray(existingUsersWithMinors, (user) => user.id);
 
-    const currentSemesterYear = (await this.syncRepository.getDefaultSemester()).year;
+    const curYear = new Date().getFullYear();
+    const currentSemesterYear = (await this.syncRepository.getDefaultSemester())?.year ?? curYear;
     const updateYearThreshold = currentSemesterYear - 15;
 
     const toUpdate = {
@@ -788,32 +815,32 @@ export class SyncService {
     };
     toUpdate.major.forEach((userMajorInfo) => {
       const userId = userMajorInfo.userId;
-      const existingMajorInfo = existingUsersWithMajorsMap[userId].session_userprofile_majors;
+      const existingMajorInfo = existingUsersWithMajorsMap[userId]?.session_userprofile_majors;
       const majorInfoList = userMajorInfo.majorInfoList;
 
       // 기존 정보와 새로운 정보를 `department_id` 기준으로 비교
-      const existingSet = new Set(existingMajorInfo.map((m) => m.department_id));
-      const newSet = new Set(majorInfoList.map((m) => m.department_id));
+      const existingSet = new Set(existingMajorInfo?.map((m) => m.department_id));
+      const newSet = new Set(majorInfoList?.map((m) => m.department_id));
 
       // 추가해야 할 전공: 새로운 리스트에는 있지만 기존 리스트에는 없는 항목
       const toAdd = majorInfoList
-        .filter((m) => !existingSet.has(m.department_id))
+        ?.filter((m) => !existingSet.has(m.department_id))
         .map((m) => {
           return { userId: userId, departmentId: m.department_id };
         });
 
       // 제거해야 할 전공: 기존 리스트에는 있지만 새로운 리스트에는 없는 항목
       const toRemove = existingMajorInfo
-        .filter((m) => !newSet.has(m.department_id))
+        ?.filter((m) => !newSet.has(m.department_id))
         .map((m) => {
           return { userId: userId, departmentId: m.department_id };
         });
 
       // console.log('userId', userId, 'toAdd', toAdd, 'toRemove', toRemove);
-      if (toAdd.length > 0) {
+      if (toAdd && toAdd.length > 0) {
         majorUpdate.add = majorUpdate.add.concat(toAdd);
       }
-      if (toRemove.length > 0) {
+      if (toRemove && toRemove.length > 0) {
         majorUpdate.remove = majorUpdate.remove.concat(toRemove);
       }
     });
@@ -823,32 +850,32 @@ export class SyncService {
     };
     toUpdate.minor.forEach((userMinorInfo) => {
       const userId = userMinorInfo.userId;
-      const existingMinorInfo = existingUsersWithMinorsMap[userId].session_userprofile_minors;
+      const existingMinorInfo = existingUsersWithMinorsMap[userId]?.session_userprofile_minors;
       const minorInfoList = userMinorInfo.minorInfoList;
       // console.log('existingMinorInfo', existingMinorInfo, 'minorInfoList', minorInfoList);
 
       // 기존 정보와 새로운 정보를 `department_id` 기준으로 비교
-      const existingSet = new Set(existingMinorInfo.map((m) => m.department_id));
-      const newSet = new Set(minorInfoList.map((m) => m.department_id));
+      const existingSet = new Set(existingMinorInfo?.map((m) => m.department_id));
+      const newSet = new Set(minorInfoList?.map((m) => m.department_id));
 
       // 추가해야 할 전공: 새로운 리스트에는 있지만 기존 리스트에는 없는 항목
       const toAdd = minorInfoList
-        .filter((m) => !existingSet.has(m.department_id))
+        ?.filter((m) => !existingSet.has(m.department_id))
         .map((m) => {
           return { userId: userId, departmentId: m.department_id };
         });
 
       // 제거해야 할 전공: 기존 리스트에는 있지만 새로운 리스트에는 없는 항목
       const toRemove = existingMinorInfo
-        .filter((m) => !newSet.has(m.department_id))
+        ?.filter((m) => !newSet.has(m.department_id))
         .map((m) => {
           return { userId: userId, departmentId: m.department_id };
         });
       // console.log('userId', userId, 'toAdd', toAdd, 'toRemove', toRemove);
-      if (toAdd.length > 0) {
+      if (toAdd && toAdd.length > 0) {
         minorUpdate.add = minorUpdate.add.concat(toAdd);
       }
-      if (toRemove.length > 0) {
+      if (toRemove && toRemove.length > 0) {
         minorUpdate.remove = minorUpdate.remove.concat(toRemove);
       }
     });

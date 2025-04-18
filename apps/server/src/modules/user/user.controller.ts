@@ -1,9 +1,7 @@
 import { Controller, Get, HttpException, Param, Query } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
-import { GetUser } from '@src/common/decorators/get-user.decorator';
-import { ICourse } from '@otl/api-interface/src/interfaces';
-import { IReview } from '@otl/api-interface/src/interfaces/IReview';
-import { IUser } from '@otl/api-interface/src/interfaces/IUser';
+import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator';
+import { ICourse, IReview, IUser } from '@otl/server-nest/common/interfaces';
 import { UserService } from './user.service';
 
 @Controller('api/users')

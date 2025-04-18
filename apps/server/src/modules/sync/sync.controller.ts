@@ -1,10 +1,10 @@
 import { Body, Controller, Get, InternalServerErrorException, Post } from '@nestjs/common';
-import { SyncApiKeyAuth } from '@src/common/decorators/sync-api-key-auth.decorator';
-import { ISync } from '@otl/api-interface/src/interfaces/ISync';
+import { SyncApiKeyAuth } from '@otl/server-nest/common/decorators/sync-api-key-auth.decorator';
 import { SyncScholarDBService } from './syncScholarDB.service';
 import { SyncTakenLectureService } from './syncTakenLecture.service';
-import { toJsonSemester } from '@src/common/serializer/semester.serializer';
-import { ISemester } from '@otl/api-interface/src';
+import { toJsonSemester } from '@otl/server-nest/common/serializer/semester.serializer';
+import { ISemester } from '@otl/server-nest/common/interfaces';
+import { ISync } from '@otl/server-nest/common/interfaces/ISync';
 
 @Controller('api/sync')
 export class SyncController {

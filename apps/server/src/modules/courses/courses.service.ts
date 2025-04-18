@@ -1,13 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
-import { toJsonLectureDetail } from '@src/common/serializer/lecture.serializer';
-import { toJsonReview } from '@src/common/serializer/review.serializer';
-import { CourseRepository } from '../../prisma/repositories/course.repository';
+import { toJsonLectureDetail } from '@otl/server-nest/common/serializer/lecture.serializer';
+import { toJsonReview } from '@otl/server-nest/common/serializer/review.serializer';
 import { Transactional } from '@nestjs-cls/transactional';
-import { ICourse, IReview } from '@otl/api-interface/src/interfaces';
-import { getRepresentativeLecture } from '@src/common/utils/lecture.utils';
-import { addIsRead, toJsonCourseDetail } from '@src/common/serializer/course.serializer';
-import { ECourse } from '@otl/api-interface/src/entities/ECourse';
+import { ICourse, IReview } from '@otl/server-nest/common/interfaces';
+import { getRepresentativeLecture } from '@otl/server-nest/common/utils/lecture.utils';
+import { addIsRead, toJsonCourseDetail } from '@otl/server-nest/common/serializer/course.serializer';
+import { CourseRepository } from '@otl/prisma-client/repositories';
+import { ECourse } from '@otl/prisma-client/entities';
 import ECourseUser = ECourse.ECourseUser;
 
 @Injectable()
@@ -48,7 +48,7 @@ export class CoursesService {
   }
 
   public async getLecturesByCourseId(query: ICourse.LectureQueryDto, id: number) {
-    const lectures = await this.courseRepository.getLecturesByCourseId(query, id);
+    const lectures = await this.courseRepository.getLecturesByCourseId(id, query.order);
     if (!lectures) {
       throw new NotFoundException();
     }
@@ -73,7 +73,7 @@ export class CoursesService {
   }
 
   async getCourseAutocomplete(dto: ICourse.AutocompleteQueryDto): Promise<string | undefined> {
-    const candidate = await this.courseRepository.getCourseAutocomplete(dto);
+    const candidate = await this.courseRepository.getCourseAutocomplete(dto.keyword);
     if (!candidate) return dto.keyword;
     return this.findAutocompleteFromCandidate(candidate, dto.keyword);
   }

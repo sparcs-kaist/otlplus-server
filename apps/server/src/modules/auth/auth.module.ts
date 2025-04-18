@@ -1,8 +1,6 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { PrismaModule } from '../../prisma/prisma.module';
-import { UserRepository } from '../../prisma/repositories/user.repository';
 import { UserService } from '../user/user.service';
 import { AuthChain } from './auth.chain';
 import { AuthConfig } from './auth.config';
@@ -13,9 +11,10 @@ import { JwtCommand } from './command/jwt.command';
 import { SidCommand } from './command/sid.command';
 import { SyncApiKeyCommand } from './command/syncApiKey.command';
 import { JwtCookieStrategy } from './strategy/jwt-cookie.strategy';
-import { IsReviewProhibitedCommand } from '@src/modules/auth/command/isReviewProhibited.command';
-import { LecturesService } from '@src/modules/lectures/lectures.service';
-import { SyncModule } from '@src/modules/sync/sync.module';
+import { IsReviewProhibitedCommand } from '@otl/server-nest/modules/auth/command/isReviewProhibited.command';
+import { LecturesService } from '@otl/server-nest/modules/lectures/lectures.service';
+import { SyncModule } from '@otl/server-nest/modules/sync/sync.module';
+import { PrismaModule } from '@otl/prisma-client/prisma.module';
 
 @Module({
   imports: [
@@ -29,7 +28,6 @@ import { SyncModule } from '@src/modules/sync/sync.module';
     AuthService,
     JwtCookieStrategy,
     UserService,
-    UserRepository,
     LecturesService,
     AuthChain,
     IsPublicCommand,

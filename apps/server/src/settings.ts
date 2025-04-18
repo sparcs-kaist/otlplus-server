@@ -127,6 +127,7 @@ const getSwaggerConfig = () => {
 
 const staticConfig = (): any => {
   return {
-    file_path: process.env.DOCKER_DEPLOY === 'true' ? '/var/www/otlplus-server/apps/server/static/' : 'static/',
+    file_path:
+      process.env.DOCKER_DEPLOY === 'true' ? '/var/www/otlplus-server/apps/server/static/' : 'apps/server/static/',
   };
 };

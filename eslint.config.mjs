@@ -1,10 +1,11 @@
-import { FlatCompat } from '@eslint/eslintrc';
-import js from '@eslint/js';
-import typescriptEslintEslintPlugin from '@typescript-eslint/eslint-plugin';
-import tsParser from '@typescript-eslint/parser';
+// eslint.config.mjs
+import typescriptEslintPlugin from '@typescript-eslint/eslint-plugin';
 import globals from 'globals';
+import tsParser from '@typescript-eslint/parser';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import js from '@eslint/js';
+import { FlatCompat } from '@eslint/eslintrc';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,17 +16,11 @@ const compat = new FlatCompat({
 });
 
 export default [
-  {
-    ignores: ['**/.eslintrc.js', '**/eslint.config.mjs', '**/dist'],
-  },
-  ...compat.extends(
-    'eslint:recommended',
-    'plugin:@typescript-eslint/recommended',
-    'prettier',
-  ),
+  { ignores: ['**/.eslintrc.js'] },
+  ...compat.extends('plugin:@typescript-eslint/recommended', 'plugin:prettier/recommended'),
   {
     plugins: {
-      '@typescript-eslint': typescriptEslintEslintPlugin,
+      '@typescript-eslint': typescriptEslintPlugin,
     },
 
     languageOptions: {
@@ -39,26 +34,18 @@ export default [
       sourceType: 'module',
 
       parserOptions: {
-        project: './tsconfig.base.json',
-        tsconfigRootDir: './',
+        project: 'tsconfig.json',
+        tsconfigRootDir: __dirname,
       },
     },
 
     rules: {
+      '@typescript-eslint/no-namespace': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/interface-name-prefix': 'off',
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-namespace': 'off',
-      '@typescript-eslint/no-empty-function': 'off',
-      '@typescript-eslint/ban-ts-comment': 'off',
-      '@typescript-eslint/no-inferrable-types': 'off',
-      'no-irregular-whitespace': 'off',
-      'no-extra-boolean-cast': 'off',
-      'no-inner-declarations': 'off',
-      '@typescript-eslint/no-unused-vars': 'off',
-      '@typescript-eslint/no-non-null-assertion': 'off',
-      '@typescript-eslint/no-empty-interface': 'off',
     },
   },
 ];

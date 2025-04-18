@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { session_userprofile, support_rate } from '@prisma/client';
-import { RateRepository } from '@src/prisma/repositories/rates.repository';
-import settings from '@src/settings';
+import settings from '@otl/server-nest/settings';
 import { Transactional } from '@nestjs-cls/transactional';
-import { IRate } from '@otl/api-interface/src/interfaces';
+import { IRate } from '@otl/server-nest/common/interfaces';
+import { RateRepository } from '@otl/prisma-client/repositories';
 
 @Injectable()
 export class RatesService {

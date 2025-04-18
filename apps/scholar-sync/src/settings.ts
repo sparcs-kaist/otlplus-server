@@ -2,9 +2,9 @@ import { Prisma } from '@prisma/client';
 import dotenv from 'dotenv';
 import { dotEnvOptions } from './dotenv-options';
 import { DocumentBuilder } from '@nestjs/swagger';
-import { utilities, WinstonModule } from 'nest-winston';
-import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
+import { utilities } from 'nest-winston';
+import winston from 'winston';
 
 dotenv.config(dotEnvOptions);
 console.log(`NODE_ENV environment: ${process.env.NODE_ENV}`);

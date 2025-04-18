@@ -1,10 +1,10 @@
 import { BadRequestException, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
-import { GetUser } from '@src/common/decorators/get-user.decorator';
-import { Public } from '@src/common/decorators/skip-auth.decorator';
+import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator';
+import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator';
 import { CoursesService } from './courses.service';
-import { CourseIdPipe } from '@src/common/pipe/courseId.pipe';
-import { ICourse, ILecture, IReview } from '@otl/api-interface/src/interfaces';
+import { CourseIdPipe } from '@otl/server-nest/common/pipe/courseId.pipe';
+import { ICourse, ILecture, IReview } from '@otl/server-nest/common/interfaces';
 import ICourseUser = ICourse.ICourseUser;
 
 @Controller('api/courses')

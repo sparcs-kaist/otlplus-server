@@ -3,7 +3,7 @@ import { SlackNotiService } from './slackNoti.service';
 import { SyncController } from './sync.controller';
 import { SyncScholarDBService } from './syncScholarDB.service';
 import { SyncTakenLectureService } from './syncTakenLecture.service';
-import { PrismaModule } from '@src/prisma/prisma.module';
+import { PrismaModule } from '@otl/prisma-client/prisma.module';
 
 @Module({
   controllers: [SyncController],

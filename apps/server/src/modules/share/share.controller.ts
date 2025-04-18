@@ -1,17 +1,13 @@
 import { Controller, Get, Query, Res } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
 import { Response } from 'express';
-import { IShare } from '@otl/api-interface/src/interfaces';
-import { TimetableRepository } from '@src/prisma/repositories/timetable.repository';
+import { IShare } from '@otl/server-nest/common/interfaces';
 import { ShareService } from './share.service';
-import { GetUser } from '@src/common/decorators/get-user.decorator';
+import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator';
 
 @Controller('/api/share')
 export class ShareController {
-  constructor(
-    private readonly shareService: ShareService,
-    private readonly timetableRepository: TimetableRepository,
-  ) {}
+  constructor(private readonly shareService: ShareService) {}
 
   @Get('timetable/image')
   async getTimetableImage(

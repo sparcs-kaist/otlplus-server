@@ -1,13 +1,13 @@
 import { Controller, Get, Query, Req, Res, Session } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
-import { GetUser } from '@src/common/decorators/get-user.decorator';
-import { Public } from '../../common/decorators/skip-auth.decorator';
 import settings from '../../settings';
 import { UserService } from '../user/user.service';
 import { AuthService } from './auth.service';
 import { Client } from './utils/sparcs-sso';
-import { IAuth, IUser } from '@otl/api-interface/src/interfaces';
-import { ESSOUser } from '@otl/api-interface/src/entities/ESSOUser';
+import { ESSOUser } from '@otl/prisma-client/entities';
+import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator';
+import { IAuth, IUser } from '@otl/server-nest/common/interfaces';
+import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator';
 
 @Controller('session')
 export class AuthController {

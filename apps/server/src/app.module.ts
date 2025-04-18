@@ -3,7 +3,6 @@ import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-pr
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from '@src/prisma/prisma.service';
 import { ClsModule } from 'nestjs-cls';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -28,11 +27,13 @@ import { TimetablesModule } from './modules/timetables/timetables.module';
 import { TracksModule } from './modules/tracks/tracks.module';
 import { UserModule } from './modules/user/user.module';
 import { WishlistModule } from './modules/wishlist/wishlist.module';
-import { PrismaModule } from './prisma/prisma.module';
+import { PrismaService } from '@otl/prisma-client/prisma.service';
+import { PrismaModule } from '@otl/prisma-client/prisma.module';
+import settings from './settings';
 
 @Module({
   imports: [
-    PrismaModule,
+    PrismaModule.register(settings().ormconfig()),
     AuthModule,
     CoursesModule,
     LecturesModule,
@@ -65,11 +66,6 @@ import { PrismaModule } from './prisma/prisma.module';
   ],
   controllers: [AppController],
   providers: [
-    // {
-    //   provide: APP_GUARD,
-    //   useClass:
-    //     process.env.NODE_ENV === 'production' ? JwtCookieGuard : MockAuthGuard,
-    // },
     {
       provide: APP_GUARD,
       useFactory: async (authConfig: AuthConfig) => {

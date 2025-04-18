@@ -1,14 +1,14 @@
 import { Body, Controller, Get, HttpException, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
-import { ReviewProhibited } from '@src/common/decorators/prohibit-review.decorator';
-import { GetUser } from '@src/common/decorators/get-user.decorator';
-import { Public } from '@src/common/decorators/skip-auth.decorator';
+import { ReviewProhibited } from '@otl/server-nest/common/decorators/prohibit-review.decorator';
+import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator';
+import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator';
 import { ReviewsService } from './reviews.service';
 import EReviewVote = EReview.EReviewVote;
-import { EReview } from '@otl/api-interface/src/entities/EReview';
-import { IReview } from '@otl/api-interface/src/interfaces';
-import { toJsonReviewVote } from '@src/common/serializer/review.serializer';
+import { IReview } from '@otl/server-nest/common/interfaces';
+import { toJsonReviewVote } from '@otl/server-nest/common/serializer/review.serializer';
 import IReviewVote = IReview.IReviewVote;
+import { EReview } from '@otl/prisma-client/entities';
 
 @Controller('api/reviews')
 export class ReviewsController {

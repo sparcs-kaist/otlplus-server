@@ -1,10 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { ECourse } from '@otl/api-interface/src/entities/ECourse';
-import { EDepartment } from '@otl/api-interface/src/entities/EDepartment';
-import { ELecture } from '@otl/api-interface/src/entities/ELecture';
-import { EProfessor } from '@otl/api-interface/src/entities/EProfessor';
-import { ISync } from '@otl/api-interface/src/interfaces/ISync';
-import { SyncRepository } from '@src/prisma/repositories/sync.repository';
 import { SlackNotiService } from './slackNoti.service';
 import {
   ChargeDerivedProfessorInfo,
@@ -14,6 +8,9 @@ import {
   LectureDerivedCourseInfo,
   LectureDerivedDepartmentInfo,
 } from './types';
+import { SyncRepository } from '@otl/prisma-client/repositories';
+import { ECourse, EDepartment, ELecture, EProfessor } from '@otl/prisma-client/entities';
+import { ISync } from '../../common/interfaces/ISync';
 
 @Injectable()
 export class SyncScholarDBService {

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { WebClient } from '@slack/web-api';
-import settings from '@src/settings';
+import settings from '@otl/server-nest/settings';
 
 @Injectable()
 export class SlackNotiService {

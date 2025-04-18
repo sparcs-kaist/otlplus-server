@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { UserRepository } from '@src/prisma/repositories/user.repository';
 import { Transactional } from '@nestjs-cls/transactional';
-import { EUser } from '@otl/api-interface/src/entities/EUser';
+import { UserRepository } from '@otl/prisma-client/repositories';
+import { EUser } from '@otl/prisma-client/entities';
 
 @Injectable()
 export class SessionService {

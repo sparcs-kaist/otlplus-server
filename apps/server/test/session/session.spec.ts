@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import axios from 'axios';
 import { AppModule } from '../../src/app.module';
 import { UserService } from '../../src/modules/user/user.service';
-import { PrismaService } from '../../src/prisma/prisma.service';
+import { PrismaService } from '@otl/server-nest/modules/prisma/prisma.service';
 
 describe.skip('AppController (e2e)', () => {
   let app: INestApplication;

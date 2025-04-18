@@ -4,7 +4,7 @@ import { IsPublicCommand } from './command/isPublic.command';
 import { JwtCommand } from './command/jwt.command';
 import { SidCommand } from './command/sid.command';
 import { SyncApiKeyCommand } from './command/syncApiKey.command';
-import { IsReviewProhibitedCommand } from '@src/modules/auth/command/isReviewProhibited.command';
+import { IsReviewProhibitedCommand } from '@otl/server-nest/modules/auth/command/isReviewProhibited.command';
 
 @Injectable()
 export class AuthConfig {

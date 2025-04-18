@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { TracksService } from './tracks.service';
-import { Public } from '@src/common/decorators/skip-auth.decorator';
-import { IPlanner } from '@otl/api-interface/src/interfaces';
+import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator';
+import { IPlanner } from '@otl/server-nest/common/interfaces';
 
 @Controller('/api/tracks')
 export class TracksController {

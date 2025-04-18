@@ -1,13 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
-import { PrismaService } from '@src/prisma/prisma.service';
-import { ReviewsRepository } from '@src/prisma/repositories/review.repository';
-import { LectureRepository } from '../../prisma/repositories/lecture.repository';
-import { toJsonLectureDetail } from '@src/common/serializer/lecture.serializer';
-import { ILecture, IReview } from '@otl/api-interface/src/interfaces';
-import { toJsonReview } from '@src/common/serializer/review.serializer';
-import { EReview } from '@otl/api-interface/src/entities/EReview';
-import { ELecture } from '@otl/api-interface/src/entities/ELecture';
+import { toJsonLectureDetail } from '@otl/server-nest/common/serializer/lecture.serializer';
+import { ILecture, IReview } from '@otl/server-nest/common/interfaces';
+import { toJsonReview } from '@otl/server-nest/common/serializer/review.serializer';
+import { PrismaService, ReviewsRepository, LectureRepository, EReview } from '@otl/prisma-client';
+import { ELecture } from '@otl/prisma-client/entities';
 
 @Injectable()
 export class LecturesService {
@@ -97,7 +94,7 @@ export class LecturesService {
   }
 
   async getLectureAutocomplete(dto: ILecture.AutocompleteQueryDto) {
-    const candidate = await this.LectureRepository.getLectureAutocomplete(dto);
+    const candidate = await this.LectureRepository.getLectureAutocomplete(dto.year, dto.semester, dto.keyword);
     if (!candidate) return dto.keyword;
     return this.findAutocompleteFromCandidate(candidate, dto.keyword);
   }

@@ -1,14 +1,11 @@
 import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { session_userprofile } from '@prisma/client';
-import { orderFilter, validateYearAndSemester } from '../../common/utils/search.utils';
-import { PrismaService } from '../../prisma/prisma.service';
-import { LectureRepository } from '../../prisma/repositories/lecture.repository';
-import { SemesterRepository } from '../../prisma/repositories/semester.repository';
-import { TimetableRepository } from '../../prisma/repositories/timetable.repository';
 import { Transactional } from '@nestjs-cls/transactional';
-import { ITimetable } from '@otl/api-interface/src/interfaces';
-import { ETimetable } from '@otl/api-interface/src/entities/ETimetable';
-import { ELecture } from '@otl/api-interface/src/entities/ELecture';
+import { ITimetable } from '@otl/server-nest/common/interfaces';
+import { ETimetable } from '@otl/prisma-client/entities/ETimetable';
+import { ELecture } from '@otl/prisma-client/entities/ELecture';
+import { LectureRepository, PrismaService, SemesterRepository, TimetableRepository } from '@otl/prisma-client';
+import { orderFilter } from '@otl/prisma-client/common/util';
 
 @Injectable()
 export class TimetablesService {
@@ -37,10 +34,15 @@ export class TimetablesService {
     return await this.timetableRepository.getTimeTableById(timetableId);
   }
 
+  async validateYearAndSemester(year: number, semester: number) {
+    const existsSemester: boolean = await this.semesterRepository.existsSemester(year, semester);
+    return existsSemester || (2009 < year && year < 2018 && semester && [1, 3].includes(semester));
+  }
+
   @Transactional()
   async createTimetable(timeTableBody: ITimetable.CreateDto, user: session_userprofile) {
     const { year, semester } = timeTableBody;
-    if (!(await validateYearAndSemester(year, semester, this.semesterRepository))) {
+    if (!(await this.validateYearAndSemester(year, semester))) {
       throw new BadRequestException("Wrong fields 'year' and 'semester' in request data");
     }
 

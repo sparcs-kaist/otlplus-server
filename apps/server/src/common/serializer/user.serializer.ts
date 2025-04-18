@@ -1,6 +1,5 @@
-import { EUser } from '@otl/api-interface/src/entities';
-import { IUser } from '@otl/api-interface/src/interfaces';
-
+import { EUser } from '@otl/prisma-client/entities';
+import { IUser } from '@otl/server-nest/common/interfaces';
 export const toJsonUser = (user: EUser.Basic): IUser.Basic => {
   return {
     id: user.id,

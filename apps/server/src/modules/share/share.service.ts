@@ -4,13 +4,13 @@ import { CanvasRenderingContext2D, createCanvas, loadImage, registerFont } from 
 import ical, { ICalAlarmType, ICalCalendar, ICalEventRepeatingFreq } from 'ical-generator';
 import moment from 'moment-timezone';
 import { join } from 'path';
-import { ELecture } from '@otl/api-interface/src/entities/ELecture';
-import { ILecture, IShare } from '@otl/api-interface/src/interfaces';
-import { SemesterRepository } from '@src/prisma/repositories/semester.repository';
+import { ILecture, IShare } from '@otl/server-nest/common/interfaces';
 import { LecturesService } from '../lectures/lectures.service';
 import { SemestersService } from '../semesters/semesters.service';
 import { TimetablesService } from '../timetables/timetables.service';
-import settings from '@src/settings';
+import settings from '@otl/server-nest/settings';
+import { SemesterRepository } from '@otl/prisma-client/repositories';
+import { ELecture } from '@otl/prisma-client/entities';
 
 interface RoundedRectangleOptions {
   ctx: CanvasRenderingContext2D;

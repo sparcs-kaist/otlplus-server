@@ -1,12 +1,12 @@
-import { ISync } from '@otl/api-interface/dist/src/interfaces/ISync';
-import { ELecture } from '@otl/api-interface/dist/src';
+import { ELecture } from '@otl/prisma-client/entities';
+import { IScholar } from '../../clients/scholar/IScholar';
 
 export class ExamtimeInfo {
-  day: number;
-  begin: Date;
-  end: Date;
+  day!: number;
+  begin!: Date;
+  end!: Date;
 
-  public static deriveExamtimeInfo(examtime: ISync.ExamtimeType): ExamtimeInfo {
+  public static deriveExamtimeInfo(examtime: IScholar.ScholarExamtimeType): ExamtimeInfo {
     return {
       day: examtime.EXAM_DAY - 1,
       begin: new Date('1970-01-01T' + examtime.EXAM_BEGIN.slice(11) + 'Z'),

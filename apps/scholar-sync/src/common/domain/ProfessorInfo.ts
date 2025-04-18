@@ -1,13 +1,13 @@
-import { ISync } from '@otl/api-interface/dist/src/interfaces/ISync';
-import { EProfessor } from '@otl/api-interface/dist/src';
+import { EProfessor } from '@otl/prisma-client/entities';
+import { IScholar } from '@otl/scholar-sync/clients/scholar/IScholar';
 
 export class ProfessorInfo {
-  professor_id: number;
-  professor_name: string;
-  professor_name_en: string;
-  major: string;
+  professor_id!: number;
+  professor_name!: string;
+  professor_name_en!: string;
+  major!: string;
 
-  public static deriveProfessorInfo(charge: ISync.ScholarChargeType): ProfessorInfo {
+  public static deriveProfessorInfo(charge: IScholar.ScholarChargeType): ProfessorInfo {
     return {
       professor_id: charge.PROF_ID,
       professor_name: charge.PROF_NAME.trim(),

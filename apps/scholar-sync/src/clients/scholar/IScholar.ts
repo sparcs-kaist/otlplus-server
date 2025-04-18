@@ -423,16 +423,16 @@ export namespace IScholar {
 
     /** ? 뭔지 모르겠음. 안 쓰임 */
     @IsString()
-    E_DEGREE_SNAME: string;
+    E_DEGREE_SNAME!: string;
 
     /** ? 뭔지 모르겠음. 안 쓰임 */
     @IsString()
-    E_DEGREE_NAME: string;
+    E_DEGREE_NAME!: string;
 
     /** ? 뭔지 모르겠음. 안 쓰임 */
     @IsString()
     @IsIn(['N', 'Y'])
-    MANUAL_FLAG: string;
+    MANUAL_FLAG!: string;
   }
 
   export class ScholarOtherMajorType {

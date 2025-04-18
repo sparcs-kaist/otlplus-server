@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { EDepartment } from '@otl/api-interface/src/entities/EDepartment';
-import { DepartmentRepository } from '@src/prisma/repositories/department.repository';
+import { EDepartment } from '@otl/prisma-client/entities';
+import { DepartmentRepository } from '@otl/prisma-client/repositories';
 
 const UNDERGRADUATE_DEPARTMENTS = [
   'CE',

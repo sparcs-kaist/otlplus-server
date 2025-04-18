@@ -1,6 +1,6 @@
-import { EWishlist } from '@otl/api-interface/src/entities/EWishlist';
-import { IWishlist } from '@otl/api-interface/src/interfaces/IWishlist';
+import { EWishlist } from '@otl/prisma-client/entities';
 import { toJsonLectureDetail } from './lecture.serializer';
+import { IWishlist } from '../interfaces/IWishlist';
 
 export const toJsonWishlist = (wishlist: EWishlist.WithLectures): IWishlist.WithLectures => {
   return {

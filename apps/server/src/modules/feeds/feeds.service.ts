@@ -1,13 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { session_userprofile, subject_department } from '@prisma/client';
-import { getRandomChoice } from '@src/common/utils/method.utils';
-import { DepartmentRepository } from '@src/prisma/repositories/department.repository';
-import { FeedsRepository } from '@src/prisma/repositories/feeds.repository';
-import { ReviewsRepository } from '@src/prisma/repositories/review.repository';
-import { SemesterRepository } from '@src/prisma/repositories/semester.repository';
-import { UserRepository } from '@src/prisma/repositories/user.repository';
-import { EFeed } from '@otl/api-interface/src/entities/EFeed';
-import { IFeed } from '@otl/api-interface/src/interfaces';
+import { getRandomChoice } from '@otl/server-nest/common/utils/method.utils';
+import {
+  DepartmentRepository,
+  FeedsRepository,
+  ReviewsRepository,
+  SemesterRepository,
+  UserRepository,
+} from '@otl/prisma-client/repositories';
+import { EFeed } from '@otl/prisma-client/entities';
+import { IFeed } from '../../common/interfaces';
 
 @Injectable()
 export class FeedsService {

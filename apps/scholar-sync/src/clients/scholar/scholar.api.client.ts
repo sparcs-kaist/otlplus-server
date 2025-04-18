@@ -16,8 +16,8 @@ import { plainToInstance } from 'class-transformer';
 @Injectable()
 export class ScholarApiClient {
   private readonly syncConfig = settings().syncConfig();
-  private readonly apiKey: string;
-  private readonly baseUrl: string;
+  private readonly apiKey: string | undefined;
+  private readonly baseUrl: string | undefined;
   private readonly logger = new Logger(ScholarApiClient.name);
 
   constructor() {
@@ -59,7 +59,7 @@ export class ScholarApiClient {
     return plainToInstance<ScholarChargeType, any>(ScholarChargeType, (data?.OutBlock_1 as any[]) || []);
   }
 
-  async getLectureType(lectureYear?: number, lectureTerm?: number): Promise<ScholarLectureType[]> {
+  async getLectureType(lectureYear?: number, lectureTerm?: number): Promise<IScholar.ScholarLectureType[]> {
     const params = {
       lecture_year: lectureYear,
       lecture_term: lectureTerm,

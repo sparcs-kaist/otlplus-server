@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { PrismaModule } from '@src/prisma/prisma.module';
+import { PrismaModule } from '@otl/prisma-client/prisma.module';
 import { WishlistController } from './wishlist.controller';
 import { WishlistService } from './wishlist.service';
 

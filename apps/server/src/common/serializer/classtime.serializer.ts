@@ -1,6 +1,6 @@
 import { subject_classtime } from '@prisma/client';
-import { getTimeNumeric } from '@src/common/utils/time.utils';
-import { ILecture } from '@otl/api-interface/src/interfaces/ILecture';
+import { ILecture } from '@otl/server-nest/common/interfaces';
+import { getTimeNumeric } from '@otl/common';
 
 export const toJsonClasstime = (classtime: subject_classtime): ILecture.Classtime => {
   const classroomInfo = getClassroomStrs(classtime);
