@@ -8,7 +8,7 @@ export class ExamtimeInfo {
 
   public static deriveExamtimeInfo(examtime: ISync.ExamtimeType): ExamtimeInfo {
     return {
-      day: examtime.EXAM_DAY - 1,
+      day: examtime.EXAM_DAY,
       begin: new Date('1970-01-01T' + examtime.EXAM_BEGIN.slice(11) + 'Z'),
       end: new Date('1970-01-01T' + examtime.EXAM_END.slice(11) + 'Z'),
     };

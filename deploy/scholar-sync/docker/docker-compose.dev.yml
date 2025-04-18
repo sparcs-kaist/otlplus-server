@@ -12,7 +12,7 @@ services:
     build:
       context: ../../..
       dockerfile: ./deploy/scholar-sync/docker/Dockerfile.server
-    image: otlplus-scholar-sync-nest-prod
+    image: otlplus-scholar-sync-nest-dev
     restart: always
     tty: true
     ports:
