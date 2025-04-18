@@ -63,4 +63,4 @@ jobs:
       - name: Generate PrismaClient
         run: yarn run client:generate
       - name: Build
-        run: yarn run build
+        run: yarn run build:all
