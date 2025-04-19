@@ -28,7 +28,7 @@ const getCorsConfig = () => {
     }
   }
   return {
-    origin: 'http://localhost:5173',
+    origin: ['http://localhost:5173', 'http://localhost:8000'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
     preflightContinue: false,

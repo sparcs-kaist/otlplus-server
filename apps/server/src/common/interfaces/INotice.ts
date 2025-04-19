@@ -5,14 +5,4 @@ export namespace INotice {
     start_time: Date
     end_time: Date
   }
-
-  /**
-   * @deprecated
-   */
-  export class GetDto {
-    // @IsString()
-    // time?: string;
-    // @IsString()
-    // order?: string;
-  }
 }

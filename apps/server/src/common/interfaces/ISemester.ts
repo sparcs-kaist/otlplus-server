@@ -1,7 +1,5 @@
 import { IsArray, IsOptional } from 'class-validator'
 
-import { ESemester } from '@otl/prisma-client/entities'
-
 import { OrderDefaultValidator, PROHIBITED_FIELD_PATTERN } from './validators.decorator'
 
 export namespace ISemester {
@@ -12,5 +10,17 @@ export namespace ISemester {
     order?: string[]
   }
 
-  export type Response = Omit<ESemester.Basic, 'id'>
+  export interface Response {
+    year: number
+    semester: number
+    beginning: Date
+    end: Date
+    courseRegistrationPeriodStart: Date | null
+    courseRegistrationPeriodEnd: Date | null
+    courseAddDropPeriodEnd: Date | null
+    courseDropDeadline: Date | null
+    courseEvaluationDeadline: Date | null
+    gradePosting: Date | null
+    courseDesciptionSubmission: Date | null
+  }
 }

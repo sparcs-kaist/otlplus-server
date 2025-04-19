@@ -1,5 +1,7 @@
-import { FeedType, IFeed } from '@otl/server-nest/common/interfaces'
+import { IFeed } from '@otl/server-nest/common/interfaces'
 import { session_userprofile } from '@prisma/client'
+
+import { FeedType } from '@otl/common/enum/feed'
 
 import { EFeed } from '@otl/prisma-client/entities'
 

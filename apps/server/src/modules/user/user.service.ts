@@ -1,13 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
-import {
-  ICourse, IReview, IUser, ResearchLecture,
-} from '@otl/server-nest/common/interfaces'
+import { ICourse, IReview, IUser } from '@otl/server-nest/common/interfaces'
 import { addIsRead, toJsonCourseDetail } from '@otl/server-nest/common/serializer/course.serializer'
 import { toJsonDepartment } from '@otl/server-nest/common/serializer/department.serializer'
 import { toJsonLectureDetail } from '@otl/server-nest/common/serializer/lecture.serializer'
 import { toJsonReview } from '@otl/server-nest/common/serializer/review.serializer'
 import { getRepresentativeLecture } from '@otl/server-nest/common/utils/lecture.utils'
 import { session_userprofile } from '@prisma/client'
+
+import { ResearchLecture } from '@otl/common/enum/lecture'
 
 import {
   CourseRepository,
@@ -55,7 +55,7 @@ export class UserService {
       this.reviewRepository.findReviewByUser(user),
     ])
     const departments = [...majors, ...minors, ...specializedMajors, ...favoriteDepartments]
-    const researchLectures = Object.values(ResearchLecture)
+    const researchLectures: string[] = Object.values(ResearchLecture)
     const timeTableLectures = takenLectures.filter((lecture) => !researchLectures.includes(lecture.type_en))
 
     return {

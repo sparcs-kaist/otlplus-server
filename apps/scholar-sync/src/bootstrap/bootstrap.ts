@@ -5,7 +5,6 @@ import cookieParser from 'cookie-parser'
 import csrf from 'csurf'
 import { json } from 'express'
 import session from 'express-session'
-// import { AuthGuard, MockAuthGuard } from '../../common/guards/auth.guard'
 import morgan from 'morgan'
 
 import { AppModule } from '../app.module'
@@ -68,7 +67,6 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, settings().getSwaggerConfig())
   SwaggerModule.setup('api/docs', app, document)
-
   app.use('/api/sync', json({ limit: '50mb' }))
   app.use(json({ limit: '100kb' }))
 

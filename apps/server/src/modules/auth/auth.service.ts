@@ -21,6 +21,10 @@ export class AuthService {
     return this.userRepository.findBySid(sid)
   }
 
+  public async findByStudentId(studentId: number) {
+    return this.userRepository.findByStudentId(studentId)
+  }
+
   public async ssoLogin(ssoProfile: ESSOUser.SSOUser) {
     const { sid } = ssoProfile
     let user = await this.findBySid(sid)

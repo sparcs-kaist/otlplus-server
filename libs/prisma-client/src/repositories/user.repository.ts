@@ -69,4 +69,12 @@ export class UserRepository {
       (takenLecture) => takenLecture.lecture.year >= from && takenLecture.lecture.year <= to,
     )
   }
+
+  findByStudentId(studentId: number) {
+    return this.prisma.session_userprofile.findFirst({
+      where: {
+        student_id: studentId.toString(),
+      },
+    })
+  }
 }

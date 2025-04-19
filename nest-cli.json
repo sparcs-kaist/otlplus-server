@@ -6,7 +6,12 @@
   "compilerOptions": {
     "tsConfigPath": "apps/server/tsconfig.app.json",
     "plugins": ["@nestjs/swagger/plugin"],
-    "builder": "tsc"
+    "assets": [
+      {
+        "include": "apps/server/docs/swagger.json",
+        "outDir": "dist/apps/server/apps/server/docs"
+      }
+    ]
   },
   "projects": {
     "server": {

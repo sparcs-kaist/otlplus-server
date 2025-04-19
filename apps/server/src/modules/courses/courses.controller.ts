@@ -8,7 +8,6 @@ import { CourseIdPipe } from '@otl/server-nest/common/pipe/courseId.pipe'
 import { session_userprofile } from '@prisma/client'
 
 import { CoursesService } from './courses.service'
-import ICourseUser = ICourse.ICourseUser
 
 @Controller('api/courses')
 export class CourseController {
@@ -63,7 +62,7 @@ export class CourseController {
   async readCourse(
     @Param('id', CourseIdPipe) id: number,
     @GetUser() user: session_userprofile,
-  ): Promise<ICourseUser.Basic> {
+  ): Promise<ICourse.ICourseUser.Basic> {
     return await this.coursesService.readCourse(user.id, id)
   }
 }

@@ -1,4 +1,3 @@
-import { AdditionalTrackType } from '@otl/server-nest/common/interfaces/constants/additional.track.response.dto'
 import { ICourse } from '@otl/server-nest/common/interfaces/ICourse'
 import { IDepartment } from '@otl/server-nest/common/interfaces/IDepartment'
 import { ILecture } from '@otl/server-nest/common/interfaces/ILecture'
@@ -11,6 +10,7 @@ import {
   IsArray, IsBoolean, IsEnum, IsIn, IsInt, IsNumber, IsOptional, IsString,
 } from 'class-validator'
 
+import { AdditionalTrackType } from '@otl/common/enum/additional.track.response.dto'
 import { PlannerItemType, PlannerItemTypeEnum } from '@otl/common/enum/planner'
 
 export namespace IPlanner {

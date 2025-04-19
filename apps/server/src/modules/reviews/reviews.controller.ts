@@ -9,7 +9,6 @@ import { toJsonReviewVote } from '@otl/server-nest/common/serializer/review.seri
 import { session_userprofile } from '@prisma/client'
 
 import { ReviewsService } from './reviews.service'
-import IReviewVote = IReview.IReviewVote
 
 @Controller('api/reviews')
 export class ReviewsController {
@@ -20,7 +19,7 @@ export class ReviewsController {
   async getReviews(
     @Query() reviewsParam: IReview.QueryDto,
     @GetUser() user: session_userprofile,
-  ): Promise<(IReview.Basic & { userspecific_is_liked: boolean })[] | number> {
+  ): Promise<IReview.WithLiked[] | number> {
     if (reviewsParam.response_type === 'count') {
       const reviewsCount = await this.reviewsService.getReviewsCount(
         reviewsParam.lecture_year,
@@ -37,7 +36,7 @@ export class ReviewsController {
   async createReviews(
     @Body() reviewsBody: IReview.CreateDto,
     @GetUser() user: session_userprofile,
-  ): Promise<IReview.Basic & { userspecific_is_liked: boolean }> {
+  ): Promise<IReview.WithLiked> {
     if (user) {
       const result = await this.reviewsService.createReviews(reviewsBody, user)
       return result
@@ -50,7 +49,7 @@ export class ReviewsController {
   async getReviewInstance(
     @Param('reviewId') reviewId: number,
     @GetUser() user: session_userprofile,
-  ): Promise<IReview.Basic & { userspecific_is_liked: boolean }> {
+  ): Promise<IReview.WithLiked> {
     return await this.reviewsService.getReviewById(reviewId, user)
   }
 
@@ -59,7 +58,7 @@ export class ReviewsController {
     @Body() reviewsBody: IReview.UpdateDto,
     @Param('reviewId') reviewId: number,
     @GetUser() user: session_userprofile,
-  ): Promise<IReview.Basic & { userspecific_is_liked: boolean }> {
+  ): Promise<IReview.WithLiked> {
     if (user) {
       return await this.reviewsService.updateReviewById(reviewId, user, reviewsBody)
     }
@@ -70,7 +69,7 @@ export class ReviewsController {
   async likeReviewInstance(
     @Param('reviewId') reviewId: number,
     @GetUser() user: session_userprofile,
-  ): Promise<IReviewVote.Basic> {
+  ): Promise<IReview.IReviewVote.Basic> {
     const reviewVote = await this.reviewsService.findReviewVote(reviewId, user)
     if (reviewVote) {
       throw new HttpException('Already Liked', HttpStatus.BAD_REQUEST)
