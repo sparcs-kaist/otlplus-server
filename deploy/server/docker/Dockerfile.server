@@ -20,7 +20,7 @@ COPY ./libs/prisma-client ./libs/prisma-client
 
 
 RUN yarn client:generate
-RUN yarn generate:server:api-docs"
+RUN yarn generate:server:api-docs
 RUN yarn build:server
 
 FROM node:20-slim AS server
