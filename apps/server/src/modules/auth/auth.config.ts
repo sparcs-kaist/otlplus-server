@@ -1,18 +1,24 @@
 import { Injectable } from '@nestjs/common'
 import { IsReviewProhibitedCommand } from '@otl/server-nest/modules/auth/command/isReviewProhibited.command'
+import { JwtHeaderCommand } from '@otl/server-nest/modules/auth/command/jwt.header.command'
+import { SidHeaderCommand } from '@otl/server-nest/modules/auth/command/sid.header.command'
+import { StudentIdHeaderCommand } from '@otl/server-nest/modules/auth/command/studentId.header.command'
 
 import { AuthChain } from './auth.chain'
 import { IsPublicCommand } from './command/isPublic.command'
-import { JwtCommand } from './command/jwt.command'
-import { SidCommand } from './command/sid.command'
+import { JwtCookieCommand } from './command/jwt.cookie.command'
+import { SidCookieCommand } from './command/sid.cookie.command'
 import { SyncApiKeyCommand } from './command/syncApiKey.command'
 
 @Injectable()
 export class AuthConfig {
   constructor(
     private authChain: AuthChain,
-    private readonly jwtCommand: JwtCommand,
-    private readonly sidCommand: SidCommand,
+    private readonly jwtCookieCommand: JwtCookieCommand,
+    private readonly sidCookieCommand: SidCookieCommand,
+    private readonly jwtHeaderCommand: JwtHeaderCommand,
+    private readonly sidHeaderCommand: SidHeaderCommand,
+    private readonly studentHeaderCommand: StudentIdHeaderCommand,
     private readonly isPublicCommand: IsPublicCommand,
     private readonly syncApiKeyCommand: SyncApiKeyCommand,
     private readonly isReviewProhibitedCommand: IsReviewProhibitedCommand,
@@ -27,20 +33,27 @@ export class AuthConfig {
 
   private getLocalGuardConfig = () => this.authChain
     .register(this.isPublicCommand)
-    .register(this.sidCommand)
-    .register(this.jwtCommand)
+    .register(this.studentHeaderCommand)
+    .register(this.jwtHeaderCommand)
+    .register(this.sidHeaderCommand)
+    .register(this.sidCookieCommand)
+    .register(this.jwtCookieCommand)
     .register(this.syncApiKeyCommand)
     .register(this.isReviewProhibitedCommand)
 
   private getDevGuardConfig = () => this.authChain
     .register(this.isPublicCommand)
-    .register(this.sidCommand)
-    .register(this.jwtCommand)
+    .register(this.studentHeaderCommand)
+    .register(this.jwtHeaderCommand)
+    .register(this.sidHeaderCommand)
+    .register(this.sidCookieCommand)
+    .register(this.jwtCookieCommand)
     .register(this.syncApiKeyCommand)
     .register(this.isReviewProhibitedCommand)
 
   private getProdGuardConfig = () => this.authChain
-    .register(this.jwtCommand)
+    .register(this.jwtHeaderCommand)
+    .register(this.jwtCookieCommand)
     .register(this.isPublicCommand)
     .register(this.syncApiKeyCommand)
     .register(this.isReviewProhibitedCommand)

@@ -28,7 +28,7 @@ export class UserController {
     @Query() query: IUser.ReviewLikedQueryDto,
     @Param('user_id') userId: number,
     @GetUser() user: session_userprofile,
-  ): Promise<(IReview.Basic & { userspecific_is_liked: boolean })[]> {
+  ): Promise<IReview.WithLiked[]> {
     if (userId === user.id) {
       return await this.userService.getUserLikedReviews(user, userId, query)
     }

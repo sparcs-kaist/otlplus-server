@@ -1,6 +1,7 @@
-import { ILecture } from '@otl/server-nest/common/interfaces/index'
 import { Type } from 'class-transformer'
 import { IsNumber } from 'class-validator'
+
+import { ILecture } from './ILecture'
 
 export namespace IWishlist {
   export interface WithLectures {

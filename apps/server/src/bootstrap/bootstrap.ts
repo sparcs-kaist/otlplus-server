@@ -1,12 +1,14 @@
 import { ValidationPipe, VersioningType } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
-import { SwaggerModule } from '@nestjs/swagger'
 import cookieParser from 'cookie-parser'
 import csrf from 'csurf'
 import { json } from 'express'
 import session from 'express-session'
+import fs from 'fs'
 import morgan from 'morgan'
 import * as v8 from 'node:v8'
+import { join } from 'path'
+import * as swaggerUi from 'swagger-ui-express'
 
 import { AppModule } from '../app.module'
 import settings from '../settings'
@@ -65,9 +67,19 @@ async function bootstrap() {
   //     },
   //   }),
   // );
-
-  const document = SwaggerModule.createDocument(app, settings().getSwaggerConfig())
-  SwaggerModule.setup('docs', app, document)
+  if (process.env.NODE_ENV !== 'prod') {
+    const swaggerJsonPath = join(__dirname, '..', '..', 'docs', 'swagger.json')
+    const swaggerDocument = JSON.parse(fs.readFileSync(swaggerJsonPath, 'utf-8'))
+    app.use(
+      '/api/docs',
+      swaggerUi.serve,
+      swaggerUi.setup(swaggerDocument, {
+        swaggerOptions: {
+          withCredentials: true,
+        },
+      }),
+    )
+  }
 
   app.use('/api/sync', json({ limit: '50mb' }))
   app.use(json({ limit: '100kb' }))

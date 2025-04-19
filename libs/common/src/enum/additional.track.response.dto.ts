@@ -1,4 +1,4 @@
-import { generationUnionTypeChecker } from '@otl/server-nest/common/interfaces/utils/util'
+import { generationUnionTypeChecker } from '@otl/common/utils'
 
 const types = ['DOUBLE', 'MINOR', 'ADVANCED', 'INTERDISCIPLINARY'] as const
 export type AdditionalTrackType = (typeof types)[number]

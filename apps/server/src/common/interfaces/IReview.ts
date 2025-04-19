@@ -1,4 +1,4 @@
-import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger'
+import { ApiProperty } from '@nestjs/swagger'
 import { ICourse } from '@otl/server-nest/common/interfaces/ICourse'
 import { ILecture } from '@otl/server-nest/common/interfaces/ILecture'
 import {
@@ -31,6 +31,10 @@ export namespace IReview {
 
     speech: number
 
+    userspecific_is_liked: boolean
+  }
+
+  export interface WithLiked extends Basic {
     userspecific_is_liked: boolean
   }
 
@@ -158,6 +162,35 @@ export namespace IReview {
     @Type(() => Number)
     speech!: number
   }
+  export class UpdateDto {
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    @Validate(StringStripLength)
+    content!: string
 
-  export class UpdateDto extends PartialType(OmitType(IReview.CreateDto, ['lecture'])) {}
+    @ApiProperty()
+    @IsNumber()
+    @IsNotEmpty()
+    @Min(1)
+    @Max(5)
+    @Type(() => Number)
+    grade!: number
+
+    @ApiProperty()
+    @IsNumber()
+    @IsNotEmpty()
+    @Min(1)
+    @Max(5)
+    @Type(() => Number)
+    load!: number
+
+    @ApiProperty()
+    @IsNumber()
+    @IsNotEmpty()
+    @Min(1)
+    @Max(5)
+    @Type(() => Number)
+    speech!: number
+  }
 }

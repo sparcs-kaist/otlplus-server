@@ -6,7 +6,7 @@ import { AuthCommand, AuthResult } from '../auth.command'
 import { AuthService } from '../auth.service'
 
 @Injectable()
-export class SidCommand implements AuthCommand {
+export class SidHeaderCommand implements AuthCommand {
   constructor(
     private reflector: Reflector,
     private readonly authService: AuthService,
@@ -14,19 +14,22 @@ export class SidCommand implements AuthCommand {
 
   public async next(context: ExecutionContext, prevResult: AuthResult): Promise<AuthResult> {
     const request = context.switchToHttp().getRequest<Request>()
-    const sid = request.cookies['auth-cookie']
-    if (sid) {
+    const sid = request.headers['x-auth-sid']
+
+    if (typeof sid === 'string') {
       const user = await this.authService.findBySid(sid)
       if (!user) {
-        return Promise.resolve(prevResult)
+        return prevResult
       }
+
       request.user = user
-      return Promise.resolve({
+      return {
         ...prevResult,
         authentication: true,
         authorization: true,
-      })
+      }
     }
-    return Promise.resolve(prevResult)
+
+    return prevResult
   }
 }

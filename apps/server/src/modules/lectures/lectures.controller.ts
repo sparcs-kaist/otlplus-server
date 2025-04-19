@@ -36,7 +36,7 @@ export class LecturesController {
     @Query() query: IReview.LectureReviewsQueryDto,
     @Param('lectureId') lectureId: number,
     @GetUser() user: session_userprofile,
-  ): Promise<(IReview.Basic & { userspecific_is_liked: boolean })[]> {
+  ): Promise<IReview.WithLiked[]> {
     return await this.LectureService.getLectureReviews(user, lectureId, query)
   }
 
@@ -46,7 +46,7 @@ export class LecturesController {
     @Query() query: IReview.LectureReviewsQueryDto,
     @Param('lectureId') lectureId: number,
     @GetUser() user: session_userprofile,
-  ): Promise<(IReview.Basic & { userspecific_is_liked: boolean })[]> {
+  ): Promise<IReview.WithLiked[]> {
     return await this.LectureService.getLectureRelatedReviews(user, lectureId, query)
   }
 }

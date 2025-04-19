@@ -1,4 +1,6 @@
-import { AddtionalTrackTypeNarrower, IPlanner } from '@otl/server-nest/common/interfaces'
+import { IPlanner } from '@otl/server-nest/common/interfaces'
+
+import { AddtionalTrackTypeNarrower } from '@otl/common/enum/additional.track.response.dto'
 
 import { ETrack } from '@otl/prisma-client/entities'
 
