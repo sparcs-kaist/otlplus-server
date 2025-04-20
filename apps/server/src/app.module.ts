@@ -1,9 +1,13 @@
+import { createKeyv } from '@keyv/redis'
+import { CacheModule } from '@nestjs/cache-manager'
 import { Module } from '@nestjs/common'
-import { APP_GUARD } from '@nestjs/core'
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core'
 import { JwtService } from '@nestjs/jwt'
 import { ClsPluginTransactional } from '@nestjs-cls/transactional'
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma'
 import { ClsModule } from 'nestjs-cls'
+
+import { LoggingInterceptor } from '@otl/common/logger/logging.interceptor'
 
 import { PrismaModule } from '@otl/prisma-client/prisma.module'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
@@ -65,6 +69,12 @@ import settings from './settings'
         }),
       ],
     }),
+    CacheModule.registerAsync({
+      useFactory: async () => ({
+        stores: [createKeyv(settings().getRedisConfig().url)],
+      }),
+      isGlobal: true,
+    }),
   ],
   controllers: [AppController],
   providers: [
@@ -76,6 +86,10 @@ import settings from './settings'
         return new AuthGuard(authChain)
       },
       inject: [AuthConfig],
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LoggingInterceptor,
     },
     JwtCookieGuard,
     MockAuthGuard,
