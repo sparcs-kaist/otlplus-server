@@ -63,6 +63,10 @@ const getPrismaConfig = (): Prisma.PrismaClientOptions => ({
   ],
 })
 
+const getRedisConfig = () => ({
+  url: process.env.REDIS_URL,
+})
+
 const getReplicatedPrismaConfig = (): Prisma.PrismaClientOptions => ({})
 
 const getAWSConfig = () => ({})
@@ -106,6 +110,7 @@ export default () => ({
   ormconfig: () => getPrismaConfig(),
   ormReplicatedConfig: () => getReplicatedPrismaConfig(),
   awsconfig: () => getAWSConfig(),
+  getRedisConfig: () => getRedisConfig(),
   getJwtConfig: () => getJwtConfig(),
   getSsoConfig: () => getSsoConfig(),
   getCorsConfig: () => getCorsConfig(),

@@ -1,11 +1,14 @@
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager'
 import {
-  Controller, Get, Query, Req, Res, Session,
+  Controller, Get, Query, Req, Res, Session, UseInterceptors,
 } from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator'
 import { IAuth, IUser } from '@otl/server-nest/common/interfaces'
 import settings from '@otl/server-nest/settings'
 import { session_userprofile } from '@prisma/client'
+
+import { RedisTTL } from '@otl/common/enum/time'
 
 import { ESSOUser } from '@otl/prisma-client/entities'
 
@@ -74,6 +77,8 @@ export class AuthController {
     response.redirect(next_url)
   }
 
+  @CacheTTL(RedisTTL.DAY)
+  @UseInterceptors(CacheInterceptor)
   @Get('info')
   async getUserProfile(@GetUser() user: session_userprofile): Promise<IUser.Profile> {
     /*
