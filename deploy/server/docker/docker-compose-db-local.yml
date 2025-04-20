@@ -27,7 +27,7 @@ services:
     ports:
       - '9104:9104'
     volumes:
-      - ./my.cnf:/cfg/.my.cnf:ro
+      - ./exporter.my.cnf:/cfg/.my.cnf:ro
     command:
       - '--config.my-cnf=/cfg/.my.cnf'
       - '--mysqld.address=db:3306'
