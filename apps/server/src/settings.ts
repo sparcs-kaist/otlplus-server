@@ -97,6 +97,11 @@ const getSwaggerConfig = () => {
   return config
 }
 
+const getSwaggerStatsConfig = () => ({
+  username: process.env.SWAGGER_STATS_USERNAME,
+  password: process.env.SWAGGER_STAT_PASSWORD,
+})
+
 const staticConfig = (): any => ({
   file_path:
     process.env.DOCKER_DEPLOY === 'true' ? '/var/www/otlplus-server/apps/server/static/' : 'apps/server/static/',
@@ -113,4 +118,5 @@ export default () => ({
   getVersion: () => getVersion(),
   getStaticConfig: () => staticConfig(),
   getSwaggerConfig: () => getSwaggerConfig(),
+  getSwaggerStatsConfig: () => getSwaggerStatsConfig(),
 })

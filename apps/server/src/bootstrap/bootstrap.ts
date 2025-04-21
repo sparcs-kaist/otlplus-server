@@ -8,6 +8,7 @@ import fs from 'fs'
 import morgan from 'morgan'
 import * as v8 from 'node:v8'
 import { join } from 'path'
+import swaggerStats from 'swagger-stats'
 import * as swaggerUi from 'swagger-ui-express'
 
 import { AppModule } from '../app.module'
@@ -67,9 +68,9 @@ async function bootstrap() {
   //     },
   //   }),
   // );
+  const swaggerJsonPath = join(__dirname, '..', '..', 'docs', 'swagger.json')
+  const swaggerDocument = JSON.parse(fs.readFileSync(swaggerJsonPath, 'utf-8'))
   if (process.env.NODE_ENV !== 'prod') {
-    const swaggerJsonPath = join(__dirname, '..', '..', 'docs', 'swagger.json')
-    const swaggerDocument = JSON.parse(fs.readFileSync(swaggerJsonPath, 'utf-8'))
     app.use(
       '/api/docs',
       swaggerUi.serve,
@@ -80,6 +81,18 @@ async function bootstrap() {
       }),
     )
   }
+  app.use(
+    swaggerStats.getMiddleware({
+      swaggerSpec: swaggerDocument,
+      uriPath: '/swagger-stats',
+      authentication: true,
+      onAuthenticate(_req, username, password) {
+        // simple check for username and password
+        const swaggerStatsConfig = settings().getSwaggerStatsConfig()
+        return username === swaggerStatsConfig.username && password === swaggerStatsConfig.password
+      },
+    }),
+  )
 
   app.use('/api/sync', json({ limit: '50mb' }))
   app.use(json({ limit: '100kb' }))
