@@ -9,7 +9,7 @@ module.exports = {
       autorestart: true,
       wait_ready: true,
       kill_timeout: 5000, // 새로운 프로세스 실행이 완료된 후 예전 프로세스를 교체하기까지 기다릴 시
-      max_memory_restart: '20048M',
+      max_memory_restart: '2048M',
       node_args: '--max-old-space-size=3072',
     },
   ],
