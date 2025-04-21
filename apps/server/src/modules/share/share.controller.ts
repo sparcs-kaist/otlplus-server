@@ -1,17 +1,16 @@
-import { Controller, Get, Query, Res } from '@nestjs/common';
-import { session_userprofile } from '@prisma/client';
-import { Response } from 'express';
-import { IShare } from '@otl/api-interface/src/interfaces';
-import { TimetableRepository } from '@src/prisma/repositories/timetable.repository';
-import { ShareService } from './share.service';
-import { GetUser } from '@src/common/decorators/get-user.decorator';
+import {
+  Controller, Get, Query, Res,
+} from '@nestjs/common'
+import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
+import { IShare } from '@otl/server-nest/common/interfaces'
+import { session_userprofile } from '@prisma/client'
+import { Response } from 'express'
+
+import { ShareService } from './share.service'
 
 @Controller('/api/share')
 export class ShareController {
-  constructor(
-    private readonly shareService: ShareService,
-    private readonly timetableRepository: TimetableRepository,
-  ) {}
+  constructor(private readonly shareService: ShareService) {}
 
   @Get('timetable/image')
   async getTimetableImage(
@@ -19,9 +18,9 @@ export class ShareController {
     @GetUser() user: session_userprofile,
     @Res() res: Response,
   ): Promise<void> {
-    const imageBuffer = await this.shareService.createTimetableImage(query, user);
-    res.setHeader('Content-Type', 'image/png');
-    res.send(imageBuffer);
+    const imageBuffer = await this.shareService.createTimetableImage(query, user)
+    res.setHeader('Content-Type', 'image/png')
+    res.send(imageBuffer)
   }
 
   @Get('timetable/ical')
@@ -30,8 +29,8 @@ export class ShareController {
     @GetUser() user: session_userprofile,
     @Res() res: Response,
   ): Promise<void> {
-    const calendar = await this.shareService.createTimetableIcal(query, user);
-    res.setHeader('Content-Type', 'text/calendar');
-    res.send(calendar.toString());
+    const calendar = await this.shareService.createTimetableIcal(query, user)
+    res.setHeader('Content-Type', 'text/calendar')
+    res.send(calendar.toString())
   }
 }

@@ -1,7 +1,8 @@
-import { Controller, Get } from '@nestjs/common';
-import { TracksService } from './tracks.service';
-import { Public } from '@src/common/decorators/skip-auth.decorator';
-import { IPlanner } from '@otl/api-interface/src/interfaces';
+import { Controller, Get } from '@nestjs/common'
+import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator'
+import { IPlanner } from '@otl/server-nest/common/interfaces'
+
+import { TracksService } from './tracks.service'
 
 @Controller('/api/tracks')
 export class TracksController {
@@ -10,10 +11,10 @@ export class TracksController {
   @Get()
   @Public()
   async getTracks(): Promise<{
-    general: IPlanner.ITrack.General[];
-    major: IPlanner.ITrack.Major[];
-    additional: IPlanner.ITrack.Additional[];
+    general: IPlanner.ITrack.General[]
+    major: IPlanner.ITrack.Major[]
+    additional: IPlanner.ITrack.Additional[]
   }> {
-    return await this.tracksService.getAllTrack();
+    return await this.tracksService.getAllTrack()
   }
 }

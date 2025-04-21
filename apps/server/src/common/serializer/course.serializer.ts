@@ -1,10 +1,12 @@
-import { subject_course, subject_lecture, subject_professor } from '@prisma/client';
-import { ICourse } from '@otl/api-interface/src/interfaces/ICourse';
-import { IProfessor } from '@otl/api-interface/src/interfaces/IProfessor';
-import { toJsonDepartment } from './department.serializer';
-import { toJsonProfessors } from './professor.serializer';
-import { ECourse } from '@otl/api-interface/src/entities/ECourse';
-import { applyOrder } from '@src/common/utils/search.utils';
+import { ICourse, IProfessor } from '@otl/server-nest/common/interfaces'
+import { subject_course, subject_lecture, subject_professor } from '@prisma/client'
+
+import { applyOrder } from '@otl/common/utils/util'
+
+import { ECourse } from '@otl/prisma-client/entities'
+
+import { toJsonDepartment } from './department.serializer'
+import { toJsonProfessors } from './professor.serializer'
 
 export function toJsonFeedBasic(course: subject_course): ICourse.FeedBasic {
   return {
@@ -25,7 +27,7 @@ export function toJsonFeedBasic(course: subject_course): ICourse.FeedBasic {
     speech: course.speech + 0.00001,
     title_en_no_space: course.title_en_no_space,
     title_no_space: course.title_no_space,
-  };
+  }
 }
 
 export function toJsonFeedRelated(course: subject_course): ICourse.FeedRelated {
@@ -33,7 +35,7 @@ export function toJsonFeedRelated(course: subject_course): ICourse.FeedRelated {
     ...toJsonFeedBasic(course),
     related_courses_prior: [], // TODO: related courses 비어있는게 맞는지 확인
     related_courses_posterior: [],
-  };
+  }
 }
 
 export function toJsonCourseBasic(
@@ -55,7 +57,7 @@ export function toJsonCourseBasic(
     credit_au: lecture.credit_au ?? 0,
     num_classes: lecture.num_classes ?? 0,
     num_labs: lecture.num_labs ?? 0,
-  };
+  }
 }
 
 export function toJsonCourseDetail(
@@ -63,9 +65,9 @@ export function toJsonCourseDetail(
   lecture: subject_lecture,
   professor: subject_professor[],
 ): ICourse.Detail {
-  const basic = toJsonCourseBasic(course, lecture);
-  const professorJson: IProfessor.Basic[] = toJsonProfessors(professor, true);
-  const professorSorted = applyOrder<IProfessor.Basic>(professorJson, ['name']);
+  const basic = toJsonCourseBasic(course, lecture)
+  const professorJson: IProfessor.Basic[] = toJsonProfessors(professor, true)
+  const professorSorted = applyOrder<IProfessor.Basic>(professorJson, ['name'])
   return {
     ...basic,
     related_courses_prior: [],
@@ -74,9 +76,9 @@ export function toJsonCourseDetail(
     grade: course.grade + 0.000001,
     load: course.load + 0.000001,
     speech: course.speech + 0.000001,
-  };
+  }
 }
 
 export function addIsRead(course: ICourse.Detail, isRead: boolean): ICourse.DetailWithIsRead {
-  return Object.assign(course, { userspecific_is_read: isRead });
+  return Object.assign(course, { userspecific_is_read: isRead })
 }

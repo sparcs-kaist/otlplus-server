@@ -1,0 +1,7 @@
+.git
+*Dockerfile*
+node_modules
+dist
+apps/server/volumes
+volumes
+apps/server/test

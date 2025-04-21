@@ -1,8 +1,9 @@
-import { Controller, Get } from '@nestjs/common';
-import { Public } from '@src/common/decorators/skip-auth.decorator';
-import { NoticesService } from './notices.service';
-import { toJsonNoticeBasic } from '@src/common/serializer/notices.serializer';
-import { INotice } from '@otl/api-interface/src/interfaces';
+import { Controller, Get } from '@nestjs/common'
+import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator'
+import { INotice } from '@otl/server-nest/common/interfaces'
+import { toJsonNoticeBasic } from '@otl/server-nest/common/serializer/notices.serializer'
+
+import { NoticesService } from './notices.service'
 
 @Controller('api/notices')
 export class NoticesController {
@@ -11,8 +12,8 @@ export class NoticesController {
   @Public()
   @Get()
   async getNotices(): Promise<INotice.Basic[]> {
-    const notices = await this.noticesService.getNotices();
+    const notices = await this.noticesService.getNotices()
 
-    return notices.map(toJsonNoticeBasic);
+    return notices.map(toJsonNoticeBasic)
   }
 }

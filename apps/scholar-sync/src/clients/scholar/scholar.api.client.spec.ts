@@ -1,11 +1,11 @@
 import { ScholarApiClient } from '@otl/scholar-sync/clients/scholar/scholar.api.client';
-import fs from 'fs';
 import settings from '@otl/scholar-sync/settings';
+import fs from 'fs';
 
 const scholarClient = new ScholarApiClient();
 
 describe('ScholarApiClient data save', () => {
-  const logFileDir = settings().loggingConfig().logDir + '/data' + `/${process.env.NODE_ENV}`;
+  const logFileDir = `${settings().loggingConfig().logDir}/data` + `/${process.env.NODE_ENV}`;
   beforeAll(() => {
     fs.mkdirSync(logFileDir, { recursive: true });
   });

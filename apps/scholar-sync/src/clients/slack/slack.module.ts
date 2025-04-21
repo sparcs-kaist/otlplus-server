@@ -1,10 +1,10 @@
-import { SlackNotiService } from './slackNoti.service';
-import { PrismaModule } from '@otl/scholar-sync/prisma/prisma.module';
-import { Module } from '@nestjs/common';
+import { Module } from '@nestjs/common'
+
+import { SlackNotiService } from './slackNoti.service'
 
 @Module({
   providers: [SlackNotiService],
-  imports: [PrismaModule],
+  imports: [],
   exports: [SlackNotiService],
 })
 export class SlackModule {}

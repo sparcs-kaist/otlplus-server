@@ -1,7 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { SyncService } from '@otl/scholar-sync/modules/sync/sync.service';
-import { PrismaService } from '@otl/scholar-sync/prisma/prisma.service';
 import { AppModule } from '@otl/scholar-sync/app.module';
+import { SyncService } from '@otl/scholar-sync/modules/sync/sync.service';
+
+import { PrismaService } from '@otl/prisma-client';
 
 // This tests on test database only. Add `DATABASE_URL` with `otlplus_test` database to run this test.
 

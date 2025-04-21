@@ -1,25 +1,29 @@
-import { Controller, Get, Query, Req, Res, Session } from '@nestjs/common';
-import { session_userprofile } from '@prisma/client';
-import { GetUser } from '@src/common/decorators/get-user.decorator';
-import { Public } from '../../common/decorators/skip-auth.decorator';
-import settings from '../../settings';
-import { UserService } from '../user/user.service';
-import { AuthService } from './auth.service';
-import { Client } from './utils/sparcs-sso';
-import { IAuth, IUser } from '@otl/api-interface/src/interfaces';
-import { ESSOUser } from '@otl/api-interface/src/entities/ESSOUser';
+import {
+  Controller, Get, Query, Req, Res, Session,
+} from '@nestjs/common'
+import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
+import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator'
+import { IAuth, IUser } from '@otl/server-nest/common/interfaces'
+import settings from '@otl/server-nest/settings'
+import { session_userprofile } from '@prisma/client'
+
+import { ESSOUser } from '@otl/prisma-client/entities'
+
+import { UserService } from '../user/user.service'
+import { AuthService } from './auth.service'
+import { Client } from './utils/sparcs-sso'
 
 @Controller('session')
 export class AuthController {
-  private readonly ssoClient;
+  private readonly ssoClient
 
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
   ) {
-    const ssoConfig = settings().getSsoConfig();
-    const ssoClient = new Client(ssoConfig.ssoClientId, ssoConfig.ssoSecretKey, ssoConfig.ssoIsBeta);
-    this.ssoClient = ssoClient;
+    const ssoConfig = settings().getSsoConfig()
+    const ssoClient = new Client(ssoConfig.ssoClientId, ssoConfig.ssoSecretKey, ssoConfig.ssoIsBeta)
+    this.ssoClient = ssoClient
   }
 
   @Public()
@@ -31,18 +35,18 @@ export class AuthController {
     @Res() res: IAuth.Response,
   ): void {
     if (req.user) {
-      return res.redirect(next ?? '/');
+      return res.redirect(next ?? '/')
     }
-    req.session['next'] = next ?? '/';
-    res.cookie('next', next ?? '/', { httpOnly: true, secure: true, sameSite: 'strict' });
-    const request_url = req.get('host') ?? 'otl.kaist.ac.kr';
-    const { url, state } = this.ssoClient.get_login_params(request_url);
-    res.cookie('sso_state', state, { httpOnly: true, secure: true, sameSite: 'strict' });
-    req.session['sso_state'] = state;
+    // req.session['next'] = next ?? '/';
+    res.cookie('next', next ?? '/', { httpOnly: true, secure: true, sameSite: 'strict' })
+    const request_url = req.get('host') ?? 'otl.kaist.ac.kr'
+    const { url, state } = this.ssoClient.get_login_params(request_url)
+    res.cookie('sso_state', state, { httpOnly: true, secure: true, sameSite: 'strict' })
+    // req.session['sso_state'] = state;
     if (social_login === '0') {
-      return res.redirect(url + '&social_enabled=0&show_disabled_button=0');
+      return res.redirect(`${url}&social_enabled=0&show_disabled_button=0`)
     }
-    return res.redirect(url);
+    return res.redirect(url)
   }
 
   @Public()
@@ -54,27 +58,20 @@ export class AuthController {
     @Session() session: Record<string, any>,
     @Res() response: IAuth.Response,
   ): Promise<void> {
-    const stateBeforeFromCookie = req.cookies['sso_state'];
-    const stateBeforeFromSession = session['sso_state'];
-    if (
-      (!stateBeforeFromCookie && !stateBeforeFromSession) ||
-      (stateBeforeFromCookie != state && stateBeforeFromSession != state)
-    ) {
-      response.redirect('/error/invalid-login');
-    }
-    const ssoProfile: ESSOUser.SSOUser = await this.ssoClient.get_user_info(code);
-    const { accessToken, accessTokenOptions, refreshToken, refreshTokenOptions } =
-      await this.authService.ssoLogin(ssoProfile);
+    const ssoProfile: ESSOUser.SSOUser = await this.ssoClient.get_user_info(code)
+    const {
+      accessToken, accessTokenOptions, refreshToken, refreshTokenOptions,
+    } = await this.authService.ssoLogin(ssoProfile)
 
-    response.cookie('accessToken', accessToken, accessTokenOptions);
-    response.cookie('refreshToken', refreshToken, refreshTokenOptions);
+    response.cookie('accessToken', accessToken, accessTokenOptions)
+    response.cookie('refreshToken', refreshToken, refreshTokenOptions)
 
     /*
     @Todo
     call import_student_lectures(studentId)
      */
-    const next_url = req.cookies['next'] ?? session['next'] ?? '/';
-    response.redirect(next_url);
+    const next_url = req.cookies.next ?? process.env.WEB_URL
+    response.redirect(next_url)
   }
 
   @Get('info')
@@ -83,14 +80,14 @@ export class AuthController {
     @Todo
     implement userSerializer, before that, we'd like to architect the dto types
      */
-    const profile = await this.userService.getProfile(user);
-    return profile;
+    const profile = await this.userService.getProfile(user)
+    return profile
   }
 
   @Public()
   @Get('/')
   async home(@Req() req: IAuth.Request, @Res() res: IAuth.Response): Promise<void> {
-    return res.redirect('/session/login');
+    return res.redirect('/session/login')
   }
 
   @Public()
@@ -101,21 +98,21 @@ export class AuthController {
     @Query('next') next: string,
     @GetUser() user: session_userprofile,
   ): Promise<void> {
-    const webURL = process.env.WEB_URL;
+    const webURL = process.env.WEB_URL
     if (user) {
-      const sid = user.sid;
-      const protocol = req.protocol;
-      const host = req.get('host');
-      const originalUrl = req.originalUrl;
-      const absoluteUrl = `${protocol}://${host}${originalUrl}`;
-      const logoutUrl = this.ssoClient.get_logout_url(sid, absoluteUrl);
+      const { sid } = user
+      const { protocol } = req
+      const host = req.get('host')
+      const { originalUrl } = req
+      const absoluteUrl = `${protocol}://${host}${originalUrl}`
+      const logoutUrl = this.ssoClient.get_logout_url(sid, absoluteUrl)
 
-      res.clearCookie('accessToken', { path: '/', maxAge: 0, httpOnly: true });
-      res.clearCookie('refreshToken', { path: '/', maxAge: 0, httpOnly: true });
-
-      return res.redirect(logoutUrl);
+      res.clearCookie('accessToken', { path: '/', maxAge: 0, httpOnly: true })
+      res.clearCookie('refreshToken', { path: '/', maxAge: 0, httpOnly: true })
+      res.clearCookie('sso_state', { path: '/', maxAge: 0, httpOnly: true })
+      return res.redirect(logoutUrl)
     }
 
-    return res.redirect(webURL + '/');
+    return res.redirect(`${webURL}/`)
   }
 }

@@ -1,0 +1,46 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2021",
+    "sourceMap": true,
+    "outDir": "../../dist/apps/server",
+    "baseUrl": "./",
+    "incremental": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "alwaysStrict": true,
+    "noImplicitAny": true,
+    "strictBindCallApply": false,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@otl/server-nest": ["src"],
+      "@otl/server-nest/*": ["src/*"],
+      "@otl/prisma-client": ["../../libs/prisma-client/src"],
+      "@otl/prisma-client/*": ["../../libs/prisma-client/src/*"],
+      "@otl/common": ["../../libs/common/src"],
+      "@otl/common/*": ["../../libs/common/src/*"],
+      "@otl/scholar-sync/domain": ["../../apps/scholar-sync/src/common/domain"],
+      "@otl/scholar-sync/domain/*": ["../../apps/scholar-sync/src/common/domain/*"],
+      "@otl/scholar-sync/clients/scholar/*": ["../../apps/scholar-sync/src/clients/scholar/*"]
+    },
+    "assets": [
+      {
+        "include": "docs/swagger.json"
+      }
+    ]
+  },
+  "exclude": ["node_modules", "test", "dist", "**/*spec.ts"],
+  "references": [],
+  "plugins": [
+    {
+      "name": "@nestjs/swagger/plugin"
+    }
+  ]
+}
