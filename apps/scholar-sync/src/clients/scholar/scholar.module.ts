@@ -1,6 +1,8 @@
-import { PrismaModule } from '@otl/scholar-sync/prisma/prisma.module';
-import { Module } from '@nestjs/common';
-import { ScholarApiClient } from './scholar.api.client';
+import { Module } from '@nestjs/common'
+
+import { PrismaModule } from '@otl/prisma-client/prisma.module'
+
+import { ScholarApiClient } from './scholar.api.client'
 
 @Module({
   providers: [ScholarApiClient],

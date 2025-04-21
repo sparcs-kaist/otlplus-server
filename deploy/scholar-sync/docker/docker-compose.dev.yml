@@ -5,7 +5,7 @@ services:
     container_name: otlplus-scholar-sync-nest-dev
     platform: linux/amd64
     env_file:
-      - ../../../apps/scholar-sync/env/.env.dev
+      - ../../../env/.env.dev
     environment:
       - NODE_ENV=dev
       - DOCKER_DEPLOY=true

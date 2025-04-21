@@ -1,11 +1,10 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { ELecture } from '@otl/api-interface/src/entities/ELecture';
-import { applyOffset, applyOrder } from '@src/common/utils/search.utils';
-import { LectureRepository } from '@src/prisma/repositories/lecture.repository';
+
 import { AppModule } from '../src/app.module';
-import { PrismaService } from '../src/prisma/prisma.service';
-import { CourseRepository } from '../src/prisma/repositories/course.repository';
+import { CourseRepository, LectureRepository } from '@otl/prisma-client/repositories';
+import { ELecture, PrismaService } from '@otl/prisma-client';
+import { applyOffset, applyOrder } from '@otl/common/utils';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
