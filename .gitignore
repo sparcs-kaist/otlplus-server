@@ -45,3 +45,5 @@ lerna-debug.log*
 apps/server/volumes
 volumes
 .clinic
+
+.docker/redis/redis-data
