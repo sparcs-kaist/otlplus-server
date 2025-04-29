@@ -208,6 +208,7 @@ async function main() {
         }
         let fullPath = normalizePath(`/${basePath}/${routePath}`)
         fullPath = fullPath === '' ? '/' : fullPath
+        fullPath = fullPath.replace(/:([a-zA-Z0-9_]+)/g, '{$1}')
 
         // Security: @Public()?
         const isPublic = hasPublicDecorator(method.getDecorators())
