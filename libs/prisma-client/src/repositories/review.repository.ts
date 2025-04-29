@@ -367,4 +367,15 @@ export class ReviewsRepository {
       },
     })
   }
+
+  async deleteReviewVote(reviewId: number, id: number) {
+    return this.prisma.review_reviewvote.delete({
+      where: {
+        review_id_userprofile_id: {
+          review_id: reviewId,
+          userprofile_id: id,
+        },
+      },
+    })
+  }
 }
