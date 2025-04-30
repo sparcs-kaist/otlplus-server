@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Query, Req, Res, Session,
+  Body, Controller, Get, Post, Query, Req, Res, Session,
 } from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator'
@@ -72,6 +72,15 @@ export class AuthController {
      */
     const next_url = req.cookies.next ?? process.env.WEB_URL
     response.redirect(next_url)
+  }
+
+  @Public()
+  @Post('refresh')
+  async refreshToken(@Body() body: { refreshToken: string }, @Res() res: IAuth.Response): Promise<void> {
+    const { refreshToken } = body
+    const { accessToken, accessTokenOptions } = await this.authService.refreshToken(refreshToken)
+    res.cookie('accessToken', accessToken, accessTokenOptions)
+    res.send({ accessToken })
   }
 
   @Get('info')
