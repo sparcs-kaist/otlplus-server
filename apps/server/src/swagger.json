@@ -225,7 +225,7 @@
         ]
       }
     },
-    "/api/courses/:id": {
+    "/api/courses/{id}": {
       "get": {
         "summary": "CourseController.getCourseById",
         "responses": {
@@ -253,7 +253,7 @@
         ]
       }
     },
-    "/api/courses/:id/lectures": {
+    "/api/courses/{id}/lectures": {
       "get": {
         "summary": "CourseController.getLecturesByCourseId",
         "responses": {
@@ -292,7 +292,7 @@
         ]
       }
     },
-    "/api/courses/:id/reviews": {
+    "/api/courses/{id}/reviews": {
       "get": {
         "summary": "CourseController.getReviewByCourseId",
         "responses": {
@@ -331,7 +331,7 @@
         ]
       }
     },
-    "/api/courses/:id/read": {
+    "/api/courses/{id}/read": {
       "post": {
         "summary": "CourseController.readCourse",
         "responses": {
@@ -358,7 +358,7 @@
         ]
       }
     },
-    "/api/users/:userId/feeds": {
+    "/api/users/{userId}/feeds": {
       "get": {
         "summary": "FeedsController.getUserFeeds",
         "responses": {
@@ -454,7 +454,7 @@
         ]
       }
     },
-    "/api/lectures/:id": {
+    "/api/lectures/{id}": {
       "get": {
         "summary": "LecturesController.getLectureById",
         "responses": {
@@ -482,7 +482,7 @@
         ]
       }
     },
-    "/api/lectures/:lectureId/reviews": {
+    "/api/lectures/{lectureId}/reviews": {
       "get": {
         "summary": "LecturesController.getLectureReviews",
         "responses": {
@@ -521,7 +521,7 @@
         ]
       }
     },
-    "/api/lectures/:lectureId/related-reviews": {
+    "/api/lectures/{lectureId}/related-reviews": {
       "get": {
         "summary": "LecturesController.getLectureRelatedReviews",
         "responses": {
@@ -581,7 +581,7 @@
         "security": []
       }
     },
-    "/api/users/:id/planners": {
+    "/api/users/{id}/planners": {
       "get": {
         "summary": "PlannersController.getPlanners",
         "responses": {
@@ -654,7 +654,7 @@
         }
       }
     },
-    "/api/users/:id/planners/:plannerId": {
+    "/api/users/{id}/planners/{plannerId}": {
       "patch": {
         "summary": "PlannersController.updatePlanner",
         "responses": {
@@ -722,7 +722,7 @@
         ]
       }
     },
-    "/api/users/:id/planners/:plannerId/add-arbitrary-item": {
+    "/api/users/{id}/planners/{plannerId}/add-arbitrary-item": {
       "post": {
         "summary": "PlannersController.addArbitraryItem",
         "responses": {
@@ -767,7 +767,7 @@
         }
       }
     },
-    "/api/users/:id/planners/:plannerId/remove-item": {
+    "/api/users/{id}/planners/{plannerId}/remove-item": {
       "post": {
         "summary": "PlannersController.removePlanner",
         "responses": {
@@ -804,7 +804,7 @@
         }
       }
     },
-    "/api/users/:id/planners/:plannerId/add-future-item": {
+    "/api/users/{id}/planners/{plannerId}/add-future-item": {
       "post": {
         "summary": "PlannersController.addFutureItem",
         "responses": {
@@ -849,7 +849,7 @@
         }
       }
     },
-    "/api/users/:id/planners/:plannerId/reorder": {
+    "/api/users/{id}/planners/{plannerId}/reorder": {
       "post": {
         "summary": "PlannersController.reorderPlanner",
         "responses": {
@@ -886,7 +886,7 @@
         }
       }
     },
-    "/api/users/:id/planners/:plannerId/update-item": {
+    "/api/users/{id}/planners/{plannerId}/update-item": {
       "post": {
         "summary": "PlannersController.updatePlannerItem",
         "responses": {
@@ -1031,7 +1031,7 @@
         }
       }
     },
-    "/api/reviews/:reviewId": {
+    "/api/reviews/{reviewId}": {
       "get": {
         "summary": "ReviewsController.getReviewInstance",
         "responses": {
@@ -1094,9 +1094,34 @@
         }
       }
     },
-    "/api/reviews/:reviewId/like": {
+    "/api/reviews/{reviewId}/like": {
       "post": {
         "summary": "ReviewsController.likeReviewInstance",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IReview.IReviewVote.Basic"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "reviewId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      },
+      "delete": {
+        "summary": "ReviewsController.unlikeReview",
         "responses": {
           "200": {
             "description": "OK",
@@ -1399,7 +1424,7 @@
         }
       }
     },
-    "/api/users/:userId/timetables": {
+    "/api/users/{userId}/timetables": {
       "get": {
         "summary": "TimetablesController.getTimetables",
         "responses": {
@@ -1462,7 +1487,7 @@
         }
       }
     },
-    "/api/users/:userId/timetables/:timetableId": {
+    "/api/users/{userId}/timetables/{timetableId}": {
       "get": {
         "summary": "TimetablesController.getTimeTable",
         "responses": {
@@ -1533,7 +1558,7 @@
         ]
       }
     },
-    "/api/users/:userId/timetables/:timetableId/add-lecture": {
+    "/api/users/{userId}/timetables/{timetableId}/add-lecture": {
       "post": {
         "summary": "TimetablesController.addLectureToTimetable",
         "responses": {
@@ -1570,7 +1595,7 @@
         }
       }
     },
-    "/api/users/:userId/timetables/:timetableId/remove-lecture": {
+    "/api/users/{userId}/timetables/{timetableId}/remove-lecture": {
       "post": {
         "summary": "TimetablesController.removeLectureFromTimetable",
         "responses": {
@@ -1607,7 +1632,7 @@
         }
       }
     },
-    "/api/users/:userId/timetables/:timetableId/reorder": {
+    "/api/users/{userId}/timetables/{timetableId}/reorder": {
       "post": {
         "summary": "TimetablesController.reorderTimetable",
         "responses": {
@@ -1691,7 +1716,7 @@
         "security": []
       }
     },
-    "/api/users/:user_id/taken-courses": {
+    "/api/users/{user_id}/taken-courses": {
       "get": {
         "summary": "UserController.getUserTakenCourses",
         "responses": {
@@ -1729,7 +1754,7 @@
         ]
       }
     },
-    "/api/users/:user_id/liked-reviews": {
+    "/api/users/{user_id}/liked-reviews": {
       "get": {
         "summary": "UserController.getUserLikedReviews",
         "responses": {
@@ -1767,7 +1792,7 @@
         ]
       }
     },
-    "/api/users/:userId/wishlist": {
+    "/api/users/{userId}/wishlist": {
       "get": {
         "summary": "WishlistController.getWishlist",
         "responses": {
@@ -1794,7 +1819,7 @@
         ]
       }
     },
-    "/api/users/:userId/wishlist/add-lecture": {
+    "/api/users/{userId}/wishlist/add-lecture": {
       "post": {
         "summary": "WishlistController.addLecture",
         "responses": {
@@ -1831,7 +1856,7 @@
         }
       }
     },
-    "/api/users/:userId/wishlist/remove-lecture": {
+    "/api/users/{userId}/wishlist/remove-lecture": {
       "post": {
         "summary": "WishlistController.removeLecture",
         "responses": {

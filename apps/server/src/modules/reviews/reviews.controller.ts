@@ -1,5 +1,5 @@
 import {
-  Body, Controller, Get, HttpException, HttpStatus, Param, Patch, Post, Query,
+  Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post, Query,
 } from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { ReviewProhibited } from '@otl/server-nest/common/decorators/prohibit-review.decorator'
@@ -76,6 +76,21 @@ export class ReviewsController {
     }
     else {
       const result = await this.reviewsService.createReviewVote(reviewId, user)
+      return toJsonReviewVote(result)
+    }
+  }
+
+  @Delete(':reviewId/like')
+  async unlikeReview(
+    @Param('reviewId') reviewId: number,
+    @GetUser() user: session_userprofile,
+  ): Promise<IReview.IReviewVote.Basic> {
+    const reviewVote = await this.reviewsService.findReviewVote(reviewId, user)
+    if (!reviewVote) {
+      throw new HttpException('Already UnLiked', HttpStatus.BAD_REQUEST)
+    }
+    else {
+      const result = await this.reviewsService.deleteReviewVote(reviewId, user)
       return toJsonReviewVote(result)
     }
   }
