@@ -135,4 +135,12 @@ export class ReviewsService {
   async createReviewVote(reviewId: number, user: session_userprofile): Promise<EReviewVote.Basic> {
     return await this.reviewsRepository.upsertReviewVote(reviewId, user.id)
   }
+
+  async deleteReviewVote(reviewId: number, user: session_userprofile) {
+    const review = await this.reviewsRepository.getReviewById(reviewId)
+    if (!review) throw new HttpException('Can\'t find review', 404)
+    const isLiked: boolean = await this.reviewsRepository.isLiked(review.id, user.id)
+    if (!isLiked) throw new HttpException('Already UnLiked', HttpStatus.BAD_REQUEST)
+    return await this.reviewsRepository.deleteReviewVote(reviewId, user.id)
+  }
 }
