@@ -111,7 +111,6 @@ export class SyncScholarDBService {
     this.slackNoti.sendSyncNoti(
       `Department created: ${result.departments.created.length}, updated: ${result.departments.updated.length}, errors: ${result.departments.errors.length}`,
     )
-    console.log(result)
 
     /// Course update
     // TODO: OLD_NO may not be available later, need to change to use new code
