@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Query, Req, Res, Session,
+  Body, Controller, Get, Post, Query, Req, Res, Session,
 } from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator'
@@ -12,6 +12,8 @@ import { ESSOUser } from '@otl/prisma-client/entities'
 import { UserService } from '../user/user.service'
 import { AuthService } from './auth.service'
 import { Client } from './utils/sparcs-sso'
+import TokenResponse = IAuth.TokenResponse
+import TokenDto = IAuth.TokenDto
 
 @Controller('session')
 export class AuthController {
@@ -35,7 +37,7 @@ export class AuthController {
     @Res() res: IAuth.Response,
   ): void {
     if (req.user) {
-      return res.redirect(next ?? '/')
+      return res.redirect(next ?? process.env.WEB_URL)
     }
     // req.session['next'] = next ?? '/';
     res.cookie('next', next ?? '/', { httpOnly: true, secure: true, sameSite: 'strict' })
@@ -70,8 +72,25 @@ export class AuthController {
     @Todo
     call import_student_lectures(studentId)
      */
-    const next_url = req.cookies.next ?? process.env.WEB_URL
+    const next_url = req.cookies.next
+      ?? `${process.env.WEB_URL}/login/success#accessToken=${accessToken}&refreshToken=${refreshToken}`
+    console.log(next_url)
     response.redirect(next_url)
+  }
+
+  @Public()
+  @Post('refresh')
+  async refreshToken(@Body() body: TokenDto, @Res({ passthrough: true }) res: IAuth.Response): Promise<TokenResponse> {
+    const { token } = body
+    const {
+      accessToken, accessTokenOptions, refreshToken, refreshTokenOptions,
+    } = await this.authService.tokenRefresh(token)
+    res.cookie('accessToken', accessToken, accessTokenOptions)
+    res.cookie('refreshToken', refreshToken, refreshTokenOptions)
+    return {
+      accessToken,
+      refreshToken,
+    }
   }
 
   @Get('info')
