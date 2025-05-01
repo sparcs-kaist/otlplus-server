@@ -7,6 +7,7 @@ import { ClsPluginTransactional } from '@nestjs-cls/transactional'
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma'
 import { ClsModule } from 'nestjs-cls'
 
+import logger from '@otl/common/logger/logger'
 import { LoggingInterceptor } from '@otl/common/logger/logging.interceptor'
 
 import { PrismaModule } from '@otl/prisma-client/prisma.module'
@@ -70,9 +71,13 @@ import settings from './settings'
       ],
     }),
     CacheModule.registerAsync({
-      useFactory: async () => ({
-        stores: [createKeyv(settings().getRedisConfig().url)],
-      }),
+      useFactory: async () => {
+        const { url, password } = settings().getRedisConfig()
+        logger.info(`Redis Cache ${url}, ${password}`)
+        return {
+          stores: [createKeyv({ url, password })],
+        }
+      },
       isGlobal: true,
     }),
   ],

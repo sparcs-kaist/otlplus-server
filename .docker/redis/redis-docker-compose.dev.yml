@@ -3,10 +3,15 @@ version: '3.8'
 services:
   redis-MQ:
     image: redis:7.2-alpine
-    container_name: redis
+    container_name: redis-otl
     ports:
       - '6379:6379'
     volumes:
       - ./redis.conf:/usr/local/etc/redis/redis.conf
       - ./redis-data:/data
-    command: ['redis-server', '/usr/local/etc/redis/redis.conf']
+    command:
+      [
+        'redis-server',
+        '/usr/local/etc/redis/redis.conf',
+        '--requirepass "$${REDIS_PASSWORD:?REDIS_PASSWORD variable is not set}"',
+      ]

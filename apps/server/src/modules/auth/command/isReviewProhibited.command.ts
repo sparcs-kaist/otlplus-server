@@ -51,8 +51,7 @@ export class IsReviewProhibitedCommand implements AuthCommand {
 
         return Promise.resolve(prevResult)
       }
-      catch (e) {
-        console.log(e)
+      catch (_e) {
         return Promise.resolve(prevResult)
       }
     }
