@@ -9,6 +9,8 @@ services:
     volumes:
       - ./redis.conf:/usr/local/etc/redis/redis.conf
       - ./redis-data:/data
+    env_file:
+      - ../../../env/.env.prod
     command:
       - /bin/sh
       - -c
