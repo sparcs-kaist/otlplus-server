@@ -1,23 +1,50 @@
-import { Controller, Get, Patch } from '@nestjs/common'
-import { AgreementType } from '@otl/server-nest/modules/agreement/domain/Agreement'
-import { AgreementUseCase } from '@otl/server-nest/modules/agreement/domain/agreement.usecase'
+import {
+  Body, Controller, Get, Patch, Query,
+} from '@nestjs/common'
+import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
+import { IAgreement } from '@otl/server-nest/common/interfaces/IAgreement'
+import { AgreementInPort } from '@otl/server-nest/modules/agreement/domain/agreement.in.port'
+import { AgreementType } from '@otl/server-nest/modules/agreement/domain/UserAgreement'
+import { session_userprofile } from '@prisma/client'
 
 @Controller('agreement')
 export class AgreementController {
-  constructor(private readonly agreementUseCase: AgreementUseCase) {}
+  constructor(private readonly agreementService: AgreementInPort) {}
 
-  @Get('user/:userId')
-  public async getUserAgreement(userId: number) {
-    return await this.agreementUseCase.findByUserId(userId)
+  @Get('user')
+  public async getUserAgreement(
+    @GetUser() user: session_userprofile,
+    @Query() queryDto: Omit<IAgreement.AgreementQueryDto, 'agreementStatus' | 'agreementType'>,
+  ): Promise<IAgreement.Response[]> {
+    const agreements = await this.agreementService.findByUserId(user.id)
+    const response = agreements?.length === Object.values(AgreementType).length
+      ? agreements
+      : await this.agreementService.initialize(user.id)
+    const { modal } = queryDto
+
+    return modal ? response.filter((e) => e.modal === modal) : response
   }
 
-  @Patch('user/:userId/:agreementType')
-  public async allowOrDisAllow(userId: number, agreementType: AgreementType, allow: boolean) {
-    if (allow) {
-      this.agreementUseCase.allow(userId, agreementType)
+  @Patch('user/modal')
+  public async toggleModal(
+    @GetUser() user: session_userprofile,
+    @Body() toggleDto: IAgreement.AgreementToggleDto,
+  ): Promise<IAgreement.Response> {
+    const { modal, agreementType } = toggleDto
+    const agreement = await this.agreementService.findByUserIdAndType(user.id, agreementType)
+    const response = agreement
+      ?? (await this.agreementService.initialize(user.id)).filter((e) => e.agreementType === agreementType)[0]
+    return this.agreementService.toggleModal(response.id, modal)
+  }
+
+  @Patch('user')
+  public async allowOrDisAllow(
+    @GetUser() user: session_userprofile,
+    @Body() allowDto: IAgreement.AgreementAllowDto,
+  ): Promise<IAgreement.Response> {
+    if (allowDto.allow) {
+      return this.agreementService.allow(user.id, allowDto.agreementType)
     }
-    else {
-      this.agreementUseCase.disallow(userId, agreementType)
-    }
+    return this.agreementService.disallow(user.id, allowDto.agreementType)
   }
 }

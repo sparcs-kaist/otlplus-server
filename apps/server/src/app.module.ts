@@ -73,7 +73,7 @@ import settings from './settings'
     CacheModule.registerAsync({
       useFactory: async () => {
         const { url, password } = settings().getRedisConfig()
-        logger.info(`Redis Cache ${url}, ${password}`)
+        logger.info(`Redis Cache ${url}`)
         return {
           stores: [createKeyv({ url, password })],
         }

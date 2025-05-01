@@ -319,15 +319,15 @@ model session_userprofile_fcm_token {
 }
 
 model session_userprofile_agreement {
-  id             Int                 @id @default(autoincrement())
-  userprofile_id Int
-  userprofile    session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
-  agreement_id   Int
-  agreement      agreement           @relation(fields: [agreement_id], references: [id], onUpdate: Restrict)
-  is_agreed      Boolean             @default(false)
-  need_to_show   Boolean             @default(true)
-  created_at     DateTime            @default(now()) @db.DateTime(0)
-  updated_at     DateTime            @default(now()) @db.DateTime(0)
+  id               Int                 @id @default(autoincrement())
+  userprofile_id   Int
+  userprofile      session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
+  agreement_id     Int
+  agreement        agreement           @relation(fields: [agreement_id], references: [id], onUpdate: Restrict)
+  agreement_status Boolean             @default(false)
+  need_to_show     Boolean             @default(true)
+  created_at       DateTime            @default(now()) @db.DateTime(0)
+  updated_at       DateTime            @default(now()) @db.DateTime(0)
 
   @@unique([userprofile_id, agreement_id], map: "session_userprofile_agreement_userprofile_id_agreement_id_uniq")
   @@index([agreement_id], map: "session_userprofile_agreement_agreement_id_fkey")
@@ -340,6 +340,8 @@ model agreement {
   session_userprofile_agreement session_userprofile_agreement[]
   created_at                    DateTime                        @default(now()) @db.DateTime(0)
   updated_at                    DateTime                        @default(now()) @db.DateTime(0)
+
+  @@unique([name], map: "session_userprofile_agreement_name_uniq")
 }
 
 model session_userprofile_notification {
@@ -610,6 +612,7 @@ model subject_lecture {
   @@index([title_no_space], map: "subject_lecture_title_no_space_index")
   @@index([title_en], map: "subject_lecture_title_en_index")
   @@index([title], map: "subject_lecture_title_index")
+  @@index([year, semester, deleted], map: "subject_lecture_deleted_year_semester_index")
 }
 
 model subject_lecture_professors {
@@ -917,7 +920,7 @@ model sync_history {
   endTime   DateTime?
   year      Int?
   semester  Int?
-  data      String?
+  data      String?   @db.VarChar(500)
 }
 
 model paper_prof_to_subject_prof {
