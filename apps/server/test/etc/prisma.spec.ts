@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { AppModule } from '../src/app.module';
+import { AppModule } from '@otl/server-nest/app.module';
 import { CourseRepository, LectureRepository } from '@otl/prisma-client/repositories';
 import { ELecture, PrismaService } from '@otl/prisma-client';
 import { applyOffset, applyOrder } from '@otl/common/utils';

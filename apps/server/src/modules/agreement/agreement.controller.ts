@@ -1,15 +1,18 @@
 import {
-  Body, Controller, Get, Patch, Query,
+  Body, Controller, Get, Inject, Patch, Query,
 } from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { IAgreement } from '@otl/server-nest/common/interfaces/IAgreement'
-import { AgreementInPort } from '@otl/server-nest/modules/agreement/domain/agreement.in.port'
+import { AGREEMENT_IN_PORT, AgreementInPort } from '@otl/server-nest/modules/agreement/domain/agreement.in.port'
 import { AgreementType } from '@otl/server-nest/modules/agreement/domain/UserAgreement'
 import { session_userprofile } from '@prisma/client'
 
 @Controller('agreement')
 export class AgreementController {
-  constructor(private readonly agreementService: AgreementInPort) {}
+  constructor(
+    @Inject(AGREEMENT_IN_PORT)
+    private readonly agreementService: AgreementInPort,
+  ) {}
 
   @Get('user')
   public async getUserAgreement(

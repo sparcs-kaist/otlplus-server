@@ -24,6 +24,88 @@
         "security": []
       }
     },
+    "/agreement/user": {
+      "get": {
+        "summary": "AgreementController.getUserAgreement",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IAgreement.Response"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "queryDto",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "Omit<import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/common/interfaces/IAgreement\").IAgreement.AgreementQueryDto, \"agreementStatus\" | \"agreementType\">"
+            }
+          }
+        ]
+      },
+      "patch": {
+        "summary": "AgreementController.allowOrDisAllow",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IAgreement.Response"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IAgreement.AgreementAllowDto"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agreement/user/modal": {
+      "patch": {
+        "summary": "AgreementController.toggleModal",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IAgreement.Response"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IAgreement.AgreementToggleDto"
+              }
+            }
+          }
+        }
+      }
+    },
     "/session/login": {
       "get": {
         "summary": "AuthController.user_login",
@@ -105,16 +187,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "accessToken": {
-                      "type": "string"
-                    },
-                    "refreshToken": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["accessToken", "refreshToken"]
+                  "$ref": "#/components/schemas/IAuth.TokenResponse"
                 }
               }
             }
@@ -126,7 +199,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/{ token: string; }"
+                "$ref": "#/components/schemas/IAuth.TokenDto"
               }
             }
           }
@@ -1933,6 +2006,67 @@
   },
   "components": {
     "schemas": {
+      "IAgreement.AgreementQueryDto": {
+        "properties": {
+          "modal": {},
+          "agreementStatus": {},
+          "agreementType": {}
+        },
+        "type": "object"
+      },
+      "IAgreement.Response": {
+        "type": "object",
+        "properties": {
+          "agreementId": {
+            "type": "number"
+          },
+          "agreementType": {
+            "$ref": "#/components/schemas/AgreementType"
+          },
+          "agreementStatus": {
+            "type": "boolean"
+          },
+          "modal": {
+            "type": "boolean"
+          }
+        },
+        "required": ["agreementId", "agreementType", "agreementStatus", "modal"],
+        "additionalProperties": false
+      },
+      "AgreementType": {
+        "type": "string",
+        "enum": ["INFO", "MARKETING", "NIGHT_MARKETING"]
+      },
+      "IAgreement.AgreementAllowDto": {
+        "properties": {
+          "allow": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "agreementType": {
+            "minLength": 1,
+            "type": "string",
+            "enum": ["INFO", "MARKETING", "NIGHT_MARKETING"]
+          }
+        },
+        "type": "object",
+        "required": ["allow", "agreementType"]
+      },
+      "IAgreement.AgreementToggleDto": {
+        "properties": {
+          "agreementType": {
+            "minLength": 1,
+            "type": "string",
+            "enum": ["INFO", "MARKETING", "NIGHT_MARKETING"]
+          },
+          "modal": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["agreementType", "modal"]
+      },
       "ICourse.Basic": {
         "type": "object",
         "properties": {

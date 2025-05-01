@@ -3,9 +3,10 @@ import { AgreementController } from '@otl/server-nest/modules/agreement/agreemen
 import { AgreementPrivateService } from '@otl/server-nest/modules/agreement/agreement.private.service'
 import { AgreementPublicService } from '@otl/server-nest/modules/agreement/agreement.public.service'
 import {
-  AgreementInPortSymbol,
-  AgreementInPublicPortSymbol,
+  AGREEMENT_IN_PORT,
+  AGREEMENT_IN_PUBLIC_PORT,
 } from '@otl/server-nest/modules/agreement/domain/agreement.in.port'
+import { AGREEMENT_REPOSITORY } from '@otl/server-nest/modules/agreement/domain/agreement.repository'
 
 import { PrismaModule } from '@otl/prisma-client'
 import { AgreementPrismaRepository } from '@otl/prisma-client/repositories/agreement.repository'
@@ -13,19 +14,22 @@ import { AgreementPrismaRepository } from '@otl/prisma-client/repositories/agree
 @Module({
   imports: [PrismaModule],
   providers: [
-    AgreementPrismaRepository,
     {
-      provide: AgreementInPortSymbol,
-      useFactory: (agreementPrismaRepository) => new AgreementPrivateService(agreementPrismaRepository),
-      inject: [AgreementPrismaRepository],
+      provide: AGREEMENT_REPOSITORY,
+      useClass: AgreementPrismaRepository,
     },
     {
-      provide: AgreementInPublicPortSymbol,
-      useFactory: (agreementPrismaRepository) => new AgreementPublicService(agreementPrismaRepository),
-      inject: [AgreementPrismaRepository],
+      provide: AGREEMENT_IN_PORT,
+      useFactory: (agreementRepository) => new AgreementPrivateService(agreementRepository),
+      inject: [AGREEMENT_REPOSITORY],
+    },
+    {
+      provide: AGREEMENT_IN_PUBLIC_PORT,
+      useFactory: (agreementRepository) => new AgreementPublicService(agreementRepository),
+      inject: [AGREEMENT_REPOSITORY],
     },
   ],
-  exports: [AgreementInPublicPortSymbol],
+  exports: [AGREEMENT_IN_PUBLIC_PORT],
   controllers: [AgreementController],
 })
 export class AgreementModule {}

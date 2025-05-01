@@ -2,7 +2,7 @@ import { Prisma, session_userprofile } from '@prisma/client';
 
 import { PrismaService } from '@otl/prisma-client/prisma.service';
 
-import settings from '../src/settings';
+import settings from '@otl/server-nest/settings';
 
 const ormSettings = settings().ormconfig();
 

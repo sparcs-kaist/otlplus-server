@@ -41,7 +41,7 @@
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "lint:check": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "dotenv -e env/.env.test -- jest --maxWorkers 1",
+    "test": "dotenv -e env/.env.test -- jest --maxWorkers 1 --silent=false",
     "test:watch": "dotenv -e env/.env.test -- jest --watch",
     "test:cov": "dotenv -e env/.env.test -- jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
@@ -167,5 +167,28 @@
   "lint-staged": {
     "*.ts": "eslint --fix",
     "*": "prettier --ignore-unknown --write"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": ".",
+    "testRegex": ".*\\.spec\\.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "collectCoverageFrom": [
+      "**/*.(t|j)s"
+    ],
+    "moduleNameMapper": {
+      "^@otl/common$": "<rootDir>/libs/common/src",
+      "^@otl/common/(.*)$": "<rootDir>/libs/common/src/$1",
+      "^@otl/server-nest/(.*)$": "<rootDir>/apps/server/src/$1",
+      "^@otl/prisma-client/(.*)$": "<rootDir>/libs/prisma-client/src/$1"
+    },
+    "coverageDirectory": "../coverage",
+    "testEnvironment": "node"
   }
 }

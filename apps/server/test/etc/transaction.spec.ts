@@ -8,7 +8,7 @@ import { PrismaService } from '@otl/prisma-client/prisma.service';
 import { CourseRepository } from '@otl/prisma-client/repositories';
 import { TranManager } from '@otl/prisma-client/transactionManager';
 
-import { AppModule } from '../src/app.module';
+import { AppModule } from '@otl/server-nest/app.module';
 
 describe.skip('AppController (e2e)', () => {
   let app: INestApplication;

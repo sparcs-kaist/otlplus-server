@@ -5,6 +5,7 @@ import {
   UserAgreementCreate,
 } from '@otl/server-nest/modules/agreement/domain/UserAgreement'
 
+export const AGREEMENT_REPOSITORY = Symbol('AGREEMENT_REPOSITORY')
 export interface AgreementRepository {
   // get agreement by id
   findById(id: number): Promise<UserAgreement | null>
@@ -31,7 +32,7 @@ export interface AgreementRepository {
   insertMany(agreement: UserAgreementCreate[]): Promise<UserAgreement[]>
 
   // upsert
-  upsert(agreement: UserAgreement): Promise<UserAgreement>
+  upsert(agreement: UserAgreementCreate): Promise<UserAgreement>
 
   // upsert multiple
   upsertMany(agreement: UserAgreementCreate[]): Promise<UserAgreement[]>

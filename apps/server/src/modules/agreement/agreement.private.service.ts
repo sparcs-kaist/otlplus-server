@@ -1,8 +1,11 @@
-import { Injectable } from '@nestjs/common'
+import { Inject, Injectable } from '@nestjs/common'
 import { AgreementPublicService } from '@otl/server-nest/modules/agreement/agreement.public.service'
 import { AgreementInPrivatePort } from '@otl/server-nest/modules/agreement/domain/agreement.in.private.port'
 import { AgreementInPublicPort } from '@otl/server-nest/modules/agreement/domain/agreement.in.public.port'
-import { AgreementRepository } from '@otl/server-nest/modules/agreement/domain/agreement.repository'
+import {
+  AGREEMENT_REPOSITORY,
+  AgreementRepository,
+} from '@otl/server-nest/modules/agreement/domain/agreement.repository'
 import {
   AgreementType,
   UserAgreement,
@@ -17,7 +20,10 @@ import { OtlException } from '@otl/common/exception/otl.exception'
 export class AgreementPrivateService
   extends AgreementPublicService
   implements AgreementInPublicPort, AgreementInPrivatePort {
-  constructor(protected readonly agreementRepository: AgreementRepository) {
+  constructor(
+    @Inject(AGREEMENT_REPOSITORY)
+    protected readonly agreementRepository: AgreementRepository,
+  ) {
     super(agreementRepository)
   }
 
@@ -39,7 +45,7 @@ export class AgreementPrivateService
   async disallow(userId: number, agreementType: AgreementType): Promise<UserAgreement> {
     const agreement = await this.agreementRepository.findByUserIdAndType(userId, agreementType)
     if (agreement) {
-      agreement.agreementStatus = true
+      agreement.agreementStatus = false
       return await this.agreementRepository.update(agreement)
     }
     const agreements = await this.initialize(userId)
