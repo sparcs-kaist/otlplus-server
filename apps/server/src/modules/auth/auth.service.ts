@@ -144,11 +144,8 @@ export class AuthService {
     })
     const user = await this.findBySid(payload.sid)
     if (!user) throw new NotFoundException('user is not found')
-    console.log(user)
     const { accessToken, ...accessTokenOptions } = this.getCookieWithAccessToken(payload.sid)
     const { refreshToken: newRefreshToken, ...refreshTokenOptions } = this.getCookieWithRefreshToken(payload.sid)
-    console.log(accessToken, accessTokenOptions)
-    console.log(newRefreshToken, refreshTokenOptions)
     return {
       accessToken,
       accessTokenOptions,

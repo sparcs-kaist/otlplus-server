@@ -12,6 +12,8 @@ import { ESSOUser } from '@otl/prisma-client/entities'
 import { UserService } from '../user/user.service'
 import { AuthService } from './auth.service'
 import { Client } from './utils/sparcs-sso'
+import TokenResponse = IAuth.TokenResponse
+import TokenDto = IAuth.TokenDto
 
 @Controller('session')
 export class AuthController {
@@ -78,7 +80,7 @@ export class AuthController {
 
   @Public()
   @Post('refresh')
-  async refreshToken(@Body() body: { token: string }, @Res({ passthrough: true }) res: IAuth.Response) {
+  async refreshToken(@Body() body: TokenDto, @Res({ passthrough: true }) res: IAuth.Response): Promise<TokenResponse> {
     const { token } = body
     const {
       accessToken, accessTokenOptions, refreshToken, refreshTokenOptions,
