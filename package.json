@@ -84,10 +84,8 @@
     "typescript": "^5.7.2"
   },
   "dependencies": {
-    "@keyv/redis": "^4.3.4",
     "@nestjs-cls/transactional": "^2.4.4",
     "@nestjs-cls/transactional-adapter-prisma": "^1.2.7",
-    "@nestjs/cache-manager": "^3.0.1",
     "@nestjs/cli": "^10.4.9",
     "@nestjs/common": "^10.4.15",
     "@nestjs/config": "^3.3.0",
@@ -117,7 +115,6 @@
     "axios": "^1.7.9",
     "bcrypt": "^5.1.1",
     "bluebird": "^3.7.2",
-    "cache-manager": "^6.4.2",
     "canvas": "^3.0.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
