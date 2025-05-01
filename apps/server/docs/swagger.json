@@ -96,6 +96,43 @@
         ]
       }
     },
+    "/session/refresh": {
+      "post": {
+        "summary": "AuthController.refreshToken",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "accessToken": {
+                      "type": "string"
+                    },
+                    "refreshToken": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["accessToken", "refreshToken"]
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/{ token: string; }"
+              }
+            }
+          }
+        }
+      }
+    },
     "/session/info": {
       "get": {
         "summary": "AuthController.getUserProfile",

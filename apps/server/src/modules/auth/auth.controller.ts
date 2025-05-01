@@ -35,7 +35,7 @@ export class AuthController {
     @Res() res: IAuth.Response,
   ): void {
     if (req.user) {
-      return res.redirect(next ?? '/')
+      return res.redirect(next ?? process.env.WEB_URL)
     }
     // req.session['next'] = next ?? '/';
     res.cookie('next', next ?? '/', { httpOnly: true, secure: true, sameSite: 'strict' })
@@ -70,17 +70,25 @@ export class AuthController {
     @Todo
     call import_student_lectures(studentId)
      */
-    const next_url = req.cookies.next ?? process.env.WEB_URL
+    const next_url = req.cookies.next
+      ?? `${process.env.WEB_URL}/login/success#accessToken=${accessToken}&refreshToken=${refreshToken}`
+    console.log(next_url)
     response.redirect(next_url)
   }
 
   @Public()
   @Post('refresh')
-  async refreshToken(@Body() body: { refreshToken: string }, @Res() res: IAuth.Response): Promise<void> {
-    const { refreshToken } = body
-    const { accessToken, accessTokenOptions } = await this.authService.refreshToken(refreshToken)
+  async refreshToken(@Body() body: { token: string }, @Res({ passthrough: true }) res: IAuth.Response) {
+    const { token } = body
+    const {
+      accessToken, accessTokenOptions, refreshToken, refreshTokenOptions,
+    } = await this.authService.tokenRefresh(token)
     res.cookie('accessToken', accessToken, accessTokenOptions)
-    res.send({ accessToken })
+    res.cookie('refreshToken', refreshToken, refreshTokenOptions)
+    return {
+      accessToken,
+      refreshToken,
+    }
   }
 
   @Get('info')
