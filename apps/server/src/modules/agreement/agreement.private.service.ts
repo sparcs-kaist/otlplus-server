@@ -6,14 +6,11 @@ import {
   AGREEMENT_REPOSITORY,
   AgreementRepository,
 } from '@otl/server-nest/modules/agreement/domain/agreement.repository'
-import {
-  AgreementType,
-  UserAgreement,
-  UserAgreementCreate,
-} from '@otl/server-nest/modules/agreement/domain/UserAgreement'
+import { UserAgreement, UserAgreementCreate } from '@otl/server-nest/modules/agreement/domain/UserAgreement'
 import { StatusCodes } from 'http-status-codes'
 
 import { getCurrentMethodName } from '@otl/common'
+import { AgreementType } from '@otl/common/enum/agreement'
 import { OtlException } from '@otl/common/exception/otl.exception'
 
 @Injectable()

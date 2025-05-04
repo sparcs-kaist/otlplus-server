@@ -1,7 +1,8 @@
-import { AgreementType } from '@otl/server-nest/modules/agreement/domain/UserAgreement'
 import {
   IsBoolean, IsIn, IsNotEmpty, IsOptional,
 } from 'class-validator'
+
+import { AgreementType } from '@otl/common/enum/agreement'
 
 export namespace IAgreement {
   export class AgreementQueryDto {

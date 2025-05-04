@@ -77,12 +77,12 @@ export class DevicePrismaRepository implements DeviceRepository {
           token,
         },
       })
-      .then((e) => {
+      .then((e: EDevice.Basic[]) => {
         if (e == null) {
           return null
         }
 
-        return e.map((device) => mapUserDevice(device))
+        return e.map((device: EDevice.Basic) => mapUserDevice(device))
       })
   }
 
@@ -93,12 +93,12 @@ export class DevicePrismaRepository implements DeviceRepository {
           userprofile_id: userId,
         },
       })
-      .then((e) => {
+      .then((e: EDevice.Basic[]) => {
         if (e == null) {
           return null
         }
 
-        return e.map((device) => mapUserDevice(device))
+        return e.map((device: EDevice.Basic) => mapUserDevice(device))
       })
   }
 
@@ -141,7 +141,7 @@ export class DevicePrismaRepository implements DeviceRepository {
             appVersion: device.appVersion,
           },
         })
-        .then((e) => {
+        .then((e: EDevice.Basic) => {
           if (e == null) {
             throw new UserException(404, UserException.DEVICE_NOT_FOUND, getCurrentMethodName())
           }
@@ -159,7 +159,7 @@ export class DevicePrismaRepository implements DeviceRepository {
           appVersion: device.appVersion,
         },
       })
-      .then((e) => {
+      .then((e: EDevice.Basic) => {
         if (e == null) {
           throw new UserException(404, UserException.DEVICE_NOT_FOUND, getCurrentMethodName())
         }

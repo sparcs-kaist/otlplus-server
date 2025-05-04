@@ -34,6 +34,16 @@
         "plugins": ["@nestjs/swagger/plugin"]
       }
     },
+    "notification-consumer": {
+      "type": "application",
+      "root": "apps/notification-consumer/src",
+      "sourceRoot": "apps/notification-consumer/src",
+      "entryFile": "bootstrap/bootstrap",
+      "compilerOptions": {
+        "tsConfigPath": "apps/notification-consumer/tsconfig.app.json",
+        "plugins": ["@nestjs/swagger/plugin"]
+      }
+    },
     "prisma-client": {
       "type": "library",
       "root": "libs/prisma-client",

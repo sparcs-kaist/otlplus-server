@@ -5,16 +5,12 @@ import {
   AGREEMENT_REPOSITORY,
   AgreementRepository,
 } from '@otl/server-nest/modules/agreement/domain/agreement.repository';
-import {
-  Agreement,
-  AgreementType,
-  UserAgreement,
-  UserAgreementCreate,
-} from '@otl/server-nest/modules/agreement/domain/UserAgreement';
+import { Agreement, UserAgreement, UserAgreementCreate } from '@otl/server-nest/modules/agreement/domain/UserAgreement';
 import { OtlException } from '@otl/common/exception/otl.exception';
 import { StatusCodes } from 'http-status-codes';
 import { AgreementPrismaRepository } from '@otl/prisma-client/repositories/agreement.repository';
 import { AGREEMENT_IN_PUBLIC_PORT } from '@otl/server-nest/modules/agreement/domain/agreement.in.port';
+import { AgreementType } from '@otl/common/enum/agreement';
 
 const moduleMocker = new ModuleMocker(global);
 

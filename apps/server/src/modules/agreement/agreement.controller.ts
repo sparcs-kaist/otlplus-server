@@ -4,8 +4,9 @@ import {
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { IAgreement } from '@otl/server-nest/common/interfaces/IAgreement'
 import { AGREEMENT_IN_PORT, AgreementInPort } from '@otl/server-nest/modules/agreement/domain/agreement.in.port'
-import { AgreementType } from '@otl/server-nest/modules/agreement/domain/UserAgreement'
 import { session_userprofile } from '@prisma/client'
+
+import { AgreementType } from '@otl/common/enum/agreement'
 
 @Controller('agreement')
 export class AgreementController {

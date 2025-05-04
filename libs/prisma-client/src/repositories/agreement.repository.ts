@@ -1,12 +1,8 @@
 import { Injectable } from '@nestjs/common'
 import { AgreementRepository } from '@otl/server-nest/modules/agreement/domain/agreement.repository'
-import {
-  Agreement,
-  AgreementType,
-  UserAgreement,
-  UserAgreementCreate,
-} from '@otl/server-nest/modules/agreement/domain/UserAgreement'
+import { Agreement, UserAgreement, UserAgreementCreate } from '@otl/server-nest/modules/agreement/domain/UserAgreement'
 
+import { AgreementType } from '@otl/common/enum/agreement'
 import { OtlException } from '@otl/common/exception/otl.exception'
 
 import { mapUserAgreement } from '@otl/prisma-client/common/mapper/agreement'

@@ -19,7 +19,4 @@ export interface DeviceInPrivatePort {
 
   // 기기 알림 Off
   makeDeviceTokenInactive(userId: number, deviceToken: string): Promise<UserDevice>
-
-  // // 알림 수신 동의 여부 변경
-  // changeNotificationPermission(userId: number, notificationId: number, Active: boolean): Promise<UserNotification>
 }

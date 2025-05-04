@@ -3,10 +3,12 @@ import { CacheModule } from '@nestjs/cache-manager'
 import { Module } from '@nestjs/common'
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core'
 import { JwtService } from '@nestjs/jwt'
+import { ClientsModule } from '@nestjs/microservices'
 import { ClsPluginTransactional } from '@nestjs-cls/transactional'
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma'
 import { AgreementModule } from '@otl/server-nest/modules/agreement/agreement.module'
 import { DeviceModule } from '@otl/server-nest/modules/device/device.module'
+import { NotificationModule } from '@otl/server-nest/modules/notification/notification.module'
 import { ClsModule } from 'nestjs-cls'
 
 import logger from '@otl/common/logger/logger'
@@ -61,7 +63,9 @@ import settings from './settings'
     TracksModule,
     ShareModule,
     AgreementModule,
+    ClientsModule,
     DeviceModule,
+    NotificationModule,
     ClsModule.forRoot({
       global: true,
       middleware: { mount: true },

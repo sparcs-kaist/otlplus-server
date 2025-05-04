@@ -112,6 +112,12 @@ const staticConfig = (): any => ({
     process.env.DOCKER_DEPLOY === 'true' ? '/var/www/otlplus-server/apps/server/static/' : 'apps/server/static/',
 })
 
+const getRabbitMQConfig = (): any => ({
+  url: process.env.RABBITMQ_URL,
+  user: process.env.RABBITMQ_USER,
+  password: process.env.RABBITMQ_PASSWORD,
+})
+
 export default () => ({
   ormconfig: () => getPrismaConfig(),
   ormReplicatedConfig: () => getReplicatedPrismaConfig(),
@@ -125,4 +131,5 @@ export default () => ({
   getStaticConfig: () => staticConfig(),
   getSwaggerConfig: () => getSwaggerConfig(),
   getSwaggerStatsConfig: () => getSwaggerStatsConfig(),
+  getRabbitMQConfig: () => getRabbitMQConfig(),
 })

@@ -1,6 +1,5 @@
 import { UserDevice, UserDeviceCreate } from '@otl/server-nest/modules/device/domain/device'
 
-export const NOTIFICATION_REPOSITORY = Symbol('NOTIFICATION_REPOSITORY')
 export const DEVICE_REPOSITORY = Symbol('DEVICE_REPOSITORY')
 export interface DeviceRepository {
   // get device by token

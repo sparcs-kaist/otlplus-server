@@ -4,7 +4,9 @@ import {
   AGREEMENT_REPOSITORY,
   AgreementRepository,
 } from '@otl/server-nest/modules/agreement/domain/agreement.repository'
-import { AgreementType, UserAgreement } from '@otl/server-nest/modules/agreement/domain/UserAgreement'
+import { UserAgreement } from '@otl/server-nest/modules/agreement/domain/UserAgreement'
+
+import { AgreementType } from '@otl/common/enum/agreement'
 
 @Injectable()
 export class AgreementPublicService implements AgreementInPublicPort {

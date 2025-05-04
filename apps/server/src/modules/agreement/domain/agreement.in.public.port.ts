@@ -1,4 +1,6 @@
-import { AgreementType, UserAgreement } from '@otl/server-nest/modules/agreement/domain/UserAgreement'
+import { UserAgreement } from '@otl/server-nest/modules/agreement/domain/UserAgreement'
+
+import { AgreementType } from '@otl/common/enum/agreement'
 
 export interface AgreementInPublicPort {
   // Get all agreements for a user

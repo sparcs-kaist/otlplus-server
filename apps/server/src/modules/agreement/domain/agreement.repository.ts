@@ -1,9 +1,6 @@
-import {
-  Agreement,
-  AgreementType,
-  UserAgreement,
-  UserAgreementCreate,
-} from '@otl/server-nest/modules/agreement/domain/UserAgreement'
+import { Agreement, UserAgreement, UserAgreementCreate } from '@otl/server-nest/modules/agreement/domain/UserAgreement'
+
+import { AgreementType } from '@otl/common/enum/agreement'
 
 export const AGREEMENT_REPOSITORY = Symbol('AGREEMENT_REPOSITORY')
 export interface AgreementRepository {

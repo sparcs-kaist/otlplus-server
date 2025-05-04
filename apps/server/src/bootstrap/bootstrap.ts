@@ -1,6 +1,5 @@
 import { HttpException, ValidationPipe, VersioningType } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
-import { AgreementType } from '@otl/server-nest/modules/agreement/domain/UserAgreement'
 import cookieParser from 'cookie-parser'
 import csrf from 'csurf'
 import { json } from 'express'
@@ -10,6 +9,7 @@ import { join } from 'path'
 import swaggerStats from 'swagger-stats'
 import * as swaggerUi from 'swagger-ui-express'
 
+import { AgreementType } from '@otl/common/enum/agreement'
 import { HttpExceptionFilter, UnexpectedExceptionFilter } from '@otl/common/exception/exception.filter'
 
 import { PrismaService } from '@otl/prisma-client'
