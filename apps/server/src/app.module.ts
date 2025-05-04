@@ -6,6 +6,7 @@ import { JwtService } from '@nestjs/jwt'
 import { ClsPluginTransactional } from '@nestjs-cls/transactional'
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma'
 import { AgreementModule } from '@otl/server-nest/modules/agreement/agreement.module'
+import { DeviceModule } from '@otl/server-nest/modules/device/device.module'
 import { ClsModule } from 'nestjs-cls'
 
 import logger from '@otl/common/logger/logger'
@@ -60,6 +61,7 @@ import settings from './settings'
     TracksModule,
     ShareModule,
     AgreementModule,
+    DeviceModule,
     ClsModule.forRoot({
       global: true,
       middleware: { mount: true },

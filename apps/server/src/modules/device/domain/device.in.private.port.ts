@@ -5,6 +5,7 @@ export interface DeviceInPrivatePort {
   registerDevice(
     userId: number,
     deviceToken: string,
+    isActive: boolean,
     deviceType?: string | null,
     deviceOsVersion?: string,
     appVersion?: string,

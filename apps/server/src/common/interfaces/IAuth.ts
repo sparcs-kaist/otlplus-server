@@ -16,13 +16,4 @@ export namespace IAuth {
   export interface JwtPayload {
     sid: string
   }
-
-  export class TokenDto {
-    token!: string
-  }
-
-  export interface TokenResponse {
-    accessToken: string
-    refreshToken: string
-  }
 }

@@ -17,7 +17,7 @@ export class AgreementController {
   @Get('user')
   public async getUserAgreement(
     @GetUser() user: session_userprofile,
-    @Query() queryDto: Omit<IAgreement.AgreementQueryDto, 'agreementStatus' | 'agreementType'>,
+    @Query() queryDto: IAgreement.AgreementModalQueryDto,
   ): Promise<IAgreement.Response[]> {
     const agreements = await this.agreementService.findByUserId(user.id)
     const response = agreements?.length === Object.values(AgreementType).length

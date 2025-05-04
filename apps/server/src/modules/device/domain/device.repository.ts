@@ -13,7 +13,9 @@ export interface DeviceRepository {
   findByUserIdAndToken(userId: number, token: string): Promise<UserDevice | null>
 
   // register device
+  save(device: UserDevice): Promise<UserDevice>
   save(device: UserDeviceCreate): Promise<UserDevice>
+  save(device: UserDeviceCreate | UserDevice): Promise<UserDevice>
 
   // unregister device
   delete(device: UserDevice): Promise<UserDevice>

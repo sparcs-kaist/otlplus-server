@@ -1,5 +1,7 @@
 import { AgreementType } from '@otl/server-nest/modules/agreement/domain/UserAgreement'
-import { IsIn, IsNotEmpty, IsOptional } from 'class-validator'
+import {
+  IsBoolean, IsIn, IsNotEmpty, IsOptional,
+} from 'class-validator'
 
 export namespace IAgreement {
   export class AgreementQueryDto {
@@ -11,6 +13,12 @@ export namespace IAgreement {
 
     @IsOptional()
     agreementType?: string
+  }
+
+  export class AgreementModalQueryDto {
+    @IsOptional()
+    @IsBoolean()
+    modal!: boolean
   }
 
   export interface Response {

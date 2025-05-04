@@ -31,12 +31,14 @@ export class AgreementPrivateService
     const agreement = await this.agreementRepository.findByUserIdAndType(userId, agreementType)
     if (agreement) {
       agreement.agreementStatus = true
+      agreement.modal = false
       return await this.agreementRepository.update(agreement)
     }
     const agreements = await this.initialize(userId)
     const allowAgreement = agreements.find((e) => e.agreementType === agreementType)
     if (allowAgreement) {
       allowAgreement.agreementStatus = true
+      allowAgreement.modal = false
       return await this.agreementRepository.update(allowAgreement)
     }
     throw new OtlException(StatusCodes.INTERNAL_SERVER_ERROR, 'should not reach here', getCurrentMethodName())
@@ -46,12 +48,14 @@ export class AgreementPrivateService
     const agreement = await this.agreementRepository.findByUserIdAndType(userId, agreementType)
     if (agreement) {
       agreement.agreementStatus = false
+      agreement.modal = false
       return await this.agreementRepository.update(agreement)
     }
     const agreements = await this.initialize(userId)
     const disallowAgreement = agreements.find((e) => e.agreementType === agreementType)
     if (disallowAgreement) {
       disallowAgreement.agreementStatus = false
+      disallowAgreement.modal = false
       return await this.agreementRepository.update(disallowAgreement)
     }
     throw new OtlException(StatusCodes.INTERNAL_SERVER_ERROR, 'should not reach here', getCurrentMethodName())

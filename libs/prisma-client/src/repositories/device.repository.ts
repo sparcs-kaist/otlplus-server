@@ -121,7 +121,33 @@ export class DevicePrismaRepository implements DeviceRepository {
       })
   }
 
-  save(device: UserDeviceCreate): Promise<UserDevice> {
+  save(device: UserDevice): Promise<UserDevice>
+
+  save(device: UserDeviceCreate): Promise<UserDevice>
+
+  save(device: UserDeviceCreate | UserDevice): Promise<UserDevice> {
+    if ('id' in device) {
+      return this.prisma.session_userprofile_device
+        .update({
+          where: {
+            id: device.id,
+          },
+          data: {
+            userprofile_id: device.userId,
+            token: device.deviceToken,
+            is_active: device.isActive,
+            deviceType: device.deviceType,
+            deviceOsVersion: device.deviceOsVersion,
+            appVersion: device.appVersion,
+          },
+        })
+        .then((e) => {
+          if (e == null) {
+            throw new UserException(404, UserException.DEVICE_NOT_FOUND, getCurrentMethodName())
+          }
+          return mapUserDevice(e)
+        })
+    }
     return this.prisma.session_userprofile_device
       .create({
         data: {
@@ -137,7 +163,6 @@ export class DevicePrismaRepository implements DeviceRepository {
         if (e == null) {
           throw new UserException(404, UserException.DEVICE_NOT_FOUND, getCurrentMethodName())
         }
-
         return mapUserDevice(e)
       })
   }
