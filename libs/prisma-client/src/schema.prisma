@@ -295,7 +295,7 @@ model session_userprofile {
   session_userprofile_majors            session_userprofile_majors[]
   session_userprofile_minors            session_userprofile_minors[]
   session_userprofile_specialized_major session_userprofile_specialized_major[]
-  session_userprofile_fcm_token         session_userprofile_fcm_token[]
+  session_userprofile_device            session_userprofile_device[]
   taken_lectures                        session_userprofile_taken_lectures[]
   subject_courseuser                    subject_courseuser[]
   support_rate                          support_rate[]
@@ -303,16 +303,21 @@ model session_userprofile {
   timetable_wishlist                    timetable_wishlist?
   session_userprofile_notification      session_userprofile_notification[]
   session_userprofile_agreement         session_userprofile_agreement[]
+  session_userprofile_notification_hist session_userprofile_notification_history[]
 
   @@index([department_id], map: "session_userprofile_department_id_fkey")
   @@index([student_id], map: "session_userprofile_student_id_index")
 }
 
-model session_userprofile_fcm_token {
-  id             Int                 @id @default(autoincrement())
-  userprofile_id Int
-  token          String              @db.VarChar(255)
-  userprofile    session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
+model session_userprofile_device {
+  id              Int                 @id @default(autoincrement())
+  userprofile_id  Int
+  token           String              @db.VarChar(255)
+  is_active       Boolean             @default(false)
+  deviceType      DeviceType?
+  deviceOsVersion String?             @db.VarChar(255)
+  appVersion      String?             @db.VarChar(255)
+  userprofile     session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
 
   @@unique([userprofile_id, token], map: "session_fcm_token_userprofile_id_token_uniq")
   @@index([token], map: "session_fcm_token_token_index")
@@ -352,18 +357,31 @@ model session_userprofile_notification {
   noti            notification        @relation(fields: [notification_id], references: [id], onUpdate: Restrict)
   created_at      DateTime            @default(now()) @db.DateTime(0)
   updated_at      DateTime            @default(now()) @db.DateTime(0)
-  is_agreed       Boolean             @default(false)
+  is_active       Boolean             @default(false)
 
   @@unique([userprofile_id, notification_id], map: "session_userprofile_notification_id_uniq")
   @@index([notification_id], map: "session_userprofile_notification_notification_id_fkey")
 }
 
 model notification {
-  id                       Int                                @id @default(autoincrement())
-  name                     String                             @db.VarChar(200)
-  created_at               DateTime                           @default(now()) @db.DateTime(0)
-  updated_at               DateTime                           @default(now()) @db.DateTime(0)
+  id                       Int                                        @id @default(autoincrement())
+  name                     String                                     @db.VarChar(200)
+  agreementType            AgreementType
+  created_at               DateTime                                   @default(now()) @db.DateTime(0)
+  updated_at               DateTime                                   @default(now()) @db.DateTime(0)
   session_userprofile_noti session_userprofile_notification[]
+  session_userprofile_hist session_userprofile_notification_history[]
+}
+
+model session_userprofile_notification_history {
+  id                  Int                 @id @default(autoincrement())
+  userprofile_id      Int
+  notification_id     Int
+  notification_req_id Int
+  userprofile         session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
+  noti                notification        @relation(fields: [notification_id], references: [id], onUpdate: Restrict)
+  created_at          DateTime            @default(now()) @db.DateTime(0)
+  read_at             DateTime?           @db.DateTime(0)
 }
 
 model session_userprofile_favorite_departments {
@@ -974,6 +992,12 @@ enum SyncType {
   CLASSTIME
   TAKEN_LECTURES
   CHARGE
+}
+
+enum DeviceType {
+  ANDROID
+  IOS
+  WEB
 }
 
 enum AgreementType {

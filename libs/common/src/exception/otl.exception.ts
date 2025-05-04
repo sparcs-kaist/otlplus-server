@@ -1,8 +1,6 @@
 import { getReasonPhrase, StatusCodes } from 'http-status-codes'
 
 export class OtlException extends Error {
-  static readonly DEFAULT_MESSAGE = 'OTL Exception'
-
   public readonly code: number
 
   public readonly callee: string

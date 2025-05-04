@@ -18,7 +18,7 @@ import { AGREEMENT_IN_PUBLIC_PORT } from '@otl/server-nest/modules/agreement/dom
 
 const moduleMocker = new ModuleMocker(global);
 
-class MockAgreementRepository implements AgreementRepository {
+export class MockAgreementRepository implements AgreementRepository {
   public readonly mockAgreement: Agreement[] = [];
   public readonly mockUser: { id: number; name: string }[] = [];
   public readonly mockUserAgreement: UserAgreement[] = [];

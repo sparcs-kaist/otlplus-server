@@ -6,7 +6,6 @@ import {
   UserAgreement,
   UserAgreementCreate,
 } from '@otl/server-nest/modules/agreement/domain/UserAgreement'
-import { Promise } from 'bluebird'
 
 import { OtlException } from '@otl/common/exception/otl.exception'
 
