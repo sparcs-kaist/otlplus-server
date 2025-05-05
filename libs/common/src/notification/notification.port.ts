@@ -2,7 +2,7 @@ import { _NotificationRequest, _UserNotification } from '@otl/common/notificatio
 
 export interface _NotificationPort {
   // 알림 전송
-  sendNotification(deviceToken: string, title: string, body: string): Promise<_NotificationRequest>
+  sendNotification(deviceToken: string, title: string, body: string, metadata?: object): Promise<_NotificationRequest>
 
   // 모두에게 알림 전송
   sendNotificationToAll(title: string, body: string): Promise<_NotificationRequest[]>

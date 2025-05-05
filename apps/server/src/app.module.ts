@@ -11,7 +11,6 @@ import { DeviceModule } from '@otl/server-nest/modules/device/device.module'
 import { NotificationModule } from '@otl/server-nest/modules/notification/notification.module'
 import { ClsModule } from 'nestjs-cls'
 
-import logger from '@otl/common/logger/logger'
 import { LoggingInterceptor } from '@otl/common/logger/logging.interceptor'
 
 import { PrismaModule } from '@otl/prisma-client/prisma.module'
@@ -81,7 +80,6 @@ import settings from './settings'
     CacheModule.registerAsync({
       useFactory: async () => {
         const { url, password } = settings().getRedisConfig()
-        logger.info(`Redis Cache ${url}`)
         return {
           stores: [createKeyv({ url, password })],
         }

@@ -12,4 +12,9 @@ export class AppController {
   handleOrderPlaced(@Payload() data: AppDto) {
     return this.appService.handleOrderPlaced(data)
   }
+
+  @EventPattern('notification.info.fcm')
+  handleMessage(@Payload() data: AppDto) {
+    return this.appService.handleOrderPlaced(data)
+  }
 }

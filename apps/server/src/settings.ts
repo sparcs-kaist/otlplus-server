@@ -112,10 +112,52 @@ const staticConfig = (): any => ({
     process.env.DOCKER_DEPLOY === 'true' ? '/var/www/otlplus-server/apps/server/static/' : 'apps/server/static/',
 })
 
-const getRabbitMQConfig = (): any => ({
+const getRabbitMQConfig = () => ({
   url: process.env.RABBITMQ_URL,
   user: process.env.RABBITMQ_USER,
   password: process.env.RABBITMQ_PASSWORD,
+  queueConfig: [
+    {
+      exchange: 'notifications',
+      exchangeType: 'topic',
+      queue: 'notifications.info.fcm.queue',
+      routingKey: '*.info.fcm.*',
+      queueOptions: { durable: true },
+      persistent: true,
+      noAck: false,
+      wildcards: true,
+    },
+    {
+      exchange: 'notifications',
+      exchangeType: 'topic',
+      queue: 'notifications.ad.fcm.queue',
+      routingKey: '*.ad.fcm.*',
+      queueOptions: { durable: true },
+      persistent: true,
+      noAck: false,
+      wildcards: true,
+    },
+    {
+      exchange: 'notifications',
+      exchangeType: 'topic',
+      queue: 'notifications.night-ad.fcm.queue',
+      routingKey: '*.night-ad.fcm.*',
+      queueOptions: { durable: true },
+      persistent: true,
+      noAck: false,
+      wildcards: true,
+    },
+    {
+      exchange: 'notifications',
+      exchangeType: 'topic',
+      queue: 'notifications.email.queue',
+      routingKey: '*.email.*',
+      queueOptions: { durable: true },
+      persistent: true,
+      noAck: false,
+      wildcards: true,
+    },
+  ],
 })
 
 export default () => ({

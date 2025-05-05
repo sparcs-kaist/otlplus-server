@@ -1,29 +1,16 @@
 import { Module } from '@nestjs/common'
-import { ClientsModule, RmqOptions, Transport } from '@nestjs/microservices'
+import { RmqModule } from '@otl/rmq/rmq.module'
+import { QueueNames } from '@otl/rmq/settings'
 import { NOTIFICATION_IN_PORT } from '@otl/server-nest/modules/notification/domain/notification.in.public.port'
 import { NOTIFICATION_REPOSITORY } from '@otl/server-nest/modules/notification/domain/notification.repository'
+import { NotificationController } from '@otl/server-nest/modules/notification/notification.controller'
 import { NotificationService } from '@otl/server-nest/modules/notification/notification.service'
-import settings from '@otl/server-nest/settings'
-
-import { NotificationType } from '@otl/common/enum/notification'
 
 import { PrismaModule } from '@otl/prisma-client'
 import { NotificationPrismaRepository } from '@otl/prisma-client/repositories/notification.repository'
 
-export const queueList = Object.values(NotificationType)
-const queueModuleFactory = () => queueList.map(
-  (queueName) => ({
-    name: Symbol(queueName),
-    transport: Transport.RMQ,
-    options: {
-      urls: [settings().getRabbitMQConfig().url],
-      queue: queueName,
-    },
-  }) as RmqOptions & { name: string | symbol },
-)
-
 @Module({
-  imports: [PrismaModule, ClientsModule.register(queueModuleFactory())],
+  imports: [PrismaModule, RmqModule.register()],
   providers: [
     {
       provide: NOTIFICATION_REPOSITORY,
@@ -31,9 +18,11 @@ const queueModuleFactory = () => queueList.map(
     },
     {
       provide: NOTIFICATION_IN_PORT,
-      useFactory: (notificationRepository) => new NotificationService(notificationRepository),
+      useFactory: (notificationRepository, infoFCMClient, adFCMClient, nightAdFCMClient) => new NotificationService(notificationRepository, infoFCMClient, adFCMClient, nightAdFCMClient),
+      inject: [NOTIFICATION_REPOSITORY, ...Object.values(QueueNames)],
     },
   ],
+  controllers: [NotificationController],
   exports: [NOTIFICATION_IN_PORT],
 })
 export class NotificationModule {}

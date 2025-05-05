@@ -26,7 +26,7 @@ export class _NotificationRequest {
 
   userId!: number
 
-  content!: string
+  content!: object
 
   requestId!: string
 

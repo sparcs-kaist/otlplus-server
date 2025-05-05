@@ -1,29 +1,27 @@
 // main.ts
 import { NestFactory } from '@nestjs/core'
-import { Transport } from '@nestjs/microservices'
-import settings from '@otl/notification-consumer/settings'
-
-import { NotificationType } from '@otl/common/enum/notification'
+import { queueModuleFactory } from '@otl/rmq/rmq.module'
 
 import { AppModule } from '../app.module'
 
 async function bootstrap() {
   const appContext = await NestFactory.create(AppModule)
 
-  const queueList = Object.values(NotificationType)
-  const queueModuleFactory = () => queueList.map((queueName) => ({
-    transport: Transport.RMQ,
-    options: {
-      urls: [settings().getRabbitMQConfig().url],
-      queue: queueName,
-      queueOptions: {
-        durable: true,
-      },
-    },
-  }))
+  // const queueList = Object.values(NotificationType)
+  // const queueModuleFactory = () => queueList.map((queueName) => ({
+  //   transport: Transport.RMQ,
+  //   options: {
+  //     urls: [settings().getRabbitMQConfig().url],
+  //     queue: queueName,
+  //     queueOptions: {
+  //       durable: true,
+  //     },
+  //   },
+  // }))
 
   await Promise.all(
     queueModuleFactory().map(async (q) => {
+      console.log(q)
       await appContext.connectMicroservice(q)
     }),
   )

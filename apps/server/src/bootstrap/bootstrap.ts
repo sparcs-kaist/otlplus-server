@@ -68,18 +68,6 @@ async function bootstrap() {
       ignoreMethods: ['GET', 'HEAD', 'OPTIONS', 'DELETE', 'PATCH', 'PUT', 'POST'],
     }),
   )
-
-  // Logs responses
-  // app.use(
-  //   morgan(':method :url :status :res[content-length] :response-time ms', {
-  //     stream: {
-  //       write: (message) => {
-  //         // console.log(formatMemoryUsage())
-  //         console.info(message.trim());
-  //       },
-  //     },
-  //   }),
-  // );
   const swaggerJsonPath = join(__dirname, '..', '..', 'docs', 'swagger.json')
   const swaggerDocument = JSON.parse(fs.readFileSync(swaggerJsonPath, 'utf-8'))
   if (process.env.NODE_ENV !== 'prod') {
@@ -110,7 +98,24 @@ async function bootstrap() {
   app.use(json({ limit: '100kb' }))
   app.useGlobalFilters(new UnexpectedExceptionFilter(), new HttpExceptionFilter<HttpException>())
   initializeDB(app.get(PrismaService))
-
+  // const q = {
+  //   transports: Transport.RMQ,
+  //   options: {
+  //     urls: [settings().getRabbitMQConfig().url],
+  //     ...settings().getRabbitMQConfig().queueConfig[0],
+  //   },
+  //
+  // }
+  // app.connectMicroservice({
+  //   transports: Transport.RMQ,
+  //   options: {
+  //     urls: [settings().getRabbitMQConfig().url],
+  //     ...settings().getRabbitMQConfig().queueConfig[0],
+  //   },
+  //
+  // })
+  // console.log(q)
+  // await app.startAllMicroservices()
   app.enableShutdownHooks()
   return app.listen(8000)
 }

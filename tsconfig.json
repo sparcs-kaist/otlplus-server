@@ -24,6 +24,8 @@
       "@otl/common/*": ["libs/common/src/*"],
       "@otl/prisma-client": ["libs/prisma-client/src"],
       "@otl/prisma-client/*": ["libs/prisma-client/src/*"],
+      "@otl/rmq": ["libs/rmq/src"],
+      "@otl/rmq/*": ["libs/rmq/src/*"],
       "@otl/server-nest/": ["apps/server/src"],
       "@otl/server-nest/*": ["apps/server/src/*"],
       "@otl/scholar-sync/": ["apps/scholar-sync/src"],
