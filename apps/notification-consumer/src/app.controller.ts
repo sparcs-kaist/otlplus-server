@@ -1,20 +1,20 @@
-import { Controller } from '@nestjs/common'
-import { EventPattern, Payload } from '@nestjs/microservices'
-import { AppDto } from '@otl/notification-consumer/dto'
+import { RabbitSubscribe } from '@golevelup/nestjs-rabbitmq'
+import { Injectable } from '@nestjs/common'
+import settings, { QueueNames } from '@otl/rmq/settings'
 
 import { AppService } from './app.service'
 
-@Controller()
+@Injectable()
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @EventPattern('app-force-update')
-  handleOrderPlaced(@Payload() data: AppDto) {
-    return this.appService.handleOrderPlaced(data)
+  @RabbitSubscribe(settings().getRabbitMQConfig().queueConfig[QueueNames.NOTI_AD_FCM])
+  handleOrderPlaced(msg: any) {
+    return this.appService.handleOrderPlaced(msg)
   }
 
-  @EventPattern('notification.info.fcm')
-  handleMessage(@Payload() data: AppDto) {
-    return this.appService.handleOrderPlaced(data)
+  @RabbitSubscribe(settings().getRabbitMQConfig().queueConfig[QueueNames.NOTI_INFO_FCM])
+  handleMessage(msg: any) {
+    return this.appService.handleOrderPlaced(msg)
   }
 }

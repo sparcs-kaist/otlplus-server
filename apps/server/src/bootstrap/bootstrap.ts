@@ -98,24 +98,6 @@ async function bootstrap() {
   app.use(json({ limit: '100kb' }))
   app.useGlobalFilters(new UnexpectedExceptionFilter(), new HttpExceptionFilter<HttpException>())
   initializeDB(app.get(PrismaService))
-  // const q = {
-  //   transports: Transport.RMQ,
-  //   options: {
-  //     urls: [settings().getRabbitMQConfig().url],
-  //     ...settings().getRabbitMQConfig().queueConfig[0],
-  //   },
-  //
-  // }
-  // app.connectMicroservice({
-  //   transports: Transport.RMQ,
-  //   options: {
-  //     urls: [settings().getRabbitMQConfig().url],
-  //     ...settings().getRabbitMQConfig().queueConfig[0],
-  //   },
-  //
-  // })
-  // console.log(q)
-  // await app.startAllMicroservices()
   app.enableShutdownHooks()
   return app.listen(8000)
 }

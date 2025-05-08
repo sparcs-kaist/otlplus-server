@@ -19,56 +19,36 @@ const getRabbitMQConfig = () => ({
   user: process.env.RABBITMQ_USER,
   password: process.env.RABBITMQ_PASSWORD,
   queueName: Object.values(QueueNames),
-  queueConfig: [
-    {
-      name: QueueNames.NOTI_INFO_FCM,
-      urls: [process.env.RABBITMQ_URL as string],
+  exchangeConfig: {
+    exchanges: [
+      {
+        name: 'notifications',
+        type: 'topic',
+      },
+    ],
+  },
+  queueConfig: {
+    NOTI_INFO_FCM: {
       exchange: 'notifications',
-      exchangeType: 'topic',
-      queue: 'notifications.info.fcm.queue',
       routingKey: '*.info.fcm.*',
-      queueOptions: { durable: true },
-      persistent: true,
-      noAck: false,
-      wildcards: true,
+      queue: 'notifications.info.fcm.queue',
     },
-    {
-      name: QueueNames.NOTI_AD_FCM,
-      urls: [process.env.RABBITMQ_URL as string],
+    NOTI_AD_FCM: {
       exchange: 'notifications',
-      exchangeType: 'topic',
-      queue: 'notifications.ad.fcm.queue',
       routingKey: '*.ad.fcm.*',
-      queueOptions: { durable: true },
-      persistent: true,
-      noAck: false,
-      wildcards: true,
+      queue: 'notifications.ad.fcm.queue',
     },
-    {
-      name: QueueNames.NOTI_NIGHT_AD_FCM,
-      urls: [process.env.RABBITMQ_URL as string],
+    NOTI_NIGHT_AD_FCM: {
       exchange: 'notifications',
-      exchangeType: 'topic',
-      queue: 'notifications.night-ad.fcm.queue',
       routingKey: '*.night-ad.fcm.*',
-      queueOptions: { durable: true },
-      persistent: true,
-      noAck: false,
-      wildcards: true,
+      queue: 'notifications.night-ad.fcm.queue',
     },
-    {
-      name: QueueNames.NOTI_EMAIL,
-      urls: [process.env.RABBITMQ_URL as string],
+    NOTI_EMAIL: {
       exchange: 'notifications',
-      exchangeType: 'topic',
-      queue: 'notifications.email.queue',
       routingKey: '*.email.*',
-      queueOptions: { durable: true },
-      persistent: true,
-      noAck: false,
-      wildcards: true,
+      queue: 'notifications.email.queue',
     },
-  ],
+  },
 })
 
 export default () => ({

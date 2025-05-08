@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common'
 import { RmqModule } from '@otl/rmq/rmq.module'
-import { QueueNames } from '@otl/rmq/settings'
 import { NOTIFICATION_IN_PORT } from '@otl/server-nest/modules/notification/domain/notification.in.public.port'
 import { NOTIFICATION_REPOSITORY } from '@otl/server-nest/modules/notification/domain/notification.repository'
 import { NotificationController } from '@otl/server-nest/modules/notification/notification.controller'
@@ -18,8 +17,7 @@ import { NotificationPrismaRepository } from '@otl/prisma-client/repositories/no
     },
     {
       provide: NOTIFICATION_IN_PORT,
-      useFactory: (notificationRepository, infoFCMClient, adFCMClient, nightAdFCMClient) => new NotificationService(notificationRepository, infoFCMClient, adFCMClient, nightAdFCMClient),
-      inject: [NOTIFICATION_REPOSITORY, ...Object.values(QueueNames)],
+      useClass: NotificationService,
     },
   ],
   controllers: [NotificationController],

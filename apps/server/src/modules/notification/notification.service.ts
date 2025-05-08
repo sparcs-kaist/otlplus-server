@@ -1,6 +1,5 @@
+import { AmqpConnection } from '@golevelup/nestjs-rabbitmq'
 import { Inject, Injectable } from '@nestjs/common'
-import { ClientProxy } from '@nestjs/microservices'
-import { QueueNames } from '@otl/rmq/settings'
 import { NotificationRequest, UserNotification } from '@otl/server-nest/modules/notification/domain/notification'
 import { NotificationInPort } from '@otl/server-nest/modules/notification/domain/notification.in.public.port'
 import {
@@ -16,9 +15,7 @@ import { NotificationException } from '@otl/common/exception/notification.except
 export class NotificationService implements NotificationInPort {
   constructor(
     @Inject(NOTIFICATION_REPOSITORY) private readonly notificationRepository: NotificationRepository,
-    @Inject(QueueNames.NOTI_INFO_FCM) private readonly infoFCMClient: ClientProxy,
-    @Inject(QueueNames.NOTI_AD_FCM) private readonly adFCMClient: ClientProxy,
-    @Inject(QueueNames.NOTI_NIGHT_AD_FCM) private readonly nightAdFCMClient: ClientProxy,
+    private readonly amqpConnection: AmqpConnection,
   ) {}
 
   changeNotificationPermission(_userId: number, _notificationId: number, _active: boolean): Promise<UserNotification> {
@@ -53,7 +50,7 @@ export class NotificationService implements NotificationInPort {
       isRead: false,
       requestId: uuid(),
     }
-    this.infoFCMClient.emit(`notification.info.fcm.${_deviceToken}`, notiRequest)
+    await this.amqpConnection.publish('notifications', `notifications.info.fcm.${_deviceToken}`, notiRequest)
     return notiRequest
   }
 
