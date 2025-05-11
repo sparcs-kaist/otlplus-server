@@ -5,6 +5,7 @@
 
 #
 /env/*
+/secrets/*
 apps/server/env/*
 apps/scholar-sync/env/*
 
@@ -47,4 +48,11 @@ volumes
 
 # redis
 .docker/redis/redis-data
+.docker/redis-scheduler/redis-data/*
 deploy/server/redis/redis-data
+
+# rabbitmq
+.docker/rabbitmq/rabbitmq-data
+
+# web-test
+/web-test/*

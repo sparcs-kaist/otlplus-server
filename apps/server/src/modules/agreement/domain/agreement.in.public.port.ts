@@ -8,4 +8,7 @@ export interface AgreementInPublicPort {
 
   // get agreement by userId and type
   findByUserIdAndType(userId: number, type: AgreementType): Promise<UserAgreement | null>
+
+  // create default Agreement setting for user
+  initialize(userId: number): Promise<UserAgreement[]>
 }

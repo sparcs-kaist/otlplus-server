@@ -28,7 +28,11 @@
       "@otl/common": ["../../libs/common/src"],
       "@otl/common/*": ["../../libs/common/src/*"],
       "@otl/rmq": ["../../libs/rmq/src"],
-      "@otl/rmq/*": ["../../libs/rmq/src/*"]
+      "@otl/rmq/*": ["../../libs/rmq/src/*"],
+      "@otl/server-nest/*": ["../../apps/server/src/*"],
+      "@otl/scholar-sync/domain": ["../../apps/scholar-sync/src/common/domain"],
+      "@otl/scholar-sync/domain/*": ["../../apps/scholar-sync/src/common/domain/*"],
+      "@otl/scholar-sync/clients/scholar/*": ["../../apps/scholar-sync/src/clients/scholar/*"]
     }
   },
   "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]

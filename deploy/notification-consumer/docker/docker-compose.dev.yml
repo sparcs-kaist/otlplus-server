@@ -1,0 +1,9 @@
+# docker-compose.yml
+version: '3.9'
+services:
+  nest-service:
+    image: my-nest-app
+    ports:
+      - '${EXTERNAL_PORT:-3001}:3000'
+    environment:
+      - NODE_ENV=production

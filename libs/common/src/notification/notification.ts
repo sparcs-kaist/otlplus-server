@@ -16,17 +16,19 @@ export class _UserNotification {
 
   userId!: number
 
-  notificationId!: number
+  notificationType!: NotificationType
 
   active!: boolean
 }
 
 export class _NotificationRequest {
-  notificationId!: number
+  id!: number | null
+
+  notificationType!: NotificationType
 
   userId!: number
 
-  content!: object
+  content!: { title: string, body: string }
 
   requestId!: string
 

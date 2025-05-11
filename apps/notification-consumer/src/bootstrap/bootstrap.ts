@@ -1,12 +1,20 @@
 // main.ts
 import { NestFactory } from '@nestjs/core'
+import settings from '@otl/notification-consumer/settings'
+import * as admin from 'firebase-admin'
+import { ServiceAccount } from 'firebase-admin'
 
 import { AppModule } from '../app.module'
 
 async function bootstrap() {
-  const appContext = await NestFactory.create(AppModule)
+  const app = await NestFactory.create(AppModule)
   // await appContext.startAllMicroservices()
   console.log('start')
-  await appContext.listen(3000)
+  const serviceAccount: ServiceAccount = settings().getFirebaseConfig()
+
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  })
+  await app.listen(3000)
 }
 bootstrap()

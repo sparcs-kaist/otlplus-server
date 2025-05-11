@@ -6,7 +6,7 @@ import {
   AGREEMENT_REPOSITORY,
   AgreementRepository,
 } from '@otl/server-nest/modules/agreement/domain/agreement.repository'
-import { UserAgreement, UserAgreementCreate } from '@otl/server-nest/modules/agreement/domain/UserAgreement'
+import { UserAgreement } from '@otl/server-nest/modules/agreement/domain/UserAgreement'
 import { StatusCodes } from 'http-status-codes'
 
 import { getCurrentMethodName } from '@otl/common'
@@ -65,25 +65,6 @@ export class AgreementPrivateService
       return await this.agreementRepository.update(agreement)
     }
     throw new OtlException(StatusCodes.NOT_FOUND, 'No Agreement with that Id', getCurrentMethodName())
-  }
-
-  async initialize(userId: number): Promise<UserAgreement[]> {
-    const agreements = await this.agreementRepository.findByUserId(userId)
-    const haveAllAgreements = agreements?.length === Object.values(AgreementType).length
-    if (!haveAllAgreements) {
-      const agreementTypes = Object.values(AgreementType)
-      const agreementList: UserAgreementCreate[] = []
-      agreementTypes.forEach((type) => {
-        const agreement = new UserAgreement()
-        agreement.userId = userId
-        agreement.agreementType = type
-        agreement.agreementStatus = false
-        agreement.modal = true
-        agreementList.push(agreement)
-      })
-      return await this.agreementRepository.upsertMany(agreementList)
-    }
-    return agreements
   }
 
   findByUserId(userId: number): Promise<UserAgreement[] | null> {

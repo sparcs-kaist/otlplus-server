@@ -1,4 +1,10 @@
-import { UserNotification, UserNotificationCreate } from '@otl/server-nest/modules/notification/domain/notification'
+import {
+  FCMNotificationRequest,
+  Notification,
+  NotificationRequestCreate,
+  UserNotification,
+  UserNotificationCreate,
+} from '@otl/server-nest/modules/notification/domain/notification'
 
 import { NotificationType } from '@otl/common/enum/notification'
 
@@ -10,10 +16,13 @@ export interface NotificationRepository {
   // get Notification By Type
   getNotification(type: NotificationType): Promise<Notification>
 
+  // get by Id
   findById(id: number): Promise<UserNotification | null>
 
+  // get by userId
   findByUserId(userId: number): Promise<UserNotification[] | null>
 
+  // get by userId and notificationType
   findByUserIdAndType(userId: number, type: NotificationType): Promise<UserNotification | null>
 
   // bulk update
@@ -21,7 +30,6 @@ export interface NotificationRepository {
 
   // bulk create
   createMany(notifications: UserNotificationCreate[]): Promise<UserNotification[]>
-
   // create and update
   save(notification: UserNotificationCreate): Promise<UserNotification>
   save(notification: UserNotification): Promise<UserNotification>
@@ -29,5 +37,14 @@ export interface NotificationRepository {
 
   // upsert
   upsert(notification: UserNotificationCreate): Promise<UserNotification>
-  upsertMany(notifications: UserNotificationCreate[]): Promise<UserNotificationCreate>
+  upsertMany(notifications: UserNotificationCreate[]): Promise<UserNotification[]>
+
+  // get notificationRequest with requestID(uuid)
+  getNotificationRequest(uuid: string): Promise<FCMNotificationRequest | null>
+  getNotificationRequestById(requestId: number): Promise<FCMNotificationRequest>
+
+  // create and update
+  saveRequest(notification: NotificationRequestCreate): Promise<FCMNotificationRequest>
+  saveRequest(notification: FCMNotificationRequest): Promise<FCMNotificationRequest>
+  saveRequest(notification: NotificationRequestCreate | FCMNotificationRequest): Promise<FCMNotificationRequest>
 }

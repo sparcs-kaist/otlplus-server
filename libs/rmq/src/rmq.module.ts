@@ -13,6 +13,7 @@ export class RmqModule {
     return RabbitMQModule.forRoot({
       exchanges: settings().getRabbitMQConfig().exchangeConfig.exchanges,
       uri: settings().getRabbitMQConfig().url as string,
+      enableControllerDiscovery: true,
     })
   }
 }

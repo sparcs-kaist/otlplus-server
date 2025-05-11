@@ -94,7 +94,7 @@ export class AgreementPrismaRepository implements AgreementRepository {
       },
     })
     return this.prisma.session_userprofile_agreement
-      .findUniqueOrThrow({
+      .findUnique({
         where: {
           userprofile_id_agreement_id: {
             userprofile_id: userId,
@@ -196,22 +196,7 @@ export class AgreementPrismaRepository implements AgreementRepository {
   }
 
   async updateMany(agreement: UserAgreement[]): Promise<UserAgreement[]> {
-    await this.prisma.session_userprofile_agreement
-      .updateMany({
-        where: {
-          id: {
-            in: agreement.map((e) => e.id),
-          },
-        },
-        data: {
-          agreement_status: true,
-        },
-      })
-      .then((e) => {
-        if (e == null) {
-          throw new OtlException(404, 'Agreement not found')
-        }
-      })
+    await Promise.all(agreement.map((a) => this.update(a)))
     const userAgreements = await this.prisma.session_userprofile_agreement.findMany({
       where: {
         id: {

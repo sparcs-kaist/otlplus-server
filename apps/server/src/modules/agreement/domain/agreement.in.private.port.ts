@@ -11,7 +11,4 @@ export interface AgreementInPrivatePort {
 
   // disAllow Agreement
   disallow(userId: number, agreementType: AgreementType): Promise<UserAgreement>
-
-  // create default Agreement setting for user
-  initialize(userId: number): Promise<UserAgreement[]>
 }

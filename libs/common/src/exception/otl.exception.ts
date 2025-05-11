@@ -1,12 +1,13 @@
+import { HttpException } from '@nestjs/common'
 import { getReasonPhrase, StatusCodes } from 'http-status-codes'
 
-export class OtlException extends Error {
+export class OtlException extends HttpException {
   public readonly code: number
 
   public readonly callee: string
 
-  constructor(code: number, message?: string, callee?: string) {
-    super(message)
+  constructor(code: number, message: string, callee?: string) {
+    super(message, code)
     this.name = 'OtlException'
     this.code = code
     this.callee = callee || 'Unknown'

@@ -2,7 +2,7 @@ import {
   Body, Controller, Delete, Get, Inject, Patch, Post, Query,
 } from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
-import { IDevice } from '@otl/server-nest/common/interfaces/INotification'
+import { IDevice } from '@otl/server-nest/common/interfaces/IDevice'
 import { DEVICE_IN_PORT, DeviceInPort } from '@otl/server-nest/modules/device/domain/device.in.port'
 import { StatusCodes } from 'http-status-codes'
 

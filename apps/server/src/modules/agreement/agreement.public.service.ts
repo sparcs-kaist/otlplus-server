@@ -4,7 +4,7 @@ import {
   AGREEMENT_REPOSITORY,
   AgreementRepository,
 } from '@otl/server-nest/modules/agreement/domain/agreement.repository'
-import { UserAgreement } from '@otl/server-nest/modules/agreement/domain/UserAgreement'
+import { UserAgreement, UserAgreementCreate } from '@otl/server-nest/modules/agreement/domain/UserAgreement'
 
 import { AgreementType } from '@otl/common/enum/agreement'
 
@@ -21,5 +21,24 @@ export class AgreementPublicService implements AgreementInPublicPort {
 
   async findByUserIdAndType(userId: number, type: AgreementType): Promise<UserAgreement | null> {
     return await this.agreementRepository.findByUserIdAndType(userId, type)
+  }
+
+  async initialize(userId: number): Promise<UserAgreement[]> {
+    const agreements = await this.agreementRepository.findByUserId(userId)
+    const haveAllAgreements = agreements?.length === Object.values(AgreementType).length
+    if (!haveAllAgreements) {
+      const agreementTypes = Object.values(AgreementType)
+      const agreementList: UserAgreementCreate[] = []
+      agreementTypes.forEach((type) => {
+        const agreement = new UserAgreement()
+        agreement.userId = userId
+        agreement.agreementType = type
+        agreement.agreementStatus = false
+        agreement.modal = true
+        agreementList.push(agreement)
+      })
+      return await this.agreementRepository.upsertMany(agreementList)
+    }
+    return agreements
   }
 }

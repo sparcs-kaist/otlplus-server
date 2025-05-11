@@ -11,7 +11,7 @@ export class UserException extends OtlException {
 
   public readonly code: number
 
-  constructor(code: number, message?: string, callee?: string) {
+  constructor(code: number, message: string, callee?: string) {
     super(code, message, callee)
     this.name = 'UserException'
     this.code = code
