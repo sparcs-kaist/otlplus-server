@@ -1,11 +1,11 @@
 version: '3.4'
 
 services:
-  back:
+  scholar-sync-local:
     container_name: otlplus-scholar-sync-nest-local
     platform: linux/amd64
     env_file:
-      - ../../../apps/scholar-sync/env/.env.local
+      - ../../../env/.env.local
     environment:
       - NODE_ENV=local
       - DOCKER_DEPLOY=true
@@ -22,5 +22,5 @@ services:
     volumes:
       - '/etc/timezone:/etc/timezone:ro'
       - '../../../apps/scholar-sync/logs:/var/www/otlplus/apps/scholar-sync/logs'
-    working_dir: /var/www/otlplus/apps/scholar-sync
-    command: node dist/src/bootstrap/bootstrap.js
+    working_dir: /var/www/otlplus/
+    command: node dist/apps/scholar-sync/apps/scholar-sync/src/bootstrap/bootstrap.js

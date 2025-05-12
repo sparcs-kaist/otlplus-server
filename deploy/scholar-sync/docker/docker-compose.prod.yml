@@ -1,11 +1,11 @@
 version: '3.4'
 
 services:
-  back:
+  scholar-sync-prod:
     container_name: otlplus-scholar-sync-nest-prod
     platform: linux/amd64
     env_file:
-      - ../../../apps/scholar-sync/env/.env.prod
+      - ../../../env/.env.prod
     environment:
       - NODE_ENV=prod
       - DOCKER_DEPLOY=true
@@ -16,7 +16,7 @@ services:
     restart: always
     tty: true
     ports:
-      - '9000:9000'
+      - '59000:9000'
     expose:
       - '9000'
     volumes:

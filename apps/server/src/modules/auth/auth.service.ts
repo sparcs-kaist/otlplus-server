@@ -1,14 +1,18 @@
-import { Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { ESSOUser } from '@otl/api-interface/src/entities/ESSOUser';
-import { Prisma, session_userprofile } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
-import { UserRepository } from '../../prisma/repositories/user.repository';
-import settings from '../../settings';
-import { SyncTakenLectureService } from '../sync/syncTakenLecture.service';
+import { Injectable, NotFoundException } from '@nestjs/common'
+import { JwtService } from '@nestjs/jwt'
+import settings from '@otl/server-nest/settings'
+import { Prisma, session_userprofile } from '@prisma/client'
+import * as bcrypt from 'bcrypt'
+
+import { ESSOUser } from '@otl/prisma-client/entities/ESSOUser'
+import { UserRepository } from '@otl/prisma-client/repositories'
+
+import { SyncTakenLectureService } from '../sync/syncTakenLecture.service'
 
 @Injectable()
 export class AuthService {
+  private readonly jwtConfig = settings().getJwtConfig()
+
   constructor(
     private readonly userRepository: UserRepository,
     private readonly jwtService: JwtService,
@@ -16,47 +20,52 @@ export class AuthService {
   ) {}
 
   public async findBySid(sid: string) {
-    return this.userRepository.findBySid(sid);
+    return this.userRepository.findBySid(sid)
+  }
+
+  public async findByStudentId(studentId: number) {
+    return this.userRepository.findByStudentId(studentId)
   }
 
   public async ssoLogin(ssoProfile: ESSOUser.SSOUser) {
-    const sid = ssoProfile.sid;
-    let user = await this.findBySid(sid);
+    const { sid } = ssoProfile
+    let user = await this.findBySid(sid)
 
-    const kaistInfo = ssoProfile.kaist_info;
-    const studentId = kaistInfo.ku_std_no ?? '';
+    const kaistInfo = ssoProfile.kaist_info
+    const studentId = kaistInfo.ku_std_no ?? ''
 
-    const { accessToken, ...accessTokenOptions } = this.getCookieWithAccessToken(sid);
-    const { refreshToken, ...refreshTokenOptions } = this.getCookieWithRefreshToken(sid);
+    const { accessToken, ...accessTokenOptions } = this.getCookieWithAccessToken(sid)
+    const { refreshToken, ...refreshTokenOptions } = this.getCookieWithRefreshToken(sid)
 
-    const salt = await bcrypt.genSalt(Number(process.env.saltRounds));
-    const encryptedRefreshToken = await bcrypt.hash(refreshToken, salt);
+    const salt = await bcrypt.genSalt(Number(process.env.saltRounds))
+    const encryptedRefreshToken = await bcrypt.hash(refreshToken, salt)
 
     if (!user) {
       user = await this.createUser(
         sid,
-        ssoProfile['email'],
+        ssoProfile.email,
         studentId,
-        ssoProfile['first_name'],
-        ssoProfile['last_name'],
+        ssoProfile.first_name,
+        ssoProfile.last_name,
         encryptedRefreshToken,
-        ssoProfile['kaist_info']['ku_kname'] ?? ssoProfile['first_name'] + ' ' + ssoProfile['last_name'],
-        ssoProfile['kaist_info']['displayname'] ?? ssoProfile['first_name'] + ' ' + ssoProfile['last_name'],
-      );
-      await this.syncTakenLecturesService.repopulateTakenLectureForStudent(user.id);
-    } else {
-      const prev_student_id = user.student_id;
+        ssoProfile.kaist_info.ku_kname ?? `${ssoProfile.first_name} ${ssoProfile.last_name}`,
+        ssoProfile.kaist_info.displayname ?? `${ssoProfile.first_name} ${ssoProfile.last_name}`,
+      )
+      await this.syncTakenLecturesService.repopulateTakenLectureForStudent(user.id)
+    }
+    else {
+      const prev_student_id = user.student_id
       const updateData = {
-        first_name: ssoProfile['first_name'],
-        last_name: ssoProfile['last_name'],
+        first_name: ssoProfile.first_name,
+        last_name: ssoProfile.last_name,
         student_id: studentId,
         refresh_token: encryptedRefreshToken,
-        name_kor: ssoProfile['kaist_info']['ku_kname'] ?? ssoProfile['first_name'] + ' ' + ssoProfile['last_name'],
-        name_eng: ssoProfile['kaist_info']['displayname'] ?? ssoProfile['first_name'] + ' ' + ssoProfile['last_name'],
-      };
-      user = await this.updateUser(user.id, updateData);
+        name_kor: ssoProfile.kaist_info.ku_kname ?? `${ssoProfile.first_name} ${ssoProfile.last_name}`,
+        name_eng: ssoProfile.kaist_info.displayname ?? `${ssoProfile.first_name} ${ssoProfile.last_name}`,
+      }
+      user = await this.updateUser(user.id, updateData)
       if (prev_student_id !== studentId) {
-        await this.syncTakenLecturesService.repopulateTakenLectureForStudent(user.id);
+        await this.syncTakenLecturesService.repopulateTakenLectureForStudent(user.id)
       }
     }
 
@@ -65,21 +74,19 @@ export class AuthService {
       accessTokenOptions,
       refreshToken,
       refreshTokenOptions,
-    };
+    }
   }
-
-  public getCookieWithToken<T extends 'refreshToken' | 'accessToken'>(sid: string) {}
 
   public getCookieWithAccessToken(sid: string) {
     const payload = {
-      sid: sid,
-    };
+      sid,
+    }
 
-    const jwtConfig = settings().getJwtConfig();
+    const jwtConfig = settings().getJwtConfig()
     const token = this.jwtService.sign(payload, {
       secret: jwtConfig.secret,
-      expiresIn: jwtConfig.signOptions.expiresIn + 's',
-    });
+      expiresIn: `${jwtConfig.signOptions.expiresIn}s`,
+    })
     return {
       accessToken: token,
       path: '/',
@@ -87,27 +94,27 @@ export class AuthService {
       sameSite: 'none' as const,
       maxAge: Number(jwtConfig.signOptions.expiresIn) * 1000,
       secure: true,
-    };
+    }
   }
 
   public getCookieWithRefreshToken(sid: string) {
     const payload = {
-      sid: sid,
-    };
+      sid,
+    }
 
-    const jwtConfig = settings().getJwtConfig();
+    const jwtConfig = settings().getJwtConfig()
     const refreshToken = this.jwtService.sign(payload, {
       secret: jwtConfig.secret,
-      expiresIn: jwtConfig.signOptions.refreshExpiresIn + 's',
-    });
+      expiresIn: `${jwtConfig.signOptions.refreshExpiresIn}s`,
+    })
     return {
-      refreshToken: refreshToken,
+      refreshToken,
       path: '/',
       httpOnly: true,
       sameSite: 'none' as const,
       maxAge: Number(jwtConfig.signOptions.refreshExpiresIn) * 1000,
       secure: true,
-    };
+    }
   }
 
   async createUser(
@@ -121,8 +128,8 @@ export class AuthService {
     nameEng: string,
   ): Promise<session_userprofile> {
     const user = {
-      sid: sid,
-      email: email,
+      sid,
+      email,
       first_name: firstName,
       last_name: lastName,
       date_joined: new Date(),
@@ -130,11 +137,28 @@ export class AuthService {
       refresh_token: refreshToken,
       name_kor: nameKor,
       name_eng: nameEng,
-    };
-    return await this.userRepository.createUser(user);
+    }
+    return await this.userRepository.createUser(user)
   }
 
   async updateUser(userId: number, user: Prisma.session_userprofileUpdateInput): Promise<session_userprofile> {
-    return await this.userRepository.updateUser(userId, user);
+    return await this.userRepository.updateUser(userId, user)
+  }
+
+  async tokenRefresh(refreshToken: any) {
+    const payload = await this.jwtService.verifyAsync(refreshToken, {
+      secret: this.jwtConfig.secret,
+      ignoreExpiration: false,
+    })
+    const user = await this.findBySid(payload.sid)
+    if (!user) throw new NotFoundException('user is not found')
+    const { accessToken, ...accessTokenOptions } = this.getCookieWithAccessToken(payload.sid)
+    const { refreshToken: newRefreshToken, ...refreshTokenOptions } = this.getCookieWithRefreshToken(payload.sid)
+    return {
+      accessToken,
+      accessTokenOptions,
+      refreshToken: newRefreshToken,
+      refreshTokenOptions,
+    }
   }
 }

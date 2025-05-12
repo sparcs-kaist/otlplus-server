@@ -1,10 +1,12 @@
-import { Module } from '@nestjs/common';
-import { ShareController } from './share.controller';
-import { ShareService } from './share.service';
-import { TimetablesModule } from '../timetables/timetables.module';
-import { PrismaModule } from '@src/prisma/prisma.module';
-import { SemestersModule } from '../semesters/semesters.module';
-import { LecturesModule } from '../lectures/lectures.module';
+import { Module } from '@nestjs/common'
+
+import { PrismaModule } from '@otl/prisma-client/prisma.module'
+
+import { LecturesModule } from '../lectures/lectures.module'
+import { SemestersModule } from '../semesters/semesters.module'
+import { TimetablesModule } from '../timetables/timetables.module'
+import { ShareController } from './share.controller'
+import { ShareService } from './share.service'
 
 @Module({
   imports: [PrismaModule, TimetablesModule, SemestersModule, LecturesModule],

@@ -1,30 +1,42 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
-import { session_userprofile } from '@prisma/client';
-import { GetUser } from '@src/common/decorators/get-user.decorator';
-import { Public } from '@src/common/decorators/skip-auth.decorator';
-import { LecturesService } from './lectures.service';
-import { ILecture, IReview } from '@otl/api-interface/src/interfaces';
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager'
+import {
+  Controller, Get, Param, Query, UseInterceptors,
+} from '@nestjs/common'
+import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
+import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator'
+import { ILecture, IReview } from '@otl/server-nest/common/interfaces'
+import { session_userprofile } from '@prisma/client'
+
+import { RedisTTL } from '@otl/common/enum/time'
+
+import { LecturesService } from './lectures.service'
 
 @Controller('api/lectures')
 export class LecturesController {
   constructor(private readonly LectureService: LecturesService) {}
 
   @Public()
+  @CacheTTL(RedisTTL.HOUR)
+  @UseInterceptors(CacheInterceptor)
   @Get()
   async getLectures(@Query() query: ILecture.QueryDto): Promise<ILecture.Detail[]> {
-    return await this.LectureService.getLectureByFilter(query);
+    return await this.LectureService.getLectureByFilter(query)
   }
 
   @Public()
+  @CacheTTL(RedisTTL.HOUR)
+  @UseInterceptors(CacheInterceptor)
   @Get('autocomplete')
   async getLectureAutocomplete(@Query() query: ILecture.AutocompleteQueryDto): Promise<string | undefined> {
-    return await this.LectureService.getLectureAutocomplete(query);
+    return await this.LectureService.getLectureAutocomplete(query)
   }
 
   @Public()
+  @CacheTTL(RedisTTL.HOUR)
+  @UseInterceptors(CacheInterceptor)
   @Get(':id')
   async getLectureById(@Param('id') id: number): Promise<ILecture.Detail> {
-    return await this.LectureService.getLectureById(id);
+    return await this.LectureService.getLectureById(id)
   }
 
   @Public()
@@ -33,8 +45,8 @@ export class LecturesController {
     @Query() query: IReview.LectureReviewsQueryDto,
     @Param('lectureId') lectureId: number,
     @GetUser() user: session_userprofile,
-  ): Promise<(IReview.Basic & { userspecific_is_liked: boolean })[]> {
-    return await this.LectureService.getLectureReviews(user, lectureId, query);
+  ): Promise<IReview.WithLiked[]> {
+    return await this.LectureService.getLectureReviews(user, lectureId, query)
   }
 
   @Public()
@@ -43,7 +55,7 @@ export class LecturesController {
     @Query() query: IReview.LectureReviewsQueryDto,
     @Param('lectureId') lectureId: number,
     @GetUser() user: session_userprofile,
-  ): Promise<(IReview.Basic & { userspecific_is_liked: boolean })[]> {
-    return await this.LectureService.getLectureRelatedReviews(user, lectureId, query);
+  ): Promise<IReview.WithLiked[]> {
+    return await this.LectureService.getLectureRelatedReviews(user, lectureId, query)
   }
 }

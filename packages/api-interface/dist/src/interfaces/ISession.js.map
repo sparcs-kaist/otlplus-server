@@ -1,0 +1,1 @@
+{"version":3,"file":"ISession.js","sourceRoot":"","sources":["../../../src/interfaces/ISession.ts"],"names":[],"mappings":";;;;;;;;;;;;AAAA,qDAA2C;AAE3C,IAAiB,QAAQ,CAKxB;AALD,WAAiB,QAAQ;IACvB,MAAa,sBAAsB;KAGlC;IADC;QADC,IAAA,0BAAQ,EAAC,EAAE,IAAI,EAAE,IAAI,EAAE,CAAC;;kEACC;IAFf,+BAAsB,yBAGlC,CAAA;AACH,CAAC,EALgB,QAAQ,wBAAR,QAAQ,QAKxB"}

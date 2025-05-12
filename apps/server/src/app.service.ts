@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from './prisma/prisma.service';
+import { Injectable } from '@nestjs/common'
+
+import { PrismaService } from '@otl/prisma-client/prisma.service'
 
 @Injectable()
 export class AppService {
@@ -8,6 +9,6 @@ export class AppService {
   public async prismaTest() {}
 
   getHello(): string {
-    return 'Hello World!';
+    return 'Hello World!'
   }
 }

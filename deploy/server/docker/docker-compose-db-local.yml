@@ -19,3 +19,17 @@ services:
     command: |
       --sql_mode=NO_ENGINE_SUBSTITUTION --default_storage_engine=InnoDB 
       --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+  mysqld-exporter:
+    image: prom/mysqld-exporter
+    container_name: mysqld-exporter
+    restart: unless-stopped
+    ports:
+      - '9104:9104'
+    volumes:
+      - ./exporter.my.cnf:/cfg/.my.cnf:ro
+    command:
+      - '--config.my-cnf=/cfg/.my.cnf'
+      - '--mysqld.address=db:3306'
+    depends_on:
+      - db

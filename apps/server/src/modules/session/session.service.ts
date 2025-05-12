@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { UserRepository } from '@src/prisma/repositories/user.repository';
-import { Transactional } from '@nestjs-cls/transactional';
-import { EUser } from '@otl/api-interface/src/entities/EUser';
+import { Injectable } from '@nestjs/common'
+import { Transactional } from '@nestjs-cls/transactional'
+
+import { EUser } from '@otl/prisma-client/entities'
+import { UserRepository } from '@otl/prisma-client/repositories'
 
 @Injectable()
 export class SessionService {
@@ -9,6 +10,6 @@ export class SessionService {
 
   @Transactional()
   async changeFavoriteDepartments(userId: number, departmentIds: number[]): Promise<EUser.Basic> {
-    return this.userRepository.changeFavoriteDepartments(userId, departmentIds);
+    return this.userRepository.changeFavoriteDepartments(userId, departmentIds)
   }
 }

@@ -1,8 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { session_userprofile } from '@prisma/client';
-import { PrismaService } from '@otl/scholar-sync/prisma/prisma.service';
-import { SyncService } from '@otl/scholar-sync/modules/sync/sync.service';
 import { AppModule } from '@otl/scholar-sync/app.module';
+import { SyncService } from '@otl/scholar-sync/modules/sync/sync.service';
+import { session_userprofile } from '@prisma/client';
+
+import { PrismaService } from '@otl/prisma-client';
 
 // This tests on test database only. Add `DATABASE_URL` with `otlplus_test` database to run this test.
 
@@ -87,7 +88,7 @@ const lectureBase = {
   LECTURE_YEAR: 3000,
   LECTURE_TERM: 1,
   SUBJECT_NO: lectureData[0].code,
-  LECTURE_CLASS: lectureData[0].class_no + ' ',
+  LECTURE_CLASS: `${lectureData[0].class_no} `,
   DEPT_ID: departmentData[0].id,
   DEPT_NAME: departmentData[0].name,
   E_DEPT_NAME: departmentData[0].name_en,
@@ -144,7 +145,7 @@ const classtimeBase = {
   LECTURE_YEAR: 3000,
   LECTURE_TERM: 1,
   SUBJECT_NO: lectureData[0].code,
-  LECTURE_CLASS: lectureData[0].class_no + ' ',
+  LECTURE_CLASS: `${lectureData[0].class_no} `,
   DEPT_ID: lectureData[0].department_id,
   LECTURE_DAY: 1,
   LECTURE_BEGIN: '1900-01-01 09:00:00.0',
@@ -169,7 +170,7 @@ const examtimeBase = {
   LECTURE_YEAR: 3000,
   LECTURE_TERM: 1,
   SUBJECT_NO: lectureData[0].code,
-  LECTURE_CLASS: lectureData[0].class_no + ' ',
+  LECTURE_CLASS: `${lectureData[0].class_no} `,
   DEPT_ID: lectureData[0].department_id,
   EXAM_DAY: 1,
   EXAM_BEGIN: '1900-01-01 09:00:00.0',
@@ -216,10 +217,10 @@ maybe('SyncScholarDBService', () => {
     if (result.courses.errors.length > 0) console.error(result.courses.errors);
     if (result.lectures.errors.length > 0) console.error(result.lectures.errors);
     if (result.professors.errors.length > 0) console.error(result.professors.errors);
-    expect(result.departments.errors.length).toBe(0);
-    expect(result.courses.errors.length).toBe(0);
-    expect(result.lectures.errors.length).toBe(0);
-    expect(result.professors.errors.length).toBe(0);
+    expect(result.departments.errors).toHaveLength(0);
+    expect(result.courses.errors).toHaveLength(0);
+    expect(result.lectures.errors).toHaveLength(0);
+    expect(result.professors.errors).toHaveLength(0);
   }
 
   describe('syncScholarDB', () => {
@@ -260,7 +261,7 @@ maybe('SyncScholarDBService', () => {
         charges: [],
       });
 
-      expect(result.departments.created.length).toBe(1);
+      expect(result.departments.created).toHaveLength(1);
       checkNoError(result);
 
       const department = await prisma.subject_department.findFirst({
@@ -291,7 +292,7 @@ maybe('SyncScholarDBService', () => {
         charges: [],
       });
 
-      expect(result.departments.updated.length).toBe(1);
+      expect(result.departments.updated).toHaveLength(1);
       checkNoError(result);
 
       const department = await prisma.subject_department.findFirst({
@@ -324,7 +325,7 @@ maybe('SyncScholarDBService', () => {
         charges: [],
       });
 
-      expect(result.courses.created.length).toBe(1);
+      expect(result.courses.created).toHaveLength(1);
       checkNoError(result);
 
       const course = await prisma.subject_course.findFirst({
@@ -357,7 +358,7 @@ maybe('SyncScholarDBService', () => {
         charges: [],
       });
 
-      expect(result.courses.updated.length).toBe(1);
+      expect(result.courses.updated).toHaveLength(1);
       checkNoError(result);
 
       const updatedCourse = await prisma.subject_course.findFirst({
@@ -380,7 +381,7 @@ maybe('SyncScholarDBService', () => {
         lectures: [
           {
             ...lectureBase,
-            SUBJECT_NO: departmentData[0].code + '.200', // Use the same department code as the existing course
+            SUBJECT_NO: `${departmentData[0].code}.200`, // Use the same department code as the existing course
             OLD_NO: existingCourse.old_code,
             DEPT_ID: existingCourse.department_id,
             SUB_TITLE: `${existingCourse.title}<new>`,
@@ -391,8 +392,8 @@ maybe('SyncScholarDBService', () => {
         charges: [],
       });
 
-      expect(result.lectures.updated.length).toBe(0);
-      expect(result.lectures.created.length).toBe(1);
+      expect(result.lectures.updated).toHaveLength(0);
+      expect(result.lectures.created).toHaveLength(1);
       checkNoError(result);
 
       const lecture = await prisma.subject_lecture.findFirst({
@@ -431,8 +432,8 @@ maybe('SyncScholarDBService', () => {
         charges: [],
       });
 
-      expect(result.lectures.updated.length).toBe(1);
-      expect(result.lectures.updated.length).toBe(1);
+      expect(result.lectures.updated).toHaveLength(1);
+      expect(result.lectures.updated).toHaveLength(1);
       checkNoError(result);
 
       const updatedLecture = await prisma.subject_lecture.findFirst({
@@ -460,7 +461,7 @@ maybe('SyncScholarDBService', () => {
         charges: [],
       });
 
-      expect(result.lectures.deleted.length).toBe(lectureData.length);
+      expect(result.lectures.deleted).toHaveLength(lectureData.length);
       checkNoError(result);
 
       const deletedLectureCount = await prisma.subject_lecture.count({
@@ -491,7 +492,7 @@ maybe('SyncScholarDBService', () => {
         ],
       });
 
-      expect(result.professors.created.length).toBe(1);
+      expect(result.professors.created).toHaveLength(1);
       checkNoError(result);
 
       const professor = await prisma.subject_professor.findFirst({
@@ -528,7 +529,7 @@ maybe('SyncScholarDBService', () => {
         ],
       });
 
-      expect(result.professors.updated.length).toBe(1);
+      expect(result.professors.updated).toHaveLength(1);
       checkNoError(result);
 
       const updatedProfessor = await prisma.subject_professor.findFirst({
@@ -572,10 +573,10 @@ maybe('SyncScholarDBService', () => {
         ],
       });
 
-      expect(result.professors.updated.length).toBe(0);
-      expect(result.professors.created.length).toBe(0);
-      expect(result.lectures.updated.length).toBe(0);
-      expect(result.lectures.chargeUpdated.length).toBe(1);
+      expect(result.professors.updated).toHaveLength(0);
+      expect(result.professors.created).toHaveLength(0);
+      expect(result.lectures.updated).toHaveLength(0);
+      expect(result.lectures.chargeUpdated).toHaveLength(1);
       checkNoError(result);
 
       expect(result.lectures.chargeUpdated[0]).toMatchObject({
@@ -636,9 +637,9 @@ maybe('SyncScholarDBService', () => {
         ],
       });
 
-      expect(result.updated.length).toBe(2);
-      expect(result.updated.filter((l: any) => l.lecture === existingLecture.code)[0].added.length).toBe(1);
-      expect(result.updated.filter((l: any) => l.lecture === lectureData[0].code)[0].removed.length).toBe(2);
+      expect(result.updated).toHaveLength(2);
+      expect(result.updated.filter((l: any) => l.lecture === existingLecture.code)[0].added).toHaveLength(1);
+      expect(result.updated.filter((l: any) => l.lecture === lectureData[0].code)[0].removed).toHaveLength(2);
 
       const classtime = await prisma.subject_classtime.findFirst({
         where: { lecture_id: existingLecture.id },
@@ -671,9 +672,9 @@ maybe('SyncScholarDBService', () => {
         ],
       });
 
-      expect(result.updated.length).toBe(1);
-      expect(result.updated[0].added.length).toBe(1);
-      expect(result.updated[0].removed.length).toBe(2);
+      expect(result.updated).toHaveLength(1);
+      expect(result.updated[0].added).toHaveLength(1);
+      expect(result.updated[0].removed).toHaveLength(2);
 
       const updatedClasstime = await prisma.subject_classtime.findFirst({});
 
@@ -706,7 +707,7 @@ maybe('SyncScholarDBService', () => {
         ],
       });
 
-      expect(result.updated.length).toBe(0);
+      expect(result.updated).toHaveLength(0);
     });
   });
 
@@ -761,9 +762,9 @@ maybe('SyncScholarDBService', () => {
         ],
       });
 
-      expect(result.updated.length).toBe(2);
-      expect(result.updated.filter((l: any) => l.lecture === existingLecture.code)[0].added.length).toBe(1);
-      expect(result.updated.filter((l: any) => l.lecture === lectureData[0].code)[0].removed.length).toBe(1);
+      expect(result.updated).toHaveLength(2);
+      expect(result.updated.filter((l: any) => l.lecture === existingLecture.code)[0].added).toHaveLength(1);
+      expect(result.updated.filter((l: any) => l.lecture === lectureData[0].code)[0].removed).toHaveLength(1);
 
       const examtime = await prisma.subject_examtime.findFirst({
         where: { lecture_id: existingLecture.id },
@@ -795,9 +796,9 @@ maybe('SyncScholarDBService', () => {
         ],
       });
 
-      expect(result.updated.length).toBe(1);
-      expect(result.updated[0].added.length).toBe(1);
-      expect(result.updated[0].removed.length).toBe(1);
+      expect(result.updated).toHaveLength(1);
+      expect(result.updated[0].added).toHaveLength(1);
+      expect(result.updated[0].removed).toHaveLength(1);
 
       const updatedExamtime = await prisma.subject_examtime.findFirst({});
 
@@ -822,7 +823,7 @@ maybe('SyncScholarDBService', () => {
         ],
       });
 
-      expect(result.updated.length).toBe(0);
+      expect(result.updated).toHaveLength(0);
     });
   });
 });

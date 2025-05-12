@@ -1,33 +1,34 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { session_userprofile } from '@prisma/client';
-import { ReviewProhibited } from '@src/common/decorators/prohibit-review.decorator';
-import { GetUser } from '@src/common/decorators/get-user.decorator';
-import { Public } from '@src/common/decorators/skip-auth.decorator';
-import { ReviewsService } from './reviews.service';
-import EReviewVote = EReview.EReviewVote;
-import { EReview } from '@otl/api-interface/src/entities/EReview';
-import { IReview } from '@otl/api-interface/src/interfaces';
-import { toJsonReviewVote } from '@src/common/serializer/review.serializer';
-import IReviewVote = IReview.IReviewVote;
+import {
+  Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post, Query,
+} from '@nestjs/common'
+import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
+import { ReviewProhibited } from '@otl/server-nest/common/decorators/prohibit-review.decorator'
+import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator'
+import { IReview } from '@otl/server-nest/common/interfaces'
+import { toJsonReviewVote } from '@otl/server-nest/common/serializer/review.serializer'
+import { session_userprofile } from '@prisma/client'
+
+import { ReviewsService } from './reviews.service'
 
 @Controller('api/reviews')
 export class ReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}
+
   @Public()
   @Get()
   async getReviews(
     @Query() reviewsParam: IReview.QueryDto,
     @GetUser() user: session_userprofile,
-  ): Promise<(IReview.Basic & { userspecific_is_liked: boolean })[] | number> {
+  ): Promise<IReview.WithLiked[] | number> {
     if (reviewsParam.response_type === 'count') {
       const reviewsCount = await this.reviewsService.getReviewsCount(
         reviewsParam.lecture_year,
         reviewsParam.lecture_semester,
-      );
-      return reviewsCount;
+      )
+      return reviewsCount
     }
-    const result = await this.reviewsService.getReviews(reviewsParam, user);
-    return result;
+    const result = await this.reviewsService.getReviews(reviewsParam, user)
+    return result
   }
 
   @ReviewProhibited()
@@ -35,13 +36,12 @@ export class ReviewsController {
   async createReviews(
     @Body() reviewsBody: IReview.CreateDto,
     @GetUser() user: session_userprofile,
-  ): Promise<IReview.Basic & { userspecific_is_liked: boolean }> {
+  ): Promise<IReview.WithLiked> {
     if (user) {
-      const result = await this.reviewsService.createReviews(reviewsBody, user);
-      return result;
-    } else {
-      throw new HttpException("Can't find user", 401);
+      const result = await this.reviewsService.createReviews(reviewsBody, user)
+      return result
     }
+    throw new HttpException('Can\'t find user', 401)
   }
 
   @Public()
@@ -49,8 +49,8 @@ export class ReviewsController {
   async getReviewInstance(
     @Param('reviewId') reviewId: number,
     @GetUser() user: session_userprofile,
-  ): Promise<IReview.Basic & { userspecific_is_liked: boolean }> {
-    return await this.reviewsService.getReviewById(reviewId, user);
+  ): Promise<IReview.WithLiked> {
+    return await this.reviewsService.getReviewById(reviewId, user)
   }
 
   @Patch(':reviewId')
@@ -58,25 +58,40 @@ export class ReviewsController {
     @Body() reviewsBody: IReview.UpdateDto,
     @Param('reviewId') reviewId: number,
     @GetUser() user: session_userprofile,
-  ): Promise<IReview.Basic & { userspecific_is_liked: boolean }> {
+  ): Promise<IReview.WithLiked> {
     if (user) {
-      return await this.reviewsService.updateReviewById(reviewId, user, reviewsBody);
-    } else {
-      throw new HttpException("Can't find user", 401);
+      return await this.reviewsService.updateReviewById(reviewId, user, reviewsBody)
     }
+    throw new HttpException('Can\'t find user', 401)
   }
 
   @Post(':reviewId/like')
   async likeReviewInstance(
     @Param('reviewId') reviewId: number,
     @GetUser() user: session_userprofile,
-  ): Promise<IReviewVote.Basic> {
-    const reviewVote = await this.reviewsService.findReviewVote(reviewId, user);
+  ): Promise<IReview.IReviewVote.Basic> {
+    const reviewVote = await this.reviewsService.findReviewVote(reviewId, user)
     if (reviewVote) {
-      throw new HttpException('Already Liked', HttpStatus.BAD_REQUEST);
-    } else {
-      const result = await this.reviewsService.createReviewVote(reviewId, user);
-      return toJsonReviewVote(result);
+      throw new HttpException('Already Liked', HttpStatus.BAD_REQUEST)
+    }
+    else {
+      const result = await this.reviewsService.createReviewVote(reviewId, user)
+      return toJsonReviewVote(result)
+    }
+  }
+
+  @Delete(':reviewId/like')
+  async unlikeReview(
+    @Param('reviewId') reviewId: number,
+    @GetUser() user: session_userprofile,
+  ): Promise<IReview.IReviewVote.Basic> {
+    const reviewVote = await this.reviewsService.findReviewVote(reviewId, user)
+    if (!reviewVote) {
+      throw new HttpException('Already UnLiked', HttpStatus.BAD_REQUEST)
+    }
+    else {
+      const result = await this.reviewsService.deleteReviewVote(reviewId, user)
+      return toJsonReviewVote(result)
     }
   }
 }
