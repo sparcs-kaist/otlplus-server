@@ -1,11 +1,14 @@
-import { ICourse } from '@otl/server-nest/common/interfaces/ICourse'
-import { IDepartment } from '@otl/server-nest/common/interfaces/IDepartment'
-import { IProfessor } from '@otl/server-nest/common/interfaces/IProfessor'
-import { ITimetable } from '@otl/server-nest/common/interfaces/ITimetable'
 import { Transform, Type } from 'class-transformer'
 import {
   IsInt, IsNumber, IsOptional, IsString,
 } from 'class-validator'
+
+import { TimeBlock } from '@otl/common/enum/time'
+
+import { ICourse } from './ICourse'
+import { IDepartment } from './IDepartment'
+import { IProfessor } from './IProfessor'
+import { ITimetable } from './ITimetable'
 
 export namespace ILecture {
   export interface Classtime {
@@ -116,6 +119,24 @@ export namespace ILecture {
   export interface UserTaken extends Omit<Basic, 'department'> {
     classTime: Classtime
     department: IDepartment.Basic
+  }
+
+  export interface Summary {
+    id: number // lecture.id
+    course_id: number // course.id, color 표기용
+    title: string
+    title_en: string
+    professor_name: string // 여러명일 경우 join쳐서 줌
+    professor_name_en: string
+    classroom: string
+    classroom_en: string
+
+    timeBlocks: TimeBlock[]
+  }
+
+  export interface Detail2 extends Detail {
+    // 원래 detail
+    timeBlocks: TimeBlock[]
   }
 
   export class QueryDto extends ICourse.Query {

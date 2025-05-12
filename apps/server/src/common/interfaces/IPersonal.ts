@@ -1,4 +1,5 @@
-import { TimeBlock, TimeTableColorEnum } from './constants'
+import { TimeTableColorEnum } from '@otl/common/enum/color'
+import { TimeBlock } from '@otl/common/enum/time'
 
 export namespace IPersonal {
   export interface Block {

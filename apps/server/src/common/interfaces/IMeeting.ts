@@ -1,4 +1,5 @@
-import { SemesterEnum, TimeBlock, TimeBlockDay } from './constants'
+import { SemesterEnum, TimeBlock, TimeBlockDay } from '@otl/common/enum/time'
+
 import { ILecture } from './ILecture'
 import { IPersonal } from './IPersonal'
 import { ITimetable } from './ITimetable'

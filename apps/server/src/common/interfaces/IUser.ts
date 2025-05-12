@@ -1,14 +1,12 @@
-import { IDepartment } from '@otl/server-nest/common/interfaces/IDepartment'
-import { ILecture } from '@otl/server-nest/common/interfaces/ILecture'
-import { IReview } from '@otl/server-nest/common/interfaces/IReview'
-import {
-  OrderDefaultValidator,
-  PROHIBITED_FIELD_PATTERN,
-} from '@otl/server-nest/common/interfaces/validators.decorator'
 import { Transform, Type } from 'class-transformer'
 import {
   IsArray, IsNumber, IsOptional, IsString,
 } from 'class-validator'
+
+import { IDepartment } from './IDepartment'
+import { ILecture } from './ILecture'
+import { IReview } from './IReview'
+import { OrderDefaultValidator, PROHIBITED_FIELD_PATTERN as _PROHIBITED_FIELD_PATTERN } from './validators.decorator'
 
 export namespace IUser {
   export class TakenCoursesQueryDto {
@@ -16,7 +14,7 @@ export namespace IUser {
     @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
     @IsArray()
     @IsString({ each: true })
-    @OrderDefaultValidator(PROHIBITED_FIELD_PATTERN)
+    @OrderDefaultValidator(_PROHIBITED_FIELD_PATTERN)
     order?: string[]
   }
 
@@ -25,7 +23,7 @@ export namespace IUser {
     @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
     @IsArray()
     @IsString({ each: true })
-    @OrderDefaultValidator(PROHIBITED_FIELD_PATTERN)
+    @OrderDefaultValidator(_PROHIBITED_FIELD_PATTERN)
     order?: string[]
 
     @IsOptional()
@@ -51,6 +49,8 @@ export namespace IUser {
     date_joined: Date
     first_name: string
     last_name: string
+    name_kor: string
+    name_eng: string
     refresh_token: string | null
   }
 
@@ -60,6 +60,8 @@ export namespace IUser {
     student_id: string
     firstName: string
     lastName: string
+    nameKor: string
+    nameEng: string
     department: IDepartment.Basic | null
     majors: IDepartment.Basic[]
     departments: IDepartment.Basic[]

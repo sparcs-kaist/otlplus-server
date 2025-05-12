@@ -1,1 +1,0 @@
-{"version":3,"file":"EMeeting.js","sourceRoot":"","sources":["../../../src/entities/EMeeting.ts"],"names":[],"mappings":";;;AAAA,2CAAwC;AAExC,IAAiB,QAAQ,CASxB;AATD,WAAiB,QAAQ;IACV,cAAK,GAAG,eAAM,CAAC,SAAS,EAAmC,CAAC;QACvE,OAAO,EAAE;YACP,IAAI,EAAE,IAAI;YACV,OAAO,EAAE,IAAI;SACd;KACF,CAAC,CAAC;AAGL,CAAC,EATgB,QAAQ,wBAAR,QAAQ,QASxB"}

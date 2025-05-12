@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE `friend_friend` ADD COLUMN `begin` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3);
