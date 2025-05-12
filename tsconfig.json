@@ -19,6 +19,7 @@
     "noImplicitAny": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": false,
+
     "paths": {
       "@otl/common": ["libs/common/src"],
       "@otl/common/*": ["libs/common/src/*"],
@@ -31,7 +32,14 @@
       "@otl/scholar-sync/domain": ["apps/scholar-sync/src/common/domain"],
       "@otl/scholar-sync/domain/*": ["apps/scholar-sync/src/common/domain/*"],
       "@otl/scholar-sync/clients/scholar/*": ["apps/scholar-sync/src/clients/scholar/*"]
-    }
+    },
+
+    "inlineSources": true,
+
+    // Set `sourceRoot` to  "/" to strip the build path prefix
+    // from generated source code references.
+    // This improves issue grouping in Sentry.
+    "sourceRoot": "/"
   },
   "plugins": [
     {
