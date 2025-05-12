@@ -1,11 +1,13 @@
 import {
   ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus,
 } from '@nestjs/common'
+import { SentryExceptionCaptured } from '@sentry/nestjs'
 
 import logger from '../logger/logger'
 
 @Catch() // BaseException을 상속한 exception에 대해서 실행됨.
 export class UnexpectedExceptionFilter implements ExceptionFilter {
+  @SentryExceptionCaptured()
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp()
     const response = ctx.getResponse()

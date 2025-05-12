@@ -48,3 +48,14 @@ volumes
 # redis
 .docker/redis/redis-data
 deploy/server/redis/redis-data
+.docker/redis-scheduler/redis-data
+
+# rabbitmq
+.docker/rabbitmq/rabbitmq-data/*
+
+#firebase secrets
+secrets/*
+web-test/*
+
+## logs
+apps/server/logs/*

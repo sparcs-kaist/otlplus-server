@@ -5,6 +5,7 @@ import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core'
 import { JwtService } from '@nestjs/jwt'
 import { ClsPluginTransactional } from '@nestjs-cls/transactional'
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma'
+import { SentryModule } from '@sentry/nestjs/setup'
 import { ClsModule } from 'nestjs-cls'
 
 import logger from '@otl/common/logger/logger'
@@ -40,6 +41,7 @@ import settings from './settings'
 
 @Module({
   imports: [
+    SentryModule.forRoot(),
     PrismaModule.register(settings().ormconfig()),
     AuthModule,
     CoursesModule,

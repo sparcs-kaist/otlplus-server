@@ -1,5 +1,6 @@
 import { HttpException, ValidationPipe, VersioningType } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
+import * as Sentry from '@sentry/nestjs'
 import cookieParser from 'cookie-parser'
 import csrf from 'csurf'
 import { json } from 'express'
@@ -16,6 +17,10 @@ import { AppModule } from '../app.module'
 import settings from '../settings'
 
 async function bootstrap() {
+  Sentry.init({
+    dsn: settings().getSentryConfig() ?? null,
+  })
+
   const app = await NestFactory.create(AppModule)
 
   app.enableVersioning({
