@@ -28,6 +28,7 @@ export class UnexpectedExceptionFilter implements ExceptionFilter {
 
 @Catch(HttpException) // BaseException을 상속한 exception에 대해서 실행됨.
 export class HttpExceptionFilter<T extends HttpException> implements ExceptionFilter {
+  @SentryExceptionCaptured()
   catch(exception: T, host: ArgumentsHost) {
     const ctx = host.switchToHttp()
     const response = ctx.getResponse()
