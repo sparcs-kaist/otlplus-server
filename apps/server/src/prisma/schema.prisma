@@ -934,7 +934,7 @@ model meeting_group{
 model meeting_group_day {
   id Int @id @default(autoincrement())
   meeting_group_id Int // 1(meeting_group) : N(meeting_group_day)
-  day Int?
+  day DateTime?
   weekday Int?
 
   meeting_group meeting_group @relation(fields: [meeting_group_id], references: [id], onUpdate: Restrict, map: "meeting_group_day_meeting_group_id_fk_meeting_group_id")
@@ -946,19 +946,21 @@ model meeting_member{
   meeting_group_id Int
   user_id Int?
   student_number String @db.VarChar(10)
-  name String @db.VarChar(20)
+  name String @db.VarChar(50)
 
   meeting_group meeting_group @relation(fields: [meeting_group_id], references: [id], onUpdate: Restrict, map: "meeting_member_meeting_group_id_fk_meeting_group_id")
   session_userprofile session_userprofile? @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "meeting_member_user_id_fk_session_userprofile_id")
   timeblocks meeting_member_timeblock[] 
 
+  @@unique([meeting_group_id, student_number])
 }
 
 model meeting_member_timeblock{
   id Int @id @default(autoincrement())
   meeting_member_id Int
-  day Int?
+  day DateTime?
   weekday Int?
+  time_index Int
   meeting_member meeting_member @relation(fields: [meeting_member_id], references: [id], onUpdate: Restrict, map: "meeting_member_timeblock_meeting_member_id_fk_meeting_member_id")
   is_available Boolean
 }

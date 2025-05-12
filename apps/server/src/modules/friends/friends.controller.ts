@@ -53,7 +53,8 @@ export class FriendsController {
   /*
    * @description 수업의 겹강인 친구 목록을 조회합니다.
    * query에 lectureId 값을 포함합니다.
-   * 해당 수업을 듣는 친구들, 같은 강의에 같은 교수님을 듣는 친구들, 같은 강의 중 다른 교수님의 수업이었던 친구들을 조회합니다.
+   * 해당 lecture를 듣는 친구들, 같은 course에 같은 교수님을 듣는 친구들, 같은 course 중 다른 교수님의 수업이었던 친구들을 조회합니다.
+   * 같은 course를 듣는 사람들의 경우 더 과거에 들었던 사람들만 조회합니다.
    */
 
   @Get('/lecture')
