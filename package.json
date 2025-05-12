@@ -48,7 +48,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "prepare": "husky",
     "ts-node": "cross-env NODE_ENV=local node -r ts-node/register -r tsconfig-paths/register ",
-    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org sentry --project node-nestjs ./dist/apps/server && sentry-cli --url https://sentry.sparcs.org/ sourcemaps upload --org sentry --project node-nestjs ./dist/apps/server"
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org sentry --project otl-server-nest-dev ./dist/apps/server && sentry-cli --url https://sentry.sparcs.org/ sourcemaps upload --org sentry --project otl-server-nest-dev ./dist/apps/server"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
