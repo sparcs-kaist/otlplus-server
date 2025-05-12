@@ -1,19 +1,22 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { IFriend } from '@otl/api-interface/src/interfaces';
-import { session_userprofile } from '@prisma/client';
-import { GetUser } from '@src/common/decorators/get-user.decorator';
-import { FriendsService } from './friends.service';
+import {
+  Body, Controller, Delete, Get, Param, Patch, Post, Query,
+} from '@nestjs/common'
+import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
+import { IFriend } from '@otl/server-nest/common/interfaces'
+import { session_userprofile } from '@prisma/client'
 
-Controller('api/friends');
+import { FriendsService } from './friends.service'
+
+@Controller('api/friends')
 export class FriendsController {
-  constructor(private readonly FriendsService: FriendsService) {}
+  constructor(private readonly friendsService: FriendsService) {}
 
   /*
    * @description 친구 목록을 조회합니다.
    */
   @Get()
   async getFriends(@GetUser() user: session_userprofile): Promise<IFriend.Basic[]> {
-    return await this.FriendsService.getFriends(user.id);
+    return await this.friendsService.getFriends(user.id)
   }
 
   /*
@@ -23,8 +26,8 @@ export class FriendsController {
    */
   @Post()
   async createFriend(@GetUser() user: session_userprofile, @Body() body: IFriend.CreateDto): Promise<IFriend.Basic> {
-    const friend_id = body.user_id;
-    return await this.FriendsService.createFriend(user.id, friend_id);
+    const friend_id = body.user_id
+    return await this.friendsService.createFriend(user.id, friend_id)
   }
 
   /*
@@ -38,7 +41,7 @@ export class FriendsController {
     @Param('friendId') friendId: number,
     @Body() body: IFriend.UpdateFavoriteDto,
   ): Promise<IFriend.Basic> {
-    return await this.FriendsService.updateFriendFavorite(user.id, friendId, body.isFavorite);
+    return await this.friendsService.updateFriendFavorite(user.id, friendId, body.isFavorite)
   }
 
   /*
@@ -47,7 +50,7 @@ export class FriendsController {
    */
   @Delete('/:friendId')
   async deleteFriend(@GetUser() user: session_userprofile, @Param('friendId') friendId: number): Promise<void> {
-    await this.FriendsService.deleteFriend(user.id, friendId);
+    await this.friendsService.deleteFriend(user.id, friendId)
   }
 
   /*
@@ -62,7 +65,7 @@ export class FriendsController {
     @GetUser() user: session_userprofile,
     @Query('lectureId') lectureId: number,
   ): Promise<IFriend.LectureFriends> {
-    return await this.FriendsService.getFriendsLecture(user.id, lectureId);
+    return await this.friendsService.getFriendsLecture(user.id, lectureId)
   }
 
   /*
