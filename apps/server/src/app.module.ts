@@ -7,6 +7,7 @@ import { ClsPluginTransactional } from '@nestjs-cls/transactional'
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma'
 import { SentryModule } from '@sentry/nestjs/setup'
 import * as Sentry from '@sentry/node'
+import { CacheableMemory } from 'cacheable'
 import IORedis from 'ioredis'
 import { ClsModule } from 'nestjs-cls'
 
@@ -56,7 +57,9 @@ async function createCacheStoreWithFallback(): Promise<Keyv> {
   catch (err) {
     logger.error('[CacheModule] Redis 연결 실패, In-Memory Cache로 대체합니다:', err)
     Sentry.captureException(err)
-    return new Keyv() // fallback: 메모리 캐시
+    return new Keyv({
+      store: new CacheableMemory({ ttl: '60m', lruSize: 5000 }),
+    }) // fallback: 메모리 캐시
   }
   finally {
     redisClient.disconnect()
@@ -97,13 +100,9 @@ async function createCacheStoreWithFallback(): Promise<Keyv> {
       ],
     }),
     CacheModule.registerAsync({
-      useFactory: async () => {
-        console.log('start')
-        const store = await createCacheStoreWithFallback()
-        return {
-          store,
-        }
-      },
+      useFactory: async () => ({
+        stores: [await createCacheStoreWithFallback()],
+      }),
       isGlobal: true,
     }),
   ],
