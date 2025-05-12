@@ -2,6 +2,7 @@ import {
   ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus,
 } from '@nestjs/common'
 import { SentryExceptionCaptured } from '@sentry/nestjs'
+import * as Sentry from '@sentry/node'
 
 import logger from '../logger/logger'
 
@@ -36,6 +37,7 @@ export class HttpExceptionFilter<T extends HttpException> implements ExceptionFi
 
     const resStatus = exception.getStatus()
     logger.error(exception.getResponse())
+    Sentry.captureException(exception)
     response.status(resStatus).json({
       // todo: exception의 response 형식 결정되면 변경해야함.
       message: exception.getResponse(), // test를 위한 코드

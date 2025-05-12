@@ -11,6 +11,7 @@ services:
       - ../redis/redis-data:/data
     env_file:
       - ../../../env/.env.local
+    restart: always
     command:
       - /bin/sh
       - -c

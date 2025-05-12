@@ -112,7 +112,7 @@ const staticConfig = (): any => ({
     process.env.DOCKER_DEPLOY === 'true' ? '/var/www/otlplus-server/apps/server/static/' : 'apps/server/static/',
 })
 
-const sentryConfig = (): any => ({
+const sentryConfig = () => ({
   dsn: process.env.SENTRY_DSN,
 })
 

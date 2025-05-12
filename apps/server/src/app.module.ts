@@ -1,4 +1,4 @@
-import { createKeyv } from '@keyv/redis'
+import { createKeyv, Keyv } from '@keyv/redis'
 import { CacheModule } from '@nestjs/cache-manager'
 import { Module } from '@nestjs/common'
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core'
@@ -6,6 +6,8 @@ import { JwtService } from '@nestjs/jwt'
 import { ClsPluginTransactional } from '@nestjs-cls/transactional'
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma'
 import { SentryModule } from '@sentry/nestjs/setup'
+import * as Sentry from '@sentry/node'
+import IORedis from 'ioredis'
 import { ClsModule } from 'nestjs-cls'
 
 import logger from '@otl/common/logger/logger'
@@ -38,6 +40,28 @@ import { TracksModule } from './modules/tracks/tracks.module'
 import { UserModule } from './modules/user/user.module'
 import { WishlistModule } from './modules/wishlist/wishlist.module'
 import settings from './settings'
+
+async function createCacheStoreWithFallback(): Promise<Keyv> {
+  const { url, password } = settings().getRedisConfig()
+
+  const redisClient = new IORedis(url as string, { password, maxRetriesPerRequest: 5 })
+
+  try {
+    await redisClient.ping() // 실제 Redis 연결 확인
+
+    const redisStore = createKeyv({ url, password })
+    logger.info('[CacheModule] Redis 연결 성공')
+    return redisStore
+  }
+  catch (err) {
+    logger.error('[CacheModule] Redis 연결 실패, In-Memory Cache로 대체합니다:', err)
+    Sentry.captureException(err)
+    return new Keyv() // fallback: 메모리 캐시
+  }
+  finally {
+    redisClient.disconnect()
+  }
+}
 
 @Module({
   imports: [
@@ -74,10 +98,10 @@ import settings from './settings'
     }),
     CacheModule.registerAsync({
       useFactory: async () => {
-        const { url, password } = settings().getRedisConfig()
-        logger.info(`Redis Cache ${url}, ${password}`)
+        console.log('start')
+        const store = await createCacheStoreWithFallback()
         return {
-          stores: [createKeyv({ url, password })],
+          store,
         }
       },
       isGlobal: true,
