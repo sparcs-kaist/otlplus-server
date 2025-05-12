@@ -1,8 +1,14 @@
 import { Injectable } from '@nestjs/common'
-import { EMeeting, TimeBlock, TimeBlockDay } from '@otl/api-interface/src'
+import {
+  makeDBtoTimeBlockDay,
+  makeTimeBlockDayToDB,
+  makeTimeIndexToTime,
+} from '@otl/server-nest/common/utils/time.utils'
 import { meeting_member, session_userprofile } from '@prisma/client'
-import { makeDBtoTimeBlockDay, makeTimeBlockDayToDB, makeTimeIndexToTime } from '@src/common/utils/time.utils'
 
+import { TimeBlock, TimeBlockDay } from '@otl/common/enum/time'
+
+import { EMeeting } from '../entities/EMeeting'
 import { PrismaService } from '../prisma.service'
 
 @Injectable()

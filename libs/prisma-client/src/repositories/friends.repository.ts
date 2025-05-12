@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
-import { EFriend } from '@otl/api-interface/src/entities'
 
+import { EFriend } from '../entities/EFriend'
 import { PrismaService } from '../prisma.service'
 
 @Injectable()
