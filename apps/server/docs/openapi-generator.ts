@@ -151,7 +151,6 @@ async function main() {
     // const typesPaths = types.map((i) => i.getSourceFile().getFilePath())
     // schemaTypeAliasPaths.push(...typesPaths)
     const filePath = sourceFile.getFilePath()
-    console.log(filePath)
     if (EXCLUDE_FILES.some((f) => filePath.includes(f))) continue
     const schemaGenerator = createFullSchemaGenerator(tsConfigPath, filePath)
     const allInterfaceSchema = schemaGenerator.createSchema('*')

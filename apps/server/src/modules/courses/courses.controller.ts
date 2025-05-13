@@ -1,11 +1,14 @@
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager'
 import {
-  BadRequestException, Controller, Get, Param, Post, Query,
+  BadRequestException, Controller, Get, Param, Post, Query, UseInterceptors,
 } from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator'
 import { ICourse, ILecture, IReview } from '@otl/server-nest/common/interfaces'
 import { CourseIdPipe } from '@otl/server-nest/common/pipe/courseId.pipe'
 import { session_userprofile } from '@prisma/client'
+
+import { RedisTTL } from '@otl/common/enum/time'
 
 import { CoursesService } from './courses.service'
 
@@ -14,6 +17,8 @@ export class CourseController {
   constructor(private readonly coursesService: CoursesService) {}
 
   @Public()
+  @CacheTTL(RedisTTL.HOUR)
+  @UseInterceptors(CacheInterceptor)
   @Get()
   async getCourses(
     @Query() query: ICourse.Query,
@@ -24,12 +29,16 @@ export class CourseController {
   }
 
   @Public()
+  @CacheTTL(RedisTTL.HOUR)
+  @UseInterceptors(CacheInterceptor)
   @Get('autocomplete')
   async getCourseAutocomplete(@Query() query: ICourse.AutocompleteQueryDto): Promise<string | undefined> {
     return await this.coursesService.getCourseAutocomplete(query)
   }
 
   @Public()
+  @CacheTTL(RedisTTL.HOUR)
+  @UseInterceptors(CacheInterceptor)
   @Get(':id')
   async getCourseById(
     @Param('id', CourseIdPipe) id: number,
@@ -40,6 +49,8 @@ export class CourseController {
   }
 
   @Public()
+  @CacheTTL(RedisTTL.HOUR)
+  @UseInterceptors(CacheInterceptor)
   @Get(':id/lectures')
   async getLecturesByCourseId(
     @Query() query: ICourse.LectureQueryDto,

@@ -1,12 +1,9 @@
-import {
-  ExecutionContext, Injectable, InternalServerErrorException, NotFoundException,
-} from '@nestjs/common'
+import { ExecutionContext, Injectable, NotFoundException } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { JwtService } from '@nestjs/jwt'
 import { AuthCommand, AuthResult } from '@otl/server-nest/modules/auth/auth.command'
 import { AuthService } from '@otl/server-nest/modules/auth/auth.service'
 import settings from '@otl/server-nest/settings'
-import * as bcrypt from 'bcrypt'
 import { Request, Response } from 'express'
 
 @Injectable()
@@ -65,24 +62,33 @@ export class JwtCookieCommand implements AuthCommand {
       const payload = await this.verifyToken(refreshToken)
       const user = await this.getUserFromPayload(payload.sid)
 
-      if (user.refresh_token && (await bcrypt.compare(refreshToken, user.refresh_token))) {
-        const { accessToken: newAccessToken, ...accessTokenOptions } = this.authService.getCookieWithAccessToken(
-          payload.sid,
-        )
-
-        if (!response) {
-          throw new InternalServerErrorException('Response object not found in request context')
-        }
-
-        response.cookie('accessToken', newAccessToken, accessTokenOptions)
-        request.user = user
-        return this.setAuthenticated(result)
-      }
+      // if (user.refresh_token && (await bcrypt.compare(refreshToken, user.refresh_token))) {
+      //   const { accessToken: newAccessToken, ...accessTokenOptions } = this.authService.getCookieWithAccessToken(
+      //     payload.sid,
+      //   )
+      //
+      //   if (!response) {
+      //     throw new InternalServerErrorException('Response object not found in request context')
+      //   }
+      //
+      //   response.cookie('accessToken', newAccessToken, accessTokenOptions)
+      //   request.user = user
+      //   return this.setAuthenticated(result)
+      // }
+      const { accessToken: newAccessToken, ...accessTokenOptions } = this.authService.getCookieWithAccessToken(
+        payload.sid,
+      )
+      const { refreshToken: newRefreshToken, ...refreshTokenOptions } = this.authService.getCookieWithRefreshToken(
+        payload.sid,
+      )
+      response.cookie('accessToken', newAccessToken, accessTokenOptions)
+      response.cookie('refreshToken', newRefreshToken, refreshTokenOptions)
+      request.user = user
+      return this.setAuthenticated(result)
     }
     catch {
       return result
     }
-    return result
   }
 
   private setAuthenticated(result: AuthResult): AuthResult {

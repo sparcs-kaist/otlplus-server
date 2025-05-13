@@ -63,6 +63,11 @@ const getPrismaConfig = (): Prisma.PrismaClientOptions => ({
   ],
 })
 
+const getRedisConfig = () => ({
+  url: process.env.REDIS_URL,
+  password: process.env.REDIS_PASSWORD,
+})
+
 const getReplicatedPrismaConfig = (): Prisma.PrismaClientOptions => ({})
 
 const getAWSConfig = () => ({})
@@ -107,10 +112,15 @@ const staticConfig = (): any => ({
     process.env.DOCKER_DEPLOY === 'true' ? '/var/www/otlplus-server/apps/server/static/' : 'apps/server/static/',
 })
 
+const sentryConfig = () => ({
+  dsn: process.env.SENTRY_DSN,
+})
+
 export default () => ({
   ormconfig: () => getPrismaConfig(),
   ormReplicatedConfig: () => getReplicatedPrismaConfig(),
   awsconfig: () => getAWSConfig(),
+  getRedisConfig: () => getRedisConfig(),
   getJwtConfig: () => getJwtConfig(),
   getSsoConfig: () => getSsoConfig(),
   getCorsConfig: () => getCorsConfig(),
@@ -119,4 +129,5 @@ export default () => ({
   getStaticConfig: () => staticConfig(),
   getSwaggerConfig: () => getSwaggerConfig(),
   getSwaggerStatsConfig: () => getSwaggerStatsConfig(),
+  getSentryConfig: () => sentryConfig(),
 })
