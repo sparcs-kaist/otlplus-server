@@ -23,8 +23,11 @@ import { MockAuthGuard } from './modules/auth/guard/mock-auth-guard'
 import { CoursesModule } from './modules/courses/courses.module'
 import { DepartmentsModule } from './modules/departments/departments.module'
 import { FeedsModule } from './modules/feeds/feeds.module'
+import { FriendsModule } from './modules/friends/friends.module'
 import { LecturesModule } from './modules/lectures/lectures.module'
+import { MeetingModule } from './modules/meeting/meeting.module'
 import { NoticesModule } from './modules/notices/notices.module'
+import { PersonalsModule } from './modules/personals/personals.module'
 import { PlannersModule } from './modules/planners/planners.module'
 import { RatesModule } from './modules/rates/rates.module'
 import { ReviewsModule } from './modules/reviews/reviews.module'
@@ -58,6 +61,9 @@ import settings from './settings'
     PlannersModule,
     TracksModule,
     ShareModule,
+    PersonalsModule,
+    MeetingModule,
+    FriendsModule,
     ClsModule.forRoot({
       global: true,
       middleware: { mount: true },
