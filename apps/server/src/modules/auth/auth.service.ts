@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import settings from '@otl/server-nest/settings'
 import { Prisma, session_userprofile } from '@prisma/client'
@@ -11,6 +11,8 @@ import { SyncTakenLectureService } from '../sync/syncTakenLecture.service'
 
 @Injectable()
 export class AuthService {
+  private readonly jwtConfig = settings().getJwtConfig()
+
   constructor(
     private readonly userRepository: UserRepository,
     private readonly jwtService: JwtService,
@@ -133,5 +135,22 @@ export class AuthService {
 
   async updateUser(userId: number, user: Prisma.session_userprofileUpdateInput): Promise<session_userprofile> {
     return await this.userRepository.updateUser(userId, user)
+  }
+
+  async tokenRefresh(refreshToken: any) {
+    const payload = await this.jwtService.verifyAsync(refreshToken, {
+      secret: this.jwtConfig.secret,
+      ignoreExpiration: false,
+    })
+    const user = await this.findBySid(payload.sid)
+    if (!user) throw new NotFoundException('user is not found')
+    const { accessToken, ...accessTokenOptions } = this.getCookieWithAccessToken(payload.sid)
+    const { refreshToken: newRefreshToken, ...refreshTokenOptions } = this.getCookieWithRefreshToken(payload.sid)
+    return {
+      accessToken,
+      accessTokenOptions,
+      refreshToken: newRefreshToken,
+      refreshTokenOptions,
+    }
   }
 }

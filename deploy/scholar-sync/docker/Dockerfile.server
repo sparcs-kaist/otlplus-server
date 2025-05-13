@@ -4,6 +4,8 @@ RUN mkdir -p /var/www/otlplus
 RUN mkdir -p /var/www/otlplus/libs
 RUN mkdir -p /var/www/otlplus/apps
 WORKDIR /var/www/otlplus
+RUN mkdir -p /var/www/otlplus/apps/scholar-sync/logs
+
 
 COPY package.json yarn.lock* package-lock.json* tsconfig.json tsconfig.build.json ./
 COPY nest-cli.json ./

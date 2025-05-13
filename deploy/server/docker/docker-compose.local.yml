@@ -1,9 +1,30 @@
 version: '3.4'
 
 services:
+  redis-cache:
+    image: redis:7.2-alpine
+    container_name: redis-otl
+    expose:
+      - '6379'
+    volumes:
+      - ../redis/redis.conf:/usr/local/etc/redis/redis.conf
+      - ../redis/redis-data:/data
+    env_file:
+      - ../../../env/.env.local
+    restart: always
+    command:
+      - /bin/sh
+      - -c
+      # - Double dollars, so that the variable is not expanded by Docker Compose
+      # - Surround by quotes, so that the shell does not split the password
+      # - The ${variable:?message} syntax causes shell to exit with a non-zero
+      #   code and print a message, when the variable is not set or empty
+      - redis-server --requirepass "$${REDIS_PASSWORD:?REDIS_PASSWORD variable is not set}"
   back:
     container_name: otlplus-server-nest-local
     platform: linux/amd64
+    depends_on:
+      - redis-cache
     env_file:
       - ../../../env/.env.local
     environment:
@@ -21,5 +42,7 @@ services:
       - '8000'
     volumes:
       - '/etc/timezone:/etc/timezone:ro'
+      - './apps/server/logs:/var/www/otlplus-server/apps/logs'
     working_dir: /var/www/otlplus-server
     command: pm2-runtime start ecosystem.config.js --only @otl/server-nest  --node-args="max-old-space-size=40920"
+#    command: node dist/apps/server/apps/server/src/bootstrap/bootstrap.js
