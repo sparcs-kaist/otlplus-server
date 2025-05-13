@@ -1,5 +1,11 @@
+import {
+  IsArray, IsEnum, IsNumber, IsOptional, IsString,
+} from 'class-validator'
+
 import { TimeTableColorEnum } from '@otl/common/enum/color'
-import { TimeBlock } from '@otl/common/enum/time'
+import { SemesterEnum, TimeBlock } from '@otl/common/enum/time'
+
+import { IsTimeBlock } from '../decorators/time-block-validator.decorator'
 
 export namespace IPersonal {
   export interface Block {
@@ -13,5 +19,55 @@ export namespace IPersonal {
     place: string | null // 장소
     description: string | null // 설명
     color: TimeTableColorEnum
+  }
+
+  export class CreateDto {
+    @IsNumber()
+    @IsOptional()
+    timetableId?: number // timetable.id, nullable(학사)
+
+    @IsNumber()
+    year!: number
+
+    @IsNumber()
+    @IsEnum(SemesterEnum)
+    semester!: SemesterEnum
+
+    @IsArray()
+    @IsTimeBlock()
+    timeBlocks!: TimeBlock[]
+
+    @IsString()
+    title!: string
+
+    @IsString()
+    @IsOptional()
+    place?: string
+
+    @IsString()
+    @IsOptional()
+    description?: string
+
+    @IsEnum(TimeTableColorEnum)
+    color!: TimeTableColorEnum
+  }
+
+  export class UpdateDto {
+    @IsString()
+    title!: string
+
+    @IsString()
+    @IsOptional()
+    place?: string
+
+    @IsString()
+    description!: string
+
+    @IsEnum(TimeTableColorEnum)
+    color!: TimeTableColorEnum
+
+    @IsArray()
+    @IsTimeBlock()
+    timeBlocks!: TimeBlock[]
   }
 }

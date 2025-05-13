@@ -927,14 +927,16 @@ model personal_block{
   id Int @id @default(autoincrement())
   year Int
   semester Int 
-  user_id Int // 1(session_userprofile) : N(personal_block)
+  user_id Int 
+  // 1(session_userprofile) : N(personal_block)
 
   title String @db.VarChar(20)
   place String? @db.VarChar(100)
   description String? @db.VarChar(100)
-  color Int
+  color String @db.VarChar(10)
   
-  timetable_id Int? // 1(timetable) : N(personal_block)
+  timetable_id Int? 
+  // 1(timetable) : N(personal_block)
   // TODO: user_id, timetable_id foreign key 추가 필요
   session_userprofile session_userprofile @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "personal_block_user_id_fk_session_userprofile_id")
   timetable_timetable timetable_timetable? @relation(fields: [timetable_id], references: [id], onUpdate: Restrict, map: "personal_block_timetable_id_fk_timetable_id")
@@ -944,7 +946,7 @@ model personal_block{
 
 model personal_timeblock{
   id Int @id @default(autoincrement())
-  day Int?
+  day DateTime?
   weekday Int? // day 와 weekday 중 하나의 값을 가짐
   time_index Int
   personal_block_id Int // 1(personal_block) : N(personal_timeblock)
