@@ -11,6 +11,7 @@ services:
       - ./redis-data:/data
     env_file:
       - ../../../env/.env.dev
+    restart: always
     command:
       - /bin/sh
       - -c
@@ -41,6 +42,6 @@ services:
       - '8000'
     volumes:
       - '/etc/timezone:/etc/timezone:ro'
-      - './apps/server/logs:/var/www/otlplus-server/apps/server/logs'
+      - './apps/server/logs:/var/www/otlplus-server/apps/logs'
     working_dir: /var/www/otlplus-server
     command: pm2-runtime start ecosystem.config.js --only @otl/server-nest  --node-args="max-old-space-size=40920"

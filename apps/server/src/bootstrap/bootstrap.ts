@@ -1,5 +1,6 @@
 import { HttpException, ValidationPipe, VersioningType } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
+import * as Sentry from '@sentry/nestjs'
 import cookieParser from 'cookie-parser'
 import csrf from 'csurf'
 import { json } from 'express'
@@ -16,6 +17,13 @@ import { AppModule } from '../app.module'
 import settings from '../settings'
 
 async function bootstrap() {
+  Sentry.init({
+    dsn: settings().getSentryConfig().dsn as string,
+    // Add Tracing by setting tracesSampleRate
+    // We recommend adjusting this value in production
+    tracesSampleRate: 1.0,
+  })
+
   const app = await NestFactory.create(AppModule)
 
   app.enableVersioning({
@@ -45,18 +53,6 @@ async function bootstrap() {
       ignoreMethods: ['GET', 'HEAD', 'OPTIONS', 'DELETE', 'PATCH', 'PUT', 'POST'],
     }),
   )
-
-  // Logs responses
-  // app.use(
-  //   morgan(':method :url :status :res[content-length] :response-time ms', {
-  //     stream: {
-  //       write: (message) => {
-  //         // console.log(formatMemoryUsage())
-  //         console.info(message.trim());
-  //       },
-  //     },
-  //   }),
-  // );
   const swaggerJsonPath = join(__dirname, '..', '..', 'docs', 'swagger.json')
   const swaggerDocument = JSON.parse(fs.readFileSync(swaggerJsonPath, 'utf-8'))
   if (process.env.NODE_ENV !== 'prod') {
