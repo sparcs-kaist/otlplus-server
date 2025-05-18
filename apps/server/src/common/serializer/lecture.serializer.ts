@@ -4,9 +4,9 @@ import { applyOrder } from '@otl/common/utils'
 
 import { ELecture } from '@otl/prisma-client/entities'
 
-import { toJsonClasstime } from './classtime.serializer'
-import { toJsonExamtime } from './examtime.serializer'
-import { toJsonProfessors } from './professor.serializer'
+import { toJsonClasstime, v2toJsonClasstime } from './classtime.serializer'
+import { toJsonExamtime, v2toJsonExamtime } from './examtime.serializer'
+import { toJsonProfessors, v2toJsonProfessors } from './professor.serializer'
 
 export function toJsonLectureBasic(lecture: ELecture.Extended): ILecture.Basic {
   const professors = lecture.subject_lecture_professors.map((x) => x.professor)
@@ -56,4 +56,33 @@ export function toJsonLectureDetail(lecture: ELecture.Details): ILecture.Detail 
     classtimes: lecture.subject_classtime.map((classtime) => toJsonClasstime(classtime)),
     examtimes: lecture.subject_examtime.map((examtime) => toJsonExamtime(examtime)),
   })
+}
+
+export function v2toJsonLectureDetail(lecture: ELecture.Details): ILecture.v2Detail {
+  if (!ELecture.isDetails(lecture)) throw new Error('Lecture is not of type \'ELecture.Details\'')
+
+  return {
+    lectureId: lecture.id,
+    courseId: lecture.course_id,
+    classNo: lecture.class_no,
+    lectureName: lecture.title,
+    code: lecture.code,
+    departmentId: lecture.department_id,
+    type: lecture.type,
+    limitPeople: lecture.limit,
+    numPeople: lecture.num_people,
+    lectureDuration:
+      (new Date(lecture.subject_classtime[0].end).getTime() - new Date(lecture.subject_classtime[0].begin).getTime())
+      / 1000
+      / 60,
+    credit: lecture.credit,
+    au: lecture.credit_au,
+    scoreGrade: lecture.grade,
+    scoreLoad: lecture.load,
+    scoreSpeech: lecture.speech,
+    isEnglish: lecture.is_english,
+    professors: v2toJsonProfessors(lecture.subject_lecture_professors.map((x) => x.professor)),
+    classes: lecture.subject_classtime.map((classtime) => v2toJsonClasstime(classtime)),
+    examTimes: lecture.subject_examtime.map((examtime) => v2toJsonExamtime(examtime)),
+  }
 }

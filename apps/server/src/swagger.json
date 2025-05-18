@@ -105,16 +105,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "accessToken": {
-                      "type": "string"
-                    },
-                    "refreshToken": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["accessToken", "refreshToken"]
+                  "$ref": "#/components/schemas/IAuth.TokenResponse"
                 }
               }
             }
@@ -126,7 +117,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/{ token: string; }"
+                "$ref": "#/components/schemas/IAuth.TokenDto"
               }
             }
           }
@@ -1714,6 +1705,185 @@
         }
       }
     },
+    "/api/v2/timetables": {
+      "get": {
+        "summary": "v2TimetablesController.getTimetables",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ITimetable.v2Response"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ITimetable.QueryDto"
+            }
+          }
+        ]
+      },
+      "post": {
+        "summary": "v2TimetablesController.createTimetable",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ITimetable.v2DetailedResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ITimetable.v2CreateDto"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "v2TimetablesController.deleteTimetable",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": ["success"]
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ITimetable.v2DeleteDto"
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "v2TimetablesController.updateTimetable",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": ["success"]
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ITimetable.v2UpdateDto"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/timetables/{timetableId}": {
+      "get": {
+        "summary": "v2TimetablesController.getTimeTable",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ITimetable.v2DetailedResponse"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "timetableId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      },
+      "patch": {
+        "summary": "v2TimetablesController.modifyLectureToTimetable",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ILecture.v2Detail"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "timetableId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ITimetable.v2ModifyLectureDto"
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/tracks": {
       "get": {
         "summary": "TracksController.getTracks",
@@ -2652,7 +2822,14 @@
             "type": "number"
           },
           "num_people": {
-            "type": "number"
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "is_english": {
             "type": "boolean"
@@ -2889,6 +3066,38 @@
         ],
         "additionalProperties": false
       },
+      "ILecture.v2Classtime": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "number"
+          },
+          "begin": {
+            "type": "number"
+          },
+          "end": {
+            "type": "number"
+          },
+          "buildingCode": {
+            "type": "string"
+          },
+          "placeName": {
+            "type": "string"
+          },
+          "placeNameShort": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": ["day", "begin", "end", "buildingCode", "placeName", "placeNameShort"],
+        "additionalProperties": false
+      },
       "ILecture.ExamTime": {
         "type": "object",
         "properties": {
@@ -2909,6 +3118,25 @@
           }
         },
         "required": ["day", "str", "str_en", "begin", "end"],
+        "additionalProperties": false
+      },
+      "ILecture.v2ExamTime": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "number"
+          },
+          "str": {
+            "type": "string"
+          },
+          "begin": {
+            "type": "number"
+          },
+          "end": {
+            "type": "number"
+          }
+        },
+        "required": ["day", "str", "begin", "end"],
         "additionalProperties": false
       },
       "ILecture.Raw": {
@@ -3248,7 +3476,14 @@
             "type": "number"
           },
           "num_people": {
-            "type": "number"
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "is_english": {
             "type": "boolean"
@@ -3346,6 +3581,119 @@
         ],
         "additionalProperties": false
       },
+      "ILecture.v2Detail": {
+        "type": "object",
+        "properties": {
+          "lectureId": {
+            "type": "number"
+          },
+          "courseId": {
+            "type": "number"
+          },
+          "classNo": {
+            "type": "string"
+          },
+          "lectureName": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "departmentId": {
+            "type": "number"
+          },
+          "type": {
+            "type": "string"
+          },
+          "limitPeople": {
+            "type": "number"
+          },
+          "numPeople": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lectureDuration": {
+            "type": "number"
+          },
+          "credit": {
+            "type": "number"
+          },
+          "au": {
+            "type": "number"
+          },
+          "scoreGrade": {
+            "type": "number"
+          },
+          "scoreLoad": {
+            "type": "number"
+          },
+          "scoreSpeech": {
+            "type": "number"
+          },
+          "isEnglish": {
+            "type": "boolean"
+          },
+          "professors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IProfessor.v2Basic"
+            }
+          },
+          "classes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ILecture.v2Classtime"
+            }
+          },
+          "examTimes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ILecture.v2ExamTime"
+            }
+          }
+        },
+        "required": [
+          "lectureId",
+          "courseId",
+          "classNo",
+          "lectureName",
+          "code",
+          "departmentId",
+          "type",
+          "limitPeople",
+          "numPeople",
+          "lectureDuration",
+          "credit",
+          "au",
+          "scoreGrade",
+          "scoreLoad",
+          "scoreSpeech",
+          "isEnglish",
+          "professors",
+          "classes",
+          "examTimes"
+        ],
+        "additionalProperties": false
+      },
+      "IProfessor.v2Basic": {
+        "type": "object",
+        "properties": {
+          "professorName": {
+            "type": "string"
+          },
+          "professerId": {
+            "type": "number"
+          }
+        },
+        "required": ["professorName", "professerId"],
+        "additionalProperties": false
+      },
       "ILecture.UserTaken": {
         "type": "object",
         "properties": {
@@ -3398,7 +3746,14 @@
             "type": "number"
           },
           "num_people": {
-            "type": "number"
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "is_english": {
             "type": "boolean"
@@ -5366,6 +5721,101 @@
         "required": ["id", "arrange_order"],
         "additionalProperties": false
       },
+      "ITimetable.v2Response": {
+        "type": "object",
+        "properties": {
+          "timetableId": {
+            "type": "number"
+          },
+          "year": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "semester": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "timetableOrder": {
+            "type": "number"
+          },
+          "userId": {
+            "type": "number"
+          }
+        },
+        "required": ["timetableId", "year", "semester", "timetableOrder", "userId"],
+        "additionalProperties": false
+      },
+      "ITimetable.v2DetailedResponse": {
+        "type": "object",
+        "properties": {
+          "timetableId": {
+            "type": "number"
+          },
+          "timetableName": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "userId": {
+            "type": "number"
+          },
+          "year": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "semester": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "timetableOrder": {
+            "type": "number"
+          },
+          "lectures": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ILecture.v2Detail"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": ["timetableId", "timetableName", "userId", "year", "semester", "timetableOrder"],
+        "additionalProperties": false
+      },
       "ITimetable.QueryDto": {
         "properties": {
           "year": {
@@ -5406,6 +5856,60 @@
         },
         "type": "object",
         "required": ["year", "semester", "lectures"]
+      },
+      "ITimetable.v2CreateDto": {
+        "properties": {
+          "userId": {
+            "type": "number"
+          },
+          "year": {
+            "type": "number"
+          },
+          "semester": {
+            "type": "number"
+          },
+          "lectures": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object",
+        "required": ["userId", "year", "semester", "lectures"]
+      },
+      "ITimetable.v2DeleteDto": {
+        "properties": {
+          "timeTableId": {
+            "type": "number"
+          }
+        },
+        "type": "object",
+        "required": ["timeTableId"]
+      },
+      "ITimetable.v2UpdateDto": {
+        "properties": {
+          "timeTableId": {
+            "type": "number"
+          },
+          "timeTableName": {
+            "type": "string"
+          },
+          "timeTableOrder": {
+            "type": "number"
+          }
+        },
+        "type": "object",
+        "required": ["timeTableId"]
+      },
+      "ITimetable.v2ModifyLectureDto": {
+        "properties": {
+          "lectureId": {
+            "type": "number"
+          }
+        },
+        "type": "object",
+        "required": ["lectureId"]
       },
       "ITimetable.AddLectureDto": {
         "properties": {

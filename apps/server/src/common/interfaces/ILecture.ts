@@ -20,10 +20,26 @@ export namespace ILecture {
     end: number
   }
 
+  export interface v2Classtime {
+    day: number
+    begin: number
+    end: number
+    buildingCode: string
+    placeName: string
+    placeNameShort: string | null
+  }
+
   export interface ExamTime {
     day: number
     str: string
     str_en: string
+    begin: number
+    end: number
+  }
+
+  export interface v2ExamTime {
+    day: number
+    str: string
     begin: number
     end: number
   }
@@ -91,7 +107,7 @@ export namespace ILecture {
     type: string
     type_en: string
     limit: number
-    num_people: number
+    num_people: number | null
     is_english: boolean
     num_classes: number
     num_labs: number
@@ -111,6 +127,28 @@ export namespace ILecture {
     speech: number
     classtimes: Classtime[]
     examtimes: ExamTime[]
+  }
+
+  export interface v2Detail {
+    lectureId: number
+    courseId: number
+    classNo: string
+    lectureName: string
+    code: string
+    departmentId: number
+    type: string
+    limitPeople: number
+    numPeople: number | null
+    lectureDuration: number
+    credit: number
+    au: number
+    scoreGrade: number
+    scoreLoad: number
+    scoreSpeech: number
+    isEnglish: boolean
+    professors: IProfessor.v2Basic[]
+    classes: v2Classtime[]
+    examTimes: v2ExamTime[]
   }
 
   export interface UserTaken extends Omit<Basic, 'department'> {

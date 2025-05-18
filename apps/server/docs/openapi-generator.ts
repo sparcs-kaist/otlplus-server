@@ -1,3 +1,4 @@
+// windows를 위해 약간 수정(?)
 import 'tsconfig-paths/register'
 import { targetConstructorToSchema } from 'class-validator-jsonschema'
 import fs from 'fs'
@@ -9,6 +10,7 @@ import { createGenerator, SchemaGenerator } from 'ts-json-schema-generator'
 import {
   Decorator, Project, SourceFile, SyntaxKind,
 } from 'ts-morph'
+import { pathToFileURL } from 'url'
 
 /** 간단 path normalize */
 function normalizePath(p: string) {
@@ -163,7 +165,8 @@ async function main() {
       }
     }
     const classes = modules.flatMap((m) => m.getClasses())
-    const mod = await import(filePath)
+    const fileUrl = pathToFileURL(filePath).href
+    const mod = await import(fileUrl)
     for (const classDec of classes) {
       const className = classDec.getName()
       if (!className) continue

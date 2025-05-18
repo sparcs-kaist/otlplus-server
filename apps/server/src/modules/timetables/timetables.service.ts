@@ -200,4 +200,14 @@ export class TimetablesService {
 
     return timetableDetails.map((detail) => detail.subject_lecture)
   }
+
+  async v2UpdateTimetable(id: number, dto: { timeTableName?: string | null, timeTableOrder?: number }): Promise<void> {
+    await this.prismaService.timetable_timetable.update({
+      where: { id },
+      data: {
+        // name: dto.timeTableName, 문제: timetable 데이터베이스에 name 속성이 없음
+        arrange_order: dto.timeTableOrder,
+      },
+    })
+  }
 }

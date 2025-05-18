@@ -27,6 +27,10 @@ export class LecturesService {
     return toJsonLectureDetail(queryResult)
   }
 
+  public async getELectureDetailsById(id: number): Promise<ELecture.Details> {
+    return await this.lectureRepository.getLectureById(id)
+  }
+
   public async getLectureReviews(
     user: session_userprofile,
     lectureId: number,
@@ -102,13 +106,25 @@ export class LecturesService {
 
   private findAutocompleteFromCandidate(candidate: ELecture.Extended, keyword: string) {
     const keywordLower = keyword.toLowerCase()
-    if (candidate.subject_department.name.startsWith(keyword)) return candidate.subject_department.name
-    if (candidate.subject_department.name_en?.toLowerCase().startsWith(keywordLower)) return candidate.subject_department.name_en
-    if (candidate.title.startsWith(keyword)) return candidate.title
-    if (candidate.title_en.toLowerCase().startsWith(keywordLower)) return candidate.title_en
+    if (candidate.subject_department.name.startsWith(keyword)) {
+      return candidate.subject_department.name
+    }
+    if (candidate.subject_department.name_en?.toLowerCase().startsWith(keywordLower)) {
+      return candidate.subject_department.name_en
+    }
+    if (candidate.title.startsWith(keyword)) {
+      return candidate.title
+    }
+    if (candidate.title_en.toLowerCase().startsWith(keywordLower)) {
+      return candidate.title_en
+    }
     for (const professor of candidate.subject_lecture_professors) {
-      if (professor.professor.professor_name.startsWith(keyword)) return professor.professor.professor_name
-      if (professor.professor.professor_name_en?.toLowerCase().startsWith(keywordLower)) return professor.professor.professor_name_en
+      if (professor.professor.professor_name.startsWith(keyword)) {
+        return professor.professor.professor_name
+      }
+      if (professor.professor.professor_name_en?.toLowerCase().startsWith(keywordLower)) {
+        return professor.professor.professor_name_en
+      }
     }
     return undefined
   }

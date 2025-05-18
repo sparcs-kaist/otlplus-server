@@ -62,3 +62,15 @@ export const toJsonClasstime = (classtime: subject_classtime): ILecture.Classtim
     end: getTimeNumeric(classtime.end),
   })
 }
+
+export const v2toJsonClasstime = (classtime: subject_classtime): ILecture.v2Classtime => {
+  const classroomInfo = getClassroomStrs(classtime)
+  return Object.assign(classroomInfo, {
+    day: classtime.day,
+    begin: getTimeNumeric(classtime.begin),
+    end: getTimeNumeric(classtime.end),
+    buildingCode: classroomInfo.building_code,
+    placeName: classroomInfo.classroom,
+    placeNameShort: classroomInfo.classroom_short,
+  })
+}
