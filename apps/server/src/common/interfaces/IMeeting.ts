@@ -1,5 +1,10 @@
+import {
+  IsArray, IsNotEmpty, IsNumber, IsString,
+} from 'class-validator'
+
 import { SemesterEnum, TimeBlock, TimeBlockDay } from '@otl/common/enum/time'
 
+import { IsTimeBlockDay } from '../decorators/time-block-validator.decorator'
 import { ILecture } from './ILecture'
 import { IPersonal } from './IPersonal'
 import { ITimetable } from './ITimetable'
@@ -58,5 +63,43 @@ export namespace IMeeting {
     lectures: Pick<ILecture.Summary, 'timeBlocks'>[]
     personals: Pick<IPersonal.Block, 'timeBlock'>[]
     meetings: Pick<IMeeting.Result, 'timeBlocks'>[]
+  }
+
+  export class GroupCreateDto {
+    @IsString()
+    @IsNotEmpty()
+    title!: string
+
+    @IsNumber()
+    @IsNotEmpty()
+    begin!: number
+
+    @IsNumber()
+    @IsNotEmpty()
+    end!: number
+
+    @IsNumber()
+    @IsNotEmpty()
+    maxMember!: number
+
+    @IsNumber()
+    @IsNotEmpty()
+    year!: number
+
+    @IsNumber()
+    @IsNotEmpty()
+    semester!: number
+
+    @IsNumber()
+    @IsNotEmpty()
+    startWeek!: number
+
+    @IsNumber()
+    @IsNotEmpty()
+    endWeek!: number
+
+    @IsArray()
+    @IsTimeBlockDay()
+    days!: TimeBlockDay[]
   }
 }

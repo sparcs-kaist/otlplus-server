@@ -11,61 +11,56 @@ import { TimeBlock, TimeBlockDay } from '@otl/common/enum/time'
 import { EMeeting } from '../entities/EMeeting'
 import { PrismaService } from '../prisma.service'
 
+interface IMeetingGroupCreate {
+  title: string
+  begin: number
+  end: number
+  maxMember: number
+  year: number
+  semester: number
+  startWeek: number
+  endWeek: number
+  days: TimeBlockDay[]
+}
+
 @Injectable()
 export class MeetingRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   public async createMeetingGroup(
     user: session_userprofile,
-    title: string,
-    begin: number,
-    end: number,
-    maxMember: number,
-    year: number,
-    semester: number,
-    startWeek: number,
-    endWeek: number,
-    days: TimeBlockDay[],
+    meetingGroup: IMeetingGroupCreate,
   ): Promise<EMeeting.Group> {
-    return this.prisma.$transaction(async (tx) => {
-      const group = await tx.meeting_group.create({
-        data: {
-          leader_user_id: user.id,
-          title,
-          begin,
-          end,
-          max_member: maxMember,
-          year,
-          semester,
-          start_week: startWeek,
-          end_week: endWeek,
-        },
-      })
+    return this.prisma.meeting_group.create({
+      data: {
+        leader_user_id: user.id,
+        title: meetingGroup.title,
+        begin: meetingGroup.begin,
+        end: meetingGroup.end,
+        max_member: meetingGroup.maxMember,
+        year: meetingGroup.year,
+        semester: meetingGroup.semester,
+        start_week: meetingGroup.startWeek,
+        end_week: meetingGroup.endWeek,
 
-      const dayResults = await Promise.all(
-        days.map((day) => tx.meeting_group_day.create({
-          data: {
-            meeting_group_id: group.id,
-            day: day instanceof Date ? day : null,
-            weekday: day instanceof Date ? null : day,
+        days: {
+          createMany: {
+            data: meetingGroup.days.map((day) => ({
+              day: day instanceof Date ? day : null,
+            })),
           },
-        })),
-      )
-
-      const member = await tx.meeting_member.create({
-        data: {
-          meeting_group_id: group.id,
-          user_id: user.id,
-          student_number: user.student_id,
-          name: user.name_kor,
         },
-      })
-
-      return {
-        ...group,
-        days: dayResults,
-        members: [member],
-      }
+        members: {
+          createMany: {
+            data: {
+              user_id: user.id,
+              student_number: user.student_id,
+              name: user.name_kor,
+            },
+          },
+        },
+      },
+      include: EMeeting.Group.include,
     })
   }
 

@@ -41,14 +41,6 @@ export namespace ITimetable {
     meetings: IMeeting.Result[]
   }
 
-  export interface Response2 {
-    id: number
-    lectures: ILecture.Detail2[]
-    personals: IPersonal.Block[]
-    meetings: IMeeting.Result[]
-    arrange_order: number
-  }
-
   export class QueryDto {
     @IsOptional()
     @IsNumber()

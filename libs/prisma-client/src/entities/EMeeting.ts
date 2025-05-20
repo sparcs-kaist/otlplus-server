@@ -4,7 +4,11 @@ export namespace EMeeting {
   export const Group = Prisma.validator<Prisma.meeting_groupDefaultArgs>()({
     include: {
       days: true,
-      members: true,
+      members: {
+        include: {
+          timeblocks: true,
+        },
+      },
     },
   })
 
