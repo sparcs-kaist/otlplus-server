@@ -103,7 +103,6 @@ export class ReviewsRepository {
       orderDict[orderBy[orderBy.length - 1]] = sortOrder
       orderFilters.push(orderDict)
     })
-    console.log(offset, limit)
     return this.prisma.review_review.findMany({
       where: {
         lecture: lectureFilter,
