@@ -95,3 +95,27 @@ export class ReviewsController {
     }
   }
 }
+
+/*
+@Controller('api/v2/reviews')
+export class v2ReviewsController {
+  constructor(private readonly reviewsService: ReviewsService) {}
+
+  @Public()
+  @Get()
+  async getReviews(
+    @Query() reviewsParam: IReview.v2QueryDto,
+    @GetUser() user: session_userprofile,
+  ): Promise<IReview.v2Response> {
+    if (reviewsParam.response_type === 'count') {
+      const reviewsCount = await this.reviewsService.getReviewsCount(
+        reviewsParam.year,
+        reviewsParam.semester,
+      )
+      return reviewsCount
+    }
+    const result = await this.reviewsService.getReviews(reviewsParam, user)
+    return result
+  }
+}
+*/

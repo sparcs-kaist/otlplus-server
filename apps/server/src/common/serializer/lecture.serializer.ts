@@ -1,4 +1,4 @@
-import { ILecture } from '@otl/server-nest/common/interfaces'
+import { ILecture, IUser } from '@otl/server-nest/common/interfaces'
 import { session_userprofile } from '@prisma/client'
 
 import { applyOrder } from '@otl/common/utils'
@@ -173,5 +173,55 @@ export async function v2toJsonLectureWithCourseDetail2(
       classes: lecture.subject_classtime.map((classtime) => v2toJsonClasstime(classtime)),
       examTimes: lecture.subject_examtime.map((examtime) => v2toJsonExamtime(examtime)),
     },
+  }
+}
+
+export async function v2toJsonTakenLectures(
+  lectures: ELecture.Details[],
+  totalLikes: number,
+  reviewIds: number[],
+): Promise<IUser.v2TakenLectures> {
+  const takenLecturesJsons = []
+
+  for (const lecture of lectures) {
+    let added = false
+    for (const takenlist of takenLecturesJsons) {
+      if (takenlist.year === lecture.year && takenlist.semester === lecture.semester) {
+        // const professor = lecture.subject_lecture_professors
+        takenlist.lectures.push({
+          lectureId: lecture.id,
+          code: lecture.code,
+          lectureName: lecture.title,
+          isReviewed: lecture.id in reviewIds,
+          courseId: lecture.course_id,
+          professorId: lecture.subject_lecture_professors[0].professor_id,
+        })
+        added = true
+        break
+      }
+    }
+    if (added === false) {
+      takenLecturesJsons.push({
+        year: lecture.year,
+        semester: lecture.semester,
+        lectures: [
+          {
+            lectureId: lecture.id,
+            code: lecture.code,
+            lectureName: lecture.title,
+            isReviewed: lecture.id in reviewIds,
+            courseId: lecture.course_id,
+            professorId: lecture.subject_lecture_professors[0].professor_id,
+          },
+        ],
+      })
+    }
+  }
+
+  return {
+    totalLectures: lectures.length,
+    reviewdLectures: reviewIds.length,
+    totalLikes,
+    info: takenLecturesJsons,
   }
 }

@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
 
+import { applyOffset, applyOrder } from '@otl/common/utils/util'
+
 import { ECourse } from '../entities/ECourse'
 import ECourseUser = ECourse.ECourseUser
-import { applyOffset, applyOrder } from '@otl/common/utils/util'
 
 import { formatNewLectureCodeWithDot, orderFilter } from '@otl/prisma-client/common'
 import { PaginationOption } from '@otl/prisma-client/types'
@@ -159,6 +160,20 @@ export class CourseRepository {
     }
   }
 
+  public v2DepartmentFilter(department?: number): object | null {
+    if (!department) {
+      return null
+    }
+    if (department === 0) {
+      return null
+    }
+    return {
+      subject_department: {
+        id: department,
+      },
+    }
+  }
+
   public typeFilter(types?: string[]): object | null {
     if (!types) {
       return null
@@ -185,6 +200,34 @@ export class CourseRepository {
           contains: this.TYPE_ACRONYMS[type as keyof typeof this.TYPE_ACRONYMS],
         },
       })),
+    }
+  }
+
+  public v2TypeFilter(type?: string): object | null {
+    if (!type) {
+      return null
+    }
+    if (type === 'ALL') {
+      return null
+    }
+    return {
+      type_en: {
+        contains: this.TYPE_ACRONYMS[type as keyof typeof this.TYPE_ACRONYMS],
+      },
+    }
+  }
+
+  public v2LevelFilter(level?: number): object | null {
+    if (!level) {
+      return null
+    }
+    if (level === 0) {
+      return null
+    }
+    return {
+      new_code: {
+        contains: `__${level.toString()[0]}`,
+      },
     }
   }
 

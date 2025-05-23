@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { session_userprofile, subject_department } from '@prisma/client'
 
 import { PrismaService } from '@otl/prisma-client/prisma.service'
@@ -34,6 +34,33 @@ export class DepartmentRepository {
       })
     ).map((favoriteDepartment) => favoriteDepartment.department)
     return favoriteDepartments
+  }
+
+  async v2updateInerestedMajorDepartments(user: session_userprofile, newIds: number[]): Promise<void> {
+    const distinctIds = Array.from(new Set(newIds))
+
+    const existing = await this.prisma.subject_department.findMany({
+      where: { id: { in: distinctIds } },
+      select: { id: true },
+    })
+    const existingIds = new Set(existing.map((d) => d.id))
+
+    const invalidIds = distinctIds.filter((id) => !existingIds.has(id))
+    if (invalidIds.length > 0) {
+      throw new BadRequestException(`Invalid department_id(s): ${invalidIds.join(', ')}`)
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.session_userprofile_favorite_departments.deleteMany({
+        where: { userprofile_id: user.id },
+      })
+      await tx.session_userprofile_favorite_departments.createMany({
+        data: newIds.map((department_id) => ({
+          userprofile_id: user.id,
+          department_id,
+        })),
+      })
+    })
   }
 
   async getMajors(user: session_userprofile): Promise<subject_department[]> {

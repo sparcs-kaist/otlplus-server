@@ -588,6 +588,37 @@
         ]
       }
     },
+    "/api/v2/lectures": {
+      "get": {
+        "summary": "v2LecturesController.getLectures",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ILecture.v2Response"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ILecture.v2QueryDto"
+            }
+          }
+        ]
+      }
+    },
     "/api/notices": {
       "get": {
         "summary": "NoticesController.getNotices",
@@ -1767,13 +1798,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    }
-                  },
-                  "required": ["success"]
+                  "type": "null"
                 }
               }
             }
@@ -1798,13 +1823,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    }
-                  },
-                  "required": ["success"]
+                  "type": "null"
                 }
               }
             }
@@ -1999,6 +2018,192 @@
         ]
       }
     },
+    "/api/v2/users/{userId}/wishlist": {
+      "get": {
+        "summary": "UserV2Controller.getUserWishlist",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ILecture.v2Response2"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      },
+      "patch": {
+        "summary": "UserV2Controller.AddOrRemoveLectureToWishlist",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IUser.v2AddOrRemoveWishlistDto"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/users/{userId}/lectures": {
+      "get": {
+        "summary": "UserV2Controller.getUserLectures",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IUser.v2TakenLectures"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v2/users/{userId}/reviews/liked": {
+      "get": {
+        "summary": "UserV2Controller.getUserLikedReviews",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IUser.v2LikedReviews"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v2/users/{userId}/info": {
+      "get": {
+        "summary": "UserV2Controller.getUserInfo",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IUser.v2UserInfo"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v2/users/{userId}/interested-majors": {
+      "put": {
+        "summary": "UserV2Controller.modifyInterestedInfo",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IUser.v2ModifyInterestedMajorDepartmentIdsDto"
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/users/{userId}/wishlist": {
       "get": {
         "summary": "WishlistController.getWishlist",
@@ -2184,6 +2389,25 @@
           }
         },
         "required": ["id", "name", "name_en", "code"],
+        "additionalProperties": false
+      },
+      "ICourse.v2BasicForLecture": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "completedCourse": {
+            "type": "boolean"
+          }
+        },
+        "required": ["name", "code", "type", "completedCourse"],
         "additionalProperties": false
       },
       "ICourse.Detail": {
@@ -3694,6 +3918,154 @@
         "required": ["professorName", "professerId"],
         "additionalProperties": false
       },
+      "ILecture.v2DetailwithWishlited": {
+        "type": "object",
+        "properties": {
+          "lectureId": {
+            "type": "number"
+          },
+          "courseId": {
+            "type": "number"
+          },
+          "classNo": {
+            "type": "string"
+          },
+          "lectureName": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "departmentId": {
+            "type": "number"
+          },
+          "type": {
+            "type": "string"
+          },
+          "limitPeople": {
+            "type": "number"
+          },
+          "numPeople": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lectureDuration": {
+            "type": "number"
+          },
+          "credit": {
+            "type": "number"
+          },
+          "au": {
+            "type": "number"
+          },
+          "scoreGrade": {
+            "type": "number"
+          },
+          "scoreLoad": {
+            "type": "number"
+          },
+          "scoreSpeech": {
+            "type": "number"
+          },
+          "isEnglish": {
+            "type": "boolean"
+          },
+          "isWishlited": {
+            "type": "boolean"
+          },
+          "professors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IProfessor.v2Basic"
+            }
+          },
+          "classes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ILecture.v2Classtime"
+            }
+          },
+          "examTimes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ILecture.v2ExamTime"
+            }
+          }
+        },
+        "required": [
+          "lectureId",
+          "courseId",
+          "classNo",
+          "lectureName",
+          "code",
+          "departmentId",
+          "type",
+          "limitPeople",
+          "numPeople",
+          "lectureDuration",
+          "credit",
+          "au",
+          "scoreGrade",
+          "scoreLoad",
+          "scoreSpeech",
+          "isEnglish",
+          "isWishlited",
+          "professors",
+          "classes",
+          "examTimes"
+        ],
+        "additionalProperties": false
+      },
+      "ILecture.v2Response": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "completedCourse": {
+            "type": "boolean"
+          },
+          "lectures": {
+            "$ref": "#/components/schemas/ILecture.v2DetailwithWishlited"
+          }
+        },
+        "required": ["code", "completedCourse", "lectures", "name", "type"],
+        "additionalProperties": false
+      },
+      "ILecture.v2Response2": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "completedCourse": {
+            "type": "boolean"
+          },
+          "lectures": {
+            "$ref": "#/components/schemas/ILecture.v2Detail"
+          }
+        },
+        "required": ["code", "completedCourse", "lectures", "name", "type"],
+        "additionalProperties": false
+      },
       "ILecture.UserTaken": {
         "type": "object",
         "properties": {
@@ -3892,6 +4264,41 @@
             "type": "number"
           },
           "limit": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "ILecture.v2QueryDto": {
+        "properties": {
+          "keyword": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "department": {
+            "type": "integer"
+          },
+          "level": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "year": {
+            "type": "number"
+          },
+          "semester": {
+            "type": "number"
+          },
+          "day": {
+            "type": "number"
+          },
+          "begin": {
+            "type": "number"
+          },
+          "end": {
             "type": "number"
           }
         },
@@ -4480,6 +4887,88 @@
         "type": "object",
         "required": ["score"]
       },
+      "IReview.v2Basic": {
+        "type": "object",
+        "properties": {
+          "reviewId": {
+            "type": "number"
+          },
+          "professorName": {
+            "type": "string"
+          },
+          "year": {
+            "type": "number"
+          },
+          "semester": {
+            "type": "number"
+          },
+          "content": {
+            "type": "string"
+          },
+          "like": {
+            "type": "number"
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "grade": {
+            "type": "number"
+          },
+          "load": {
+            "type": "number"
+          },
+          "speech": {
+            "type": "number"
+          },
+          "userspecificIsLiked": {
+            "oneOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "reviewId",
+          "professorName",
+          "year",
+          "semester",
+          "content",
+          "like",
+          "isDeleted",
+          "grade",
+          "load",
+          "speech",
+          "userspecificIsLiked"
+        ],
+        "additionalProperties": false
+      },
+      "IReview.v2Response": {
+        "type": "object",
+        "properties": {
+          "reviews": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IReview.v2Basic"
+            }
+          },
+          "myReviewId": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": ["reviews", "myReviewId"],
+        "additionalProperties": false
+      },
       "IReview.WithLiked": {
         "type": "object",
         "properties": {
@@ -4652,6 +5141,27 @@
           },
           "limit": {
             "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "IReview.v2QueryDto": {
+        "properties": {
+          "courseId": {
+            "type": "integer"
+          },
+          "professorId": {
+            "type": "integer"
+          },
+          "mode": {
+            "type": "string",
+            "enum": ["default", "recent", "hall-of-fame"]
+          },
+          "year": {
+            "type": "integer"
+          },
+          "semester": {
+            "type": "integer"
           }
         },
         "type": "object"
@@ -5906,10 +6416,13 @@
         "properties": {
           "lectureId": {
             "type": "number"
+          },
+          "mode": {
+            "type": "string"
           }
         },
         "type": "object",
-        "required": ["lectureId"]
+        "required": ["lectureId", "mode"]
       },
       "ITimetable.AddLectureDto": {
         "properties": {
@@ -5940,6 +6453,20 @@
         },
         "type": "object"
       },
+      "IUser.v2AddOrRemoveWishlistDto": {
+        "properties": {
+          "lectureId": {
+            "type": "number"
+          },
+          "mode": {
+            "type": "string",
+            "enum": ["delete", "add"]
+          }
+        },
+        "type": "object",
+        "required": ["lectureId", "mode"]
+      },
+      "IUser.v2ModifyInterestedMajorDepartmentIdsDto": {},
       "IUser.ReviewLikedQueryDto": {
         "properties": {
           "order": {
@@ -6135,6 +6662,177 @@
           "my_timetable_lectures",
           "reviews"
         ],
+        "additionalProperties": false
+      },
+      "IUser.v2TakenLectures": {
+        "type": "object",
+        "properties": {
+          "totalLectures": {
+            "type": "number"
+          },
+          "reviewdLectures": {
+            "type": "number"
+          },
+          "totalLikes": {
+            "type": "number"
+          },
+          "info": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IUser.v2TakenLecturesinfo"
+            }
+          }
+        },
+        "required": ["totalLectures", "reviewdLectures", "totalLikes", "info"],
+        "additionalProperties": false
+      },
+      "IUser.v2TakenLecturesinfo": {
+        "type": "object",
+        "properties": {
+          "year": {
+            "type": "number"
+          },
+          "semester": {
+            "type": "number"
+          },
+          "lectures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IUser.v2TakenLecturesDetail"
+            }
+          }
+        },
+        "required": ["year", "semester", "lectures"],
+        "additionalProperties": false
+      },
+      "IUser.v2TakenLecturesDetail": {
+        "type": "object",
+        "properties": {
+          "lectureId": {
+            "type": "number"
+          },
+          "code": {
+            "type": "string"
+          },
+          "lectureName": {
+            "type": "string"
+          },
+          "isReviewed": {
+            "type": "boolean"
+          },
+          "courseId": {
+            "type": "number"
+          },
+          "professorId": {
+            "type": "number"
+          }
+        },
+        "required": ["lectureId", "code", "lectureName", "isReviewed", "courseId", "professorId"],
+        "additionalProperties": false
+      },
+      "IUser.v2LikedReviews": {
+        "type": "object",
+        "properties": {
+          "courseId": {
+            "type": "number"
+          },
+          "reviewId": {
+            "type": "number"
+          },
+          "lectureName": {
+            "type": "string"
+          },
+          "professorName": {
+            "type": "string"
+          },
+          "year": {
+            "type": "number"
+          },
+          "semester": {
+            "type": "number"
+          },
+          "content": {
+            "type": "string"
+          },
+          "like": {
+            "type": "number"
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "grade": {
+            "type": "number"
+          },
+          "load": {
+            "type": "number"
+          },
+          "speech": {
+            "type": "number"
+          },
+          "userspecificIsLiked": {
+            "oneOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "courseId",
+          "reviewId",
+          "lectureName",
+          "professorName",
+          "year",
+          "semester",
+          "content",
+          "like",
+          "isDeleted",
+          "grade",
+          "load",
+          "speech",
+          "userspecificIsLiked"
+        ],
+        "additionalProperties": false
+      },
+      "IUser.v2UserInfo": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "mail": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "studentNumber": {
+            "type": "number"
+          },
+          "courses": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "majorDepartment": {
+            "type": "string"
+          },
+          "interestedMajorDepartments": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["name", "mail", "studentNumber", "courses", "interestedMajorDepartments"],
         "additionalProperties": false
       },
       "IWishlist.WithLectures": {

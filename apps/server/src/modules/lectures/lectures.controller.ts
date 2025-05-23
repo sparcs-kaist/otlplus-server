@@ -9,6 +9,8 @@ import { session_userprofile } from '@prisma/client'
 
 import { RedisTTL } from '@otl/common/enum/time'
 
+import { LectureRepository, WishlistRepository } from '@otl/prisma-client'
+
 import { LecturesService } from './lectures.service'
 
 @Controller('api/lectures')
@@ -57,5 +59,23 @@ export class LecturesController {
     @GetUser() user: session_userprofile,
   ): Promise<IReview.WithLiked[]> {
     return await this.LectureService.getLectureRelatedReviews(user, lectureId, query)
+  }
+}
+
+@Controller('api/v2/lectures')
+export class v2LecturesController {
+  constructor(
+    private readonly LectureService: LecturesService,
+    private readonly lectureRepository: LectureRepository,
+    private readonly wishlistRepository: WishlistRepository,
+  ) {}
+
+  @Public()
+  @Get()
+  async getLectures(
+    @GetUser() user: session_userprofile,
+    @Query() query: ILecture.v2QueryDto,
+  ): Promise<ILecture.v2Response[]> {
+    return await this.LectureService.v2getLectureByFilter(query, this.lectureRepository, user, this.wishlistRepository)
   }
 }

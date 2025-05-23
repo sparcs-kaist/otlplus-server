@@ -151,6 +151,36 @@ export namespace ILecture {
     examTimes: v2ExamTime[]
   }
 
+  export interface v2DetailwithWishlited {
+    lectureId: number
+    courseId: number
+    classNo: string
+    lectureName: string
+    code: string
+    departmentId: number
+    type: string
+    limitPeople: number
+    numPeople: number | null
+    lectureDuration: number
+    credit: number
+    au: number
+    scoreGrade: number
+    scoreLoad: number
+    scoreSpeech: number
+    isEnglish: boolean
+    isWishlited: boolean
+    professors: IProfessor.v2Basic[]
+    classes: v2Classtime[]
+    examTimes: v2ExamTime[]
+  }
+  export interface v2Response extends ICourse.v2BasicForLecture {
+    lectures: v2DetailwithWishlited
+  }
+
+  export interface v2Response2 extends ICourse.v2BasicForLecture {
+    lectures: v2Detail
+  }
+
   export interface UserTaken extends Omit<Basic, 'department'> {
     classTime: Classtime
     department: IDepartment.Basic
@@ -183,6 +213,56 @@ export namespace ILecture {
 
     @IsOptional()
     // @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+    @Transform(({ value }) => parseInt(value))
+    @IsNumber()
+    end?: number
+  }
+
+  export class v2QueryDto {
+    @IsOptional()
+    @IsString()
+    keyword?: string
+
+    @IsOptional()
+    @IsString()
+    type?: string
+
+    @IsOptional()
+    @Transform(({ value }) => parseInt(value))
+    @IsInt()
+    department?: number
+
+    @IsOptional()
+    @Transform(({ value }) => parseInt(value))
+    @IsInt()
+    level?: number
+
+    @IsOptional()
+    @Transform(({ value }) => parseInt(value))
+    @IsInt()
+    limit?: number
+
+    @IsOptional()
+    @Transform(({ value }) => parseInt(value))
+    @IsNumber()
+    year?: number
+
+    @IsOptional()
+    @Transform(({ value }) => parseInt(value))
+    @IsNumber()
+    semester?: number
+
+    @IsOptional()
+    @Transform(({ value }) => parseInt(value))
+    @IsNumber()
+    day?: number
+
+    @IsOptional()
+    @Transform(({ value }) => parseInt(value))
+    @IsNumber()
+    begin?: number
+
+    @IsOptional()
     @Transform(({ value }) => parseInt(value))
     @IsNumber()
     end?: number
