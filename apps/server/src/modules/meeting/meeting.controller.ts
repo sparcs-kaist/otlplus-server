@@ -1,5 +1,5 @@
 import {
-  Body, Controller, Param, Patch, Post,
+  Body, Controller, Delete, Param, Patch, Post,
 } from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { IMeeting } from '@otl/server-nest/common/interfaces'
@@ -23,5 +23,10 @@ export class MeetingController {
     @GetUser() user: session_userprofile,
   ) {
     return this.meetingService.patchMeetingGroupTitle(user, Number(groupId), body.title)
+  }
+
+  @Delete('/group/:groupId')
+  async deleteMeetingGroup(@Param('groupId') groupId: string, @GetUser() user: session_userprofile) {
+    return this.meetingService.deleteMeetingGroup(user, Number(groupId))
   }
 }

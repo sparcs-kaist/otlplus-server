@@ -21,17 +21,26 @@ export class MeetingService {
     groupId: number,
     title: string,
   ): Promise<IMeeting.GroupNameUpdateResponse> {
+    await this.checkGroupLeader(user, groupId)
+    const updatedGroup = await this.meetingRepository.patchMeetingGroupTitle(groupId, title)
+    return {
+      id: updatedGroup.id,
+      title: updatedGroup.title,
+    }
+  }
+
+  async deleteMeetingGroup(user: session_userprofile, groupId: number) {
+    await this.checkGroupLeader(user, groupId)
+    await this.meetingRepository.deleteMeetingGroup(groupId)
+  }
+
+  private async checkGroupLeader(user: session_userprofile, groupId: number) {
     const group = await this.meetingRepository.getMeetingGroup(groupId)
     if (!group) {
       throw new NotFoundException('Group not found')
     }
     if (group.leader_user_id !== user.id) {
       throw new ForbiddenException('You are not the leader of this group')
-    }
-    const updatedGroup = await this.meetingRepository.patchMeetingGroupTitle(groupId, title)
-    return {
-      id: updatedGroup.id,
-      title: updatedGroup.title,
     }
   }
 

@@ -174,12 +174,40 @@ export class MeetingRepository {
     })
   }
 
-  public async getMeetingGroup(groupId: number) {
+  async getMeetingGroup(groupId: number) {
     return this.prisma.meeting_group.findUnique({
       where: {
         id: groupId,
       },
       include: EMeeting.Group.include,
+    })
+  }
+
+  async deleteMeetingGroup(groupId: number) {
+    return this.prisma.$transaction(async (tx) => {
+      // 1. 먼저 timeblock들을 삭제
+      await tx.meeting_member_timeblock.deleteMany({
+        where: { meeting_member: { meeting_group_id: groupId } },
+      })
+      await tx.meeting_result_timeblock.deleteMany({
+        where: { meeting_result: { meeting_group_id: groupId } },
+      })
+
+      // 2. 그 다음 member와 result 삭제
+      await tx.meeting_member.deleteMany({
+        where: { meeting_group_id: groupId },
+      })
+      await tx.meeting_result.delete({
+        where: { meeting_group_id: groupId },
+      })
+
+      // 3. 마지막으로 group과 관련 데이터 삭제
+      await tx.meeting_group_day.deleteMany({
+        where: { meeting_group_id: groupId },
+      })
+      await tx.meeting_group.delete({
+        where: { id: groupId },
+      })
     })
   }
 }
