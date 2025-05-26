@@ -26,7 +26,10 @@ export const makeDBtoTimeBlockDay = (day: Date | null, weekday: number | null): 
 
 export const makeTimeIndexToTime = (timeIndex: number) => `${Math.floor(timeIndex / 2) + 8}:${timeIndex % 2 === 0 ? '00' : '30'}~${Math.floor(timeIndex / 2) + 8}:${timeIndex % 2 === 0 ? '30' : '00'}`
 
-export const makeTimeToTimeIndex = (time: string) => {
-  const [hour, minute] = time.split(':').map(Number)
-  return (hour - 8) * 2 + (minute === 0 ? 0 : 1)
+export const makeTimeToTimeIndex = (time: string | number): number => {
+  if (typeof time === 'string') {
+    const [hour, minute] = time.split(':').map(Number)
+    return (hour - 8) * 2 + (minute === 0 ? 0 : 1)
+  }
+  return (time - 8) * 2
 }

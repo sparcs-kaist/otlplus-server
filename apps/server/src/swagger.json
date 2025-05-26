@@ -105,16 +105,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "accessToken": {
-                      "type": "string"
-                    },
-                    "refreshToken": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["accessToken", "refreshToken"]
+                  "$ref": "#/components/schemas/IAuth.TokenResponse"
                 }
               }
             }
@@ -126,7 +117,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/{ token: string; }"
+                "$ref": "#/components/schemas/IAuth.TokenDto"
               }
             }
           }
@@ -425,6 +416,142 @@
         ]
       }
     },
+    "/api/friends": {
+      "get": {
+        "summary": "FriendsController.getFriends",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IFriend.Basic"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "FriendsController.createFriend",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IFriend.Basic"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IFriend.CreateDto"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/friends/{friendId}/favorite ": {
+      "patch": {
+        "summary": "FriendsController.updateFriendFavorite",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IFriend.Basic"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "friendId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IFriend.UpdateFavoriteDto"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/friends/{friendId}": {
+      "delete": {
+        "summary": "FriendsController.deleteFriend",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "friendId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/friends/lecture": {
+      "get": {
+        "summary": "FriendsController.getFriendsLecture",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IFriend.LectureFriends"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "lectureId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ]
+      }
+    },
     "/api/lectures": {
       "get": {
         "summary": "LecturesController.getLectures",
@@ -616,6 +743,95 @@
           }
         },
         "security": []
+      }
+    },
+    "/api/personals": {
+      "post": {
+        "summary": "PersonalsController.createPersonal",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "{ personal_timeblocks: { id: number; day: Date | null; weekday: number | null; time_index: number; personal_block_id: number; }[]; } & { id: number; user_id: number; year: number; semester: number; title: string; place: string | null; description: string | null; color: string; timetable_id: number | null; }"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IPersonal.CreateDto"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/personals/{id}": {
+      "patch": {
+        "summary": "PersonalsController.updatePersonal",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IPersonal.Block"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "personalId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IPersonal.UpdateDto"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "PersonalsController.deletePersonal",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "personalId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/api/users/{id}/planners": {
@@ -2845,6 +3061,178 @@
         "type": "object",
         "required": ["date"]
       },
+      "IFriend.Basic": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "user_profile": {
+            "$ref": "#/components/schemas/IUser.Basic"
+          },
+          "begin": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "isFavorite": {
+            "type": "boolean"
+          }
+        },
+        "required": ["id", "user_profile", "begin", "isFavorite"],
+        "additionalProperties": false
+      },
+      "IUser.Basic": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "user_id": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "student_id": {
+            "type": "string"
+          },
+          "sid": {
+            "type": "string"
+          },
+          "language": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "portal_check": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "department_id": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "email": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "date_joined": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "name_kor": {
+            "type": "string"
+          },
+          "name_eng": {
+            "type": "string"
+          },
+          "refresh_token": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "user_id",
+          "student_id",
+          "sid",
+          "language",
+          "portal_check",
+          "department_id",
+          "email",
+          "date_joined",
+          "first_name",
+          "last_name",
+          "name_kor",
+          "name_eng",
+          "refresh_token"
+        ],
+        "additionalProperties": false
+      },
+      "IFriend.LectureFriends": {
+        "type": "object",
+        "properties": {
+          "friendsSameLecture": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IUser.Basic"
+            }
+          },
+          "friendsTakenSameProfessor": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IUser.Basic"
+            }
+          },
+          "friendsTakenOtherProfessor": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IUser.Basic"
+            }
+          }
+        },
+        "required": ["friendsSameLecture", "friendsTakenSameProfessor", "friendsTakenOtherProfessor"],
+        "additionalProperties": false
+      },
+      "IFriend.CreateDto": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "type": "object",
+        "required": ["user_id"]
+      },
+      "IFriend.UpdateFavoriteDto": {
+        "properties": {
+          "isFavorite": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "type": "object",
+        "required": ["isFavorite"]
+      },
       "ILecture.Classtime": {
         "type": "object",
         "properties": {
@@ -3477,6 +3865,247 @@
         ],
         "additionalProperties": false
       },
+      "ILecture.Summary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "course_id": {
+            "type": "number"
+          },
+          "title": {
+            "type": "string"
+          },
+          "title_en": {
+            "type": "string"
+          },
+          "professor_name": {
+            "type": "string"
+          },
+          "professor_name_en": {
+            "type": "string"
+          },
+          "classroom": {
+            "type": "string"
+          },
+          "classroom_en": {
+            "type": "string"
+          },
+          "timeBlocks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimeBlock"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "course_id",
+          "title",
+          "title_en",
+          "professor_name",
+          "professor_name_en",
+          "classroom",
+          "classroom_en",
+          "timeBlocks"
+        ],
+        "additionalProperties": false
+      },
+      "TimeBlock": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "$ref": "#/components/schemas/TimeBlockDay"
+          },
+          "timeIndex": {
+            "type": "number"
+          },
+          "startTime": {
+            "type": "string"
+          },
+          "endTime": {
+            "type": "string"
+          }
+        },
+        "required": ["day", "timeIndex", "startTime", "endTime"],
+        "additionalProperties": false
+      },
+      "TimeBlockDay": {
+        "anyOf": [
+          {
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "$ref": "#/components/schemas/WeekdayEnum"
+          }
+        ]
+      },
+      "WeekdayEnum": {
+        "type": "number",
+        "enum": [1, 2, 3, 4, 5, 6, 7]
+      },
+      "ILecture.Detail2": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "title": {
+            "type": "string"
+          },
+          "title_en": {
+            "type": "string"
+          },
+          "course": {
+            "type": "number"
+          },
+          "old_old_code": {
+            "type": "string"
+          },
+          "old_code": {
+            "type": "string"
+          },
+          "class_no": {
+            "type": "string"
+          },
+          "year": {
+            "type": "number"
+          },
+          "semester": {
+            "type": "number"
+          },
+          "code": {
+            "type": "string"
+          },
+          "department": {
+            "type": "number"
+          },
+          "department_code": {
+            "type": "string"
+          },
+          "department_name": {
+            "type": "string"
+          },
+          "department_name_en": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "type_en": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "num_people": {
+            "type": "number"
+          },
+          "is_english": {
+            "type": "boolean"
+          },
+          "num_classes": {
+            "type": "number"
+          },
+          "num_labs": {
+            "type": "number"
+          },
+          "credit": {
+            "type": "number"
+          },
+          "credit_au": {
+            "type": "number"
+          },
+          "common_title": {
+            "type": "string"
+          },
+          "common_title_en": {
+            "type": "string"
+          },
+          "class_title": {
+            "type": "string"
+          },
+          "class_title_en": {
+            "type": "string"
+          },
+          "review_total_weight": {
+            "type": "number"
+          },
+          "professors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IProfessor.Basic"
+            }
+          },
+          "grade": {
+            "type": "number"
+          },
+          "load": {
+            "type": "number"
+          },
+          "speech": {
+            "type": "number"
+          },
+          "classtimes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ILecture.Classtime"
+            }
+          },
+          "examtimes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ILecture.ExamTime"
+            }
+          },
+          "timeBlocks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimeBlock"
+            }
+          }
+        },
+        "required": [
+          "class_no",
+          "class_title",
+          "class_title_en",
+          "classtimes",
+          "code",
+          "common_title",
+          "common_title_en",
+          "course",
+          "credit",
+          "credit_au",
+          "department",
+          "department_code",
+          "department_name",
+          "department_name_en",
+          "examtimes",
+          "grade",
+          "id",
+          "is_english",
+          "limit",
+          "load",
+          "num_classes",
+          "num_labs",
+          "num_people",
+          "old_code",
+          "old_old_code",
+          "professors",
+          "review_total_weight",
+          "semester",
+          "speech",
+          "timeBlocks",
+          "title",
+          "title_en",
+          "type",
+          "type_en",
+          "year"
+        ],
+        "additionalProperties": false
+      },
       "ILecture.QueryDto": {
         "properties": {
           "year": {
@@ -3557,6 +4186,392 @@
         "type": "object",
         "required": ["year", "semester", "keyword"]
       },
+      "IMeeting.Group": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "year": {
+            "type": "number"
+          },
+          "semester": {
+            "$ref": "#/components/schemas/SemesterEnum"
+          },
+          "begin": {
+            "type": "number"
+          },
+          "end": {
+            "type": "number"
+          },
+          "days": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimeBlockDay"
+            }
+          },
+          "start_week": {
+            "type": "number"
+          },
+          "end_week": {
+            "type": "number"
+          },
+          "title": {
+            "type": "string"
+          },
+          "leader_user_profile_id": {
+            "type": "number"
+          },
+          "schedule": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IMeeting.Schedule"
+            }
+          },
+          "max_member": {
+            "type": "number"
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IMeeting.Member"
+            }
+          },
+          "result": {
+            "$ref": "#/components/schemas/IMeeting.Result"
+          }
+        },
+        "required": [
+          "id",
+          "year",
+          "semester",
+          "begin",
+          "end",
+          "days",
+          "start_week",
+          "end_week",
+          "title",
+          "leader_user_profile_id",
+          "schedule",
+          "max_member",
+          "members"
+        ],
+        "additionalProperties": false
+      },
+      "SemesterEnum": {
+        "type": "number",
+        "enum": [1, 2, 3, 4]
+      },
+      "IMeeting.Schedule": {
+        "type": "object",
+        "properties": {
+          "timeBlock": {
+            "$ref": "#/components/schemas/TimeBlock"
+          },
+          "available_members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IMeeting.Member"
+            }
+          },
+          "unavailable_members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IMeeting.Member"
+            }
+          }
+        },
+        "required": ["timeBlock", "available_members", "unavailable_members"],
+        "additionalProperties": false
+      },
+      "IMeeting.Member": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "user_id": {
+            "type": "number"
+          },
+          "studentNumber": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "available_timeBlock": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimeBlock"
+            }
+          }
+        },
+        "required": ["id", "studentNumber", "name", "available_timeBlock"],
+        "additionalProperties": false
+      },
+      "IMeeting.Result": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "group_id": {
+            "type": "number"
+          },
+          "year": {
+            "type": "number"
+          },
+          "semester": {
+            "type": "number"
+          },
+          "start_week": {
+            "type": "number"
+          },
+          "end_week": {
+            "type": "number"
+          },
+          "title": {
+            "type": "string"
+          },
+          "timeBlocks": {
+            "allOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "available_members": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/IMeeting.Member"
+                      }
+                    },
+                    "unavailable_members": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/IMeeting.Member"
+                      }
+                    }
+                  },
+                  "required": ["available_members", "unavailable_members"],
+                  "additionalProperties": false
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "day": {
+                    "$ref": "#/components/schemas/TimeBlockDay"
+                  },
+                  "timeIndex": {
+                    "type": "number"
+                  },
+                  "startTime": {
+                    "type": "string"
+                  },
+                  "endTime": {
+                    "type": "string"
+                  }
+                },
+                "required": ["day", "endTime", "startTime", "timeIndex"]
+              }
+            ]
+          },
+          "place": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "color": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "group_id",
+          "year",
+          "semester",
+          "start_week",
+          "end_week",
+          "title",
+          "timeBlocks",
+          "place",
+          "description",
+          "color"
+        ],
+        "additionalProperties": false
+      },
+      "IMeeting.HiddenTimetable": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "year": {
+            "type": "number"
+          },
+          "semester": {
+            "type": "number"
+          },
+          "arrange_order": {
+            "type": "number"
+          },
+          "lectures": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "timeBlocks": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TimeBlock"
+                  }
+                }
+              },
+              "required": ["timeBlocks"],
+              "additionalProperties": false
+            }
+          },
+          "personals": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "timeBlock": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TimeBlock"
+                  }
+                }
+              },
+              "required": ["timeBlock"],
+              "additionalProperties": false
+            }
+          },
+          "meetings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "timeBlocks": {
+                  "allOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "available_members": {
+                            "type": "array",
+                            "items": {
+                              "$ref": "#/components/schemas/IMeeting.Member"
+                            }
+                          },
+                          "unavailable_members": {
+                            "type": "array",
+                            "items": {
+                              "$ref": "#/components/schemas/IMeeting.Member"
+                            }
+                          }
+                        },
+                        "required": ["available_members", "unavailable_members"],
+                        "additionalProperties": false
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "day": {
+                          "$ref": "#/components/schemas/TimeBlockDay"
+                        },
+                        "timeIndex": {
+                          "type": "number"
+                        },
+                        "startTime": {
+                          "type": "string"
+                        },
+                        "endTime": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["day", "endTime", "startTime", "timeIndex"]
+                    }
+                  ]
+                }
+              },
+              "required": ["timeBlocks"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["arrange_order", "id", "lectures", "meetings", "personals", "semester", "year"],
+        "additionalProperties": false
+      },
+      "IMeeting.GroupCreateDto": {
+        "properties": {
+          "title": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "begin": {
+            "minLength": 1,
+            "type": "number"
+          },
+          "end": {
+            "minLength": 1,
+            "type": "number"
+          },
+          "maxMember": {
+            "minLength": 1,
+            "type": "number"
+          },
+          "year": {
+            "minLength": 1,
+            "type": "number"
+          },
+          "semester": {
+            "minLength": 1,
+            "type": "number"
+          },
+          "startWeek": {
+            "minLength": 1,
+            "type": "number"
+          },
+          "endWeek": {
+            "minLength": 1,
+            "type": "number"
+          },
+          "days": {
+            "items": {},
+            "type": "array"
+          }
+        },
+        "type": "object",
+        "required": ["title", "begin", "end", "maxMember", "year", "semester", "startWeek", "endWeek", "days"]
+      },
       "INotice.Basic": {
         "type": "object",
         "properties": {
@@ -3577,6 +4592,138 @@
         },
         "required": ["title", "content", "start_time", "end_time"],
         "additionalProperties": false
+      },
+      "IPersonal.Block": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "year": {
+            "type": "number"
+          },
+          "semester": {
+            "type": "number"
+          },
+          "user_id": {
+            "type": "number"
+          },
+          "timetable_id": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "timeBlock": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimeBlock"
+            }
+          },
+          "place": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "color": {
+            "$ref": "#/components/schemas/TimeTableColorEnum"
+          }
+        },
+        "required": [
+          "id",
+          "year",
+          "semester",
+          "user_id",
+          "timetable_id",
+          "title",
+          "timeBlock",
+          "place",
+          "description",
+          "color"
+        ],
+        "additionalProperties": false
+      },
+      "TimeTableColorEnum": {
+        "type": "string",
+        "enum": ["red", "green", "blue", "yellow", "purple", "orange", "pink"]
+      },
+      "IPersonal.CreateDto": {
+        "properties": {
+          "timetableId": {
+            "type": "number"
+          },
+          "year": {
+            "type": "number"
+          },
+          "semester": {
+            "enum": ["Spring", "Summer", "Fall", "Winter", 1, 2, 3, 4],
+            "type": "number"
+          },
+          "timeBlocks": {
+            "items": {},
+            "type": "array"
+          },
+          "title": {
+            "type": "string"
+          },
+          "place": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "color": {
+            "enum": ["red", "green", "blue", "yellow", "purple", "orange", "pink"],
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["year", "semester", "timeBlocks", "title", "color"]
+      },
+      "IPersonal.UpdateDto": {
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "place": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "color": {
+            "enum": ["red", "green", "blue", "yellow", "purple", "orange", "pink"],
+            "type": "string"
+          },
+          "timeBlocks": {
+            "items": {},
+            "type": "array"
+          }
+        },
+        "type": "object",
+        "required": ["title", "description", "color", "timeBlocks"]
       },
       "IPlanner.ITrack.Additional": {
         "type": "object",
@@ -5366,6 +6513,50 @@
         "required": ["id", "arrange_order"],
         "additionalProperties": false
       },
+      "ITimetable.Summary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "year": {
+            "type": "number"
+          },
+          "semester": {
+            "type": "number"
+          },
+          "arrange_order": {
+            "type": "number"
+          },
+          "lectures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ILecture.Summary"
+            }
+          },
+          "personals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IPersonal.Block"
+            }
+          },
+          "meetings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IMeeting.Result"
+            }
+          }
+        },
+        "required": ["id", "year", "semester", "arrange_order", "lectures", "personals", "meetings"],
+        "additionalProperties": false
+      },
       "ITimetable.QueryDto": {
         "properties": {
           "year": {
@@ -5453,105 +6644,6 @@
         },
         "type": "object"
       },
-      "IUser.Basic": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "number"
-          },
-          "user_id": {
-            "oneOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "student_id": {
-            "type": "string"
-          },
-          "sid": {
-            "type": "string"
-          },
-          "language": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "portal_check": {
-            "oneOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "department_id": {
-            "oneOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "email": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "date_joined": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "first_name": {
-            "type": "string"
-          },
-          "last_name": {
-            "type": "string"
-          },
-          "refresh_token": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "required": [
-          "id",
-          "user_id",
-          "student_id",
-          "sid",
-          "language",
-          "portal_check",
-          "department_id",
-          "email",
-          "date_joined",
-          "first_name",
-          "last_name",
-          "refresh_token"
-        ],
-        "additionalProperties": false
-      },
       "IUser.Profile": {
         "type": "object",
         "properties": {
@@ -5568,6 +6660,12 @@
             "type": "string"
           },
           "lastName": {
+            "type": "string"
+          },
+          "nameKor": {
+            "type": "string"
+          },
+          "nameEng": {
             "type": "string"
           },
           "department": {
@@ -5623,6 +6721,8 @@
           "student_id",
           "firstName",
           "lastName",
+          "nameKor",
+          "nameEng",
           "department",
           "majors",
           "departments",

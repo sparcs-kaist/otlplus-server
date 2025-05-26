@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { IMeeting } from '@otl/server-nest/common/interfaces'
+import { makeDBtoTimeBlockDay, makeTimeToTimeIndex } from '@otl/server-nest/common/utils/time.utils'
 import { session_userprofile } from '@prisma/client'
 
 import { MeetingRepository } from '@otl/prisma-client'
@@ -11,42 +12,105 @@ export class MeetingService {
 
   async createMeetingGroup(user: session_userprofile, group: IMeeting.GroupCreateDto): Promise<IMeeting.Group> {
     const createdGroup = await this.meetingRepository.createMeetingGroup(user, group)
-
-    return {
-      ...createdGroup,
-      days: createdGroup.days.map((day) => ({
-        day: day.day,
-        weekday: day.weekday,
-      })),
-      schedule: createdGroup.days.map((day) => ({
-        timeBlock: day.time_block,
-        available_members: [],
-        unavailable_members: [],
-      })),
-      members: createdGroup.members.map((member) => ({
-        id: member.id,
-        user_id: member.user_id,
-        studentNumber: member.student_number,
-        name: member.name,
-        available_timeBlock: [],
-      })),
-    }
+    const meetingGroup = this.makeEMeetingGroupToIMeetingGroup(createdGroup)
+    return meetingGroup
   }
 
   private makeEMeetingGroupToIMeetingGroup(group: EMeeting.Group): IMeeting.Group {
     // const schedule: IMeeting.Schedule[] = []
+    const days = group.days.map((day) => makeDBtoTimeBlockDay(day.day, day.weekday))
+    const schedule: IMeeting.Schedule[] = []
 
+    const members: IMeeting.Member[] = group.members.map((member) => ({
+      id: member.id,
+      user_id: member.user_id || undefined,
+      studentNumber: member.student_number,
+      name: member.name,
+      available_timeBlock: member.timeblocks.map((timeblock) => ({
+        day: makeDBtoTimeBlockDay(timeblock.day, timeblock.weekday),
+        timeIndex: timeblock.time_index,
+        duration: 1,
+      })),
+    }))
+
+    for (const day of days) {
+      for (let i = makeTimeToTimeIndex(group.begin); i <= makeTimeToTimeIndex(group.end); i += 1) {
+        schedule.push({
+          timeBlock: {
+            day,
+            timeIndex: i,
+            duration: 1,
+          },
+          available_members: [],
+          unavailable_members: [],
+        })
+        for (const member of members) {
+          if (member.available_timeBlock.find((timeblock) => timeblock.timeIndex === i)) {
+            schedule[schedule.length - 1].available_members.push(member)
+          }
+          else {
+            schedule[schedule.length - 1].unavailable_members.push(member)
+          }
+        }
+      }
+    }
     return {
-      ...group,
-      days: group.days.map((day) => ({
-        day: day.day,
-        weekday: day.weekday,
-      })),
-      schedule: group.days.map((day) => ({
-        timeBlock: day.time_block,
-        available_members: [],
-        unavailable_members: [],
-      })),
+      id: group.id,
+      year: group.year,
+      semester: group.semester,
+      begin: group.begin,
+      end: group.end,
+      start_week: group.start_week,
+      end_week: group.end_week,
+      title: group.title,
+      leader_user_profile_id: group.leader_user_id,
+      max_member: group.max_member,
+      days,
+      schedule,
+      members,
+      result: group.result
+        ? this.makeEMeetingResultToIMeetingResult({ ...group.result, meeting_group: group })
+        : undefined,
+    }
+  }
+
+  private makeEMeetingResultToIMeetingResult(result: EMeeting.Result): IMeeting.Result {
+    return {
+      id: result.id,
+      group_id: result.meeting_group_id,
+      year: result.meeting_group.year,
+      semester: result.meeting_group.semester,
+      start_week: result.meeting_group.start_week,
+      end_week: result.meeting_group.end_week,
+      title: result.meeting_group.title,
+      place: result.place,
+      description: result.description,
+      color: result.color,
+      timeBlocks: result.timeblocks.map((timeblock) => {
+        const available_members = result.meeting_group.members.filter((member) => member.timeblocks.some(
+          (tb) => tb.day === timeblock.day && tb.time_index === timeblock.time_index && tb.is_available,
+        ))
+        const unavailable_members = result.meeting_group.members.filter((member) => member.timeblocks.some(
+          (tb) => tb.day === timeblock.day && tb.time_index === timeblock.time_index && !tb.is_available,
+        ))
+        return {
+          day: makeDBtoTimeBlockDay(timeblock.day, timeblock.weekday),
+          timeIndex: timeblock.time_index,
+          duration: 1,
+          available_members: available_members.map((member) => ({
+            id: member.id,
+            user_id: member.user_id || undefined,
+            studentNumber: member.student_number,
+            name: member.name,
+          })),
+          unavailable_members: unavailable_members.map((member) => ({
+            id: member.id,
+            user_id: member.user_id || undefined,
+            studentNumber: member.student_number,
+            name: member.name,
+          })),
+        }
+      }),
     }
   }
 }

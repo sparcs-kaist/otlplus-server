@@ -53,7 +53,10 @@ export namespace IMeeting {
     end_week: number // 종료 주차
 
     title: string
-    timeBlocks: TimeBlock & { available_members: IMeeting.Member[], unavailable_members: IMeeting.Member[] }[]
+    timeBlocks: (TimeBlock & {
+      available_members: Omit<IMeeting.Member, 'available_timeBlock'>[]
+      unavailable_members: Omit<IMeeting.Member, 'available_timeBlock'>[]
+    })[]
     place: string | null // 장소
     description: string | null // 설명
     color: number // 색상 원래 어떻게 저장하지

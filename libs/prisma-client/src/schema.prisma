@@ -1025,8 +1025,9 @@ model meeting_result{
 model meeting_result_timeblock{
   id Int @id @default(autoincrement())
   meeting_result_id Int
-  day Int
-  weekday Int
+  day DateTime?
+  weekday Int?
+  time_index Int
   meeting_result meeting_result @relation(fields: [meeting_result_id], references: [id], onUpdate: Restrict, map: "meeting_result_timeblock_meeting_result_id_fk_meeting_result_id")
 }
 
