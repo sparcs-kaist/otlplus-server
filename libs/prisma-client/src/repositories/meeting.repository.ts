@@ -162,4 +162,24 @@ export class MeetingRepository {
 
     return blocks
   }
+
+  async patchMeetingGroupTitle(groupId: number, title: string) {
+    return this.prisma.meeting_group.update({
+      where: {
+        id: groupId,
+      },
+      data: {
+        title,
+      },
+    })
+  }
+
+  public async getMeetingGroup(groupId: number) {
+    return this.prisma.meeting_group.findUnique({
+      where: {
+        id: groupId,
+      },
+      include: EMeeting.Group.include,
+    })
+  }
 }

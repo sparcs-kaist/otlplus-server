@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
 import { IMeeting } from '@otl/server-nest/common/interfaces'
 import { makeDBtoTimeBlockDay, makeTimeToTimeIndex } from '@otl/server-nest/common/utils/time.utils'
 import { session_userprofile } from '@prisma/client'
@@ -14,6 +14,25 @@ export class MeetingService {
     const createdGroup = await this.meetingRepository.createMeetingGroup(user, group)
     const meetingGroup = this.makeEMeetingGroupToIMeetingGroup(createdGroup)
     return meetingGroup
+  }
+
+  async patchMeetingGroupTitle(
+    user: session_userprofile,
+    groupId: number,
+    title: string,
+  ): Promise<IMeeting.GroupNameUpdateResponse> {
+    const group = await this.meetingRepository.getMeetingGroup(groupId)
+    if (!group) {
+      throw new NotFoundException('Group not found')
+    }
+    if (group.leader_user_id !== user.id) {
+      throw new ForbiddenException('You are not the leader of this group')
+    }
+    const updatedGroup = await this.meetingRepository.patchMeetingGroupTitle(groupId, title)
+    return {
+      id: updatedGroup.id,
+      title: updatedGroup.title,
+    }
   }
 
   private makeEMeetingGroupToIMeetingGroup(group: EMeeting.Group): IMeeting.Group {

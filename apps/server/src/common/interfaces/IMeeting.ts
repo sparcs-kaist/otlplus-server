@@ -105,4 +105,15 @@ export namespace IMeeting {
     @IsTimeBlockDay()
     days!: TimeBlockDay[]
   }
+
+  export class GroupUpdateNameDto {
+    @IsString()
+    @IsNotEmpty()
+    title!: string
+  }
+
+  export interface GroupNameUpdateResponse {
+    id: number
+    title: string
+  }
 }

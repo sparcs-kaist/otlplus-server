@@ -1,4 +1,6 @@
-import { Body, Controller, Post } from '@nestjs/common'
+import {
+  Body, Controller, Param, Patch, Post,
+} from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { IMeeting } from '@otl/server-nest/common/interfaces'
 import { session_userprofile } from '@prisma/client'
@@ -12,5 +14,14 @@ export class MeetingController {
   @Post('/group')
   async createMeetingGroup(@Body() body: IMeeting.GroupCreateDto, @GetUser() user: session_userprofile) {
     return this.meetingService.createMeetingGroup(user, body)
+  }
+
+  @Patch('/group/:groupId/title')
+  async patchMeetingGroupTitle(
+    @Param('groupId') groupId: string,
+    @Body() body: IMeeting.GroupUpdateNameDto,
+    @GetUser() user: session_userprofile,
+  ) {
+    return this.meetingService.patchMeetingGroupTitle(user, Number(groupId), body.title)
   }
 }
