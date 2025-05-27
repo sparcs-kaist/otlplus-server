@@ -1,5 +1,6 @@
+import { Type } from 'class-transformer'
 import {
-  IsArray, IsNotEmpty, IsNumber, IsString,
+  IsArray, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested,
 } from 'class-validator'
 
 import { SemesterEnum, TimeBlock, TimeBlockDay } from '@otl/common/enum/time'
@@ -115,5 +116,30 @@ export namespace IMeeting {
   export interface GroupNameUpdateResponse {
     id: number
     title: string
+  }
+  class UserDto {
+    @IsString()
+    @IsNotEmpty()
+    studentNumber!: string
+
+    @IsString()
+    @IsNotEmpty()
+    name!: string
+  }
+  export class GroupMemberCreateDto {
+    @IsOptional()
+    @ValidateNested()
+    @Type(() => UserDto)
+    user?: UserDto
+  }
+
+  export interface GroupMemberCreateResponse {
+    member: {
+      id: number
+      groupId: number
+      studentNumber: string
+      name: string
+      user_id: number | null
+    }
   }
 }

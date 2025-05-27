@@ -3,12 +3,15 @@ import { IMeeting } from '@otl/server-nest/common/interfaces'
 import { makeDBtoTimeBlockDay, makeTimeToTimeIndex } from '@otl/server-nest/common/utils/time.utils'
 import { session_userprofile } from '@prisma/client'
 
-import { MeetingRepository } from '@otl/prisma-client'
+import { MeetingRepository, UserRepository } from '@otl/prisma-client'
 import { EMeeting } from '@otl/prisma-client/entities/EMeeting'
 
 @Injectable()
 export class MeetingService {
-  constructor(private readonly meetingRepository: MeetingRepository) {}
+  constructor(
+    private readonly meetingRepository: MeetingRepository,
+    private readonly userRepository: UserRepository,
+  ) {}
 
   async createMeetingGroup(user: session_userprofile, group: IMeeting.GroupCreateDto): Promise<IMeeting.Group> {
     const createdGroup = await this.meetingRepository.createMeetingGroup(user, group)
@@ -32,6 +35,40 @@ export class MeetingService {
   async deleteMeetingGroup(user: session_userprofile, groupId: number) {
     await this.checkGroupLeader(user, groupId)
     await this.meetingRepository.deleteMeetingGroup(groupId)
+  }
+
+  async postMeetingGroupMember(
+    user: session_userprofile | { name: string, student_id: string },
+    groupId: number,
+  ): Promise<IMeeting.GroupMemberCreateResponse> {
+    const group = await this.meetingRepository.getMeetingGroup(groupId)
+    if (!group) {
+      throw new NotFoundException('Group not found')
+    }
+    if (group.members.some((member) => member.student_number === user.student_id)) {
+      if ('user_id' in user && group.members.find((member) => member.user_id === user.user_id)?.user_id === null) {
+        await this.meetingRepository.updateMemberUserId(groupId, user.id, user.student_id, user.name_kor)
+      }
+      else {
+        throw new ForbiddenException('You are already a member of this group')
+      }
+    }
+    let member
+    if ('user_id' in user) {
+      member = await this.meetingRepository.createMember(groupId, user.user_id, user.student_id, user.name_kor)
+    }
+    else {
+      member = await this.meetingRepository.createMember(groupId, null, user.student_id, user.name)
+    }
+    return {
+      member: {
+        id: member.id,
+        groupId: member.meeting_group_id,
+        studentNumber: member.student_number,
+        name: member.name,
+        user_id: member.user_id,
+      },
+    }
   }
 
   private async checkGroupLeader(user: session_userprofile, groupId: number) {

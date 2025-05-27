@@ -69,7 +69,7 @@ export class MeetingRepository {
     userId: meeting_member['user_id'],
     studentNumber: meeting_member['student_number'],
     name: meeting_member['name'],
-  ) {
+  ): Promise<meeting_member> {
     return this.prisma.$transaction(async (tx) => {
       const group = await tx.meeting_group.findUnique({
         where: {
@@ -208,6 +208,13 @@ export class MeetingRepository {
       await tx.meeting_group.delete({
         where: { id: groupId },
       })
+    })
+  }
+
+  async updateMemberUserId(groupId: number, userId: number, studentNumber: string, name: string) {
+    return this.prisma.meeting_member.update({
+      where: { id: groupId, student_number: studentNumber },
+      data: { user_id: userId, name },
     })
   }
 }
