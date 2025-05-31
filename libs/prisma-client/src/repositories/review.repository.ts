@@ -147,21 +147,6 @@ export class ReviewsRepository {
       skip: offset,
       take: limit,
       orderBy: orderFilter(order),
-      distinct: [
-        'id',
-        'course_id',
-        'lecture_id',
-        'content',
-        'grade',
-        'load',
-        'speech',
-        'writer_id',
-        'writer_label',
-        'updated_datetime',
-        'like',
-        'is_deleted',
-        'written_datetime',
-      ],
     })
   }
 
