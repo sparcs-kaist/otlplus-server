@@ -139,6 +139,23 @@ export class MeetingRepository {
     })
   }
 
+  public async updateMeetingResult(groupId: number, title: string, place: string, description: string, color: number) {
+    return this.prisma.meeting_result.update({
+      where: { meeting_group_id: groupId },
+      data: {
+        place,
+        description,
+        color,
+        meeting_group: {
+          update: {
+            title,
+          },
+        },
+      },
+      include: EMeeting.Result.include,
+    })
+  }
+
   // util function
   public makeScheduleBlocks(begin: number, end: number, days: TimeBlockDay[]) {
     const blocks: TimeBlock[] = []

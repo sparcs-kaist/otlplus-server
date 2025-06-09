@@ -154,4 +154,24 @@ export namespace IMeeting {
     @IsInt()
     color!: number
   }
+
+  export class GroupResultUpdateDto {
+    @IsString()
+    @IsNotEmpty()
+    title!: string
+
+    @IsString()
+    @IsNotEmpty()
+    place!: string
+
+    @IsString()
+    @IsNotEmpty()
+    description!: string
+
+    @IsNumber()
+    @IsNotEmpty()
+    @IsPositive()
+    @IsInt()
+    color!: number
+  }
 }

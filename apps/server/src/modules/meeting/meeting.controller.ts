@@ -53,4 +53,13 @@ export class MeetingController {
   ) {
     return this.meetingService.postMeetingGroupResult(user, Number(groupId), body)
   }
+
+  @Patch('/group/:groupId/result/timeBlock')
+  async patchMeetingGroupResult(
+    @Param('groupId') groupId: string,
+    @GetUser() user: session_userprofile,
+    @Body() body: IMeeting.GroupResultUpdateDto,
+  ) {
+    return this.meetingService.patchMeetingGroupResult(user, Number(groupId), body)
+  }
 }
