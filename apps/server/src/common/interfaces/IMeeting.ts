@@ -1,11 +1,11 @@
 import { Type } from 'class-transformer'
 import {
-  IsArray, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested,
+  IsArray, IsInt, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, ValidateNested,
 } from 'class-validator'
 
 import { SemesterEnum, TimeBlock, TimeBlockDay } from '@otl/common/enum/time'
 
-import { IsTimeBlockDay } from '../decorators/time-block-validator.decorator'
+import { IsTimeBlock, IsTimeBlockDay } from '../decorators/time-block-validator.decorator'
 import { ILecture } from './ILecture'
 import { IPersonal } from './IPersonal'
 import { ITimetable } from './ITimetable'
@@ -141,5 +141,17 @@ export namespace IMeeting {
       name: string
       user_id: number | null
     }
+  }
+
+  export class GroupResultCreateDto {
+    @IsArray()
+    @IsTimeBlock()
+    timeBlocks!: TimeBlock[]
+
+    @IsNumber()
+    @IsNotEmpty()
+    @IsPositive()
+    @IsInt()
+    color!: number
   }
 }

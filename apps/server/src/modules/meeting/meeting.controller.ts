@@ -44,4 +44,13 @@ export class MeetingController {
     }
     return this.meetingService.postMeetingGroupMember(userInfo, Number(groupId))
   }
+
+  @Post('/group/:groupId/result')
+  async postMeetingGroupResult(
+    @Param('groupId') groupId: string,
+    @GetUser() user: session_userprofile,
+    @Body() body: IMeeting.GroupResultCreateDto,
+  ) {
+    return this.meetingService.postMeetingGroupResult(user, Number(groupId), body)
+  }
 }

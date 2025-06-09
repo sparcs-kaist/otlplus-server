@@ -71,6 +71,22 @@ export class MeetingService {
     }
   }
 
+  async postMeetingGroupResult(user: session_userprofile, groupId: number, body: IMeeting.GroupResultCreateDto) {
+    const [group, _] = await Promise.all([
+      this.meetingRepository.getMeetingGroup(groupId),
+      this.checkGroupLeader(user, groupId),
+    ])
+
+    if (!group) {
+      throw new NotFoundException('Group not found')
+    }
+
+    const result = await this.meetingRepository.createMeetingResult(group, body.timeBlocks, body.color)
+    return this.makeEMeetingResultToIMeetingResult({ ...result, meeting_group: group })
+  }
+
+  // Private Methods
+
   private async checkGroupLeader(user: session_userprofile, groupId: number) {
     const group = await this.meetingRepository.getMeetingGroup(groupId)
     if (!group) {

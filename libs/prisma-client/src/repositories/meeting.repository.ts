@@ -217,4 +217,24 @@ export class MeetingRepository {
       data: { user_id: userId, name },
     })
   }
+
+  async createMeetingResult(group: EMeeting.Group, timeblocks: TimeBlock[], color: number): Promise<EMeeting.Result> {
+    return this.prisma.meeting_result.create({
+      data: {
+        meeting_group_id: group.id,
+        start_week: group.start_week,
+        end_week: group.end_week,
+        color,
+        timeblocks: {
+          createMany: {
+            data: timeblocks.map((block) => ({
+              ...makeTimeBlockDayToDB(block.day),
+              time_index: block.timeIndex,
+            })),
+          },
+        },
+      },
+      include: EMeeting.Result.include,
+    })
+  }
 }
