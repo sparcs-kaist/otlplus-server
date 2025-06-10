@@ -1,5 +1,10 @@
 version: '3'
 
+networks:
+  app_net:
+    name: docker_default
+    external: true
+
 services:
   rabbitmq:
     build:
@@ -14,4 +19,6 @@ services:
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
     volumes:
       - ./rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - app_net
     restart: unless-stopped
