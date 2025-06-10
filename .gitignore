@@ -50,9 +50,16 @@ volumes
 .docker/redis/redis-data
 .docker/redis-scheduler/redis-data/*
 deploy/server/redis/redis-data
+.docker/redis-scheduler/redis-data
 
 # rabbitmq
-.docker/rabbitmq/rabbitmq-data
+.docker/rabbitmq/rabbitmq-data/*
 
-# web-test
-/web-test/*
+#firebase secrets
+secrets/*
+web-test/*
+
+## logs
+apps/server/logs/*
+# Sentry Config File
+.sentryclirc

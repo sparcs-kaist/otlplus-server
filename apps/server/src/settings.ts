@@ -112,6 +112,10 @@ const staticConfig = (): any => ({
     process.env.DOCKER_DEPLOY === 'true' ? '/var/www/otlplus-server/apps/server/static/' : 'apps/server/static/',
 })
 
+const sentryConfig = () => ({
+  dsn: process.env.SENTRY_DSN,
+})
+
 const getRabbitMQConfig = () => ({
   url: process.env.RABBITMQ_URL,
   user: process.env.RABBITMQ_USER,
@@ -173,5 +177,6 @@ export default () => ({
   getStaticConfig: () => staticConfig(),
   getSwaggerConfig: () => getSwaggerConfig(),
   getSwaggerStatsConfig: () => getSwaggerStatsConfig(),
+  getSentryConfig: () => sentryConfig(),
   getRabbitMQConfig: () => getRabbitMQConfig(),
 })
