@@ -139,6 +139,7 @@ export class AuthService {
   }
 
   async tokenRefresh(refreshToken: any) {
+    console.log(refreshToken)
     const payload = await this.jwtService.verifyAsync(refreshToken, {
       secret: this.jwtConfig.secret,
       ignoreExpiration: false,

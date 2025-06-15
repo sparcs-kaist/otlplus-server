@@ -85,6 +85,7 @@ export class AuthController {
   @Public()
   @Post('refresh')
   async refreshToken(@Body() body: TokenDto, @Res({ passthrough: true }) res: IAuth.Response): Promise<TokenResponse> {
+    console.log(body)
     const { token } = body
     const {
       accessToken, accessTokenOptions, refreshToken, refreshTokenOptions,
