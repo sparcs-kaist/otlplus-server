@@ -72,7 +72,7 @@ export class AuthController {
     @Todo
     call import_student_lectures(studentId)
      */
-    const next_url = req.cookies.next ?? `${process.env.WEB_URL}/login/success#accessToken=${accessToken}&refreshToken=${refreshToken}`
+    const next_url = `${process.env.WEB_URL}/login/success#accessToken=${accessToken}&refreshToken=${refreshToken}`
     response.redirect(next_url)
   }
 
