@@ -37,7 +37,13 @@ export class AuthController {
     @Res() res: IAuth.Response,
   ): void {
     if (req.user) {
-      return res.redirect(next ?? process.env.WEB_URL)
+      const accessToken = this.authService.extractTokenFromHeader(req, 'accessToken')
+        ?? this.authService.extractTokenFromCookie(req, 'accessToken')
+      const refreshToken = this.authService.extractTokenFromHeader(req, 'refreshToken')
+        ?? this.authService.extractTokenFromCookie(req, 'refreshToken')
+      return res.redirect(
+        `${process.env.WEB_URL}/login/success#accessToken=${accessToken}&refreshToken=${refreshToken}`,
+      )
     }
     // req.session['next'] = next ?? '/';
     res.cookie('next', next ?? '/', { httpOnly: true, secure: true, sameSite: 'strict' })
