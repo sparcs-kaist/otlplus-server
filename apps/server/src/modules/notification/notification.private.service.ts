@@ -4,7 +4,11 @@ import {
   AGREEMENT_REPOSITORY,
   AgreementRepository,
 } from '@otl/server-nest/modules/agreement/domain/agreement.repository'
-import { FCMNotificationRequest, UserNotification } from '@otl/server-nest/modules/notification/domain/notification'
+import {
+  FCMNotificationRequest,
+  Notification,
+  UserNotification,
+} from '@otl/server-nest/modules/notification/domain/notification'
 import { NotificationInPort } from '@otl/server-nest/modules/notification/domain/notification.in.port'
 import {
   NOTIFICATION_REPOSITORY,
@@ -14,7 +18,7 @@ import { NotificationPublicService } from '@otl/server-nest/modules/notification
 import { StatusCodes } from 'http-status-codes'
 
 import { getCurrentMethodName } from '@otl/common'
-import { NotificationType } from '@otl/common/enum/notification'
+import { AgreementType } from '@otl/common/enum/agreement'
 import { NotificationException } from '@otl/common/exception/notification.exception'
 
 @Injectable()
@@ -29,10 +33,10 @@ export class NotificationPrivateService extends NotificationPublicService implem
 
   async changeNotificationPermission(
     userId: number,
-    notificationType: NotificationType,
+    notificationName: string,
     active: boolean,
   ): Promise<UserNotification> {
-    const userNotification = await this.notificationRepository.findByUserIdAndType(userId, notificationType)
+    const userNotification = await this.notificationRepository.findByUserIdAndType(userId, notificationName)
     if (!userNotification) {
       throw new NotificationException(
         StatusCodes.INTERNAL_SERVER_ERROR,
@@ -49,5 +53,41 @@ export class NotificationPrivateService extends NotificationPublicService implem
     const request = await this.notificationRepository.getNotificationRequestById(requestId)
     request.isRead = true
     return await this.notificationRepository.saveRequest(request)
+  }
+
+  createNotification(name: string, description: string, agreementType: AgreementType): Promise<Notification> {
+    const notification = new Notification()
+    notification.name = name
+    notification.description = description
+    notification.agreementType = agreementType
+
+    return this.notificationRepository.createNotification(notification)
+  }
+
+  deleteNotification(id: number): Promise<void> {
+    return this.notificationRepository.deleteNotification(id)
+  }
+
+  getAllNotification(): Promise<Notification[]> {
+    return this.notificationRepository.getAllNotification()
+  }
+
+  getNotificationByName(name: string): Promise<Notification> {
+    return this.notificationRepository.getNotification(name)
+  }
+
+  updateNotification(
+    id: number,
+    name: string,
+    description: string,
+    agreementType: AgreementType,
+  ): Promise<Notification> {
+    const notification = new Notification()
+    notification.id = id
+    notification.name = name
+    notification.description = description
+    notification.agreementType = agreementType
+
+    return this.notificationRepository.updateNotification(notification)
   }
 }

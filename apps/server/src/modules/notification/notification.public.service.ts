@@ -4,7 +4,7 @@ import {
   AGREEMENT_REPOSITORY,
   AgreementRepository,
 } from '@otl/server-nest/modules/agreement/domain/agreement.repository'
-import { FCMNotificationRequest } from '@otl/server-nest/modules/notification/domain/notification'
+import { FCMNotificationRequest, Notification } from '@otl/server-nest/modules/notification/domain/notification'
 import { NotificationInPublicPort } from '@otl/server-nest/modules/notification/domain/notification.in.public.port'
 import {
   NOTIFICATION_REPOSITORY,
@@ -14,7 +14,6 @@ import { StatusCodes } from 'http-status-codes'
 import { v6 } from 'uuid'
 
 import { getCurrentMethodName } from '@otl/common'
-import { NotificationType } from '@otl/common/enum/notification'
 import { AgreementException } from '@otl/common/exception/agreement.exception'
 import { NotificationException } from '@otl/common/exception/notification.exception'
 import { _NotificationRequest } from '@otl/common/notification/notification'
@@ -31,9 +30,9 @@ export class NotificationPublicService implements NotificationInPublicPort {
     return await this.notificationRepository.getNotificationRequest(uuid)
   }
 
-  async checkNotificationPermission(userId: number, notificationType: NotificationType): Promise<boolean> {
-    const notification = await this.notificationRepository.getNotification(notificationType)
-    const userNotification = await this.notificationRepository.findByUserIdAndType(userId, notificationType)
+  async checkNotificationPermission(userId: number, notificationName: string): Promise<boolean> {
+    const notification = await this.notificationRepository.getNotification(notificationName)
+    const userNotification = await this.notificationRepository.findByUserIdAndType(userId, notificationName)
     const userAgreement = await this.agreementRepository.findByUserIdAndType(userId, notification.agreementType)
     if (!userAgreement) {
       throw new AgreementException(
@@ -56,10 +55,10 @@ export class NotificationPublicService implements NotificationInPublicPort {
     to: string,
     title: string,
     body: string,
-    other: { userId: number, scheduleAt: Date, notificationType: NotificationType },
+    other: { userId: number, scheduleAt: Date, notificationName: string },
   ): Promise<FCMNotificationRequest> {
-    const { userId, scheduleAt, notificationType } = other
-    if (!(await this.checkNotificationPermission(userId, notificationType))) {
+    const { userId, scheduleAt, notificationName } = other
+    if (!(await this.checkNotificationPermission(userId, notificationName))) {
       throw new NotificationException(
         StatusCodes.FORBIDDEN,
         NotificationException.FORBIDDEN_NOTIFICATION,
@@ -97,5 +96,17 @@ export class NotificationPublicService implements NotificationInPublicPort {
       )
     }
     return request
+  }
+
+  async getNotification(name: string): Promise<Notification | null> {
+    const notification = await this.notificationRepository.getNotification(name)
+    if (!notification) {
+      throw new NotificationException(
+        StatusCodes.NOT_FOUND,
+        NotificationException.NO_NOTIFICATION,
+        getCurrentMethodName(),
+      )
+    }
+    return notification
   }
 }

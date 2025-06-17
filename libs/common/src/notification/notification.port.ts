@@ -1,4 +1,3 @@
-import { NotificationType } from '@otl/common/enum/notification'
 import { _NotificationRequest } from '@otl/common/notification/notification'
 
 export interface _NotificationPort {
@@ -7,7 +6,7 @@ export interface _NotificationPort {
     to: string,
     title: string,
     body: string,
-    metadata: { userId: number, scheduleAt: Date, notificationType: NotificationType },
+    metadata: { userId: number, scheduleAt: Date, notificationName: string },
   ): Promise<_NotificationRequest>
 
   // 모두에게 알림 전송
@@ -20,5 +19,5 @@ export interface _NotificationPort {
   checkNotificationCompleted(uuid: string): Promise<_NotificationRequest | null>
 
   // 알림 수신 동의 여부 & 약관 동의
-  checkNotificationPermission(userId: number, notificationType: NotificationType): Promise<boolean>
+  checkNotificationPermission(userId: number, notificationType: string): Promise<boolean>
 }

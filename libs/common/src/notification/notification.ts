@@ -1,12 +1,13 @@
 import { AgreementType } from '@otl/common/enum/agreement'
-import { NotificationType } from '@otl/common/enum/notification'
 
 export class _Notification {
   public static templatePath: string = 'notification'
 
   id!: number
 
-  name!: NotificationType
+  name!: string
+
+  description!: string
 
   agreementType!: AgreementType
 }
@@ -16,7 +17,7 @@ export class _UserNotification {
 
   userId!: number
 
-  notificationType!: NotificationType
+  notificationName!: string
 
   active!: boolean
 }
@@ -24,7 +25,7 @@ export class _UserNotification {
 export class _NotificationRequest {
   id!: number | null
 
-  notificationType!: NotificationType
+  notificationName!: string
 
   userId!: number
 

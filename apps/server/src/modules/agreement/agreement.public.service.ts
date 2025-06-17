@@ -4,7 +4,7 @@ import {
   AGREEMENT_REPOSITORY,
   AgreementRepository,
 } from '@otl/server-nest/modules/agreement/domain/agreement.repository'
-import { UserAgreement, UserAgreementCreate } from '@otl/server-nest/modules/agreement/domain/UserAgreement'
+import { Agreement, UserAgreement, UserAgreementCreate } from '@otl/server-nest/modules/agreement/domain/UserAgreement'
 
 import { AgreementType } from '@otl/common/enum/agreement'
 
@@ -40,5 +40,9 @@ export class AgreementPublicService implements AgreementInPublicPort {
       return await this.agreementRepository.upsertMany(agreementList)
     }
     return agreements
+  }
+
+  async getAllAgreements(): Promise<Agreement[]> {
+    return await this.agreementRepository.getAllAgreementTypes()
   }
 }

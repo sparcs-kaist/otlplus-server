@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common'
 import { RmqModule } from '@otl/rmq/rmq.module'
+import { AgreementPublicService } from '@otl/server-nest/modules/agreement/agreement.public.service'
+import { AGREEMENT_IN_PUBLIC_PORT } from '@otl/server-nest/modules/agreement/domain/agreement.in.port'
 import { AGREEMENT_REPOSITORY } from '@otl/server-nest/modules/agreement/domain/agreement.repository'
 import {
   NOTIFICATION_IN_PORT,
@@ -32,6 +34,10 @@ import { NotificationPrismaRepository } from '@otl/prisma-client/repositories/no
     {
       provide: NOTIFICATION_IN_PUBLIC_PORT,
       useClass: NotificationPublicService,
+    },
+    {
+      provide: AGREEMENT_IN_PUBLIC_PORT,
+      useClass: AgreementPublicService,
     },
   ],
   controllers: [NotificationController],

@@ -1,4 +1,4 @@
-import { UserAgreement } from '@otl/server-nest/modules/agreement/domain/UserAgreement'
+import { Agreement, UserAgreement } from '@otl/server-nest/modules/agreement/domain/UserAgreement'
 
 import { AgreementType } from '@otl/common/enum/agreement'
 
@@ -11,4 +11,7 @@ export interface AgreementInPublicPort {
 
   // create default Agreement setting for user
   initialize(userId: number): Promise<UserAgreement[]>
+
+  // get all agreements
+  getAllAgreements(): Promise<Agreement[]>
 }

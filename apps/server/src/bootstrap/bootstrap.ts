@@ -11,7 +11,6 @@ import swaggerStats from 'swagger-stats'
 import * as swaggerUi from 'swagger-ui-express'
 
 import { AgreementType } from '@otl/common/enum/agreement'
-import { NotificationAgreementMap, NotificationType } from '@otl/common/enum/notification'
 import { HttpExceptionFilter, UnexpectedExceptionFilter } from '@otl/common/exception/exception.filter'
 
 import { PrismaService } from '@otl/prisma-client'
@@ -28,26 +27,6 @@ function initializeDB(prismaService: PrismaService) {
         update: {},
         create: {
           name: type,
-        },
-      })
-    }),
-  )
-    .then(() => {
-      console.log('DB initialized')
-    })
-    .catch((error) => {
-      console.error('Error initializing DB:', error)
-    })
-
-  const notificationTypes = Object.values(NotificationType)
-  Promise.all(
-    notificationTypes.map(async (type) => {
-      await prismaService.notification.upsert({
-        where: { name: type },
-        update: {},
-        create: {
-          name: type,
-          agreementType: NotificationAgreementMap[type],
         },
       })
     }),

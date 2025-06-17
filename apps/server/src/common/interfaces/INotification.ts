@@ -1,6 +1,6 @@
 import { IsIn, IsNotEmpty } from 'class-validator'
 
-import { NotificationType } from '@otl/common/enum/notification'
+import { AgreementType } from '@otl/common/enum/agreement'
 
 export namespace INotification {
   export class ReadDto {
@@ -11,8 +11,39 @@ export namespace INotification {
     @IsNotEmpty()
     active!: boolean
 
-    @IsIn(Object.values(NotificationType))
     @IsNotEmpty()
-    notificationType!: NotificationType
+    notificationType!: string
+  }
+
+  export class CreateDto {
+    @IsNotEmpty()
+    name!: string
+
+    @IsNotEmpty()
+    description!: string
+
+    @IsIn(Object.values(AgreementType))
+    @IsNotEmpty()
+    agreementType!: AgreementType
+  }
+
+  export class UpdateDto {
+    @IsNotEmpty()
+    id!: number
+
+    @IsNotEmpty()
+    name!: string
+
+    @IsNotEmpty()
+    description!: string
+
+    @IsIn(Object.values(AgreementType))
+    @IsNotEmpty()
+    agreementType!: AgreementType
+  }
+
+  export class DeleteDto {
+    @IsNotEmpty()
+    id!: number
   }
 }

@@ -10,7 +10,6 @@ import {
 import { NotificationRepository } from '@otl/server-nest/modules/notification/domain/notification.repository'
 import { StatusCodes } from 'http-status-codes'
 
-import { NotificationType } from '@otl/common/enum/notification'
 import { NotificationException } from '@otl/common/exception/notification.exception'
 import { OtlException } from '@otl/common/exception/otl.exception'
 import { getCurrentMethodName } from '@otl/common/utils'
@@ -32,10 +31,10 @@ export class NotificationPrismaRepository implements NotificationRepository {
     return notifications.map(mapNotification)
   }
 
-  async getNotification(type: NotificationType): Promise<Notification> {
+  async getNotification(name: string): Promise<Notification> {
     const notification = await this.prisma.notification.findFirst({
       where: {
-        name: type,
+        name,
       },
     })
     if (!notification) {
@@ -74,10 +73,10 @@ export class NotificationPrismaRepository implements NotificationRepository {
     return userNotifications.map(mapUserNotification)
   }
 
-  async findByUserIdAndType(userId: number, type: NotificationType): Promise<UserNotification | null> {
+  async findByUserIdAndType(userId: number, name: string): Promise<UserNotification | null> {
     const notification = await this.prisma.notification.findFirst({
       where: {
-        name: type,
+        name,
       },
     })
     if (!notification) {
@@ -110,10 +109,10 @@ export class NotificationPrismaRepository implements NotificationRepository {
     const allNotificationTypes = await this.getAllNotification()
     const allNotificationTypesMap = new Map<string, number>()
     allNotificationTypes.forEach((e) => {
-      allNotificationTypesMap.set(e.agreementType, e.id)
+      allNotificationTypesMap.set(e.name, e.id)
     })
     const notificationCreate = notifications.map((n) => {
-      const notificationTypeId = allNotificationTypesMap.get(n.notificationType)
+      const notificationTypeId = allNotificationTypesMap.get(n.notificationName)
       if (notificationTypeId == null) {
         throw new NotificationException(
           StatusCodes.INTERNAL_SERVER_ERROR,
@@ -163,10 +162,10 @@ export class NotificationPrismaRepository implements NotificationRepository {
         })
         .then((e) => mapUserNotification(e))
     }
-    const { userId, notificationType } = notification
+    const { userId, notificationName } = notification
     const notificationTypeId = await this.prisma.notification.findFirst({
       where: {
-        name: notificationType,
+        name: notificationName,
       },
     })
     if (!notificationTypeId) {
@@ -188,13 +187,13 @@ export class NotificationPrismaRepository implements NotificationRepository {
   }
 
   async upsert(notification: UserNotificationCreate): Promise<UserNotification> {
-    const { userId, notificationType } = notification
+    const { userId, notificationName } = notification
     const allNotificationTypes = await this.getAllNotification()
     const allNotificationTypesMap = new Map<string, number>()
     allNotificationTypes.forEach((e) => {
       allNotificationTypesMap.set(e.name, e.id)
     })
-    const notificationTypeId = allNotificationTypesMap.get(notificationType)
+    const notificationTypeId = allNotificationTypesMap.get(notificationName)
     if (notificationTypeId == null) {
       throw new OtlException(404, 'Agreement not found')
     }
@@ -267,10 +266,10 @@ export class NotificationPrismaRepository implements NotificationRepository {
         })
         .then((e) => mapNotificationHistory(e))
     }
-    const { userId, notificationType } = notification
+    const { userId, notificationName } = notification
     const notificationTypeId = await this.prisma.notification.findFirst({
       where: {
-        name: notificationType,
+        name: notificationName,
       },
     })
     if (!notificationTypeId) {
@@ -293,5 +292,56 @@ export class NotificationPrismaRepository implements NotificationRepository {
       include: ENotification.UserNotification.include,
     })
     return mapNotificationHistory(notificationRequest)
+  }
+
+  createNotification(notification: Notification): Promise<Notification> {
+    return this.prisma.notification
+      .create({
+        data: {
+          name: notification.name,
+          description: notification.description,
+          agreementType: notification.agreementType,
+        },
+      })
+      .then((e) => mapNotification(e))
+  }
+
+  deleteNotification(id: number): Promise<void> {
+    return this.prisma.notification
+      .delete({
+        where: {
+          id,
+        },
+      })
+      .then(() => undefined)
+      .catch((_e) => {
+        throw new NotificationException(
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          NotificationException.NO_NOTIFICATION,
+          getCurrentMethodName(),
+        )
+      })
+  }
+
+  updateNotification(notification: Notification): Promise<Notification> {
+    return this.prisma.notification
+      .update({
+        where: {
+          id: notification.id,
+        },
+        data: {
+          name: notification.name,
+          description: notification.description,
+          agreementType: notification.agreementType,
+        },
+      })
+      .then((e) => mapNotification(e))
+      .catch((_e) => {
+        throw new NotificationException(
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          NotificationException.NO_NOTIFICATION,
+          getCurrentMethodName(),
+        )
+      })
   }
 }
