@@ -1,10 +1,14 @@
-import { Injectable } from '@nestjs/common'
+import { Inject, Injectable } from '@nestjs/common'
 import { messaging } from 'firebase-admin'
 import { getMessaging } from 'firebase-admin/messaging'
 
-import { PrismaService } from '@otl/prisma-client'
 import Message = messaging.Message
-import { AmqpConnection } from '@golevelup/nestjs-rabbitmq'
+import { ConsumerAgreementRepository } from '@otl/notification-consumer/out/agreement.repository'
+import { NOTIFICATION_MQ, NotificationConsumerMQ } from '@otl/notification-consumer/out/notification.mq'
+import {
+  ConsumerNotificationRepository,
+  NOTIFICATION_REPOSITORY,
+} from '@otl/notification-consumer/out/notification.repository'
 import { NotificationSchedulerService } from '@otl/notification-consumer/schedule.service'
 import { FCMNotificationRequest } from '@otl/server-nest/modules/notification/domain/notification'
 import { ConsumeMessage } from 'amqplib'
@@ -12,60 +16,52 @@ import { StatusCodes } from 'http-status-codes'
 
 import { getCurrentMethodName } from '@otl/common'
 import { AgreementType } from '@otl/common/enum/agreement'
-import { NotificationAgreementMap, NotificationType } from '@otl/common/enum/notification'
 import { AgreementException } from '@otl/common/exception/agreement.exception'
 import { NotificationException } from '@otl/common/exception/notification.exception'
 import logger from '@otl/common/logger/logger'
 
-import { NotificationPrismaRepository } from '@otl/prisma-client/repositories/notification.repository'
-
 @Injectable()
 export class AppService {
   constructor(
-    private readonly prisma: PrismaService,
+    @Inject('AGREEMENT_REPOSITORY')
+    private readonly agreementRepository: ConsumerAgreementRepository,
+    @Inject(NOTIFICATION_REPOSITORY)
+    private readonly notificationRepository: ConsumerNotificationRepository,
+    @Inject(NOTIFICATION_MQ)
+    private readonly notificationConsumerMQ: NotificationConsumerMQ,
     private readonly notificationSchedulerService: NotificationSchedulerService,
-    private readonly notificationRepository: NotificationPrismaRepository,
-    protected readonly amqpConnection: AmqpConnection,
   ) {}
 
-  async handleNotification(msg: FCMNotificationRequest, _amqpMsg: ConsumeMessage) {
-    const name = Object.values(NotificationType).find((e) => e === msg.notificationType)
-    if (!name) {
-      throw new NotificationException(
-        StatusCodes.INTERNAL_SERVER_ERROR,
-        NotificationException.NO_NOTIFICATION,
-        getCurrentMethodName(),
-      )
-    }
-
+  async handleNotification(msg: FCMNotificationRequest, _amqpMsg: ConsumeMessage): Promise<boolean> {
+    const name = msg.notificationName
     const delayMs = new Date(msg.scheduleAt).getTime() - Date.now()
 
     // 10분 이상 남았으면 예약 저장
     if (delayMs >= 10 * 60 * 1000) {
-      logger.info(`Scheduled notification (${msg.notificationType}) to be sent after ${delayMs}ms`)
-      await this.notificationSchedulerService.scheduleNotification(msg)
-      return
+      logger.info(`Scheduled notification (${msg.notificationName}) to be sent after ${delayMs}ms`)
+      return await this.notificationSchedulerService.scheduleNotification(msg)
     }
 
     const hour = new Date(msg.scheduleAt).getHours()
     const isNightTime = hour >= 22 || hour < 8
 
-    let routingKey = ''
-    if (NotificationAgreementMap[name] === AgreementType.INFO) {
-      routingKey = 'notifications.info.fcm'
+    const notification = await this.notificationRepository.getNotification(name)
+
+    if (notification.agreementType === AgreementType.INFO) {
+      return await this.notificationConsumerMQ.publishInfoNotification(msg)
     }
-    else if (NotificationAgreementMap[name] === AgreementType.MARKETING) {
-      routingKey = isNightTime ? 'notifications.night-ad.fcm' : 'notifications.ad.fcm'
+    if (notification.agreementType === AgreementType.MARKETING) {
+      if (isNightTime) {
+        return await this.notificationConsumerMQ.publishNightAdNotification(msg)
+      }
+      return await this.notificationConsumerMQ.publishAdNotification(msg)
     }
-    else {
-      throw new NotificationException(
-        StatusCodes.INTERNAL_SERVER_ERROR,
-        NotificationException.NO_NOTIFICATION,
-        getCurrentMethodName(),
-      )
-    }
-    console.log(routingKey, msg)
-    await this.amqpConnection.publish('notifications', routingKey, msg)
+
+    throw new NotificationException(
+      StatusCodes.INTERNAL_SERVER_ERROR,
+      NotificationException.NO_NOTIFICATION,
+      getCurrentMethodName(),
+    )
   }
 
   async handleAdNotification(msg: FCMNotificationRequest) {
@@ -76,14 +72,7 @@ export class AppService {
   async handleNightAdNotification(msg: FCMNotificationRequest) {
     const { userId, scheduleAt } = msg
 
-    const userAgreement = await this.prisma.session_userprofile_agreement.findFirst({
-      where: {
-        userprofile_id: userId,
-        agreement: {
-          name: AgreementType.NIGHT_MARKETING,
-        },
-      },
-    })
+    const userAgreement = await this.agreementRepository.findByUserIdAndType(userId, AgreementType.NIGHT_MARKETING)
 
     const originalSchedule = new Date(scheduleAt)
     const hour = originalSchedule.getHours()
@@ -97,7 +86,7 @@ export class AppService {
       )
     }
 
-    if (isNight && userAgreement.agreement_status === false) {
+    if (isNight && !userAgreement.agreementStatus) {
       const nextMorning = new Date(originalSchedule)
 
       if (hour < 8) {
@@ -126,7 +115,7 @@ export class AppService {
 
   async sendFCM(msg: FCMNotificationRequest) {
     const {
-      content, userId, scheduleAt, notificationType, requestId, deviceToken,
+      content, userId, scheduleAt, notificationName, requestId, deviceToken,
     } = msg
     const { title, body } = content
 
@@ -147,7 +136,7 @@ export class AppService {
     const response = await getMessaging().send(message)
     console.log(response)
     await this.notificationRepository.saveRequest({
-      notificationType,
+      notificationName,
       userId,
       content,
       requestId,

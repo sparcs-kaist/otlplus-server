@@ -1,4 +1,3 @@
-import { AmqpConnection } from '@golevelup/nestjs-rabbitmq'
 import { Inject, Injectable } from '@nestjs/common'
 import {
   AGREEMENT_REPOSITORY,
@@ -10,6 +9,7 @@ import {
   UserNotification,
 } from '@otl/server-nest/modules/notification/domain/notification'
 import { NotificationInPort } from '@otl/server-nest/modules/notification/domain/notification.in.port'
+import { NOTIFICATION_MQ, NotificationMq } from '@otl/server-nest/modules/notification/domain/notification.mq'
 import {
   NOTIFICATION_REPOSITORY,
   NotificationRepository,
@@ -24,11 +24,14 @@ import { NotificationException } from '@otl/common/exception/notification.except
 @Injectable()
 export class NotificationPrivateService extends NotificationPublicService implements NotificationInPort {
   constructor(
-    @Inject(NOTIFICATION_REPOSITORY) protected readonly notificationRepository: NotificationRepository,
-    @Inject(AGREEMENT_REPOSITORY) protected readonly agreementRepository: AgreementRepository,
-    protected readonly amqpConnection: AmqpConnection,
+    @Inject(NOTIFICATION_REPOSITORY)
+    protected readonly notificationRepository: NotificationRepository,
+    @Inject(AGREEMENT_REPOSITORY)
+    protected readonly agreementRepository: AgreementRepository,
+    @Inject(NOTIFICATION_MQ)
+    protected readonly notificationMq: NotificationMq,
   ) {
-    super(notificationRepository, agreementRepository, amqpConnection)
+    super(notificationRepository, agreementRepository, notificationMq)
   }
 
   async changeNotificationPermission(

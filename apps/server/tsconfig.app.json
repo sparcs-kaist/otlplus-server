@@ -30,7 +30,8 @@
       "@otl/common/*": ["../../libs/common/src/*"],
       "@otl/scholar-sync/domain": ["../../apps/scholar-sync/src/common/domain"],
       "@otl/scholar-sync/domain/*": ["../../apps/scholar-sync/src/common/domain/*"],
-      "@otl/scholar-sync/clients/scholar/*": ["../../apps/scholar-sync/src/clients/scholar/*"]
+      "@otl/scholar-sync/clients/scholar/*": ["../../apps/scholar-sync/src/clients/scholar/*"],
+      "@otl/notification-consumer/*": ["../../apps/notification-consumer/src/*"]
     },
     "assets": [
       {

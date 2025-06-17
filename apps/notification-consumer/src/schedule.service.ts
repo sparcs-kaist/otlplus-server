@@ -7,9 +7,10 @@ import Redis from 'ioredis'
 export class NotificationSchedulerService {
   constructor(@InjectRedis() private readonly redis: Redis) {}
 
-  async scheduleNotification(msg: FCMNotificationRequest) {
+  async scheduleNotification(msg: FCMNotificationRequest): Promise<boolean> {
     const key = 'notification:schedule'
     const score = new Date(msg.scheduleAt).getTime()
     await this.redis.zadd(key, score, JSON.stringify(msg))
+    return true
   }
 }

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { ConsumerAgreementRepository } from '@otl/notification-consumer/out/agreement.repository'
 import { AgreementRepository } from '@otl/server-nest/modules/agreement/domain/agreement.repository'
 import { Agreement, UserAgreement, UserAgreementCreate } from '@otl/server-nest/modules/agreement/domain/UserAgreement'
 
@@ -10,7 +11,7 @@ import { EAgreement } from '@otl/prisma-client/entities/EAgreement'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 
 @Injectable()
-export class AgreementPrismaRepository implements AgreementRepository {
+export class AgreementPrismaRepository implements AgreementRepository, ConsumerAgreementRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async delete(agreement: UserAgreement): Promise<UserAgreement> {

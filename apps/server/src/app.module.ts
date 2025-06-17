@@ -6,6 +6,7 @@ import { JwtService } from '@nestjs/jwt'
 import { ClientsModule } from '@nestjs/microservices'
 import { ClsPluginTransactional } from '@nestjs-cls/transactional'
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma'
+import { RmqModule } from '@otl/rmq/rmq.module'
 import { AgreementModule } from '@otl/server-nest/modules/agreement/agreement.module'
 import { DeviceModule } from '@otl/server-nest/modules/device/device.module'
 import { NotificationModule } from '@otl/server-nest/modules/notification/notification.module'
@@ -74,6 +75,7 @@ async function createCacheStoreWithFallback(): Promise<Keyv> {
   imports: [
     SentryModule.forRoot(),
     PrismaModule.register(settings().ormconfig()),
+    RmqModule,
     AuthModule,
     CoursesModule,
     LecturesModule,

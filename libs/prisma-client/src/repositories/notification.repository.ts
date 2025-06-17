@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { ConsumerNotificationRepository } from '@otl/notification-consumer/out/notification.repository'
 import {
   FCMNotificationRequest,
   isFCMRequest,
@@ -23,7 +24,7 @@ import { ENotification } from '@otl/prisma-client/entities/ENotification'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 
 @Injectable()
-export class NotificationPrismaRepository implements NotificationRepository {
+export class NotificationPrismaRepository implements NotificationRepository, ConsumerNotificationRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async getAllNotification(): Promise<Notification[]> {

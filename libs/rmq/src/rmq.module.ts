@@ -1,19 +1,10 @@
-import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq'
-import { DynamicModule, Module } from '@nestjs/common'
-import settings from '@otl/rmq/settings'
-
-import { RmqService } from './rmq.service'
+import { Module } from '@nestjs/common'
+import { NotificationFcmPublisher } from '@otl/rmq/exchanges/notification/notification.fcm.publish'
+import { RmqConnectionModule } from '@otl/rmq/rmqConnectionModule'
 
 @Module({
-  providers: [RmqService],
-  exports: [RmqService],
+  imports: [RmqConnectionModule.register()],
+  providers: [NotificationFcmPublisher],
+  exports: [NotificationFcmPublisher],
 })
-export class RmqModule {
-  static register(): DynamicModule {
-    return RabbitMQModule.forRoot({
-      exchanges: settings().getRabbitMQConfig().exchangeConfig.exchanges,
-      uri: settings().getRabbitMQConfig().url as string,
-      enableControllerDiscovery: true,
-    })
-  }
-}
+export class RmqModule {}

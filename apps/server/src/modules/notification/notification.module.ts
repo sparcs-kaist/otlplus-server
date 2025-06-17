@@ -17,7 +17,7 @@ import { AgreementPrismaRepository } from '@otl/prisma-client/repositories/agree
 import { NotificationPrismaRepository } from '@otl/prisma-client/repositories/notification.repository'
 
 @Module({
-  imports: [PrismaModule, RmqModule.register()],
+  imports: [PrismaModule, RmqModule],
   providers: [
     {
       provide: AGREEMENT_REPOSITORY,

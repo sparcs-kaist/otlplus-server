@@ -1,22 +1,58 @@
-import { _Notification, _NotificationRequest, _UserNotification } from '@otl/common/notification/notification'
+import { AgreementType } from '@otl/common/enum/agreement'
 
-export class Notification extends _Notification {}
+export class Notification {
+  public static templatePath: string = 'notification'
 
-export class UserNotification extends _UserNotification {}
+  id!: number
 
-export class FCMNotificationRequest extends _NotificationRequest {
+  name!: string
+
+  description!: string
+
+  agreementType!: AgreementType
+}
+
+export class UserNotification {
+  id!: number
+
+  userId!: number
+
+  notificationName!: string
+
+  active!: boolean
+}
+
+export class NotificationRequest {
+  id!: number | null
+
+  notificationName!: string
+
+  userId!: number
+
+  content!: { title: string, body: string }
+
+  requestId!: string
+
+  scheduleAt!: Date
+
+  isCompleted!: boolean
+
+  isRead!: boolean
+}
+
+export class FCMNotificationRequest extends NotificationRequest {
   fcmId?: string
 
   deviceToken!: string
 }
 
-export class EmailNotificationRequest extends _NotificationRequest {
+export class EmailNotificationRequest extends NotificationRequest {
   email!: string
 }
 
 export type UserNotificationCreate = Omit<UserNotification, 'id'>
 
-export type NotificationRequestCreate = Omit<_NotificationRequest, 'id'>
+export type NotificationRequestCreate = Omit<NotificationRequest, 'id'>
 
 export function isFCMRequest(
   req: NotificationRequestCreate | FCMNotificationRequest | EmailNotificationRequest,
