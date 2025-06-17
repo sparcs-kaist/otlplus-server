@@ -103,32 +103,15 @@ export class ReviewsRepository {
       orderDict[orderBy[orderBy.length - 1]] = sortOrder
       orderFilters.push(orderDict)
     })
-    const reviews: EReview.Details[] = await this.prisma.review_review.findMany({
+    return this.prisma.review_review.findMany({
       where: {
         lecture: lectureFilter,
       },
       include: EReview.Details.include,
+      orderBy: orderFilters,
       skip: offset,
       take: limit,
-      orderBy: orderFilters,
-      distinct: [
-        'id',
-        'course_id',
-        'lecture_id',
-        'content',
-        'grade',
-        'load',
-        'speech',
-        'writer_id',
-        'writer_label',
-        'updated_datetime',
-        'like',
-        'is_deleted',
-        'written_datetime',
-      ],
     })
-
-    return reviews
   }
 
   async getReviewsOfLecture(id: number, order: string[], offset: number, limit: number): Promise<EReview.Details[]> {
@@ -164,21 +147,6 @@ export class ReviewsRepository {
       skip: offset,
       take: limit,
       orderBy: orderFilter(order),
-      distinct: [
-        'id',
-        'course_id',
-        'lecture_id',
-        'content',
-        'grade',
-        'load',
-        'speech',
-        'writer_id',
-        'writer_label',
-        'updated_datetime',
-        'like',
-        'is_deleted',
-        'written_datetime',
-      ],
     })
   }
 

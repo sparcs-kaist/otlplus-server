@@ -11,7 +11,12 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
 
   async onModuleInit() {
     await this.$connect()
-
+    // // @ts-ignore
+    // this.$on('query', (e:any) => {
+    //   console.log(`Query: ${e.query}`)
+    //   console.log(`Params: ${e.params}`)
+    //   console.log(`Duration: ${e.duration}ms`)
+    // })
     const extendedClient = this.$extends(signalExtension)
     Object.assign(this, extendedClient)
   }

@@ -6,6 +6,7 @@ import { UserNotificationCreate } from '@otl/server-nest/modules/notification/do
 import settings from '@otl/server-nest/settings'
 import { Prisma, session_userprofile } from '@prisma/client'
 import * as bcrypt from 'bcrypt'
+import { Request } from 'express'
 
 import { NotificationType } from '@otl/common/enum/notification'
 
@@ -174,5 +175,25 @@ export class AuthService {
       refreshToken: newRefreshToken,
       refreshTokenOptions,
     }
+  }
+
+  public extractTokenFromHeader(request: Request, type: 'accessToken' | 'refreshToken'): string | undefined {
+    if (type === 'accessToken') {
+      const authHeader = request.headers.authorization
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        return authHeader.slice(7)
+      }
+    }
+    if (type === 'refreshToken') {
+      const refreshHeader = request.headers['X-REFRESH-TOKEN']
+      if (typeof refreshHeader === 'string') {
+        return refreshHeader
+      }
+    }
+    return undefined
+  }
+
+  public extractTokenFromCookie(request: Request, type: 'accessToken' | 'refreshToken'): string | undefined {
+    return request.cookies?.[type]
   }
 }
