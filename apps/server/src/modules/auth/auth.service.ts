@@ -7,6 +7,8 @@ import settings from '@otl/server-nest/settings'
 import { Prisma, session_userprofile } from '@prisma/client'
 import * as bcrypt from 'bcrypt'
 
+import { AgreementType } from '@otl/common/enum/agreement'
+
 import { ESSOUser } from '@otl/prisma-client/entities/ESSOUser'
 import { UserRepository } from '@otl/prisma-client/repositories'
 import { NotificationPrismaRepository } from '@otl/prisma-client/repositories/notification.repository'
@@ -75,12 +77,18 @@ export class AuthService {
     const userNotifications = await this.notificationRepository.findByUserId(user.id)
     const notificationTypes = await this.notificationRepository.getAllNotification()
     if (!userNotifications || userNotifications.length !== notificationTypes.length) {
-      const userNotificationCreates: UserNotificationCreate[] = notificationTypes.map((n) => ({
-        notificationId: n.id,
-        userId: user.id,
-        notificationName: n.name,
-        active: false,
-      }))
+      const userNotificationCreates: UserNotificationCreate[] = notificationTypes.map((n) => {
+        let active = false
+        if (n.agreementType === AgreementType.INFO) {
+          active = true
+        }
+        return {
+          notificationId: n.id,
+          userId: user.id,
+          notificationName: n.name,
+          active,
+        }
+      })
       await this.notificationRepository.upsertMany(userNotificationCreates)
     }
     await this.agreementService.initialize(user.id)

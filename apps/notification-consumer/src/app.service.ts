@@ -3,7 +3,7 @@ import { messaging } from 'firebase-admin'
 import { getMessaging } from 'firebase-admin/messaging'
 
 import Message = messaging.Message
-import { ConsumerAgreementRepository } from '@otl/notification-consumer/out/agreement.repository'
+import { AGREEMENT_REPOSITORY, ConsumerAgreementRepository } from '@otl/notification-consumer/out/agreement.repository'
 import { NOTIFICATION_MQ, NotificationConsumerMQ } from '@otl/notification-consumer/out/notification.mq'
 import {
   ConsumerNotificationRepository,
@@ -23,7 +23,7 @@ import logger from '@otl/common/logger/logger'
 @Injectable()
 export class AppService {
   constructor(
-    @Inject('AGREEMENT_REPOSITORY')
+    @Inject(AGREEMENT_REPOSITORY)
     private readonly agreementRepository: ConsumerAgreementRepository,
     @Inject(NOTIFICATION_REPOSITORY)
     private readonly notificationRepository: ConsumerNotificationRepository,

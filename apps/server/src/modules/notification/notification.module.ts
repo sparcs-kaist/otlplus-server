@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common'
+import { RmqConnectionModule } from '@otl/rmq'
+import { NotificationFcmPublisher } from '@otl/rmq/exchanges/notification/notification.fcm.publish'
 import { RmqModule } from '@otl/rmq/rmq.module'
 import { AgreementPublicService } from '@otl/server-nest/modules/agreement/agreement.public.service'
 import { AGREEMENT_IN_PUBLIC_PORT } from '@otl/server-nest/modules/agreement/domain/agreement.in.port'
@@ -7,6 +9,7 @@ import {
   NOTIFICATION_IN_PORT,
   NOTIFICATION_IN_PUBLIC_PORT,
 } from '@otl/server-nest/modules/notification/domain/notification.in.port'
+import { NOTIFICATION_MQ } from '@otl/server-nest/modules/notification/domain/notification.mq'
 import { NOTIFICATION_REPOSITORY } from '@otl/server-nest/modules/notification/domain/notification.repository'
 import { NotificationController } from '@otl/server-nest/modules/notification/notification.controller'
 import { NotificationPrivateService } from '@otl/server-nest/modules/notification/notification.private.service'
@@ -17,7 +20,7 @@ import { AgreementPrismaRepository } from '@otl/prisma-client/repositories/agree
 import { NotificationPrismaRepository } from '@otl/prisma-client/repositories/notification.repository'
 
 @Module({
-  imports: [PrismaModule, RmqModule],
+  imports: [PrismaModule, RmqModule, RmqConnectionModule.register()],
   providers: [
     {
       provide: AGREEMENT_REPOSITORY,
@@ -26,6 +29,10 @@ import { NotificationPrismaRepository } from '@otl/prisma-client/repositories/no
     {
       provide: NOTIFICATION_REPOSITORY,
       useClass: NotificationPrismaRepository,
+    },
+    {
+      provide: NOTIFICATION_MQ,
+      useClass: NotificationFcmPublisher,
     },
     {
       provide: NOTIFICATION_IN_PORT,

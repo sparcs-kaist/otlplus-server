@@ -11,6 +11,7 @@ import { NOTIFICATION_MQ } from '@otl/notification-consumer/out/notification.mq'
 import { NOTIFICATION_REPOSITORY } from '@otl/notification-consumer/out/notification.repository'
 import { NotificationSchedulerService } from '@otl/notification-consumer/schedule.service'
 import settings from '@otl/notification-consumer/settings'
+import { RmqConnectionModule } from '@otl/rmq'
 import { NotificationFcmPublisher } from '@otl/rmq/exchanges/notification/notification.fcm.publish'
 import { RmqModule } from '@otl/rmq/rmq.module'
 import { ClsModule } from 'nestjs-cls'
@@ -22,6 +23,7 @@ import { NotificationPrismaRepository } from '@otl/prisma-client/repositories/no
 @Module({
   imports: [
     RmqModule,
+    RmqConnectionModule.register(),
     PrismaModule.register(settings().ormconfig()),
     ClsModule.forRoot({
       global: true,
