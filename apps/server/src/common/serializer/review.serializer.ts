@@ -1,4 +1,4 @@
-import { IReview } from '@otl/server-nest/common/interfaces'
+import { IReview, IUser } from '@otl/server-nest/common/interfaces'
 import { getRepresentativeLecture } from '@otl/server-nest/common/utils/lecture.utils'
 import { session_userprofile } from '@prisma/client'
 
@@ -41,3 +41,23 @@ export const toJsonReviewVote = (reviewVote: EReview.EReviewVote.Basic): IReview
   userprofile_id: reviewVote.userprofile_id,
   created_datetime: reviewVote.created_datetime,
 })
+
+export async function v2toJsonLikedReviews(
+  likedReview: IReview.Basic & { userspecific_is_liked: boolean },
+): Promise<IUser.v2LikedReviews> {
+  return {
+    courseId: likedReview.course.id,
+    reviewId: likedReview.id,
+    lectureName: likedReview.lecture.title,
+    professorName: likedReview.lecture.professors[0].name,
+    year: likedReview.lecture.year,
+    semester: likedReview.lecture.semester,
+    content: likedReview.content,
+    like: likedReview.like,
+    isDeleted: Boolean(likedReview.is_deleted),
+    grade: likedReview.grade,
+    load: likedReview.load,
+    speech: likedReview.speech,
+    userspecificIsLiked: likedReview.userspecific_is_liked,
+  }
+}

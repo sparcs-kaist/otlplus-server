@@ -6,3 +6,5 @@ export const RedisTTL = {
   MIN: 60 * 1000,
 } as const
 export type TTL = (typeof RedisTTL)[keyof typeof RedisTTL]
+export const DAY_STR = ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일']
+export const DAY_STR_EN = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']

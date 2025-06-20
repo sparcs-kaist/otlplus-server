@@ -31,6 +31,24 @@ export namespace ITimetable {
     arrange_order: number
   }
 
+  export interface v2Response {
+    timetableId: number
+    year: number | null
+    semester: number | null
+    timetableOrder: number
+    userId: number
+  }
+
+  export interface v2DetailedResponse {
+    timetableId: number
+    timetableName: string | null
+    userId: number
+    year: number | null
+    semester: number | null
+    timetableOrder: number
+    lectures: ILecture.v2Detail[] | null | undefined
+  }
+
   export class QueryDto {
     @IsOptional()
     @IsNumber()
@@ -55,6 +73,7 @@ export namespace ITimetable {
     offset?: number
 
     @IsOptional()
+    @Type(() => Number)
     @Transform(({ value }) => value ?? TIMETABLE_MAX_LIMIT)
     @IsNumber()
     limit?: number
@@ -70,6 +89,53 @@ export namespace ITimetable {
     @IsArray()
     @IsNumber({}, { each: true })
     lectures!: number[]
+  }
+
+  export class v2CreateDto {
+    @IsNumber()
+    userId!: number
+
+    @IsNumber()
+    year!: number
+
+    @IsNumber()
+    semester!: number
+
+    @IsArray()
+    @IsNumber({}, { each: true })
+    lectures!: number[]
+  }
+
+  export class v2DeleteDto {
+    @IsNumber()
+    @Type(() => Number)
+    timeTableId!: number
+  }
+
+  export class v2UpdateDto {
+    @IsNumber()
+    @Type(() => Number)
+    timeTableId!: number
+
+    @IsOptional()
+    @IsString()
+    @Transform(({ value }) => (typeof value === 'string' ? value : null))
+    timeTableName?: string | null
+
+    @IsOptional()
+    @IsNumber()
+    @Type(() => Number)
+    timeTableOrder?: number | null
+  }
+
+  export class v2ModifyLectureDto {
+    @IsNumber()
+    @Type(() => Number)
+    lectureId!: number
+
+    @IsString()
+    @Transform(({ value }) => (typeof value === 'string' ? value : null))
+    mode!: string
   }
 
   export class AddLectureDto {

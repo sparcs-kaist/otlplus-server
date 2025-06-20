@@ -14,3 +14,8 @@ export const toJsonProfessors = (professors: subject_professor[], nested = false
   }
   return result.map((professor) => professor)
 }
+
+export const v2toJsonProfessors = (professors: subject_professor[]): IProfessor.v2Basic[] => professors.map((professor) => ({
+  professorName: professor.professor_name,
+  professerId: professor.professor_id,
+}))

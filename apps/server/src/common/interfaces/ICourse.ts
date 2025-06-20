@@ -23,6 +23,13 @@ export namespace ICourse {
     num_labs: number
   }
 
+  export interface v2BasicForLecture {
+    name: string
+    code: string
+    type: string
+    completedCourse: boolean
+  }
+
   export interface Detail extends Basic {
     related_courses_prior: Basic[]
     related_courses_posterior: Basic[]

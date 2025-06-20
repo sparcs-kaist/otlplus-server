@@ -74,6 +74,35 @@ export class UserService {
     }
   }
 
+  public async v2getProfile(user: session_userprofile): Promise<IUser.v2UserInfo> {
+    const [name, mail, studentNumber, courses_detailed, majorDepartment_detailed, interestedMajorDepartments_detailed] = await Promise.all([
+      user.first_name + user.last_name,
+      user.email,
+      user.student_id,
+      this.getUserTakenCourses({}, user),
+      this.departmentRepository.getDepartmentOfUser(user),
+      this.departmentRepository.getFavoriteDepartments(user),
+    ])
+    const courses = courses_detailed.map((course) => course.title)
+    const majorDepartment = majorDepartment_detailed?.name
+    const interestedMajorDepartments = interestedMajorDepartments_detailed.map(
+      (interestedMajorDepartment) => interestedMajorDepartment.name,
+    )
+
+    return {
+      name,
+      mail,
+      studentNumber: Number(studentNumber),
+      courses,
+      majorDepartment,
+      interestedMajorDepartments,
+    }
+  }
+
+  async v2ModifyInterestedMajorDepartments(user: session_userprofile, newIds: number[]): Promise<void> {
+    this.departmentRepository.v2updateInerestedMajorDepartments(user, newIds)
+  }
+
   async getUserTakenCourses(
     query: IUser.TakenCoursesQueryDto,
     user: session_userprofile,
