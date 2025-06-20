@@ -70,6 +70,7 @@ export class v2LecturesController {
     private readonly wishlistRepository: WishlistRepository,
   ) {}
 
+  // 필터링이 제대로 동작하지 않아 코드 수정이 필요함.
   @Public()
   @Get()
   async getLectures(

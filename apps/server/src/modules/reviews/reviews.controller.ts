@@ -96,11 +96,12 @@ export class ReviewsController {
   }
 }
 
-/*
 @Controller('api/v2/reviews')
 export class v2ReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}
 
+  // 아직 개발 중인 api임. 코드 수정이 필요함.
+  /*
   @Public()
   @Get()
   async getReviews(
@@ -117,5 +118,5 @@ export class v2ReviewsController {
     const result = await this.reviewsService.getReviews(reviewsParam, user)
     return result
   }
+  */
 }
-*/
