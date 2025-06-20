@@ -75,7 +75,7 @@ export class v2LecturesController {
   async getLectures(
     @GetUser() user: session_userprofile,
     @Query() query: ILecture.v2QueryDto,
-  ): Promise<ILecture.v2Response[]> {
+  ): Promise<ILecture.v2Response[] | ILecture.v2Response2[]> {
     return await this.LectureService.v2getLectureByFilter(query, this.lectureRepository, user, this.wishlistRepository)
   }
 }

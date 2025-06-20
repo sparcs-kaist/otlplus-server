@@ -92,88 +92,57 @@ export function v2toJsonLectureDetail(lecture: ELecture.Details): ILecture.v2Det
 export async function v2toJsonLectureWithCourseDetail(
   lecture: ELecture.DetailsWithCourse,
   lectureRepository: LectureRepository,
-  wishlistRepository: WishlistRepository,
   user: session_userprofile,
-): Promise<ILecture.v2Response> {
+  includeWishlist: boolean,
+  wishlistRepository?: WishlistRepository,
+): Promise<ILecture.v2Response | ILecture.v2Response2> {
   const lectureData = await lectureRepository.getLectureById(lecture.id)
   const takenLectures = await lectureRepository.getTakenLectures(user)
   const completedCourse = takenLectures.some((l: any) => l.course_id === lectureData.course_id)
-  const wishlist = await wishlistRepository.getOrCreateWishlist(user.id)
-  const findLectureInWishlist = await wishlistRepository.getLectureInWishlist(wishlist.id, lecture.id)
-  const isWishlited = findLectureInWishlist !== null
-  return {
-    name: lecture.course.title,
-    code: lecture.course.new_code,
-    type: lecture.course.type,
-    completedCourse,
-    lectures: {
-      lectureId: lecture.id,
-      courseId: lecture.course_id,
-      classNo: lecture.class_no,
-      lectureName: lecture.title,
-      code: lecture.code,
-      departmentId: lecture.department_id,
-      type: lecture.type,
-      limitPeople: lecture.limit,
-      numPeople: lecture.num_people,
-      lectureDuration:
-        (new Date(lecture.subject_classtime[0].end).getTime()
-          - new Date(lecture.subject_classtime[0].begin).getTime())
-        / 1000
-        / 60,
-      credit: lecture.credit,
-      au: lecture.credit_au,
-      scoreGrade: lecture.grade,
-      scoreLoad: lecture.load,
-      scoreSpeech: lecture.speech,
-      isEnglish: lecture.is_english,
-      isWishlited,
-      professors: v2toJsonProfessors(lecture.subject_lecture_professors.map((x) => x.professor)),
-      classes: lecture.subject_classtime.map((classtime) => v2toJsonClasstime(classtime)),
-      examTimes: lecture.subject_examtime.map((examtime) => v2toJsonExamtime(examtime)),
-    },
-  }
-}
 
-export async function v2toJsonLectureWithCourseDetail2(
-  lecture: ELecture.DetailsWithCourse,
-  lectureRepository: LectureRepository,
-  user: session_userprofile,
-): Promise<ILecture.v2Response2> {
-  const lectureData = await lectureRepository.getLectureById(lecture.id)
-  const takenLectures = await lectureRepository.getTakenLectures(user)
-  const completedCourse = takenLectures.some((l: any) => l.course_id === lectureData.course_id)
+  let isWishlited: boolean | undefined
+
+  if (includeWishlist) {
+    if (!wishlistRepository) {
+      throw new Error('wishlistRepository is required when includeWishlist is true.')
+    }
+    const wishlist = await wishlistRepository.getOrCreateWishlist(user.id)
+    const findLectureInWishlist = await wishlistRepository.getLectureInWishlist(wishlist.id, lecture.id)
+    isWishlited = findLectureInWishlist !== null
+  }
+
+  const baseLecture = {
+    lectureId: lecture.id,
+    courseId: lecture.course_id,
+    classNo: lecture.class_no,
+    lectureName: lecture.title,
+    code: lecture.code,
+    departmentId: lecture.department_id,
+    type: lecture.type,
+    limitPeople: lecture.limit,
+    numPeople: lecture.num_people,
+    lectureDuration:
+      (new Date(lecture.subject_classtime[0].end).getTime() - new Date(lecture.subject_classtime[0].begin).getTime())
+      / 1000
+      / 60,
+    credit: lecture.credit,
+    au: lecture.credit_au,
+    scoreGrade: lecture.grade,
+    scoreLoad: lecture.load,
+    scoreSpeech: lecture.speech,
+    isEnglish: lecture.is_english,
+    professors: v2toJsonProfessors(lecture.subject_lecture_professors.map((x) => x.professor)),
+    classes: lecture.subject_classtime.map((classtime) => v2toJsonClasstime(classtime)),
+    examTimes: lecture.subject_examtime.map((examtime) => v2toJsonExamtime(examtime)),
+  }
+
   return {
     name: lecture.course.title,
     code: lecture.course.new_code,
     type: lecture.course.type,
     completedCourse,
-    lectures: {
-      lectureId: lecture.id,
-      courseId: lecture.course_id,
-      classNo: lecture.class_no,
-      lectureName: lecture.title,
-      code: lecture.code,
-      departmentId: lecture.department_id,
-      type: lecture.type,
-      limitPeople: lecture.limit,
-      numPeople: lecture.num_people,
-      lectureDuration:
-        (new Date(lecture.subject_classtime[0].end).getTime()
-          - new Date(lecture.subject_classtime[0].begin).getTime())
-        / 1000
-        / 60,
-      credit: lecture.credit,
-      au: lecture.credit_au,
-      scoreGrade: lecture.grade,
-      scoreLoad: lecture.load,
-      scoreSpeech: lecture.speech,
-      isEnglish: lecture.is_english,
-      professors: v2toJsonProfessors(lecture.subject_lecture_professors.map((x) => x.professor)),
-      classes: lecture.subject_classtime.map((classtime) => v2toJsonClasstime(classtime)),
-      examTimes: lecture.subject_examtime.map((examtime) => v2toJsonExamtime(examtime)),
-    },
-  }
+    lectures: includeWishlist ? { ...baseLecture, isWishlited } : baseLecture,
+  } as ILecture.v2Response | ILecture.v2Response2
 }
 
 export async function v2toJsonTakenLectures(

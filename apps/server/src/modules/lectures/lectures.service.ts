@@ -37,10 +37,10 @@ export class LecturesService {
     lectureRepository: LectureRepository,
     user: session_userprofile,
     wishlistRepository: WishlistRepository,
-  ): Promise<ILecture.v2Response[]> {
+  ): Promise<ILecture.v2Response[] | ILecture.v2Response2[]> {
     const queryResult = await lectureRepository.v2filterByRequest(query)
     return await Promise.all(
-      queryResult.map((lecture) => v2toJsonLectureWithCourseDetail(lecture, lectureRepository, wishlistRepository, user)),
+      queryResult.map((lecture) => v2toJsonLectureWithCourseDetail(lecture, lectureRepository, user, false, wishlistRepository)),
     )
   }
 
