@@ -11,6 +11,8 @@ import {
   IsArray, IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min, Validate,
 } from 'class-validator'
 
+import { ReviewSearchMode } from '@otl/common/enum/review'
+
 export namespace IReview {
   export interface Basic {
     id: number
@@ -155,11 +157,11 @@ export namespace IReview {
     @Type(() => Number)
     professorId?: number
 
-    @IsEnum(['default', 'recent', 'hall-of-fame'])
+    @IsEnum(ReviewSearchMode)
     @IsString()
     @IsOptional()
     @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
-    mode?: 'default' | 'recent' | 'hall-of-fame'
+    mode?: ReviewSearchMode
 
     @IsOptional()
     @IsInt()

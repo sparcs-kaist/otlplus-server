@@ -68,7 +68,6 @@ export namespace ITimetable {
     order?: string[]
 
     @IsOptional()
-    @Type(() => Number)
     @Transform(({ value }) => value ?? 0)
     @IsNumber()
     offset?: number
