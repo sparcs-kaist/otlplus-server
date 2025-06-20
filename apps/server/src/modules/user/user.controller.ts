@@ -6,7 +6,7 @@ import {
   ICourse, ILecture, IReview, IUser,
 } from '@otl/server-nest/common/interfaces'
 import {
-  v2toJsonLectureWithCourseDetail2,
+  v2toJsonLectureWithCourseDetail,
   v2toJsonTakenLectures,
 } from '@otl/server-nest/common/serializer/lecture.serializer'
 import { v2toJsonLikedReviews } from '@otl/server-nest/common/serializer/review.serializer'
@@ -68,7 +68,7 @@ export class UserV2Controller {
       const lectures = await this.lectureService.getLecturesByIds(lectureIds)
       const lecturesWithCourse = await this.lectureService.v2attachCourseToDetails(lectures)
       return Promise.all(
-        lecturesWithCourse.map((lecture) => v2toJsonLectureWithCourseDetail2(lecture, this.lectureRepository, user)),
+        lecturesWithCourse.map((lecture) => v2toJsonLectureWithCourseDetail(lecture, this.lectureRepository, user, false, this.wishlistRepository)),
       )
     }
     throw new HttpException('Can\'t find user', 401)
