@@ -69,6 +69,16 @@ export namespace IMeeting {
     meetings: Pick<IMeeting.Result, 'timeBlocks'>[]
   }
 
+  export interface GroupSummary {
+    title: string
+    id: number // meeting_group.id
+    isLeader: boolean
+    // link: string
+    currentMember: number
+    max_members: number
+    has_result: boolean // 결과가 있는 지 없는 지
+  }
+
   export class GroupCreateDto {
     @IsString()
     @IsNotEmpty()

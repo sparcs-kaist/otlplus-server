@@ -283,4 +283,11 @@ export class MeetingRepository {
       })
     })
   }
+
+  async getMeetingGroups(userId: number): Promise<EMeeting.Group[]> {
+    return this.prisma.meeting_group.findMany({
+      where: { leader_user_id: userId },
+      include: EMeeting.Group.include,
+    })
+  }
 }

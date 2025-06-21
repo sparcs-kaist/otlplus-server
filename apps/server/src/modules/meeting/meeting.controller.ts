@@ -1,5 +1,5 @@
 import {
-  BadRequestException, Body, Controller, Delete, Param, Patch, Post, Put,
+  BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Put,
 } from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator'
@@ -75,5 +75,10 @@ export class MeetingController {
       throw new BadRequestException('User info is required')
     }
     return this.meetingService.putMeetingGroupSchedule(userInfo, Number(groupId), body.timeBlocks)
+  }
+
+  @Get('/groups')
+  async getMeetingGroupSummaries(@GetUser() user: session_userprofile) {
+    return this.meetingService.getMeetingGroupSummaries(user)
   }
 }

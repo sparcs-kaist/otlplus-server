@@ -141,6 +141,18 @@ export class MeetingService {
     await this.meetingRepository.updateMemberTimeblocks(member.id, availableTimeIds)
   }
 
+  async getMeetingGroupSummaries(user: session_userprofile): Promise<IMeeting.GroupSummary[]> {
+    const groups = await this.meetingRepository.getMeetingGroups(user.id)
+    return groups.map((group) => ({
+      title: group.title,
+      id: group.id,
+      isLeader: group.leader_user_id === user.id,
+      currentMember: group.members.length,
+      max_members: group.max_member,
+      has_result: group.result !== null,
+    }))
+  }
+
   // Private Methods
 
   private async checkGroupLeader(user: session_userprofile, groupId: number) {
