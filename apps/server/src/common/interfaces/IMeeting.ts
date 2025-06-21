@@ -174,4 +174,14 @@ export namespace IMeeting {
     @IsInt()
     color!: number
   }
+
+  export class GroupScheduleUpdateDto {
+    @IsArray()
+    @IsTimeBlock()
+    timeBlocks!: TimeBlock[]
+
+    @IsOptional()
+    @IsString()
+    studentNumber?: string
+  }
 }

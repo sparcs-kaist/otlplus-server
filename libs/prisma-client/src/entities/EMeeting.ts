@@ -35,4 +35,16 @@ export namespace EMeeting {
   })
 
   export type Result = Prisma.meeting_resultGetPayload<typeof Result>
+
+  export namespace Member {
+    export type Basic = Prisma.meeting_memberGetPayload<Prisma.meeting_memberDefaultArgs>
+
+    export const WithTimeblocks = Prisma.validator<Prisma.meeting_memberDefaultArgs>()({
+      include: {
+        timeblocks: true,
+      },
+    })
+
+    export type WithTimeblocks = Prisma.meeting_memberGetPayload<typeof WithTimeblocks>
+  }
 }

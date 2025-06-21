@@ -87,4 +87,15 @@ export class UserRepository {
     }
     return user
   }
+
+  async findByStudentId(studentId: string): Promise<EUser.Basic> {
+    // 학번으로 유저 찾기
+    const user = await this.prisma.session_userprofile.findFirst({
+      where: { student_id: studentId },
+    })
+    if (!user) {
+      throw new NotFoundException('User not found')
+    }
+    return user
+  }
 }

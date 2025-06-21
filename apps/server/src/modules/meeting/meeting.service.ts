@@ -3,6 +3,8 @@ import { IMeeting } from '@otl/server-nest/common/interfaces'
 import { makeDBtoTimeBlockDay, makeTimeToTimeIndex } from '@otl/server-nest/common/utils/time.utils'
 import { session_userprofile } from '@prisma/client'
 
+import { TimeBlock } from '@otl/common/enum/time'
+
 import { MeetingRepository, UserRepository } from '@otl/prisma-client'
 import { EMeeting } from '@otl/prisma-client/entities/EMeeting'
 
@@ -103,6 +105,40 @@ export class MeetingService {
       body.color,
     )
     return this.makeEMeetingResultToIMeetingResult({ ...result, meeting_group: group })
+  }
+
+  // 멤버 가능 시간 업데이트
+  async putMeetingGroupSchedule(
+    user: session_userprofile | string,
+    groupId: number,
+    timeBlocks: TimeBlock[],
+  ): Promise<void> {
+    const group = await this.meetingRepository.getMeetingGroup(groupId)
+    if (!group) {
+      throw new NotFoundException('Group not found')
+    }
+
+    const userInfo = typeof user === 'string' ? await this.userRepository.findByStudentId(user) : user
+
+    const member = await this.meetingRepository.getMemberWithTimeblocks(userInfo.id, groupId)
+    if (!member) {
+      throw new ForbiddenException('You are not a member of this group')
+    }
+
+    // 해당 유저의 timeblock id를 조회
+    const times = member.timeblocks
+    const dbTimeBlocks = timeBlocks.map((timeBlock) => ({
+      day: timeBlock.day,
+      time_index: timeBlock.timeIndex,
+    }))
+
+    // 시간대에 속하는 id를 추려냄
+    const availableTimeIds = times
+      .filter((time) => dbTimeBlocks.some((dbTime) => dbTime.day === time.day && dbTime.time_index === time.time_index))
+      .map((time) => time.id)
+
+    // 멤버 가능 시간 업데이트
+    await this.meetingRepository.updateMemberTimeblocks(member.id, availableTimeIds)
   }
 
   // Private Methods

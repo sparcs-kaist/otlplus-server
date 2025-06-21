@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import {
   makeDBtoTimeBlockDay,
   makeTimeBlockDayToDB,
@@ -252,6 +252,35 @@ export class MeetingRepository {
         },
       },
       include: EMeeting.Result.include,
+    })
+  }
+
+  async getMemberWithTimeblocks(userId: number, groupId: number): Promise<EMeeting.Member.WithTimeblocks> {
+    const member = await this.prisma.meeting_member.findFirst({
+      where: { user_id: userId, meeting_group_id: groupId },
+      include: EMeeting.Member.WithTimeblocks.include,
+    })
+
+    if (!member) {
+      throw new NotFoundException('Member not found')
+    }
+
+    return member
+  }
+
+  async updateMemberTimeblocks(memberId: number, timeblockIds: number[]): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      await tx.meeting_member_timeblock.updateMany({
+        where: { meeting_member_id: memberId },
+        data: {
+          is_available: false,
+        },
+      })
+
+      await tx.meeting_member_timeblock.updateMany({
+        where: { meeting_member_id: memberId, id: { in: timeblockIds } },
+        data: { is_available: true },
+      })
     })
   }
 }
