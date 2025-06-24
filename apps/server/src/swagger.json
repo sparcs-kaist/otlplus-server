@@ -817,6 +817,78 @@
         "security": []
       }
     },
+    "/notification/hello": {
+      "get": {
+        "summary": "NotificationController.getHello",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/libs/common/src/notification/notification\")._NotificationRequest"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/notification/read": {
+      "post": {
+        "summary": "NotificationController.read",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/notification/domain/notification\").FCMNotificationRequest"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/INotification.ReadDto"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notification/user": {
+      "patch": {
+        "summary": "NotificationController.allowOrDisallow",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/libs/common/src/notification/notification\")._UserNotification"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/INotification.ActiveDto"
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/users/{id}/planners": {
       "get": {
         "summary": "PlannersController.getPlanners",
@@ -1411,6 +1483,24 @@
             }
           }
         ]
+      }
+    },
+    "/api/semesters/current": {
+      "get": {
+        "summary": "SemestersController.getCurrentSemester",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ISemester.Response"
+                }
+              }
+            }
+          }
+        },
+        "security": []
       }
     },
     "/session/department-options": {
@@ -2777,6 +2867,169 @@
         },
         "type": "object"
       },
+      "IDevice.RegisterDeviceDto": {
+        "properties": {
+          "deviceToken": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "deviceType": {
+            "type": "string",
+            "enum": ["ANDROID", "IOS", "WEB"]
+          },
+          "deviceOsVersion": {},
+          "appVersion": {},
+          "isActive": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["deviceToken", "isActive"]
+      },
+      "IDevice.UnregisterDeviceDto": {
+        "properties": {
+          "deviceToken": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["deviceToken"]
+      },
+      "IDevice.DeviceActivateDto": {
+        "properties": {
+          "deviceToken": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "isActive": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["deviceToken", "isActive"]
+      },
+      "IDevice.UpdateDeviceDto": {
+        "properties": {
+          "deviceOsVersion": {},
+          "appVersion": {},
+          "deviceToken": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "isActive": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["deviceToken", "isActive"]
+      },
+      "IDevice.Response.DeviceResponseDto": {
+        "type": "object",
+        "properties": {
+          "deviceToken": {
+            "type": "string"
+          },
+          "deviceType": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "deviceOsVersion": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "appVersion": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "isActive": {
+            "oneOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": ["deviceToken"],
+        "additionalProperties": false
+      },
+      "IDevice.Response.UserDeviceResponseDto": {
+        "type": "object",
+        "properties": {
+          "deviceToken": {
+            "type": "string"
+          },
+          "deviceType": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "deviceOsVersion": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "appVersion": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "isActive": {
+            "oneOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "userId": {
+            "type": "number"
+          }
+        },
+        "required": ["deviceToken", "userId"],
+        "additionalProperties": false
+      },
       "IFeed.Basic": {
         "type": "object",
         "properties": {
@@ -3846,168 +4099,34 @@
         "required": ["title", "content", "start_time", "end_time"],
         "additionalProperties": false
       },
-      "IDevice.RegisterDeviceDto": {
+      "INotification.ReadDto": {
         "properties": {
-          "deviceToken": {
+          "requestUUID": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["requestUUID"]
+      },
+      "INotification.ActiveDto": {
+        "properties": {
+          "active": {
             "minLength": 1,
             "type": "string"
           },
-          "deviceType": {
+          "notificationType": {
+            "minLength": 1,
             "type": "string",
-            "enum": ["ANDROID", "IOS", "WEB"]
-          },
-          "deviceOsVersion": {},
-          "appVersion": {},
-          "isActive": {
-            "minLength": 1,
-            "type": "string"
+            "enum": ["APP_UPDATE", "APP_UPDATE_FORCE", "COURSE_TIME"]
           }
         },
         "type": "object",
-        "required": ["deviceToken", "isActive"]
+        "required": ["active", "notificationType"]
       },
-      "IDevice.UnregisterDeviceDto": {
-        "properties": {
-          "deviceToken": {
-            "minLength": 1,
-            "type": "string"
-          }
-        },
-        "type": "object",
-        "required": ["deviceToken"]
-      },
-      "IDevice.DeviceActivateDto": {
-        "properties": {
-          "deviceToken": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "isActive": {
-            "minLength": 1,
-            "type": "string"
-          }
-        },
-        "type": "object",
-        "required": ["deviceToken", "isActive"]
-      },
-      "IDevice.UpdateDeviceDto": {
-        "properties": {
-          "deviceOsVersion": {},
-          "appVersion": {},
-          "deviceToken": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "isActive": {
-            "minLength": 1,
-            "type": "string"
-          }
-        },
-        "type": "object",
-        "required": ["deviceToken", "isActive"]
-      },
-      "IDevice.Response.DeviceResponseDto": {
-        "type": "object",
-        "properties": {
-          "deviceToken": {
-            "type": "string"
-          },
-          "deviceType": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "deviceOsVersion": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "appVersion": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "isActive": {
-            "oneOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "required": ["deviceToken"],
-        "additionalProperties": false
-      },
-      "IDevice.Response.UserDeviceResponseDto": {
-        "type": "object",
-        "properties": {
-          "deviceToken": {
-            "type": "string"
-          },
-          "deviceType": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "deviceOsVersion": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "appVersion": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "isActive": {
-            "oneOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "userId": {
-            "type": "number"
-          }
-        },
-        "required": ["deviceToken", "userId"],
-        "additionalProperties": false
+      "NotificationType": {
+        "type": "string",
+        "enum": ["APP_UPDATE", "APP_UPDATE_FORCE", "COURSE_TIME"]
       },
       "IPlanner.ITrack.Additional": {
         "type": "object",
