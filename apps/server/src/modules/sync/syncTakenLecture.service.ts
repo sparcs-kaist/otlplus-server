@@ -14,9 +14,7 @@ export class SyncTakenLectureService {
   ) {}
 
   async syncTakenLecture(data: ISync.TakenLectureBody) {
-    this.slackNoti.sendSyncNoti(
-      `syncTakenLecture: ${data.year}-${data.semester}: ${data.attend.length} attend records`,
-    )
+    this.slackNoti.sendSyncNoti(`syncTakenLecture: ${data.year}-${data.semester}: ${data.attend.length} attend records`)
 
     const result: any = {
       time: new Date().toISOString(),
@@ -142,9 +140,7 @@ export class SyncTakenLectureService {
   }
 
   getLectureIdOfAttendRecord(lectures: ELecture.Basic[], attend: ISync.AttendType) {
-    const lecture = lectures.find(
-      (l) => l.new_code === attend.SUBJECT_NO && l.class_no === attend.LECTURE_CLASS.trim(),
-    )
+    const lecture = lectures.find((l) => l.new_code === attend.SUBJECT_NO && l.class_no === attend.LECTURE_CLASS.trim())
     return lecture?.id
   }
 
@@ -154,6 +150,6 @@ export class SyncTakenLectureService {
     const studentId = parseInt(user.student_id)
     if (Number.isNaN(studentId)) return // Skip if student_id is not a number
     const rawTakenLectures = await this.syncRepository.getRawTakenLecturesOfStudent(studentId)
-    await this.syncRepository.repopulateTakenLecturesOfUser(studentId, rawTakenLectures)
+    await this.syncRepository.repopulateTakenLecturesOfUser(user.id, rawTakenLectures)
   }
 }
