@@ -105,16 +105,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "accessToken": {
-                      "type": "string"
-                    },
-                    "refreshToken": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["accessToken", "refreshToken"]
+                  "$ref": "#/components/schemas/IAuth.TokenResponse"
                 }
               }
             }
@@ -126,7 +117,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/{ token: string; }"
+                "$ref": "#/components/schemas/IAuth.TokenDto"
               }
             }
           }
@@ -1212,6 +1203,24 @@
             }
           }
         ]
+      }
+    },
+    "/api/semesters/current": {
+      "get": {
+        "summary": "SemestersController.getCurrentSemester",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ISemester.Response"
+                }
+              }
+            }
+          }
+        },
+        "security": []
       }
     },
     "/session/department-options": {
