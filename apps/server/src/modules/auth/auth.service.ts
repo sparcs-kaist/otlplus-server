@@ -62,6 +62,7 @@ export class AuthService {
     else {
       const prev_student_id = user.student_id
       const updateData = {
+        uid,
         first_name: ssoProfile.first_name,
         last_name: ssoProfile.last_name,
         student_id: studentId,
