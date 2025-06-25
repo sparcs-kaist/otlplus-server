@@ -1,36 +1,111 @@
 export namespace ESSOUser {
+  /**
+   * KAIST 구성원 정보 모델 (v1 기준)
+   */
   export class KaistInfo {
+    /** 학번 (Student Number) */
     ku_std_no!: string
 
+    /** KAIST UID (고유 사용자 ID) */
     kaist_uid!: string
 
+    /** 학적 상태 (예: '재학', '휴학' 등) */
     ku_psft_user_status_kor!: string
 
+    /** 사용자 유형 (예: 'S' = Student, 'E' = Employee 등) */
     employeeType!: string
 
+    /** 사용자 분류 (예: 'Student', 'Faculty' 등) */
     ku_person_type!: string
 
+    /** 소속 조직 ID (학과 코드 등, 예: '4423') */
     ku_kaist_org_id!: string
 
+    /** 학적 상태 (영문, 예: 'Enrollment', 'Leave') */
     ku_psft_user_status!: string
 
+    /** 학사 프로그램 코드 (예: 학부, 석사, 박사 구분. '0'은 학부) */
     ku_acad_prog_code!: string
 
+    /** 생년월일 (YYYY-MM-DD) */
     ku_born_date!: string
 
+    /** 사용자 분류 한글 (예: '학생', '교수') */
     ku_person_type_kor!: string
 
+    /** 이름(이름 부분) (예: 'HyeokTae') */
     sn!: string
 
+    /** 학교 이메일 주소 */
     mail!: string
 
+    /** 표시 이름 (예: 'Kwon, HyeokTae') */
     displayname!: string
 
+    /** 이름(성 부분) (예: 'Kwon') */
     givenname!: string
 
+    /** 성별 ('M' 또는 'F') */
     ku_sex!: string
 
+    /** 한글 이름 (예: '권혁태') */
     ku_kname!: string
+  }
+
+  /**
+   * KAIST 구성원 정보 모델 (v2 기준)
+   */
+  export class KaistV2Info {
+    /** KAIST UID (고유 사용자 ID) */
+    kaist_uid!: string
+
+    /** 사용자 영문 이름 (예: 'Kwon, HyeokTae') */
+    user_eng_nm!: string
+
+    /** 로그인 유형 (예: 'L004'은 일반적인 로그인 코드로 추정) */
+    login_type!: string
+
+    /** 학과 이름 (한글, 예: '전기및전자공학부') */
+    std_dept_kor_nm!: string
+
+    /** 학과 이름 (영문, 예: 'School of Electrical Engineering') */
+    std_dept_eng_nm!: string
+
+    /** 사용자 이름 (한글, 예: '권혁태') */
+    user_nm!: string
+
+    /** 사무실 전화번호 (학생은 일반적으로 null) */
+    busn_phone!: string | null
+
+    /** 학적 상태 (한글, 예: '재학') */
+    std_status_kor!: string
+
+    /** 학과 ID (조직 코드, 예: '4423') */
+    std_dept_id!: string
+
+    /** EBS 시스템에서의 사용자 상태 (null일 수 있음) */
+    ebs_user_status_kor!: string | null
+
+    /** 학번 (예: '20180036') */
+    std_no!: string
+
+    /** 로그인 ID (포탈 계정 ID, 예: 'jj6014') */
+    user_id!: string
+
+    /** 캠퍼스 구분 코드 (예: 'D'는 대전 캠퍼스로 추정) */
+    camps_div_cd!: string
+
+    /** 소속 구분 코드 (예: 'S'는 학생) */
+    socps_cd!: string
+
+    /** 이메일 주소 */
+    email!: string
+
+    /** 학사 프로그램 코드 (예: '0'은 학부) */
+    std_prog_code!: string
+
+    /** KAIST 조직 ID (학과 코드와 동일한 경우가 많음, 예: '4423') */
+    kaist_org_id!: string
   }
 
   export class SSOUser {
@@ -75,6 +150,12 @@ export namespace ESSOUser {
 
     /** kaist_info를 업데이트한 날짜입니다. YYYY-MM-DD 형식의 날짜 또는 빈 문자열 값입니다. */
     kaist_info_time?: Date
+
+    /** 사용자의 KAIST V2 정보입니다. */
+    kaist_v2_info!: KaistV2Info
+
+    /** kaist_info_v2를 업데이트한 날짜입니다. YYYY-MM-DD 형식의 날짜 또는 빈 문자열 값입니다. */
+    kaist_v2_info_time?: Date
 
     /** 사용자의 SPARCS ID입니다. SPARCS 회원이 아닌 경우 빈 문자열 값입니다. */
     sparcs_id!: string

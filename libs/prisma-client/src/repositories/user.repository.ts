@@ -20,10 +20,10 @@ export class UserRepository {
     })
   }
 
-  async updateUser(userId: number, user: Prisma.session_userprofileUpdateInput): Promise<session_userprofile> {
+  async updateUser(userId: number, data: any): Promise<session_userprofile> {
     return this.prisma.session_userprofile.update({
-      data: user,
       where: { id: userId },
+      data,
     })
   }
 
