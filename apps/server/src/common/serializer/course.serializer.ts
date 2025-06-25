@@ -42,6 +42,9 @@ export function toJsonCourseBasic(
   course: Omit<ECourse.Details, 'subject_course_professors'>,
   lecture: subject_lecture,
 ): ICourse.Basic {
+  if (!lecture) {
+    console.log(course, lecture)
+  }
   return {
     id: course.id,
     old_old_code: course.old_code,

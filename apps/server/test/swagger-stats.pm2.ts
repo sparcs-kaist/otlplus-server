@@ -12,7 +12,7 @@ const promClient = swStats.getPromClient()
 /** The global message topic for gathering Prometheus metrics */
 const TOPIC = 'get_prom_register'
 /** Singleton instance of PM2 message bus */
-let pm2Bus: { off: (arg0: string) => void, on: (arg0: string, arg1: (packet: ResponsePacket) => void) => void }
+let pm2Bus: { off: (arg0: string) => void; on: (arg0: string, arg1: (packet: ResponsePacket) => void) => void }
 const instanceId = Number(process.env.pm_id)
 
 /* Info returned by pm2.list() */
@@ -59,8 +59,7 @@ process.on('message', (packet: RequestPacket) => {
         },
       } as ResponsePacket)
     }
-  }
-  catch (e) {
+  } catch (e) {
     console.error('Error sending metrics to master node', e)
   }
 })
@@ -129,8 +128,7 @@ async function getAggregatedRegistry(instancesData: PM2InstanceData[]) {
             finish()
           }
         }
-      }
-      catch (e) {
+      } catch (e) {
         reject(e)
       }
     })
@@ -155,13 +153,11 @@ export default async function swaggerStatsMetrics(req: any, res: { send: (arg0: 
       // multiple threads - aggregate
       const register = await getAggregatedRegistry(instancesData)
       res.send(register.metrics())
-    }
-    else {
+    } else {
       // 1 thread - send local stats
       res.send(swStats.getPromStats())
     }
-  }
-  catch (e) {
+  } catch (e) {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
     throw new Error(e)
