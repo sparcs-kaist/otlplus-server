@@ -36,7 +36,7 @@ export class AuthService {
     // const kaistInfo = ssoProfile.kaist_info
     const kaistInfo = ssoProfile.kaist_v2_info
     const studentId = kaistInfo.std_no ?? ''
-    const departmentId = kaistInfo.std_dept_id ? Number(kaistInfo.std_dept_id) : null
+    const departmentId = kaistInfo.std_dept_id ? Number(kaistInfo.std_dept_id) : undefined
 
     const { accessToken, ...accessTokenOptions } = this.getCookieWithAccessToken(sid)
     const { refreshToken, ...refreshTokenOptions } = this.getCookieWithRefreshToken(sid)
