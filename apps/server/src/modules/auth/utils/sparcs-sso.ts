@@ -104,6 +104,7 @@ export class Client {
       const result = r.data
       console.log(result)
       result.kaist_info = result.kaist_info ? JSON.parse(result.kaist_info) : {}
+      result.kaist_v2_info = result.kaist_v2_info ? JSON.parse(result.kaist_v2_info) : {}
       return result as ESSOUser.SSOUser
     }
     catch (e) {

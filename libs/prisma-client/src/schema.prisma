@@ -275,7 +275,11 @@ model session_userprofile {
   id                                    Int                                        @id @default(autoincrement())
   user_id                               Int?                                       @unique(map: "session_userprofile_user_id_09dd6af1_uniq")
   student_id                            String                                     @db.VarChar(10)
+  uid                                   String?                                    @db.VarChar(30)
   sid                                   String                                     @db.VarChar(30)
+  last_login                            DateTime?                                  @db.DateTime(0)
+  kaist_id                              String?                                    @db.VarChar(30)
+  status                                String?                                    @db.VarChar(30)
   language                              String?                                    @db.VarChar(15)
   portal_check                          Int?                                       @default(0)
   department_id                         Int?
