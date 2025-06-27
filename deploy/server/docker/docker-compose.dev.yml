@@ -4,11 +4,13 @@ services:
   redis-cache:
     image: redis:7.2-alpine
     container_name: redis-otl
+    ports:
+      - '6379:6379'
     expose:
       - '6379'
     volumes:
-      - ./redis.conf:/usr/local/etc/redis/redis.conf
-      - ./redis-data:/data
+      - ../redis/redis.conf:/usr/local/etc/redis/redis.conf
+      - ../redis/redis-data:/data
     env_file:
       - ../../../env/.env.dev
     restart: always
