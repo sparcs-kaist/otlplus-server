@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import settings from '@otl/server-nest/settings'
-import { Prisma, session_userprofile } from '@prisma/client'
+import { session_userprofile } from '@prisma/client'
 import * as bcrypt from 'bcrypt'
 import { Request } from 'express'
 
@@ -29,11 +29,14 @@ export class AuthService {
   }
 
   public async ssoLogin(ssoProfile: ESSOUser.SSOUser) {
-    const { sid } = ssoProfile
+    const { sid, uid, kaist_id } = ssoProfile
+    const status = ssoProfile.kaist_v2_info.std_status_kor ?? null
     let user = await this.findBySid(sid)
 
-    const kaistInfo = ssoProfile.kaist_info
-    const studentId = kaistInfo.ku_std_no ?? ''
+    // const kaistInfo = ssoProfile.kaist_info
+    const kaistInfo = ssoProfile.kaist_v2_info
+    const studentId = kaistInfo.std_no ?? ''
+    const departmentId = kaistInfo.std_dept_id ? Number(kaistInfo.std_dept_id) : undefined
 
     const { accessToken, ...accessTokenOptions } = this.getCookieWithAccessToken(sid)
     const { refreshToken, ...refreshTokenOptions } = this.getCookieWithRefreshToken(sid)
@@ -43,11 +46,15 @@ export class AuthService {
 
     if (!user) {
       user = await this.createUser(
+        uid,
         sid,
         ssoProfile.email,
         studentId,
         ssoProfile.first_name,
         ssoProfile.last_name,
+        departmentId,
+        status,
+        kaist_id,
         encryptedRefreshToken,
       )
       await this.syncTakenLecturesService.repopulateTakenLectureForStudent(user.id)
@@ -58,6 +65,10 @@ export class AuthService {
         first_name: ssoProfile.first_name,
         last_name: ssoProfile.last_name,
         student_id: studentId,
+        department_id: departmentId,
+        status,
+        kaist_id,
+        last_login: new Date(),
         refresh_token: encryptedRefreshToken,
       }
       user = await this.updateUser(user.id, updateData)
@@ -115,26 +126,36 @@ export class AuthService {
   }
 
   async createUser(
+    uid: string,
     sid: string,
     email: string,
     studentId: string,
     firstName: string,
     lastName: string,
+    departmentId: number | undefined,
+    status: string | null,
+    kaistuid: string | null,
     refreshToken: string,
+    lastLogin: Date = new Date(),
   ): Promise<session_userprofile> {
     const user = {
       sid,
+      uid,
       email,
       first_name: firstName,
       last_name: lastName,
       date_joined: new Date(),
+      last_login: lastLogin,
       student_id: studentId,
+      department_id: departmentId,
+      status,
+      kaist_id: kaistuid,
       refresh_token: refreshToken,
     }
     return await this.userRepository.createUser(user)
   }
 
-  async updateUser(userId: number, user: Prisma.session_userprofileUpdateInput): Promise<session_userprofile> {
+  async updateUser(userId: number, user: any): Promise<session_userprofile> {
     return await this.userRepository.updateUser(userId, user)
   }
 
