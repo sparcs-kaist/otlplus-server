@@ -25,7 +25,6 @@ export class ReviewsRepository {
             subject_department: true,
             subject_course_professors: { include: { professor: true } },
             lecture: true,
-            subject_courseuser: true,
           },
         },
         lecture: {
