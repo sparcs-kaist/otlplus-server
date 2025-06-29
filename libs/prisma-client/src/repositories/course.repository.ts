@@ -440,18 +440,27 @@ export class CourseRepository {
     })
   }
 
-  public async isUserSpecificRead(courseId: number, userId: number) {
-    const courseUser = await this.prisma.subject_courseuser.findFirst({
+  public async isUserSpecificRead(courseId: number | number[], userId: number) {
+    let courseIds
+    if (!Array.isArray(courseId)) {
+      courseIds = [courseId]
+    }
+    else {
+      courseIds = courseId
+    }
+    const courseUser = await this.prisma.subject_courseuser.findMany({
       select: {
         subject_course: { select: { latest_written_datetime: true } },
         latest_read_datetime: true,
       },
       where: {
-        course_id: courseId,
+        course_id: {
+          in: courseIds,
+        },
         user_profile_id: userId,
       },
     })
-    if (!courseUser || !courseUser.subject_course.latest_written_datetime) return false
+    if (courseUser.length === 0) if (!courseUser || !courseUser.subject_course.latest_written_datetime) return false
 
     return courseUser.subject_course.latest_written_datetime <= courseUser.latest_read_datetime
   }
