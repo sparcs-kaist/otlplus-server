@@ -360,7 +360,11 @@ export class CourseRepository {
     })
   }
 
-  async getUserTakenCourses(takenLecturesId: number[], order: string[]): Promise<ECourse.DetailWithIsRead[]> {
+  async getUserTakenCourses(
+    takenLecturesId: number[],
+    order: string[],
+    userId: number,
+  ): Promise<ECourse.DetailWithIsRead[]> {
     const orderFilters: { [key: string]: string }[] = []
     order.forEach((orderList) => {
       const orderDict: { [key: string]: string } = {}
@@ -387,7 +391,7 @@ export class CourseRepository {
         subject_department: true,
         subject_course_professors: { include: { professor: true } },
         lecture: true,
-        subject_courseuser: true,
+        subject_courseuser: { where: { user_profile_id: userId } },
       },
     })
   }
