@@ -41,7 +41,6 @@ export class CoursesService {
     else {
       courseReads = await this.courseRepository.isUserSpecificRead(courseIds, user.id)
     }
-    console.log(courseReads)
     queryResult.map(async (course) => {
       const representativeLecture = getRepresentativeLecture(course.lecture)
       if (!representativeLecture) {
