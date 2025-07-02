@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
 
-import { ECourse } from '../entities/ECourse'
-import ECourseUser = ECourse.ECourseUser
 import { applyOffset, applyOrder } from '@otl/common/utils/util'
 
 import { formatNewLectureCodeWithDot, orderFilter } from '@otl/prisma-client/common'
 import { PaginationOption } from '@otl/prisma-client/types'
 
+import { ECourse } from '../entities/ECourse'
 import { ELecture } from '../entities/ELecture'
 import { EReview } from '../entities/EReview'
 import { PrismaService } from '../prisma.service'
+import ECourseUser = ECourse.ECourseUser
 
 @Injectable()
 export class CourseRepository {
@@ -444,19 +444,48 @@ export class CourseRepository {
     })
   }
 
-  public async isUserSpecificRead(courseId: number, userId: number) {
-    const courseUser = await this.prisma.subject_courseuser.findFirst({
+  private isRead(courseUser: {
+    subject_course: { latest_written_datetime: Date | null }
+    latest_read_datetime: Date | null
+  }): boolean {
+    if (!courseUser.subject_course.latest_written_datetime) return false
+    if (!courseUser.latest_read_datetime) return false
+    return courseUser.subject_course.latest_written_datetime <= courseUser.latest_read_datetime
+  }
+
+  public async isUserSpecificRead(courseId: number | number[], userId: number) {
+    let courseIds
+    if (!Array.isArray(courseId)) {
+      courseIds = [courseId]
+    }
+    else {
+      courseIds = courseId
+    }
+    const courseUsers = await this.prisma.subject_courseuser.findMany({
       select: {
         subject_course: { select: { latest_written_datetime: true } },
         latest_read_datetime: true,
+        user_profile_id: true,
+        course_id: true,
       },
       where: {
-        course_id: courseId,
+        course_id: {
+          in: courseIds,
+        },
         user_profile_id: userId,
       },
     })
-    if (!courseUser || !courseUser.subject_course.latest_written_datetime) return false
-
-    return courseUser.subject_course.latest_written_datetime <= courseUser.latest_read_datetime
+    const result: { [key: number]: boolean } = {}
+    if (!courseUsers || courseUsers.length === 0) {
+      courseIds.forEach((id) => {
+        result[id] = false
+      })
+    }
+    else {
+      courseUsers.forEach((courseUser) => {
+        result[courseUser.course_id] = this.isRead(courseUser)
+      })
+    }
+    return result
   }
 }
