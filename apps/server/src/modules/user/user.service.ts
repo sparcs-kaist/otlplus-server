@@ -81,7 +81,11 @@ export class UserService {
     const DEFAULT_ORDER = ['old_code']
     const takenLectures = await this.lectureRepository.getTakenLectures(user)
     const takenLecturesId = takenLectures.map((lecture) => lecture.id)
-    const courses = await this.courseRepository.getUserTakenCourses(takenLecturesId, query.order ?? DEFAULT_ORDER)
+    const courses = await this.courseRepository.getUserTakenCourses(
+      takenLecturesId,
+      query.order ?? DEFAULT_ORDER,
+      user.id,
+    )
     return courses.map((course) => {
       const representativeLecture = getRepresentativeLecture(course.lecture)
       const professorRaw = course.subject_course_professors.map((x) => x.professor)
