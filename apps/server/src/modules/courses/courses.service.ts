@@ -31,20 +31,21 @@ export class CoursesService {
       limit,
     )
     const resultList: ICourse.DetailWithIsRead[] = []
-    await Promise.all(
-      queryResult.map(async (course) => {
-        const representativeLecture = getRepresentativeLecture(course.lecture)
-        if (!representativeLecture) {
-          return
-        }
-        const professorRaw = course.subject_course_professors.map((x: { professor: any }) => x.professor)
-        const result = toJsonCourseDetail(course, representativeLecture, professorRaw)
+    const courseIds = queryResult.map((course) => course.id)
+    const courseReads = await this.courseRepository.isUserSpecificRead(courseIds, user.id)
+    console.log(courseReads)
+    queryResult.map(async (course) => {
+      const representativeLecture = getRepresentativeLecture(course.lecture)
+      if (!representativeLecture) {
+        return
+      }
+      const professorRaw = course.subject_course_professors.map((x: { professor: any }) => x.professor)
+      const result = toJsonCourseDetail(course, representativeLecture, professorRaw)
 
-        const userspecific_is_read = user ? await this.courseRepository.isUserSpecificRead(course.id, user.id) : false
+      const userspecific_is_read = user ? courseReads[course.id] : false
 
-        resultList.push(addIsRead(result, userspecific_is_read))
-      }),
-    )
+      resultList.push(addIsRead(result, userspecific_is_read))
+    })
     return resultList
   }
 
@@ -61,7 +62,9 @@ export class CoursesService {
     const professorRaw = course.subject_course_professors.map((x: { professor: any }) => x.professor)
     const result = toJsonCourseDetail(course, representativeLecture, professorRaw)
 
-    const userspecific_is_read = user ? await this.courseRepository.isUserSpecificRead(course.id, user.id) : false
+    const userspecific_is_read = user
+      ? (await this.courseRepository.isUserSpecificRead(course.id, user.id))[course.id]
+      : false
 
     return addIsRead(result, userspecific_is_read)
   }
