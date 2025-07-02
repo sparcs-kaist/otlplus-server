@@ -32,7 +32,15 @@ export class CoursesService {
     )
     const resultList: ICourse.DetailWithIsRead[] = []
     const courseIds = queryResult.map((course) => course.id)
-    const courseReads = await this.courseRepository.isUserSpecificRead(courseIds, user.id)
+    let courseReads: { [key: number]: boolean } = {}
+    if (!user) {
+      courseIds.forEach((courseId) => {
+        courseReads[courseId] = false
+      })
+    }
+    else {
+      courseReads = await this.courseRepository.isUserSpecificRead(courseIds, user.id)
+    }
     console.log(courseReads)
     queryResult.map(async (course) => {
       const representativeLecture = getRepresentativeLecture(course.lecture)
