@@ -21,6 +21,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     // })
     const extendedClient = this.$extends(signalExtension)
     Object.assign(this, extendedClient)
+    console.log(settings().ormReplicatedConfig().url)
     const readReplicaExtendedClient = this.$extends(
       readReplicas({
         url: settings().ormReplicatedConfig().url ?? (settings()?.ormconfig()?.datasources?.db?.url as string),
