@@ -1,22 +1,11 @@
 import { DocumentBuilder } from '@nestjs/swagger'
 import { Prisma } from '@prisma/client'
-import { PrismaClient as PrismaClient$1 } from '@prisma/client/extension'
 import dotenv from 'dotenv'
 
 import { dotEnvOptions } from './dotenv-options'
 
 dotenv.config(dotEnvOptions)
 console.log(`NODE_ENV environment: ${process.env.NODE_ENV}`)
-
-type ReplicasOptions =
-  | {
-    url: string | string[]
-    replicas?: undefined
-  }
-  | {
-    url?: undefined
-    replicas: PrismaClient$1[]
-  }
 
 const getCorsConfig = () => {
   const { NODE_ENV } = process.env
@@ -79,8 +68,31 @@ const getRedisConfig = () => ({
   password: process.env.REDIS_PASSWORD,
 })
 
-const getReplicatedPrismaConfig = (): ReplicasOptions => ({
-  url: process.env.READ_ONLY_DATABASE_URL as string,
+const getReplicatedPrismaConfig = (): Prisma.PrismaClientOptions => ({
+  datasources: {
+    db: {
+      url: process.env.READ_ONLY_DATABASE_URL,
+    },
+  },
+  errorFormat: 'pretty',
+  log: [
+    // {
+    //   emit: 'event',
+    //   level: 'query',
+    // },
+    {
+      emit: 'stdout',
+      level: 'error',
+    },
+    {
+      emit: 'stdout',
+      level: 'info',
+    },
+    // {
+    //   emit: 'stdout',
+    //   level: 'warn',
+    // },
+  ],
 })
 
 const getAWSConfig = () => ({})

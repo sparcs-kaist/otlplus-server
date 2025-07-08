@@ -9,6 +9,7 @@ import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-pr
 import { PlannerItemType } from '@otl/common/enum/planner'
 
 import { orderFilter } from '@otl/prisma-client/common/util'
+import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 import { PaginationOption } from '@otl/prisma-client/types/pagination'
 
@@ -17,6 +18,7 @@ export class PlannerRepository {
   constructor(
     private readonly prisma: PrismaService,
     private readonly txHost: TransactionHost<TransactionalAdapterPrisma>,
+    private readonly prismaRead: PrismaReadService,
   ) {}
 
   public async getPlannerByUser(query: PaginationOption, user: session_userprofile): Promise<EPlanners.Details[]> {
@@ -32,7 +34,7 @@ export class PlannerRepository {
   }
 
   public async getBasicPlannerById(id: number): Promise<EPlanners.Basic | null> {
-    return await this.prisma.planner_planner.findUnique({
+    return await this.prismaRead.planner_planner.findUnique({
       where: {
         id,
       },
@@ -75,7 +77,7 @@ export class PlannerRepository {
   }
 
   public async getPlannerById(user: session_userprofile, id: number): Promise<EPlanners.Details | null> {
-    return this.prisma.planner_planner.findFirst({
+    return this.prismaRead.planner_planner.findFirst({
       ...EPlanners.Details,
       where: {
         user_id: user.id,
@@ -146,7 +148,7 @@ export class PlannerRepository {
   }
 
   public async getTakenPlannerItemByIds(plannerItemIds: number[]): Promise<EPlanners.EItems.Taken.Details[] | null> {
-    const plannerItems = await this.prisma.planner_takenplanneritem.findMany({
+    const plannerItems = await this.prismaRead.planner_takenplanneritem.findMany({
       include: EPlanners.EItems.Taken.Details.include,
       where: {
         id: {
@@ -183,7 +185,7 @@ export class PlannerRepository {
   }
 
   public async getFuturePlannerItemById(futureItemIds: number[]): Promise<EPlanners.EItems.Future.Extended[] | null> {
-    const futurePlannerItems = await this.prisma.planner_futureplanneritem.findMany({
+    const futurePlannerItems = await this.prismaRead.planner_futureplanneritem.findMany({
       include: EPlanners.EItems.Future.Extended.include,
       where: {
         id: {
@@ -289,7 +291,7 @@ export class PlannerRepository {
   }
 
   public async checkPlannerExists(plannerId: number): Promise<boolean> {
-    const planner = await this.prisma.planner_planner.findFirst({
+    const planner = await this.prismaRead.planner_planner.findFirst({
       where: {
         id: plannerId,
       },
@@ -375,7 +377,7 @@ export class PlannerRepository {
     plannerId: number,
     lectureId: number,
   ): Promise<EPlanners.EItems.Taken.Basic | null> {
-    return await this.prisma.planner_takenplanneritem.findFirst({
+    return await this.prismaRead.planner_takenplanneritem.findFirst({
       where: {
         planner_id: plannerId,
         lecture_id: lectureId,
@@ -387,7 +389,7 @@ export class PlannerRepository {
     plannerId: number,
     lectureIds: number[],
   ): Promise<EPlanners.EItems.Taken.Basic[]> {
-    return await this.prisma.planner_takenplanneritem.findMany({
+    return await this.prismaRead.planner_takenplanneritem.findMany({
       where: {
         planner_id: plannerId,
         lecture_id: {

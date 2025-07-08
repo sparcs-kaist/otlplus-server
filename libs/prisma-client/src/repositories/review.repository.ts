@@ -6,6 +6,7 @@ import {
   subject_department,
 } from '@prisma/client'
 
+import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 
 import { orderFilter } from '../common/util'
@@ -14,10 +15,13 @@ import { EReview } from '../entities/EReview'
 
 @Injectable()
 export class ReviewsRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly prismaRead: PrismaReadService,
+  ) {}
 
   async findReviewByUser(user: session_userprofile): Promise<EReview.Details[]> {
-    const reviews = await this.prisma.review_review.findMany({
+    const reviews = await this.prismaRead.review_review.findMany({
       where: { writer_id: user.id },
       include: {
         course: {
@@ -42,7 +46,7 @@ export class ReviewsRepository {
   }
 
   async getReviewById(reviewId: number): Promise<EReview.Details | null> {
-    return await this.prisma.review_review.findUnique({
+    return await this.prismaRead.review_review.findUnique({
       where: { id: reviewId },
       include: {
         course: {
@@ -67,7 +71,7 @@ export class ReviewsRepository {
   }
 
   async getReviewsByIds(reviewIds: number[]) {
-    return this.prisma.review_review.findMany({
+    return this.prismaRead.review_review.findMany({
       where: {
         id: {
           in: reviewIds,
@@ -102,7 +106,7 @@ export class ReviewsRepository {
       orderDict[orderBy[orderBy.length - 1]] = sortOrder
       orderFilters.push(orderDict)
     })
-    return this.prisma.review_review.findMany({
+    return this.prismaRead.review_review.findMany({
       where: {
         lecture: lectureFilter,
       },

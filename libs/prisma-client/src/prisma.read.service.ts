@@ -4,9 +4,17 @@ import { Prisma, PrismaClient } from '@prisma/client'
 import { signalExtension } from './custom-prisma-client'
 
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit {
-  constructor(@Inject('ORM_OPTIONS') ormOption: Prisma.PrismaClientOptions) {
-    super(ormOption)
+export class PrismaReadService extends PrismaClient implements OnModuleInit {
+  constructor(
+    @Inject('ORM_OPTIONS') ormOption: Prisma.PrismaClientOptions,
+    @Inject('ORM_READ_OPTIONS') ormReadOption?: Prisma.PrismaClientOptions,
+  ) {
+    if (ormReadOption) {
+      super(ormReadOption)
+    }
+    else {
+      super(ormOption)
+    }
   }
 
   async onModuleInit() {

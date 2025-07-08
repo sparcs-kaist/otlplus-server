@@ -1,11 +1,16 @@
 import { Injectable } from '@nestjs/common'
 
+import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
+
 import { EWishlist } from '../entities'
 import { PrismaService } from '../prisma.service'
 
 @Injectable()
 export class WishlistRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly prismaRead: PrismaReadService,
+  ) {}
 
   async getOrCreateWishlist(userId: number) {
     return this.prisma.timetable_wishlist.upsert({
@@ -41,7 +46,7 @@ export class WishlistRepository {
   }
 
   async getLectureInWishlist(wishlistId: number, lectureId: number) {
-    return this.prisma.timetable_wishlist_lectures.findUnique({
+    return this.prismaRead.timetable_wishlist_lectures.findUnique({
       where: {
         wishlist_id_lecture_id: {
           wishlist_id: wishlistId,
@@ -52,7 +57,7 @@ export class WishlistRepository {
   }
 
   async getWishlistWithLectures(wishlistId: number): Promise<EWishlist.WithLectures | null> {
-    return this.prisma.timetable_wishlist.findUnique({
+    return this.prismaRead.timetable_wishlist.findUnique({
       where: { id: wishlistId },
       include: EWishlist.WithLectures.include,
     })

@@ -1,12 +1,17 @@
 import { Injectable } from '@nestjs/common'
 import { Prisma, session_userprofile, subject_semester } from '@prisma/client'
 
+import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
+
 import { EUser } from '../entities/EUser'
 import { PrismaService } from '../prisma.service'
 
 @Injectable()
 export class UserRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly prismaRead: PrismaReadService,
+  ) {}
 
   async findBySid(sid: string) {
     return this.prisma.session_userprofile.findFirst({
@@ -42,7 +47,7 @@ export class UserRepository {
   }
 
   async getTakenLectures(userId: number, notWritableSemester?: subject_semester | null) {
-    return await this.prisma.session_userprofile_taken_lectures.findMany({
+    return await this.prismaRead.session_userprofile_taken_lectures.findMany({
       include: { lecture: true },
       where: {
         userprofile_id: userId,
@@ -71,7 +76,7 @@ export class UserRepository {
   }
 
   findByStudentId(studentId: number) {
-    return this.prisma.session_userprofile.findFirst({
+    return this.prismaRead.session_userprofile.findFirst({
       where: {
         student_id: studentId.toString(),
       },
