@@ -9,6 +9,7 @@ import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-pr
 import { PlannerItemType } from '@otl/common/enum/planner'
 
 import { orderFilter } from '@otl/prisma-client/common/util'
+import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 import { PaginationOption } from '@otl/prisma-client/types/pagination'
 
@@ -17,6 +18,7 @@ export class PlannerRepository {
   constructor(
     private readonly prisma: PrismaService,
     private readonly txHost: TransactionHost<TransactionalAdapterPrisma>,
+    private readonly prismaRead: PrismaReadService,
   ) {}
 
   public async getPlannerByUser(query: PaginationOption, user: session_userprofile): Promise<EPlanners.Details[]> {
@@ -375,7 +377,7 @@ export class PlannerRepository {
     plannerId: number,
     lectureId: number,
   ): Promise<EPlanners.EItems.Taken.Basic | null> {
-    return await this.prisma.planner_takenplanneritem.findFirst({
+    return await this.prismaRead.planner_takenplanneritem.findFirst({
       where: {
         planner_id: plannerId,
         lecture_id: lectureId,
