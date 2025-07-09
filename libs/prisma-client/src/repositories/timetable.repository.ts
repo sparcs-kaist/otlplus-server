@@ -28,7 +28,7 @@ export class TimetableRepository {
     const take = paginationAndSorting?.take
     const orderBy = paginationAndSorting?.orderBy
 
-    return this.prismaRead.timetable_timetable.findMany({
+    return this.prisma.timetable_timetable.findMany({
       include: ETimetable.Details.include,
       where: {
         year: year ?? undefined,
@@ -55,7 +55,7 @@ export class TimetableRepository {
     const { take } = paginationAndSorting
     const { orderBy } = paginationAndSorting
 
-    return this.prismaRead.timetable_timetable.findMany({
+    return this.prisma.timetable_timetable.findMany({
       where: {
         year,
         semester,
@@ -93,7 +93,7 @@ export class TimetableRepository {
   }
 
   async getTimeTableBasicById(timeTableId: number) {
-    return this.prismaRead.timetable_timetable.findUniqueOrThrow({
+    return this.prisma.timetable_timetable.findUniqueOrThrow({
       where: {
         id: timeTableId,
       },
@@ -110,7 +110,7 @@ export class TimetableRepository {
   }
 
   async getTimeTableById(timeTableId: number): Promise<ETimetable.Details> {
-    return this.prismaRead.timetable_timetable.findUniqueOrThrow({
+    return this.prisma.timetable_timetable.findUniqueOrThrow({
       include: ETimetable.Details.include,
       where: {
         id: timeTableId,

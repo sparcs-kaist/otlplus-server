@@ -47,7 +47,7 @@ export class UserRepository {
   }
 
   async getTakenLectures(userId: number, notWritableSemester?: subject_semester | null) {
-    return await this.prismaRead.session_userprofile_taken_lectures.findMany({
+    return await this.prisma.session_userprofile_taken_lectures.findMany({
       include: { lecture: true },
       where: {
         userprofile_id: userId,

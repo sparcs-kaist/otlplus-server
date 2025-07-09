@@ -21,7 +21,7 @@ export class ReviewsRepository {
   ) {}
 
   async findReviewByUser(user: session_userprofile): Promise<EReview.Details[]> {
-    const reviews = await this.prismaRead.review_review.findMany({
+    const reviews = await this.prisma.review_review.findMany({
       where: { writer_id: user.id },
       include: {
         course: {
@@ -46,7 +46,7 @@ export class ReviewsRepository {
   }
 
   async getReviewById(reviewId: number): Promise<EReview.Details | null> {
-    return await this.prismaRead.review_review.findUnique({
+    return await this.prisma.review_review.findUnique({
       where: { id: reviewId },
       include: {
         course: {
@@ -118,7 +118,7 @@ export class ReviewsRepository {
   }
 
   async getReviewsOfLecture(id: number, order: string[], offset: number, limit: number): Promise<EReview.Details[]> {
-    return this.prisma.review_review.findMany({
+    return this.prismaRead.review_review.findMany({
       where: { lecture_id: id },
       include: EReview.Details.include,
       orderBy: orderFilter(order),
@@ -133,7 +133,7 @@ export class ReviewsRepository {
     limit: number,
     lecture: ELecture.Details,
   ): Promise<EReview.Details[]> {
-    return await this.prisma.review_review.findMany({
+    return await this.prismaRead.review_review.findMany({
       ...EReview.Details,
       where: {
         lecture: {
@@ -196,7 +196,7 @@ export class ReviewsRepository {
     if (lectureSemester) {
       lectureFilter = { ...lectureFilter, semester: lectureSemester }
     }
-    const reviewsCount = await this.prisma.review_review.count({
+    const reviewsCount = await this.prismaRead.review_review.count({
       where: {
         lecture: lectureFilter,
       },

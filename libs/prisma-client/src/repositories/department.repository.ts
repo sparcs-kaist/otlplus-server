@@ -12,7 +12,7 @@ export class DepartmentRepository {
   ) {}
 
   async getBasicDepartmentById(id: number): Promise<subject_department | null> {
-    return this.prismaRead.subject_department.findUnique({
+    return this.prisma.subject_department.findUnique({
       where: { id },
     })
   }

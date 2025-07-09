@@ -46,7 +46,7 @@ export class WishlistRepository {
   }
 
   async getLectureInWishlist(wishlistId: number, lectureId: number) {
-    return this.prismaRead.timetable_wishlist_lectures.findUnique({
+    return this.prisma.timetable_wishlist_lectures.findUnique({
       where: {
         wishlist_id_lecture_id: {
           wishlist_id: wishlistId,
@@ -57,7 +57,7 @@ export class WishlistRepository {
   }
 
   async getWishlistWithLectures(wishlistId: number): Promise<EWishlist.WithLectures | null> {
-    return this.prismaRead.timetable_wishlist.findUnique({
+    return this.prisma.timetable_wishlist.findUnique({
       where: { id: wishlistId },
       include: EWishlist.WithLectures.include,
     })
