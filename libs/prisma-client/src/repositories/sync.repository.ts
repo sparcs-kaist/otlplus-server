@@ -20,12 +20,16 @@ import {
   EUser,
   EUserProfile,
 } from '@otl/prisma-client/entities'
+import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 import { STAFF_ID } from '@otl/prisma-client/types'
 
 @Injectable()
 export class SyncRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly prismaRead: PrismaReadService,
+  ) {}
 
   async getDefaultSemester(): Promise<ESemester.Basic | null> {
     const now = new Date()

@@ -1,14 +1,18 @@
 import { Injectable } from '@nestjs/common'
 import { Prisma, subject_semester } from '@prisma/client'
 
+import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 
 @Injectable()
 export class SemesterRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly prismaRead: PrismaReadService,
+  ) {}
 
   async existsSemester(year: number, semester: number): Promise<boolean> {
-    const existsSemester: boolean = await this.prisma.subject_semester
+    const existsSemester: boolean = await this.prismaRead.subject_semester
       .findFirstOrThrow({
         where: {
           year,
@@ -29,7 +33,7 @@ export class SemesterRepository {
     const { skip } = paginationAndSoring
     const { take } = paginationAndSoring
 
-    return await this.prisma.subject_semester.findMany({
+    return await this.prismaRead.subject_semester.findMany({
       orderBy,
       skip,
       take,
@@ -38,7 +42,7 @@ export class SemesterRepository {
 
   async getNotWritableSemester(): Promise<subject_semester | null> {
     const now = new Date()
-    return await this.prisma.subject_semester.findFirst({
+    return await this.prismaRead.subject_semester.findFirst({
       where: {
         OR: [{ courseAddDropPeriodEnd: { gte: now } }, { beginning: { gte: now } }],
       },
@@ -46,7 +50,7 @@ export class SemesterRepository {
   }
 
   async findSemester(year: number, semester: number): Promise<subject_semester | null> {
-    return await this.prisma.subject_semester.findUnique({
+    return await this.prismaRead.subject_semester.findUnique({
       where: {
         year_semester: {
           year,
