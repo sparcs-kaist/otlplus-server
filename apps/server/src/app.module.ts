@@ -69,7 +69,7 @@ async function createCacheStoreWithFallback(): Promise<Keyv> {
 @Module({
   imports: [
     SentryModule.forRoot(),
-    PrismaModule.register(settings().ormconfig()),
+    PrismaModule.register(settings().ormconfig(), settings().ormReplicatedConfig()),
     AuthModule,
     CoursesModule,
     LecturesModule,
