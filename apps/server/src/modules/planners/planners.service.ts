@@ -71,22 +71,23 @@ export class PlannersService {
     }
 
     await Promise.all([
-      async () => {
+      (async () => {
         const takenTargetItems = await this.plannerRepository.getTakenPlannerItemByIds(body.taken_items_to_copy)
         await this.plannerRepository.createTakenPlannerItem(
           planner.id,
           takenTargetItems?.map((item) => ({ lectureId: item.lecture_id, isExcluded: item.is_excluded })) || [],
         )
-      },
-      async () => {
+      })(),
+      (async () => {
         const futureTargetItems = await this.plannerRepository.getFuturePlannerItemById(body.future_items_to_copy)
         await this.plannerRepository.createFuturePlannerItem(planner.id, futureTargetItems || [])
-      },
-      async () => {
+      })(),
+      (async () => {
         const targetItems = await this.plannerRepository.getArbitraryPlannerItemById(body.arbitrary_items_to_copy)
         await this.plannerRepository.createArbitraryPlannerItem(planner.id, targetItems || [])
-      },
+      })(),
     ])
+
     const newPlanner = await this.plannerRepository.getPlannerById(user, planner.id)
     if (!newPlanner) {
       throw new NotFoundException()
