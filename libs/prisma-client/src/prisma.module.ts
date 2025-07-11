@@ -17,6 +17,7 @@ import { PrismaService } from '@otl/prisma-client/prisma.service'
 import {
   CourseRepository,
   DepartmentRepository,
+  FeedsRepository,
   LectureRepository,
   NoticesRepository,
   PlannerRepository,
@@ -57,6 +58,7 @@ export class PrismaModule implements OnModuleInit {
         PlannerRepository,
         TracksRepository,
         NoticesRepository,
+        FeedsRepository,
         SyncRepository,
         ReviewMiddleware,
       ],
@@ -73,6 +75,7 @@ export class PrismaModule implements OnModuleInit {
         PlannerRepository,
         TracksRepository,
         NoticesRepository,
+        FeedsRepository,
         SyncRepository,
       ],
     }

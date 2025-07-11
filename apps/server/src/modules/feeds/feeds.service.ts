@@ -103,45 +103,52 @@ export class FeedsService {
     const departments = await this.departmentRepository.getRelatedDepartments(user)
     const feeds: EFeed.Details[] = []
 
-    const famousHumanityReview: EFeed.Details = await this.getFamousHumanityReview(date)
-    this.filterFeeds(feeds, famousHumanityReview)
-
-    /**
-     * "RANKED_REVIEW" does not require RankedReview
-     * Always shows TOP 3 liked reviews.
-     */
-    const rankedReview = await this.getRankedReview(date)
-    const top3LikedReviews = await this.reviewsRepository.getTopLikedReviews(3)
-
-    /**
-     * RankedReview schema dose not have relation with review_review.
-     * So, manually add reviews in app level.
-     */
-    const rankedReviewWithReviews: EFeed.RankedReviewDetails = {
-      ...rankedReview,
-      ...{ reviews: top3LikedReviews },
-    }
-    this.filterFeeds(feeds, rankedReviewWithReviews)
-
-    const famousMajorReviews = await this.getFamousMajorReviews(date, departments)
-    famousMajorReviews.forEach((feed) => {
-      this.filterFeeds(feeds, feed)
-    })
-
-    const reviewWrite = await this.getReviewWrite(date, user.id)
-    this.filterFeeds(feeds, reviewWrite)
-
-    /**
-     * @NOTE
-     * RelatedCourse does not have Datas of posterior or prior courses.
-     * Comment out below until having enough Datas.
-     */
-    // const relatedCourse = await this.getRelatedCourses(date, user.id);
-    // this.filterFeeds(feeds, relatedCourse);
-
-    const rateDaily = await this.feedsRepository.getOrCreateRate(date, user.id)
-    this.filterFeeds(feeds, rateDaily)
-
+    await Promise.all([
+      (async () => {
+        const famousHumanityReview: EFeed.Details = await this.getFamousHumanityReview(date)
+        this.filterFeeds(feeds, famousHumanityReview)
+      })(),
+      (async () => {
+        /**
+         * "RANKED_REVIEW" does not require RankedReview
+         * Always shows TOP 3 liked reviews.
+         */
+        const rankedReview = await this.getRankedReview(date)
+        const top3LikedReviews = await this.reviewsRepository.getTopLikedReviews(3)
+        /**
+         * RankedReview schema dose not have relation with review_review.
+         * So, manually add reviews in app level.
+         */
+        const rankedReviewWithReviews: EFeed.RankedReviewDetails = {
+          ...rankedReview,
+          ...{ reviews: top3LikedReviews },
+        }
+        this.filterFeeds(feeds, rankedReviewWithReviews)
+      })(),
+      (async () => {
+        const famousMajorReviews = await this.getFamousMajorReviews(date, departments)
+        famousMajorReviews.forEach((feed) => {
+          this.filterFeeds(feeds, feed)
+        })
+      })(),
+      (async () => {
+        const reviewWrite = await this.getReviewWrite(date, user.id)
+        this.filterFeeds(feeds, reviewWrite)
+      })(),
+      (async () => {
+        /**
+         * @NOTE
+         * RelatedCourse does not have Datas of posterior or prior courses.
+         * Comment out below until having enough Datas.
+         */
+        const relatedCourse = await this.getRelatedCourses(date, user.id)
+        this.filterFeeds(feeds, relatedCourse)
+      })(),
+      (async () => {
+        const rateDaily = await this.feedsRepository.getOrCreateRate(date, user.id)
+        this.filterFeeds(feeds, rateDaily)
+      })(),
+    ])
     return feeds
   }
 }
