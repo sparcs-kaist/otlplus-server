@@ -3,6 +3,7 @@ import { Prisma, session_userprofile } from '@prisma/client'
 
 import { applyOffset, applyOrder, groupBy } from '@otl/common/utils/util'
 
+import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 import { LectureQuery } from '@otl/prisma-client/types/query'
 
@@ -13,11 +14,12 @@ import { CourseRepository } from './course.repository'
 export class LectureRepository {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly prismaRead: PrismaReadService,
     private readonly courseRepository: CourseRepository,
   ) {}
 
   async getLectureById(id: number): Promise<ELecture.Details> {
-    return await this.prisma.subject_lecture.findUniqueOrThrow({
+    return await this.prismaRead.subject_lecture.findUniqueOrThrow({
       include: ELecture.Details.include,
       where: {
         id,
@@ -26,7 +28,7 @@ export class LectureRepository {
   }
 
   async getLectureBasicById(id: number): Promise<ELecture.Basic> {
-    return await this.prisma.subject_lecture.findUniqueOrThrow({
+    return await this.prismaRead.subject_lecture.findUniqueOrThrow({
       where: {
         id,
       },
@@ -34,7 +36,7 @@ export class LectureRepository {
   }
 
   async getLectureByIds(ids: number[]): Promise<ELecture.Details[]> {
-    return await this.prisma.subject_lecture.findMany({
+    return await this.prismaRead.subject_lecture.findMany({
       include: ELecture.Details.include,
       where: {
         id: {
@@ -77,7 +79,7 @@ export class LectureRepository {
       keywordFilter,
       defaultFilter,
     ].filter((filter): filter is object => filter !== null)
-    const queryResult = await this.prisma.subject_lecture.findMany({
+    const queryResult = await this.prismaRead.subject_lecture.findMany({
       include: {
         subject_department: true,
         subject_lecture_professors: { include: { professor: true } },
@@ -101,7 +103,7 @@ export class LectureRepository {
   async findReviewWritableLectures(user: session_userprofile, date?: Date): Promise<ELecture.Details[]> {
     type Semester = { semester: number, year: number }
     const currDate = date ?? new Date()
-    const notWritableSemesters = await this.prisma.subject_semester.findMany({
+    const notWritableSemesters = await this.prismaRead.subject_semester.findMany({
       where: {
         OR: [
           {
@@ -156,7 +158,7 @@ export class LectureRepository {
 
   async getTakenLectures(user: session_userprofile): Promise<ELecture.Details[]> {
     const lectures = (
-      await this.prisma.session_userprofile_taken_lectures.findMany({
+      await this.prismaRead.session_userprofile_taken_lectures.findMany({
         where: {
           userprofile_id: user.id,
         },
@@ -236,7 +238,7 @@ export class LectureRepository {
   }
 
   async getLectureAutocomplete(year: number, semester: number, keyword: string): Promise<ELecture.Extended | null> {
-    const candidate = await this.prisma.subject_lecture.findFirst({
+    const candidate = await this.prismaRead.subject_lecture.findFirst({
       where: {
         year,
         semester,
@@ -265,7 +267,7 @@ export class LectureRepository {
   }
 
   async getUserLecturesByYearSemester(userId: number, year: number, semester: number): Promise<ELecture.UserTaken[]> {
-    const lectures = await this.prisma.session_userprofile_taken_lectures.findMany({
+    const lectures = await this.prismaRead.session_userprofile_taken_lectures.findMany({
       where: {
         userprofile_id: userId,
         lecture: {
@@ -283,7 +285,7 @@ export class LectureRepository {
   }
 
   async getLectureDetailsForTimetable(lectureIds: number[]) {
-    return await this.prisma.subject_lecture.findMany({
+    return await this.prismaRead.subject_lecture.findMany({
       where: {
         id: {
           in: lectureIds,

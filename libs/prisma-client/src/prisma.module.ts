@@ -12,6 +12,7 @@ import { ReviewVoteMiddleware } from '@otl/prisma-client/middleware/prisma.revie
 import { SemesterMiddleware } from '@otl/prisma-client/middleware/prisma.semester'
 import { TimetableMiddleware } from '@otl/prisma-client/middleware/prisma.timetable'
 import { TimetableLectureMiddleware } from '@otl/prisma-client/middleware/prisma.timetablelecture'
+import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 import {
   CourseRepository,
@@ -32,7 +33,7 @@ import { NotificationPrismaRepository } from '@otl/prisma-client/repositories/no
 @Module({})
 @Global()
 export class PrismaModule implements OnModuleInit {
-  static register(ormOptions: Prisma.PrismaClientOptions): DynamicModule {
+  static register(ormOptions: Prisma.PrismaClientOptions, ormReadOptions?: Prisma.PrismaClientOptions): DynamicModule {
     return {
       module: PrismaModule,
       providers: [
@@ -40,6 +41,11 @@ export class PrismaModule implements OnModuleInit {
           provide: 'ORM_OPTIONS',
           useValue: ormOptions,
         },
+        {
+          provide: 'ORM_READ_OPTIONS',
+          useValue: ormReadOptions,
+        },
+        PrismaReadService,
         PrismaService,
         UserRepository,
         LectureRepository,

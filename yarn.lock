@@ -2432,6 +2432,7 @@
     "@prisma/fetch-engine" "6.2.1"
     "@prisma/get-platform" "6.2.1"
 
+<<<<<<< HEAD
 "@prisma/extension-optimize@^1.1.8":
   version "1.1.8"
   resolved "https://registry.npmjs.org/@prisma/extension-optimize/-/extension-optimize-1.1.8.tgz#568914f33868f5551921c096035a56484c2b8137"
@@ -2448,7 +2449,7 @@
     prisma-instrumentation-5-x "npm:@prisma/instrumentation@5.19.1"
     prisma-instrumentation-6-x "npm:@prisma/instrumentation@6.1.0"
     zod "3.23.8"
-
+    
 "@prisma/fetch-engine@6.2.1":
   version "6.2.1"
   resolved "https://registry.yarnpkg.com/@prisma/fetch-engine/-/fetch-engine-6.2.1.tgz#cd7eb7428a407105e0f3761dba536aefd41fc7f7"

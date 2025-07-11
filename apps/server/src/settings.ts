@@ -68,7 +68,32 @@ const getRedisConfig = () => ({
   password: process.env.REDIS_PASSWORD,
 })
 
-const getReplicatedPrismaConfig = (): Prisma.PrismaClientOptions => ({})
+const getReplicatedPrismaConfig = (): Prisma.PrismaClientOptions => ({
+  datasources: {
+    db: {
+      url: process.env.READ_ONLY_DATABASE_URL,
+    },
+  },
+  errorFormat: 'pretty',
+  log: [
+    // {
+    //   emit: 'event',
+    //   level: 'query',
+    // },
+    {
+      emit: 'stdout',
+      level: 'error',
+    },
+    {
+      emit: 'stdout',
+      level: 'info',
+    },
+    // {
+    //   emit: 'stdout',
+    //   level: 'warn',
+    // },
+  ],
+})
 
 const getAWSConfig = () => ({})
 

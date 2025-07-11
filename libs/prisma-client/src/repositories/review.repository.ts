@@ -6,6 +6,7 @@ import {
   subject_department,
 } from '@prisma/client'
 
+import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 
 import { orderFilter } from '../common/util'
@@ -14,7 +15,10 @@ import { EReview } from '../entities/EReview'
 
 @Injectable()
 export class ReviewsRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly prismaRead: PrismaReadService,
+  ) {}
 
   async findReviewByUser(user: session_userprofile): Promise<EReview.Details[]> {
     const reviews = await this.prisma.review_review.findMany({
@@ -67,7 +71,7 @@ export class ReviewsRepository {
   }
 
   async getReviewsByIds(reviewIds: number[]) {
-    return this.prisma.review_review.findMany({
+    return this.prismaRead.review_review.findMany({
       where: {
         id: {
           in: reviewIds,
@@ -102,7 +106,7 @@ export class ReviewsRepository {
       orderDict[orderBy[orderBy.length - 1]] = sortOrder
       orderFilters.push(orderDict)
     })
-    return this.prisma.review_review.findMany({
+    return this.prismaRead.review_review.findMany({
       where: {
         lecture: lectureFilter,
       },
@@ -114,7 +118,7 @@ export class ReviewsRepository {
   }
 
   async getReviewsOfLecture(id: number, order: string[], offset: number, limit: number): Promise<EReview.Details[]> {
-    return this.prisma.review_review.findMany({
+    return this.prismaRead.review_review.findMany({
       where: { lecture_id: id },
       include: EReview.Details.include,
       orderBy: orderFilter(order),
@@ -129,7 +133,7 @@ export class ReviewsRepository {
     limit: number,
     lecture: ELecture.Details,
   ): Promise<EReview.Details[]> {
-    return await this.prisma.review_review.findMany({
+    return await this.prismaRead.review_review.findMany({
       ...EReview.Details,
       where: {
         lecture: {
@@ -192,7 +196,7 @@ export class ReviewsRepository {
     if (lectureSemester) {
       lectureFilter = { ...lectureFilter, semester: lectureSemester }
     }
-    const reviewsCount = await this.prisma.review_review.count({
+    const reviewsCount = await this.prismaRead.review_review.count({
       where: {
         lecture: lectureFilter,
       },

@@ -41,7 +41,6 @@ export class CoursesService {
     else {
       courseReads = await this.courseRepository.isUserSpecificRead(courseIds, user.id)
     }
-    console.log(courseReads)
     queryResult.map(async (course) => {
       const representativeLecture = getRepresentativeLecture(course.lecture)
       if (!representativeLecture) {
@@ -111,12 +110,16 @@ export class CoursesService {
   private findAutocompleteFromCandidate(candidate: ECourse.Extended, keyword: string): string | undefined {
     const keywordLower = keyword.toLowerCase()
     if (candidate.subject_department.name.startsWith(keyword)) return candidate.subject_department.name
-    if (candidate.subject_department.name_en?.toLowerCase().startsWith(keywordLower)) return candidate.subject_department.name_en
+    if (candidate.subject_department.name_en?.toLowerCase().startsWith(keywordLower)) {
+      return candidate.subject_department.name_en
+    }
     if (candidate.title.startsWith(keyword)) return candidate.title
     if (candidate.title_en.toLowerCase().startsWith(keywordLower)) return candidate.title_en
     for (const professor of candidate.subject_course_professors) {
       if (professor.professor.professor_name.startsWith(keyword)) return professor.professor.professor_name
-      if (professor.professor.professor_name_en?.toLowerCase().startsWith(keywordLower)) return professor.professor.professor_name_en
+      if (professor.professor.professor_name_en?.toLowerCase().startsWith(keywordLower)) {
+        return professor.professor.professor_name_en
+      }
     }
     return undefined
   }
