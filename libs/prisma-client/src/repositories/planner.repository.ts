@@ -41,9 +41,8 @@ export class PlannerRepository {
     })
   }
 
-  public async createPlanner(body: EPlanners.CreateBody, user: session_userprofile): Promise<EPlanners.Details> {
+  public async createPlanner(body: EPlanners.CreateBody, user: session_userprofile): Promise<EPlanners.Basic> {
     return await this.prisma.planner_planner.create({
-      ...EPlanners.Details,
       data: {
         session_userprofile: {
           connect: {
@@ -86,9 +85,8 @@ export class PlannerRepository {
     })
   }
 
-  public async updateOrder(plannerId: number, order: number): Promise<EPlanners.Details> {
+  public async updateOrder(plannerId: number, order: number): Promise<EPlanners.Basic> {
     return await this.txHost.tx.planner_planner.update({
-      ...EPlanners.Details,
       where: {
         id: plannerId,
       },

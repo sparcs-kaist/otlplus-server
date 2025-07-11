@@ -9,7 +9,7 @@ import {
 import { Transactional } from '@nestjs-cls/transactional'
 import { IPlanner } from '@otl/server-nest/common/interfaces'
 import { toJsonArbitraryItem, toJsonFutureItem } from '@otl/server-nest/common/serializer/planner.item.serializer'
-import { toJsonPlanner } from '@otl/server-nest/common/serializer/planner.serializer'
+import { toJsonPlanner, toJsonPlannerDetails } from '@otl/server-nest/common/serializer/planner.serializer'
 import { session_userprofile } from '@prisma/client'
 
 import { EPlanners } from '@otl/prisma-client'
@@ -35,7 +35,7 @@ export class PlannersService {
 
   public async getPlannerByUser(query: IPlanner.QueryDto, user: session_userprofile) {
     const queryResult = await this.plannerRepository.getPlannerByUser(query, user)
-    return queryResult.map(toJsonPlanner)
+    return queryResult.map(toJsonPlannerDetails)
   }
 
   async getRelatedPlanner(user: session_userprofile) {
@@ -70,24 +70,29 @@ export class PlannersService {
       )
     }
 
-    const takenTargetItems = await this.plannerRepository.getTakenPlannerItemByIds(body.taken_items_to_copy)
-    await this.plannerRepository.createTakenPlannerItem(
-      planner.id,
-      takenTargetItems?.map((item) => ({ lectureId: item.lecture_id, isExcluded: item.is_excluded })) || [],
-    )
-
-    const futureTargetItems = await this.plannerRepository.getFuturePlannerItemById(body.future_items_to_copy)
-    await this.plannerRepository.createFuturePlannerItem(planner.id, futureTargetItems || [])
-
-    const targetItems = await this.plannerRepository.getArbitraryPlannerItemById(body.arbitrary_items_to_copy)
-    await this.plannerRepository.createArbitraryPlannerItem(planner.id, targetItems || [])
-
+    await Promise.all([
+      async () => {
+        const takenTargetItems = await this.plannerRepository.getTakenPlannerItemByIds(body.taken_items_to_copy)
+        await this.plannerRepository.createTakenPlannerItem(
+          planner.id,
+          takenTargetItems?.map((item) => ({ lectureId: item.lecture_id, isExcluded: item.is_excluded })) || [],
+        )
+      },
+      async () => {
+        const futureTargetItems = await this.plannerRepository.getFuturePlannerItemById(body.future_items_to_copy)
+        await this.plannerRepository.createFuturePlannerItem(planner.id, futureTargetItems || [])
+      },
+      async () => {
+        const targetItems = await this.plannerRepository.getArbitraryPlannerItemById(body.arbitrary_items_to_copy)
+        await this.plannerRepository.createArbitraryPlannerItem(planner.id, targetItems || [])
+      },
+    ])
     const newPlanner = await this.plannerRepository.getPlannerById(user, planner.id)
     if (!newPlanner) {
       throw new NotFoundException()
     }
 
-    return toJsonPlanner(newPlanner)
+    return toJsonPlannerDetails(newPlanner)
   }
 
   @Transactional()
@@ -154,7 +159,7 @@ export class PlannersService {
       throw new NotFoundException()
     }
 
-    return toJsonPlanner(planner)
+    return toJsonPlannerDetails(planner)
   }
 
   @Transactional()
@@ -183,7 +188,7 @@ export class PlannersService {
   }
 
   @Transactional()
-  public async reorderPlanner(plannerId: number, order: number, user: session_userprofile): Promise<IPlanner.Detail> {
+  public async reorderPlanner(plannerId: number, order: number, user: session_userprofile): Promise<IPlanner.Response> {
     const planner = await this.plannerRepository.getPlannerById(user, plannerId)
 
     if (!planner) {

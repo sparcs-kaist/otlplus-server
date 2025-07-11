@@ -260,4 +260,17 @@ export namespace IPlanner {
     @IsBoolean()
     should_update_taken_semesters?: boolean
   }
+
+  export interface Response {
+    id: number
+    start_year: number
+    end_year: number
+    general_track: ITrack.General | null | undefined
+    major_track: ITrack.Major | null | undefined
+    additional_tracks: ITrack.Additional[] | null | undefined
+    taken_items: IItem.Taken[] | null | undefined
+    future_items: IItem.Future[] | null | undefined
+    arbitrary_items: IItem.Arbitrary[] | null | undefined
+    arrange_order: number
+  }
 }
