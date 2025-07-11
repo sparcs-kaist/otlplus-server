@@ -190,7 +190,7 @@ export class PlannersService {
 
   @Transactional()
   public async reorderPlanner(plannerId: number, order: number, user: session_userprofile): Promise<IPlanner.Response> {
-    const planner = await this.plannerRepository.getPlannerById(user, plannerId)
+    const planner = await this.plannerRepository.getBasicPlannerById(plannerId)
 
     if (!planner) {
       throw new NotFoundException()
