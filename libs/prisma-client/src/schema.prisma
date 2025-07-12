@@ -502,6 +502,11 @@ model subject_course {
   @@index([title], map: "subject_course_title_index")
   @@index([title_no_space], map: "subject_course_title_no_space_index")
   @@index([title_en], map: "subject_course_title_en_index")
+  @@fulltext([title], map: "subject_course_title")
+  @@fulltext([title_en], map: "subject_course_title_en")
+  @@fulltext([old_code], map: "subject_course_old_code")
+  @@fulltext([new_code], map: "subject_course_new_code")
+  @@fulltext([title, title_en, old_code, new_code])
 }
 
 model subject_course_professors {
