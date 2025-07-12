@@ -291,13 +291,13 @@ export class CourseRepository {
 
     const old_code_filter = {
       old_code: {
-        search: `+${keyword_space_removed}`,
+        contains: keyword_space_removed,
       },
     }
 
     const new_code_filter = {
       new_code: {
-        search: `+${formatNewLectureCodeWithDot(keyword_space_removed)}`,
+        contains: formatNewLectureCodeWithDot(keyword_space_removed),
       },
     }
     return {

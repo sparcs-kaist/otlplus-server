@@ -506,7 +506,7 @@ model subject_course {
   @@fulltext([title_en], map: "subject_course_title_en")
   @@fulltext([old_code], map: "subject_course_old_code")
   @@fulltext([new_code], map: "subject_course_new_code")
-  @@fulltext([title, title_en, old_code, new_code])
+  @@fulltext([title, title_en])
   @@fulltext([title, title_en, old_code])
 }
 
@@ -650,7 +650,7 @@ model subject_lecture {
   @@fulltext([title_en], map: "subject_lecture_title_en")
   @@fulltext([old_code], map: "subject_lecture_old_code")
   @@fulltext([new_code], map: "subject_lecture_new_code")
-  @@fulltext([title, title_en, old_code, new_code])
+  @@fulltext([title, title_en])
   @@fulltext([title, title_en, old_code])
 }
 
