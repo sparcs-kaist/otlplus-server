@@ -1,6 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
-  // previewFeatures = ["relationJoins"]
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextIndex"]
 }
 
 datasource db {
@@ -640,6 +640,11 @@ model subject_lecture {
   @@index([title_en], map: "subject_lecture_title_en_index")
   @@index([title], map: "subject_lecture_title_index")
   @@index([year, semester, deleted], map: "subject_lecture_deleted_year_semester_index")
+  @@fulltext([title], map: "subject_lecture_title")
+  @@fulltext([title_en], map: "subject_lecture_title_en")
+  @@fulltext([old_code], map: "subject_lecture_old_code")
+  @@fulltext([new_code], map: "subject_lecture_new_code")
+  @@fulltext([title, title_en, old_code, new_code])
 }
 
 model subject_lecture_professors {
@@ -669,6 +674,10 @@ model subject_professor {
   subject_course_professors  subject_course_professors[]
   subject_lecture_professors subject_lecture_professors[]
   paper_prof_to_subject_prof paper_prof_to_subject_prof[]
+
+  @@fulltext([professor_name], map: "subject_professor_professor_name_fulltext")
+  @@fulltext([professor_name_en], map: "subject_professor_professor_name_en_fulltext")
+  @@fulltext([professor_name, professor_name_en])
 }
 
 model subject_semester {
