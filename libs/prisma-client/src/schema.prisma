@@ -983,6 +983,7 @@ model paper_professor {
 model paper {
   id             Int              @id @default(autoincrement())
   professor_id   Int?
+  prof_name                  String?                      @db.VarChar(255)
   title          String?          @db.VarChar(1000)
   abstract       String?          @db.Text
   keywords       String?          @db.Text
