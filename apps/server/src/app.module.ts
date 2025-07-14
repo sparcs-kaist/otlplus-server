@@ -5,6 +5,7 @@ import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core'
 import { JwtService } from '@nestjs/jwt'
 import { ClsPluginTransactional } from '@nestjs-cls/transactional'
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma'
+import { LabModule } from '@otl/server-nest/modules/lab/lab.module'
 import { SentryModule } from '@sentry/nestjs/setup'
 import * as Sentry from '@sentry/node'
 import { CacheableMemory } from 'cacheable'
@@ -87,6 +88,7 @@ async function createCacheStoreWithFallback(): Promise<Keyv> {
     PlannersModule,
     TracksModule,
     ShareModule,
+    LabModule,
     ClsModule.forRoot({
       global: true,
       middleware: { mount: true },
