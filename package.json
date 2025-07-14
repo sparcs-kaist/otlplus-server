@@ -187,6 +187,7 @@
     "typescript-eslint": "^8.30.1",
     "uuid": "^11.1.0",
     "uuidv4": "^6.2.13",
+    "weaviate-client": "^3.6.2",
     "winston": "^3.17.0",
     "winston-daily-rotate-file": "^5.0.0"
   },
