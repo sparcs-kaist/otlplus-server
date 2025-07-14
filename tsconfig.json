@@ -25,6 +25,8 @@
       "@otl/common/*": ["libs/common/src/*"],
       "@otl/prisma-client": ["libs/prisma-client/src"],
       "@otl/prisma-client/*": ["libs/prisma-client/src/*"],
+      "@otl/weaviate-client": ["libs/weaviate-client/src"],
+      "@otl/weaviate-client/*": ["libs/weaviate-client/src/*"],
       "@otl/rmq": ["libs/rmq/src"],
       "@otl/rmq/*": ["libs/rmq/src/*"],
       "@otl/redis": ["libs/redis/src"],
