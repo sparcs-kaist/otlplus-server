@@ -156,6 +156,12 @@ function getLoggingConfig() {
     ],
   }
 }
+
+const getWeaviateConfig = () => ({
+  weaviateUrl: process.env.WEAVIATE_URL,
+  ollamaUrl: process.env.OLLAMA_URL,
+})
+
 export default () => ({
   ormconfig: () => getPrismaConfig(),
   ormReplicatedConfig: () => getReplicatedPrismaConfig(),
@@ -164,4 +170,5 @@ export default () => ({
   getVersion: () => getVersion(),
   getSwaggerConfig: () => getSwaggerConfig(),
   loggingConfig: () => getLoggingConfig(),
+  weaviateConfig: () => getWeaviateConfig(),
 })
