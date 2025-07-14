@@ -10,6 +10,7 @@ import { RmqModule } from '@otl/rmq/rmq.module'
 import { AgreementModule } from '@otl/server-nest/modules/agreement/agreement.module'
 import { DeviceModule } from '@otl/server-nest/modules/device/device.module'
 import { NotificationModule } from '@otl/server-nest/modules/notification/notification.module'
+import { LabModule } from '@otl/server-nest/modules/lab/lab.module'
 import { SentryModule } from '@sentry/nestjs/setup'
 import * as Sentry from '@sentry/node'
 import { CacheableMemory } from 'cacheable'
@@ -98,6 +99,7 @@ async function createCacheStoreWithFallback(): Promise<Keyv> {
     ClientsModule,
     DeviceModule,
     NotificationModule,
+    LabModule,
     ClsModule.forRoot({
       global: true,
       middleware: { mount: true },
