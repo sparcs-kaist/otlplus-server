@@ -1,0 +1,35 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2021",
+    "sourceMap": true,
+    "outDir": "../../dist/apps/scholar-sync",
+    "baseUrl": "./",
+    "incremental": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "alwaysStrict": true,
+    "noImplicitAny": true,
+    "strictBindCallApply": false,
+    "forceConsistentCasingInFileNames": false,
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@otl/scholar-sync/*": ["src/*"],
+      "@otl/scholar-sync/domain": ["../../apps/scholar-sync/src/common/domain"],
+      "@otl/scholar-sync/domain/*": ["../../apps/scholar-sync/src/common/domain/*"],
+      "@otl/prisma-client": ["../../libs/prisma-client/src"],
+      "@otl/prisma-client/*": ["../../libs/prisma-client/src/*"],
+      "@otl/common": ["../../libs/common/src"],
+      "@otl/common/*": ["../../libs/common/src/*"],
+      "@otl/weaviate-client": ["../../libs/weaviate-client/src"],
+      "@otl/weaviate-client/*": ["../../libs/weaviate-client/src/*"]
+    }
+  },
+  "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]
+}
