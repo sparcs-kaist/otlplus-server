@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
-import { WeaviateService } from '@otl/weaviate-client'
+import { WeaviateService } from '@otl/weaviate-client/weaviate.service'
 
-@Injectable
+@Injectable()
 export class LabService {
   constructor(private weaviate: WeaviateService) {}
 
