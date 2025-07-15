@@ -25,7 +25,9 @@
       "@otl/scholar-sync/domain/*": ["../../apps/scholar-sync/src/common/domain/*"],
       "@otl/scholar-sync/clients/scholar/*": ["../../apps/scholar-sync/src/clients/scholar/*"],
       "@otl/server-nest/*": ["../../apps/server/src/*"],
-      "@otl/prisma-client/*": ["../../libs/prisma-client/src/*"]
+      "@otl/prisma-client/*": ["../../libs/prisma-client/src/*"],
+      "@otl/weaviate-client": ["libs/weaviate-client/src"],
+      "@otl/weaviate-client/*": ["libs/weaviate-client/src/*"]
     }
   },
   "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]

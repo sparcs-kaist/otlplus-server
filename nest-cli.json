@@ -63,6 +63,15 @@
         "tsConfigPath": "libs/prisma-client/tsconfig.lib.json"
       }
     },
+    "weaviate-client": {
+      "type": "library",
+      "root": "libs/weaviate-client",
+      "entryFile": "index",
+      "sourceRoot": "libs/weaviate-client/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/weaviate-client/tsconfig.lib.json"
+      }
+    },
     "common": {
       "type": "library",
       "root": "libs/common",
