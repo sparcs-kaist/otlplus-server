@@ -119,6 +119,26 @@ const getRabbitMQConfig = (): {
         },
       },
     },
+    [ExchangeNames.STATISTICS]: {
+      name: ExchangeNames.STATISTICS,
+      type: 'x-delayed-message',
+      createExchangeIfNotExists: true,
+      options: {
+        arguments: {
+          'x-delayed-type': 'direct',
+        },
+      },
+    },
+    [ExchangeNames.STATISTICS_DLX]: {
+      name: ExchangeNames.STATISTICS_DLX,
+      type: 'x-delayed-message',
+      createExchangeIfNotExists: true,
+      options: {
+        arguments: {
+          'x-delayed-type': 'direct',
+        },
+      },
+    },
   }
   return {
     url: process.env.RABBITMQ_URL,
@@ -131,6 +151,8 @@ const getRabbitMQConfig = (): {
         exchangeMap[ExchangeNames.NOTIFICATIONS_DLX],
         exchangeMap[ExchangeNames.SCHOLAR_SYNC],
         exchangeMap[ExchangeNames.SCHOLAR_SYNC_DLX],
+        exchangeMap[ExchangeNames.STATISTICS],
+        exchangeMap[ExchangeNames.STATISTICS_DLX],
       ],
       exchangeMap,
     },
