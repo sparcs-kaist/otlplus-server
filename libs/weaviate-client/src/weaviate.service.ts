@@ -1,8 +1,17 @@
-import { Injectable } from '@nestjs/common'
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common'
+import { ConnectToCustomOptions, WeaviateClient } from 'weaviate-client'
+
+import { createWeaviateClient } from './weaviate.factory'
 
 @Injectable()
-export class WeaviateService {
-  private readonly endpoint = 'http://localhost:8080/v1/graphql'
+export class WeaviateService implements OnModuleInit {
+  private readonly client: Promise<WeaviateClient>
 
-  // async autocomplete(prefix: string): Promise<string[]> {}
+  constructor(@Inject('ConnectToCustomOptions') config: ConnectToCustomOptions) {
+    this.client = createWeaviateClient(config)
+  }
+
+  async onModuleInit() {
+    Object.assign(this, await this.client)
+  }
 }
