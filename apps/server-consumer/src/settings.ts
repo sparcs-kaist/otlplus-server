@@ -1,4 +1,3 @@
-import { RedisModuleOptions } from '@nestjs-modules/ioredis'
 import dotenv from 'dotenv'
 import * as mariadb from 'mariadb'
 
@@ -27,17 +26,8 @@ const getPrismaReadConnectConfig = (): mariadb.PoolConfig => ({
 
 const getVersion = () => String(process.env.npm_package_version)
 
-const getRedisConfig = (): RedisModuleOptions => ({
-  type: 'single',
-  url: process.env.REDIS_SCHEDULER_URL,
-  options: {
-    password: process.env.REDIS_PASSWORD,
-  },
-})
-
 export default () => ({
   ormconfig: () => getPrismaConnectConfig(),
   ormReplicatedConfig: () => getPrismaReadConnectConfig(),
   getVersion: () => getVersion(),
-  getRedisConfig: () => getRedisConfig(),
 })

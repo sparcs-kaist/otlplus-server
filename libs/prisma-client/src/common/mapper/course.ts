@@ -1,4 +1,4 @@
-import { Course, CourseScore } from '@otl/server-nest/modules/courses/domain/course'
+import { CourseBasic, CourseScore } from '@otl/server-nest/modules/courses/domain/course'
 
 import { ECourse } from '@otl/prisma-client/entities'
 
@@ -14,7 +14,7 @@ export function mapCourseScore(course: ECourse.Basic): CourseScore {
   }
 }
 
-export function mapCourse(course: ECourse.Basic): Course {
+export function mapCourse(course: ECourse.Basic): CourseBasic {
   return {
     id: course.id,
     oldCode: course.old_code,

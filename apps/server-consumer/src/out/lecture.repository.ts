@@ -8,4 +8,8 @@ export interface ServerConsumerLectureRepository {
   updateLectureTitle(lectures: LectureBasic[], commonTitle: string, isEnglish: boolean): Promise<boolean>
 
   updateLectureScore(id: number, grades: LectureScore): Promise<LectureBasic>
+
+  countNumPeople(lectureId: number): Promise<number>
+
+  updateNumPeople(lectureId: number, count: number): Promise<LectureBasic>
 }

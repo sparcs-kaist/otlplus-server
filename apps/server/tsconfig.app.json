@@ -31,7 +31,8 @@
       "@otl/scholar-sync/domain": ["../../apps/scholar-sync/src/common/domain"],
       "@otl/scholar-sync/domain/*": ["../../apps/scholar-sync/src/common/domain/*"],
       "@otl/scholar-sync/clients/scholar/*": ["../../apps/scholar-sync/src/clients/scholar/*"],
-      "@otl/notification-consumer/*": ["../../apps/notification-consumer/src/*"]
+      "@otl/notification-consumer/*": ["../../apps/notification-consumer/src/*"],
+      "@otl/server-consumer/*": ["../../apps/server-consumer/src/*"]
     },
     "assets": [
       {

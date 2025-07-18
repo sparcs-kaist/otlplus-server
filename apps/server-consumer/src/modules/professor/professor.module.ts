@@ -1,0 +1,32 @@
+import { Module } from '@nestjs/common'
+import { RmqConnectionModule } from '@otl/rmq'
+import { LectureModule } from '@otl/server-consumer/modules/lecture/lecture.module'
+import { ProfessorService } from '@otl/server-consumer/modules/professor/professor.service'
+import { LECTURE_REPOSITORY } from '@otl/server-consumer/out/lecture.repository'
+import { PROFESSOR_REPOSITORY } from '@otl/server-consumer/out/professor.repository'
+import { REVIEW_REPOSITORY } from '@otl/server-consumer/out/review.repository'
+
+import { LectureRepository, PrismaModule, ReviewsRepository } from '@otl/prisma-client'
+import { ProfessorRepository } from '@otl/prisma-client/repositories/professor.repository'
+
+@Module({
+  imports: [PrismaModule, RmqConnectionModule.register(), LectureModule],
+  providers: [
+    {
+      provide: LECTURE_REPOSITORY,
+      useClass: LectureRepository,
+    },
+    {
+      provide: PROFESSOR_REPOSITORY,
+      useClass: ProfessorRepository,
+    },
+    {
+      provide: REVIEW_REPOSITORY,
+      useClass: ReviewsRepository,
+    },
+    ProfessorService,
+  ],
+  controllers: [],
+  exports: [ProfessorService],
+})
+export class ProfessorModule {}

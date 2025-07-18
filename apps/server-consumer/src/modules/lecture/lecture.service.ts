@@ -43,7 +43,7 @@ export class LectureService {
     return await this.lectureRepository.updateLectureScore(lecture.id, grades)
   }
 
-  private async lectureCalcAverage(reviews: ReviewWithLecture[]): Promise<LectureScore & { reviewNum: number }> {
+  public async lectureCalcAverage(reviews: ReviewWithLecture[]): Promise<LectureScore & { reviewNum: number }> {
     const nonzeroReviews = reviews.filter((review) => review.grade !== 0 || review.load !== 0 || review.speech !== 0)
     const reducedNonzero = nonzeroReviews.map((review) => {
       const weight = this.lectureGetWeight(review)
@@ -76,7 +76,7 @@ export class LectureService {
     }
   }
 
-  private lectureGetWeight(review: ReviewWithLecture): number {
+  public lectureGetWeight(review: ReviewWithLecture): number {
     const baseYear = new Date().getFullYear()
     const lectureYear: number = review.lecture.semester.year
     const yearDiff = baseYear > lectureYear ? baseYear - lectureYear : 0
@@ -123,5 +123,13 @@ export class LectureService {
     let result = first.substring(0, i)
     result = result.replace(/[<([{]+$/, '')
     return result
+  }
+
+  async updateNumPeople(lectureId: number) {
+    const count = await this.lectureRepository.countNumPeople(lectureId)
+    if (count === undefined) {
+      throw new Error(`Failed to update num_people for lectureId: ${lectureId}`)
+    }
+    return this.lectureRepository.updateNumPeople(lectureId, count)
   }
 }

@@ -1,5 +1,4 @@
 import { Department } from '@otl/server-nest/modules/departments/domain/department'
-import { Lecture } from '@otl/server-nest/modules/lectures/domain/lecture'
 
 export class Course {
   id!: number
@@ -49,8 +48,8 @@ export type CourseRelationMap = {
   department: Department
 }
 
-export type CourseWithRelations<T extends keyof CourseRelationMap = never> = Lecture & Pick<CourseRelationMap, T>
+export type CourseWithRelations<T extends keyof CourseRelationMap = never> = Course & Pick<CourseRelationMap, T>
 
-export type CourseBasic = CourseWithRelations
+export type CourseBasic = CourseWithRelations<never>
 
 export type CourseWithDepartment = CourseWithRelations<'department'>

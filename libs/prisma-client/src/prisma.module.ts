@@ -66,6 +66,7 @@ export class PrismaModule implements OnModuleInit {
       ],
       exports: [
         PrismaService,
+        PrismaReadService,
         UserRepository,
         LectureRepository,
         ReviewsRepository,

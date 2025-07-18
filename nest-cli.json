@@ -44,6 +44,16 @@
         "plugins": ["@nestjs/swagger/plugin"]
       }
     },
+    "server-consumer": {
+      "type": "application",
+      "root": "apps/server-consumer/src",
+      "sourceRoot": "apps/server-consumer/src",
+      "entryFile": "bootstrap/bootstrap",
+      "compilerOptions": {
+        "tsConfigPath": "apps/server-consumer/tsconfig.app.json",
+        "plugins": ["@nestjs/swagger/plugin"]
+      }
+    },
     "prisma-client": {
       "type": "library",
       "root": "libs/prisma-client",

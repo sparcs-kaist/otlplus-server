@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { ServerConsumerLectureRepository } from '@otl/server-consumer/out/lecture.repository'
 import { LectureBasic, LectureScore } from '@otl/server-nest/modules/lectures/domain/lecture'
 import { Prisma, session_userprofile } from '@prisma/client'
+import * as console from 'node:console'
 
 import { applyOffset, applyOrder, groupBy } from '@otl/common/utils/util'
 
@@ -390,5 +391,33 @@ export class LectureRepository implements ServerConsumerLectureRepository {
       },
     })
     return mapLecture(lecture)
+  }
+
+  async countNumPeople(lectureId: number): Promise<number> {
+    return (
+      (
+        await this.prismaRead.timetable_timetable.findMany({
+          distinct: ['user_id'],
+          where: {
+            timetable_timetable_lectures: {
+              some: {
+                lecture_id: lectureId,
+              },
+            },
+          },
+        })
+      )?.length ?? 0
+    )
+  }
+
+  async updateNumPeople(lectureId: number, count: number): Promise<LectureBasic> {
+    return mapLecture(
+      await this.prisma.subject_lecture.update({
+        where: { id: lectureId },
+        data: {
+          num_people: count,
+        },
+      }),
+    )
   }
 }

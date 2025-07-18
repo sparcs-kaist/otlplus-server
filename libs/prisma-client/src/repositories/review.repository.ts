@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { ServerConsumerReviewRepository } from '@otl/server-consumer/out/review.repository'
 import { LectureBasic } from '@otl/server-nest/modules/lectures/domain/lecture'
-import { ReviewWithLecture } from '@otl/server-nest/modules/reviews/domain/review'
+import { ReviewBasic, ReviewWithLecture } from '@otl/server-nest/modules/reviews/domain/review'
 import {
   review_humanitybestreview,
   review_majorbestreview,
@@ -9,7 +9,7 @@ import {
   subject_department,
 } from '@prisma/client'
 
-import { mapReviewWithLecture } from '@otl/prisma-client/common/mapper/review'
+import { mapReview, mapReviewWithLecture } from '@otl/prisma-client/common/mapper/review'
 import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 
@@ -393,5 +393,53 @@ export class ReviewsRepository implements ServerConsumerReviewRepository {
       include: EReview.WithLectures.include,
     })
     return reviews.map((review) => mapReviewWithLecture(review))
+  }
+
+  async getRelatedReviewsByCourseId(courseId: number): Promise<ReviewWithLecture[]> {
+    const reviews = await this.prismaRead.review_review.findMany({
+      where: {
+        lecture: {
+          course: {
+            id: courseId,
+          },
+        },
+      },
+      include: EReview.WithLectures.include,
+    })
+    return reviews.map((review) => mapReviewWithLecture(review))
+  }
+
+  getRelatedReviewsByProfessorId(professorId: number): Promise<ReviewWithLecture[]> {
+    return this.prismaRead.review_review
+      .findMany({
+        where: {
+          lecture: {
+            subject_lecture_professors: {
+              some: {
+                professor_id: professorId,
+              },
+            },
+          },
+        },
+        include: EReview.WithLectures.include,
+      })
+      .then((reviews) => reviews.map((review) => mapReviewWithLecture(review)))
+  }
+
+  async getReviewLikeCount(reviewId: number): Promise<number> {
+    return await this.prisma.review_reviewvote.count({
+      where: { review_id: reviewId },
+    })
+  }
+
+  async updateReviewLikeCount(reviewId: number, likeCount: number): Promise<ReviewBasic> {
+    return mapReview(
+      await this.prisma.review_review.update({
+        where: { id: reviewId },
+        data: {
+          like: likeCount,
+        },
+      }),
+    )
   }
 }
