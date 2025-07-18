@@ -41,6 +41,7 @@ export class ReviewsController {
       const result = await this.reviewsService.createReviews(reviewsBody, user)
       return result
     }
+    // @Todo : Message(PROFESSOR_SCORE, Course_SCORE, LECTURE_SCORE) 보내기
     throw new HttpException('Can\'t find user', 401)
   }
 
@@ -62,6 +63,7 @@ export class ReviewsController {
     if (user) {
       return await this.reviewsService.updateReviewById(reviewId, user, reviewsBody)
     }
+    // @Todo : Message(PROFESSOR_SCORE, Course_SCORE, LECTURE_SCORE) 보내기
     throw new HttpException('Can\'t find user', 401)
   }
 
@@ -71,6 +73,7 @@ export class ReviewsController {
     @GetUser() user: session_userprofile,
   ): Promise<IReview.IReviewVote.Basic> {
     const reviewVote = await this.reviewsService.findReviewVote(reviewId, user)
+    // @Todo : Message(REVIEW_LIKE) 보내기
     if (reviewVote) {
       throw new HttpException('Already Liked', HttpStatus.BAD_REQUEST)
     }
@@ -86,6 +89,7 @@ export class ReviewsController {
     @GetUser() user: session_userprofile,
   ): Promise<IReview.IReviewVote.Basic> {
     const reviewVote = await this.reviewsService.findReviewVote(reviewId, user)
+    // @Todo : Message(REVIEW_LIKE) 보내기
     if (!reviewVote) {
       throw new HttpException('Already UnLiked', HttpStatus.BAD_REQUEST)
     }

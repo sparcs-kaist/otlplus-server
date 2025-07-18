@@ -250,6 +250,7 @@ export class SyncService {
           notExistingLectures.delete(foundLecture.id)
           if (LectureInfo.equals(foundLecture, derivedLecture)) {
             const updatedLecture = await this.syncRepository.updateLecture(foundLecture.id, derivedLecture)
+            // @Todo : Message(LectureTitleUpdate) 보내기
             lecturesSyncResultDetail.updated.push([foundLecture, updatedLecture])
           }
           const { addedIds, removedIds } = this.lectureProfessorsChanges(foundLecture, professorCharges, professorMap)
@@ -267,10 +268,12 @@ export class SyncService {
               lecture: foundLecture.id,
               removed: removedIds.map((id) => professorMap.get(id) || { id }),
             })
+            // @Todo : Message(LectureScoreUpdate) 보내기
           }
         }
         else {
           const newLecture = await this.syncRepository.createLecture(derivedLecture)
+          // @Todo : Message(LectureTitleUpdate) 보내기
           const addedIds = professorCharges.map((charge) => professorMap.get(charge.PROF_ID)!.id)
 
           await this.syncRepository.updateLectureProfessors(newLecture.id, {
@@ -278,6 +281,7 @@ export class SyncService {
             removed: [],
           })
           lecturesSyncResultDetail.created.push({ ...newLecture, professors: addedIds })
+          // @Todo : Message(LectureScoreUpdate) 보내기
         }
       }
       catch (e: any) {
@@ -295,6 +299,7 @@ export class SyncService {
     try {
       await this.syncRepository.markLecturesDeleted(Array.from(notExistingLectures))
       lecturesSyncResultDetail.deleted = Array.from(notExistingLectures)
+      // @Todo : Message(LectureScoreUpdate) 보내기
     }
     catch (e: any) {
       lecturesSyncResultDetail.errors.push({
@@ -467,9 +472,7 @@ export class SyncService {
   }
 
   async syncTakenLecture(data: IScholar.TakenLectureBody) {
-    this.slackNoti.sendSyncNoti(
-      `syncTakenLecture: ${data.year}-${data.semester}: ${data.attend.length} attend records`,
-    )
+    this.slackNoti.sendSyncNoti(`syncTakenLecture: ${data.year}-${data.semester}: ${data.attend.length} attend records`)
     const startLog = await this.syncRepository.logSyncStartPoint(SyncType.TAKEN_LECTURES, data.year, data.semester)
 
     const result: SyncResultDetails = {
@@ -601,9 +604,7 @@ export class SyncService {
   }
 
   getLectureIdOfAttendRecord(lectures: ELecture.Basic[], attend: IScholar.ScholarAttendType) {
-    const lecture = lectures.find(
-      (l) => l.new_code === attend.SUBJECT_NO && l.class_no === attend.LECTURE_CLASS.trim(),
-    )
+    const lecture = lectures.find((l) => l.new_code === attend.SUBJECT_NO && l.class_no === attend.LECTURE_CLASS.trim())
     return lecture?.id
   }
 
