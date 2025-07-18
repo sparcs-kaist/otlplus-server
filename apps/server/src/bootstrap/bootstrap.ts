@@ -7,7 +7,6 @@ import { json } from 'express'
 import session from 'express-session'
 import fs from 'fs'
 import { join } from 'path'
-import swaggerStats from 'swagger-stats'
 import * as swaggerUi from 'swagger-ui-express'
 
 import { HttpExceptionFilter, UnexpectedExceptionFilter } from '@otl/common/exception/exception.filter'
@@ -65,18 +64,6 @@ async function bootstrap() {
       }),
     )
   }
-  app.use(
-    swaggerStats.getMiddleware({
-      swaggerSpec: swaggerDocument,
-      uriPath: '/swagger-stats',
-      authentication: true,
-      onAuthenticate(_req, username, password) {
-        // simple check for username and password
-        const swaggerStatsConfig = settings().getSwaggerStatsConfig()
-        return username === swaggerStatsConfig.username && password === swaggerStatsConfig.password
-      },
-    }),
-  )
 
   app.use('/api/sync', json({ limit: '50mb' }))
   app.use(json({ limit: '100kb' }))

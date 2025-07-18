@@ -40,8 +40,10 @@ services:
     tty: true
     ports:
       - '8000:8000'
+      - '9209:9209'
     expose:
       - '8000'
+      - '9092'
     volumes:
       - '/etc/timezone:/etc/timezone:ro'
       - './apps/server/logs:/var/www/otlplus-server/apps/logs'
