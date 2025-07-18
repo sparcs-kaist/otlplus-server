@@ -1,6 +1,6 @@
 import { DocumentBuilder } from '@nestjs/swagger'
+import { Prisma } from '@prisma/client'
 import dotenv from 'dotenv'
-import * as mariadb from 'mariadb'
 import { utilities } from 'nest-winston'
 import winston from 'winston'
 import DailyRotateFile from 'winston-daily-rotate-file'
@@ -14,7 +14,7 @@ const getCorsConfig = () => {
   const { NODE_ENV } = process.env
   if (NODE_ENV === 'prod') {
     return {
-      origin: ['https://otl-sync.sparcs.org', 'http://otl-sync.sparcs.org'],
+      origin: ['https://otl.kaist.ac.kr', 'http://otl.kaist.ac.kr', 'https://otl.sparcs.org', 'http://otl.sparcs.org'],
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
       credentials: true,
       preflightContinue: false,
@@ -23,7 +23,7 @@ const getCorsConfig = () => {
   }
   if (NODE_ENV === 'dev') {
     return {
-      origin: ['https://otl-sync.dev.sparcs.org', 'http://localhost:9000'],
+      origin: ['https://otl.dev.sparcs.org', 'http://localhost:5173'],
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
       credentials: true,
       preflightContinue: false,
@@ -31,7 +31,7 @@ const getCorsConfig = () => {
     }
   }
   return {
-    origin: 'http://localhost:9000',
+    origin: ['http://localhost:5173', 'http://localhost:8000'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
     preflightContinue: false,
@@ -39,22 +39,58 @@ const getCorsConfig = () => {
   }
 }
 
-const getPrismaConnectConfig = (): mariadb.PoolConfig => ({
-  host: process.env.DATABASE_HOST,
-  port: Number(process.env.DATABASE_PORT) || 3306,
-  user: process.env.DATABASE_USER,
-  password: process.env.DATABASE_PASSWORD,
-  database: process.env.DATABASE_NAME,
-  connectionLimit: 10,
+const getPrismaConfig = (): Prisma.PrismaClientOptions => ({
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL,
+    },
+  },
+  errorFormat: 'pretty',
+  log: [
+    // {
+    //  emit: 'event',
+    //  level: 'query',
+    // },
+    {
+      emit: 'stdout',
+      level: 'error',
+    },
+    {
+      emit: 'stdout',
+      level: 'info',
+    },
+    // {
+    //   emit: 'stdout',
+    //   level: 'warn',
+    // },
+  ],
 })
 
-const getPrismaReadConnectConfig = (): mariadb.PoolConfig => ({
-  host: process.env.READ_DATABASE_HOST,
-  port: Number(process.env.READ_DATABASE_PORT) || 3306,
-  user: process.env.READ_DATABASE_USER,
-  password: process.env.READ_DATABASE_PASSWORD,
-  database: process.env.READ_DATABASE_NAME,
-  connectionLimit: 10,
+const getReplicatedPrismaConfig = (): Prisma.PrismaClientOptions => ({
+  datasources: {
+    db: {
+      url: process.env.READ_ONLY_DATABASE_URL,
+    },
+  },
+  errorFormat: 'pretty',
+  log: [
+    // {
+    //   emit: 'event',
+    //   level: 'query',
+    // },
+    {
+      emit: 'stdout',
+      level: 'error',
+    },
+    {
+      emit: 'stdout',
+      level: 'info',
+    },
+    // {
+    //   emit: 'stdout',
+    //   level: 'warn',
+    // },
+  ],
 })
 
 const getSyncConfig = () => ({
@@ -67,27 +103,17 @@ const getVersion = () => String(process.env.npm_package_version)
 
 const getSwaggerConfig = () => {
   const config = new DocumentBuilder()
-    .setTitle('OTLPlus-Scholar-Sync')
-    .setDescription('The OTL Scholar Sync API description')
+    .setTitle('OTLPlus-Lab')
+    .setDescription('OTLPLus Lab Server Description')
     .setVersion('1.0')
-    .addApiKey(
-      {
-        type: 'apiKey',
-        name: 'X-API-KEY',
-        in: 'header',
-        description: 'KAIST SCHOLAR API KEY',
-      },
-      'X-API-KEY',
-    )
-    // .addSecurity('x-api-key', {
-    //   type: 'apiKey',
-    //   in: 'header',
-    //   scheme: 'https',
-    //   description: 'KAIST SCHOLAR API KEY',
-    // })
     .build()
   return config
 }
+
+const getSwaggerStatsConfig = () => ({
+  username: process.env.SWAGGER_STATS_USERNAME,
+  password: process.env.SWAGGER_STAT_PASSWORD,
+})
 
 function getLoggingConfig() {
   const logDir = `${__dirname}/../../logs` // log 파일을 관리할 폴더
@@ -121,12 +147,31 @@ function getLoggingConfig() {
   }
 }
 
+const getWeaviateConfig = () => ({
+  http_host: process.env.WEAVIATE_HTTP_HOST!,
+  http_port: Number(process.env.WEAVIATE_HTTP_PORT || 443),
+  http_secure: true,
+  grpc_host: process.env.WEAVIATE_GRPC_HOST!,
+  grpc_port: Number(process.env.WEAVIATE_GRPC_PORT || 443),
+  grpc_secure: true,
+  auth_credentials: false,
+  additional_config: false,
+  skip_init_checks: false,
+})
+
+const getEmbeddingConfig = () => ({
+  geminiKey: process.env.GEMINI_KEY,
+})
+
 export default () => ({
-  ormconfig: () => getPrismaConnectConfig(),
-  ormReplicatedConfig: () => getPrismaReadConnectConfig(),
+  ormconfig: () => getPrismaConfig(),
+  ormReplicatedConfig: () => getReplicatedPrismaConfig(),
   getCorsConfig: () => getCorsConfig(),
   syncConfig: () => getSyncConfig(),
   getVersion: () => getVersion(),
   getSwaggerConfig: () => getSwaggerConfig(),
+  getSwaggerStatsConfig: () => getSwaggerStatsConfig(),
   loggingConfig: () => getLoggingConfig(),
+  weaviateConfig: () => getWeaviateConfig(),
+  embeddingConfig: () => getEmbeddingConfig(),
 })
