@@ -29,6 +29,7 @@ import {
   UserRepository,
   WishlistRepository,
 } from '@otl/prisma-client/repositories'
+import { NotificationPrismaRepository } from '@otl/prisma-client/repositories/notification.repository'
 
 @Module({})
 @Global()
@@ -60,6 +61,7 @@ export class PrismaModule implements OnModuleInit {
         NoticesRepository,
         FeedsRepository,
         SyncRepository,
+        NotificationPrismaRepository,
         ReviewMiddleware,
       ],
       exports: [
@@ -76,6 +78,7 @@ export class PrismaModule implements OnModuleInit {
         TracksRepository,
         NoticesRepository,
         FeedsRepository,
+        NotificationPrismaRepository,
         SyncRepository,
       ],
     }

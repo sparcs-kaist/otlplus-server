@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { IsAdminCommand } from '@otl/server-nest/modules/auth/command/isAdmin.command'
 import { IsReviewProhibitedCommand } from '@otl/server-nest/modules/auth/command/isReviewProhibited.command'
 import { JwtHeaderCommand } from '@otl/server-nest/modules/auth/command/jwt.header.command'
 import { SidHeaderCommand } from '@otl/server-nest/modules/auth/command/sid.header.command'
@@ -22,6 +23,7 @@ export class AuthConfig {
     private readonly isPublicCommand: IsPublicCommand,
     private readonly syncApiKeyCommand: SyncApiKeyCommand,
     private readonly isReviewProhibitedCommand: IsReviewProhibitedCommand,
+    private readonly isAdminCommand: IsAdminCommand,
   ) {}
 
   public async config(env: string) {
@@ -40,6 +42,7 @@ export class AuthConfig {
     .register(this.jwtCookieCommand)
     .register(this.syncApiKeyCommand)
     .register(this.isReviewProhibitedCommand)
+    .register(this.isAdminCommand)
 
   private getDevGuardConfig = () => this.authChain
     .register(this.isPublicCommand)
@@ -50,6 +53,7 @@ export class AuthConfig {
     .register(this.jwtCookieCommand)
     .register(this.syncApiKeyCommand)
     .register(this.isReviewProhibitedCommand)
+    .register(this.isAdminCommand)
 
   private getProdGuardConfig = () => this.authChain
     .register(this.jwtHeaderCommand)
@@ -57,4 +61,5 @@ export class AuthConfig {
     .register(this.isPublicCommand)
     .register(this.syncApiKeyCommand)
     .register(this.isReviewProhibitedCommand)
+    .register(this.isAdminCommand)
 }

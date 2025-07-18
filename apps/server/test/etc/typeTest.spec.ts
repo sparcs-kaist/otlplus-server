@@ -1,12 +1,12 @@
-import { Prisma, session_userprofile } from '@prisma/client';
+import { Prisma, session_userprofile } from '@prisma/client'
 
-import { PrismaService } from '@otl/prisma-client/prisma.service';
+import { PrismaService } from '@otl/prisma-client/prisma.service'
 
-import settings from '../src/settings';
+import settings from '@otl/server-nest/settings'
 
-const ormSettings = settings().ormconfig();
+const ormSettings = settings().ormconfig()
 
-const prismaService = new PrismaService(ormSettings);
+const prismaService = new PrismaService(ormSettings)
 
 async function findReviewByUserTest(user: session_userprofile) {
   return await prismaService.review_review.findMany({
@@ -29,7 +29,7 @@ async function findReviewByUserTest(user: session_userprofile) {
         },
       },
     },
-  });
+  })
 }
 
-type ReviewDetails = Prisma.PromiseReturnType<typeof findReviewByUserTest>;
+type ReviewDetails = Prisma.PromiseReturnType<typeof findReviewByUserTest>

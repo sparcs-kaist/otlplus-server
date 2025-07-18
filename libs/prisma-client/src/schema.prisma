@@ -370,6 +370,7 @@ model session_userprofile_notification {
 model notification {
   id                       Int                                        @id @default(autoincrement())
   name                     String                                     @db.VarChar(200)
+  description              String                                     @db.LongText
   agreementType            AgreementType
   created_at               DateTime                                   @default(now()) @db.DateTime(0)
   updated_at               DateTime                                   @default(now()) @db.DateTime(0)

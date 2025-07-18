@@ -17,4 +17,11 @@ export namespace EUser {
     },
   })
   export type WithMinors = Prisma.session_userprofileGetPayload<typeof WithMinors>
+
+  export const WithDevice = Prisma.validator<Prisma.session_userprofileDefaultArgs>()({
+    include: {
+      session_userprofile_device: true,
+    },
+  })
+  export type WithDevice = Prisma.session_userprofileGetPayload<typeof WithDevice>
 }

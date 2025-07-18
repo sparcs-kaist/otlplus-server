@@ -1,12 +1,18 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
+import { AGREEMENT_IN_PUBLIC_PORT } from '@otl/server-nest/modules/agreement/domain/agreement.in.port'
+import { AgreementInPublicPort } from '@otl/server-nest/modules/agreement/domain/agreement.in.public.port'
+import { UserNotificationCreate } from '@otl/server-nest/modules/notification/domain/notification'
 import settings from '@otl/server-nest/settings'
 import { session_userprofile } from '@prisma/client'
 import * as bcrypt from 'bcrypt'
 import { Request } from 'express'
 
+import { AgreementType } from '@otl/common/enum/agreement'
+
 import { ESSOUser } from '@otl/prisma-client/entities/ESSOUser'
 import { UserRepository } from '@otl/prisma-client/repositories'
+import { NotificationPrismaRepository } from '@otl/prisma-client/repositories/notification.repository'
 
 import { SyncTakenLectureService } from '../sync/syncTakenLecture.service'
 
@@ -18,6 +24,9 @@ export class AuthService {
     private readonly userRepository: UserRepository,
     private readonly jwtService: JwtService,
     private readonly syncTakenLecturesService: SyncTakenLectureService,
+    private readonly notificationRepository: NotificationPrismaRepository,
+    @Inject(AGREEMENT_IN_PUBLIC_PORT)
+    private readonly agreementService: AgreementInPublicPort,
   ) {}
 
   public async findBySid(sid: string) {
@@ -76,6 +85,25 @@ export class AuthService {
         await this.syncTakenLecturesService.repopulateTakenLectureForStudent(user.id)
       }
     }
+
+    const userNotifications = await this.notificationRepository.findByUserId(user.id)
+    const notificationTypes = await this.notificationRepository.getAllNotification()
+    if (!userNotifications || userNotifications.length !== notificationTypes.length) {
+      const userNotificationCreates: UserNotificationCreate[] = notificationTypes.map((n) => {
+        let active = false
+        if (n.agreementType === AgreementType.INFO) {
+          active = true
+        }
+        return {
+          notificationId: n.id,
+          userId: user.id,
+          notificationName: n.name,
+          active,
+        }
+      })
+      await this.notificationRepository.upsertMany(userNotificationCreates)
+    }
+    await this.agreementService.initialize(user.id)
 
     return {
       accessToken,

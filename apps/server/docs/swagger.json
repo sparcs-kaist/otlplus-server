@@ -24,6 +24,88 @@
         "security": []
       }
     },
+    "/agreement/user": {
+      "get": {
+        "summary": "AgreementController.getUserAgreement",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IAgreement.Response"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "queryDto",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/IAgreement.AgreementModalQueryDto"
+            }
+          }
+        ]
+      },
+      "patch": {
+        "summary": "AgreementController.allowOrDisAllow",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IAgreement.Response"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IAgreement.AgreementAllowDto"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agreement/user/modal": {
+      "patch": {
+        "summary": "AgreementController.toggleModal",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IAgreement.Response"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IAgreement.AgreementToggleDto"
+              }
+            }
+          }
+        }
+      }
+    },
     "/session/login": {
       "get": {
         "summary": "AuthController.user_login",
@@ -105,7 +187,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/IAuth.TokenResponse"
+                  "$ref": "#/components/schemas/IUser.TokenResponse"
                 }
               }
             }
@@ -117,7 +199,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/IAuth.TokenDto"
+                "$ref": "#/components/schemas/IUser.TokenDto"
               }
             }
           }
@@ -386,6 +468,132 @@
         ]
       }
     },
+    "/device": {
+      "post": {
+        "summary": "DeviceController.registerDevice",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IDevice.Response.DeviceResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IDevice.RegisterDeviceDto"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "DeviceController.unregisterDevice",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IDevice.Response.DeviceResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "unregisterDeviceDto",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/IDevice.UnregisterDeviceDto"
+            }
+          }
+        ]
+      },
+      "get": {
+        "summary": "DeviceController.getDevice",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/components/schemas/IDevice.Response.UserDeviceResponseDto"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "DeviceController.updateDevice",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IDevice.Response.UserDeviceResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IDevice.UpdateDeviceDto"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/device/user": {
+      "get": {
+        "summary": "DeviceController.getUserDevice",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/IDevice.Response.UserDeviceResponseDto"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/users/{userId}/feeds": {
       "get": {
         "summary": "FeedsController.getUserFeeds",
@@ -607,6 +815,227 @@
           }
         },
         "security": []
+      }
+    },
+    "/notification/hello": {
+      "get": {
+        "summary": "NotificationController.getHello",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/notification/domain/notification\").NotificationRequest"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/notification/read": {
+      "post": {
+        "summary": "NotificationController.read",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/notification/domain/notification\").FCMNotificationRequest"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/INotification.ReadDto"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notification/user": {
+      "patch": {
+        "summary": "NotificationController.allowOrDisallow",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/notification/domain/notification\").UserNotification"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/INotification.ActiveDto"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notification/agreements": {
+      "get": {
+        "summary": "NotificationController.getAgreements",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/agreement/domain/UserAgreement\").Agreement"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notification": {
+      "post": {
+        "summary": "NotificationController.createNotification",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/notification/domain/notification\").Notification"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/INotification.CreateDto"
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "NotificationController.updateNotification",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/notification/domain/notification\").Notification"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/INotification.UpdateDto"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "NotificationController.deleteNotification",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/INotification.DeleteDto"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "NotificationController.getAllNotifications",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/notification/domain/notification\").Notification"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notification/{name}": {
+      "get": {
+        "summary": "NotificationController.getNotification",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/notification/domain/notification\").Notification"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/api/users/{id}/planners": {
@@ -1203,24 +1632,6 @@
             }
           }
         ]
-      }
-    },
-    "/api/semesters/current": {
-      "get": {
-        "summary": "SemestersController.getCurrentSemester",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ISemester.Response"
-                }
-              }
-            }
-          }
-        },
-        "security": []
       }
     },
     "/session/department-options": {
@@ -1942,6 +2353,75 @@
   },
   "components": {
     "schemas": {
+      "IAgreement.AgreementQueryDto": {
+        "properties": {
+          "modal": {},
+          "agreementStatus": {},
+          "agreementType": {}
+        },
+        "type": "object"
+      },
+      "IAgreement.AgreementModalQueryDto": {
+        "properties": {
+          "modal": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "IAgreement.Response": {
+        "type": "object",
+        "properties": {
+          "agreementId": {
+            "type": "number"
+          },
+          "agreementType": {
+            "$ref": "#/components/schemas/AgreementType"
+          },
+          "agreementStatus": {
+            "type": "boolean"
+          },
+          "modal": {
+            "type": "boolean"
+          }
+        },
+        "required": ["agreementId", "agreementType", "agreementStatus", "modal"],
+        "additionalProperties": false
+      },
+      "AgreementType": {
+        "type": "string",
+        "enum": ["INFO", "MARKETING", "NIGHT_MARKETING"]
+      },
+      "IAgreement.AgreementAllowDto": {
+        "properties": {
+          "allow": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "agreementType": {
+            "minLength": 1,
+            "type": "string",
+            "enum": ["INFO", "MARKETING", "NIGHT_MARKETING"]
+          }
+        },
+        "type": "object",
+        "required": ["allow", "agreementType"]
+      },
+      "IAgreement.AgreementToggleDto": {
+        "properties": {
+          "agreementType": {
+            "minLength": 1,
+            "type": "string",
+            "enum": ["INFO", "MARKETING", "NIGHT_MARKETING"]
+          },
+          "modal": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["agreementType", "modal"]
+      },
       "ICourse.Basic": {
         "type": "object",
         "properties": {
@@ -2517,6 +2997,169 @@
           }
         },
         "type": "object"
+      },
+      "IDevice.RegisterDeviceDto": {
+        "properties": {
+          "deviceToken": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "deviceType": {
+            "type": "string",
+            "enum": ["ANDROID", "IOS", "WEB"]
+          },
+          "deviceOsVersion": {},
+          "appVersion": {},
+          "isActive": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["deviceToken", "isActive"]
+      },
+      "IDevice.UnregisterDeviceDto": {
+        "properties": {
+          "deviceToken": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["deviceToken"]
+      },
+      "IDevice.DeviceActivateDto": {
+        "properties": {
+          "deviceToken": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "isActive": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["deviceToken", "isActive"]
+      },
+      "IDevice.UpdateDeviceDto": {
+        "properties": {
+          "deviceOsVersion": {},
+          "appVersion": {},
+          "deviceToken": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "isActive": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["deviceToken", "isActive"]
+      },
+      "IDevice.Response.DeviceResponseDto": {
+        "type": "object",
+        "properties": {
+          "deviceToken": {
+            "type": "string"
+          },
+          "deviceType": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "deviceOsVersion": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "appVersion": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "isActive": {
+            "oneOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": ["deviceToken"],
+        "additionalProperties": false
+      },
+      "IDevice.Response.UserDeviceResponseDto": {
+        "type": "object",
+        "properties": {
+          "deviceToken": {
+            "type": "string"
+          },
+          "deviceType": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "deviceOsVersion": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "appVersion": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "isActive": {
+            "oneOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "userId": {
+            "type": "number"
+          }
+        },
+        "required": ["deviceToken", "userId"],
+        "additionalProperties": false
       },
       "IFeed.Basic": {
         "type": "object",
@@ -3586,6 +4229,82 @@
         },
         "required": ["title", "content", "start_time", "end_time"],
         "additionalProperties": false
+      },
+      "INotification.ReadDto": {
+        "properties": {
+          "requestUUID": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["requestUUID"]
+      },
+      "INotification.ActiveDto": {
+        "properties": {
+          "active": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "notificationType": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["active", "notificationType"]
+      },
+      "INotification.CreateDto": {
+        "properties": {
+          "name": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "description": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "agreementType": {
+            "minLength": 1,
+            "type": "string",
+            "enum": ["INFO", "MARKETING", "NIGHT_MARKETING"]
+          }
+        },
+        "type": "object",
+        "required": ["name", "description", "agreementType"]
+      },
+      "INotification.UpdateDto": {
+        "properties": {
+          "id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "description": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "agreementType": {
+            "minLength": 1,
+            "type": "string",
+            "enum": ["INFO", "MARKETING", "NIGHT_MARKETING"]
+          }
+        },
+        "type": "object",
+        "required": ["id", "name", "description", "agreementType"]
+      },
+      "INotification.DeleteDto": {
+        "properties": {
+          "id": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["id"]
       },
       "IPlanner.ITrack.Additional": {
         "type": "object",
@@ -5640,6 +6359,29 @@
           "my_timetable_lectures",
           "reviews"
         ],
+        "additionalProperties": false
+      },
+      "IUser.TokenDto": {
+        "properties": {
+          "token": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["token"]
+      },
+      "IUser.TokenResponse": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "refreshToken": {
+            "type": "string"
+          }
+        },
+        "required": ["accessToken", "refreshToken"],
         "additionalProperties": false
       },
       "IWishlist.WithLectures": {

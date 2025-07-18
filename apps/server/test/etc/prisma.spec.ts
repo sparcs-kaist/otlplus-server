@@ -1,22 +1,22 @@
-import { INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication } from '@nestjs/common'
+import { Test, TestingModule } from '@nestjs/testing'
 
-import { AppModule } from '../src/app.module';
-import { CourseRepository, LectureRepository } from '@otl/prisma-client/repositories';
-import { ELecture, PrismaService } from '@otl/prisma-client';
-import { applyOffset, applyOrder } from '@otl/common/utils';
+import { AppModule } from '@otl/server-nest/app.module'
+import { CourseRepository, LectureRepository } from '@otl/prisma-client/repositories'
+import { ELecture, PrismaService } from '@otl/prisma-client'
+import { applyOffset, applyOrder } from '@otl/common/utils'
 
 describe('AppController (e2e)', () => {
-  let app: INestApplication;
+  let app: INestApplication
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    }).compile()
 
-    app = moduleFixture.createNestApplication();
-    await app.init();
-  });
+    app = moduleFixture.createNestApplication()
+    await app.init()
+  })
 
   // it('distinct count', async () => {
   //   const prisma = app.get(PrismaService);
@@ -56,15 +56,15 @@ describe('AppController (e2e)', () => {
   // });
 
   it('join three table', async () => {
-    const lectureRepo = app.get(LectureRepository);
-    const courseRepo = app.get(CourseRepository);
-    const prisma = app.get(PrismaService);
-    const DEFAULT_LIMIT = 300;
-    const DEFAULT_ORDER = ['year', 'semester', 'old_code', 'class_no'];
-    const researchTypes = ['Individual Study', 'Thesis Study(Undergraduate)', 'Thesis Research(MA/phD)'];
+    const lectureRepo = app.get(LectureRepository)
+    const courseRepo = app.get(CourseRepository)
+    const prisma = app.get(PrismaService)
+    const DEFAULT_LIMIT = 300
+    const DEFAULT_ORDER = ['year', 'semester', 'old_code', 'class_no']
+    const researchTypes = ['Individual Study', 'Thesis Study(Undergraduate)', 'Thesis Research(MA/phD)']
 
-    const semesterFilter = lectureRepo.semesterFilter(2024, 3);
-    const timeFilter = lectureRepo.timeFilter(0, 5, 13);
+    const semesterFilter = lectureRepo.semesterFilter(2024, 3)
+    const timeFilter = lectureRepo.timeFilter(0, 5, 13)
     // const begin = new Date().setHours(10, 30, 0, 0);
     // const end = new Date().setHours(14, 30, 0, 0);
     // const timeFilter = {
@@ -81,10 +81,10 @@ describe('AppController (e2e)', () => {
     //       }
     //   }
     // };
-    const departmentFilter = courseRepo.departmentFilter(['CS']);
-    const typeFilter = courseRepo.typeFilter(['ME']);
-    const groupFilter = courseRepo.groupFilter(undefined);
-    const keywordFilter = courseRepo.keywordFilter(undefined, false);
+    const departmentFilter = courseRepo.departmentFilter(['CS'])
+    const typeFilter = courseRepo.typeFilter(['ME'])
+    const groupFilter = courseRepo.groupFilter(undefined)
+    const keywordFilter = courseRepo.keywordFilter(undefined, false)
     const defaultFilter = {
       AND: [
         {
@@ -96,7 +96,7 @@ describe('AppController (e2e)', () => {
           },
         },
       ],
-    };
+    }
 
     const filters: object[] = [
       semesterFilter,
@@ -106,7 +106,7 @@ describe('AppController (e2e)', () => {
       groupFilter,
       keywordFilter,
       defaultFilter,
-    ].filter((filter): filter is object => filter !== null);
+    ].filter((filter): filter is object => filter !== null)
 
     const options = {
       include: {
@@ -119,16 +119,16 @@ describe('AppController (e2e)', () => {
         AND: filters,
       },
       take: DEFAULT_LIMIT,
-    };
-    const queryResult = await prisma.subject_lecture.findMany(options);
-    const levelFilteredResult = courseRepo.levelFilter<ELecture.Details>(queryResult, ['ALL']);
-    const order = ['old_code', 'class_no'];
+    }
+    const queryResult = await prisma.subject_lecture.findMany(options)
+    const levelFilteredResult = courseRepo.levelFilter<ELecture.Details>(queryResult, ['ALL'])
+    const order = ['old_code', 'class_no']
     const orderedQuery = applyOrder<ELecture.Details>(
       levelFilteredResult,
       (order ?? DEFAULT_ORDER) as (keyof ELecture.Details)[],
-    );
-    const result = applyOffset<ELecture.Details>(orderedQuery, 0);
-  });
+    )
+    const result = applyOffset<ELecture.Details>(orderedQuery, 0)
+  })
 
   // it("select classtime", async () => {
   //   const prisma = app.get(PrismaService);
@@ -152,4 +152,4 @@ describe('AppController (e2e)', () => {
   //   console.log(result.length);
   //
   // })
-});
+})
