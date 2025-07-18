@@ -20,16 +20,16 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@otl/scholar-sync-consumer/*": ["src/*"],
-      "@otl/scholar-sync-consumer/domain": ["../../apps/server-consumer/src/domain"],
-      "@otl/scholar-sync-consumer/domain/*": ["../../apps/server-consumer/src/domain/*"],
+      "@otl/server-consumer/*": ["src/*"],
+      "@otl/server-consumer/domain": ["../../apps/server-consumer/src/domain"],
+      "@otl/server-consumer/domain/*": ["../../apps/server-consumer/src/domain/*"],
       "@otl/prisma-client": ["../../libs/prisma-client/src"],
       "@otl/prisma-client/*": ["../../libs/prisma-client/src/*"],
       "@otl/common": ["../../libs/common/src"],
       "@otl/common/*": ["../../libs/common/src/*"],
       "@otl/rmq": ["../../libs/rmq/src"],
-      "@otl/rmq/*": ["../../libs/rmq/src/*"]
-      //      "@otl/server-nest/*": ["../../apps/server/src/*"],
+      "@otl/rmq/*": ["../../libs/rmq/src/*"],
+      "@otl/server-nest/*": ["../../apps/server/src/*"]
       //      "@otl/scholar-sync/domain": ["../../apps/scholar-sync/src/common/domain"],
       //      "@otl/scholar-sync/domain/*": ["../../apps/scholar-sync/src/common/domain/*"],
       //      "@otl/scholar-sync/clients/scholar/*": ["../../apps/scholar-sync/src/clients/scholar/*"]

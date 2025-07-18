@@ -25,7 +25,8 @@
       "@otl/scholar-sync/domain/*": ["../../apps/scholar-sync/src/common/domain/*"],
       "@otl/scholar-sync/clients/scholar/*": ["../../apps/scholar-sync/src/clients/scholar/*"],
       "@otl/server-nest/*": ["../../apps/server/src/*"],
-      "@otl/notification-consumer/*": ["../../apps/notification-consumer/src/*"]
+      "@otl/notification-consumer/*": ["../../apps/notification-consumer/src/*"],
+      "@otl/server-consumer/*": ["../../apps/server-consumer/src/*"]
     }
   },
   "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]

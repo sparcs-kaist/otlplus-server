@@ -1,5 +1,7 @@
 import { Prisma } from '@prisma/client'
 
+import { ETakenLecture } from '@otl/prisma-client/entities/ETakenLecture'
+
 export namespace EUser {
   export const Basic = Prisma.validator<Prisma.session_userprofileDefaultArgs>()({})
   export type Basic = Prisma.session_userprofileGetPayload<typeof Basic>
@@ -24,4 +26,10 @@ export namespace EUser {
     },
   })
   export type WithDevice = Prisma.session_userprofileGetPayload<typeof WithDevice>
+
+  export const WithTakenLectures = Prisma.validator<Prisma.session_userprofileDefaultArgs>()({
+    include: { taken_lectures: ETakenLecture.Basic },
+  })
+
+  export type WithTakenLectures = Prisma.session_userprofileGetPayload<typeof WithTakenLectures>
 }

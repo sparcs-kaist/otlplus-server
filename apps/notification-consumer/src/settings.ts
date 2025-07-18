@@ -1,8 +1,8 @@
 import { RedisModuleOptions } from '@nestjs-modules/ioredis'
-import { Prisma } from '@prisma/client'
 import dotenv from 'dotenv'
 import { ServiceAccount } from 'firebase-admin'
 import * as fs from 'fs'
+import * as mariadb from 'mariadb'
 import path from 'path'
 
 import { dotEnvOptions } from './dotenv-options'
@@ -10,31 +10,22 @@ import { dotEnvOptions } from './dotenv-options'
 dotenv.config(dotEnvOptions)
 console.log(`NODE_ENV environment: ${process.env.NODE_ENV}`)
 
-const getPrismaConfig = (): Prisma.PrismaClientOptions => ({
-  datasources: {
-    db: {
-      url: process.env.DATABASE_URL,
-    },
-  },
-  errorFormat: 'pretty',
-  log: [
-    // {
-    //   emit: 'event',
-    //   level: 'query',
-    // },
-    {
-      emit: 'stdout',
-      level: 'error',
-    },
-    {
-      emit: 'stdout',
-      level: 'info',
-    },
-    // {
-    //   emit: 'stdout',
-    //   level: 'warn',
-    // },
-  ],
+const getPrismaConnectConfig = (): mariadb.PoolConfig => ({
+  host: process.env.DATABASE_HOST,
+  port: Number(process.env.DATABASE_PORT) || 3306,
+  user: process.env.DATABASE_USER,
+  password: process.env.DATABASE_PASSWORD,
+  database: process.env.DATABASE_NAME,
+  connectionLimit: 20,
+})
+
+const getPrismaReadConnectConfig = (): mariadb.PoolConfig => ({
+  host: process.env.READ_DATABASE_HOST,
+  port: Number(process.env.READ_DATABASE_PORT) || 3306,
+  user: process.env.READ_DATABASE_USER,
+  password: process.env.READ_DATABASE_PASSWORD,
+  database: process.env.READ_DATABASE_NAME,
+  connectionLimit: 20,
 })
 
 const getFirebaseConfig = (): ServiceAccount => {
@@ -61,7 +52,8 @@ const getRedisConfig = (): RedisModuleOptions => ({
 })
 
 export default () => ({
-  ormconfig: () => getPrismaConfig(),
+  ormconfig: () => getPrismaConnectConfig(),
+  ormReplicatedConfig: () => getPrismaReadConnectConfig(),
   getVersion: () => getVersion(),
   getFirebaseConfig: () => getFirebaseConfig(),
   getRedisConfig: () => getRedisConfig(),

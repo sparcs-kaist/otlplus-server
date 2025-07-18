@@ -1,6 +1,6 @@
 import { defaultNackErrorHandler, RabbitSubscribe } from '@golevelup/nestjs-rabbitmq'
 import { Controller } from '@nestjs/common'
-import settings, { QueueNames } from '@otl/rmq/settings'
+import settings, { QueueSymbols } from '@otl/rmq/settings'
 import { FCMNotificationRequest } from '@otl/server-nest/modules/notification/domain/notification'
 import { ConsumeMessage } from 'amqplib'
 import { plainToInstance } from 'class-transformer'
@@ -12,7 +12,7 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @RabbitSubscribe({
-    ...settings().getRabbitMQConfig().queueConfig[QueueNames.NOTI_FCM],
+    ...settings().getRabbitMQConfig().queueConfig[QueueSymbols.NOTI_FCM],
     errorHandler: defaultNackErrorHandler,
   })
   handleNotification(msg: any, amqpMsg: ConsumeMessage) {
@@ -21,7 +21,7 @@ export class AppController {
   }
 
   @RabbitSubscribe({
-    ...settings().getRabbitMQConfig().queueConfig[QueueNames.NOTI_INFO_FCM],
+    ...settings().getRabbitMQConfig().queueConfig[QueueSymbols.NOTI_INFO_FCM],
     errorHandler: defaultNackErrorHandler,
   })
   handleInfoNotification(msg: any) {
@@ -29,7 +29,7 @@ export class AppController {
   }
 
   @RabbitSubscribe({
-    ...settings().getRabbitMQConfig().queueConfig[QueueNames.NOTI_AD_FCM],
+    ...settings().getRabbitMQConfig().queueConfig[QueueSymbols.NOTI_AD_FCM],
     errorHandler: defaultNackErrorHandler,
   })
   handleAdNotification(msg: any) {
@@ -37,7 +37,7 @@ export class AppController {
   }
 
   @RabbitSubscribe({
-    ...settings().getRabbitMQConfig().queueConfig[QueueNames.NOTI_NIGHT_AD_FCM],
+    ...settings().getRabbitMQConfig().queueConfig[QueueSymbols.NOTI_NIGHT_AD_FCM],
     errorHandler: defaultNackErrorHandler,
   })
   handleNightAdNotification(msg: any) {
