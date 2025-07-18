@@ -44,7 +44,7 @@ export class Lecture {
 
   courseId!: number | null
 
-  semester!: Semester | null
+  semester!: Semester
 
   score!: LectureScore | null
 

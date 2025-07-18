@@ -1,14 +1,6 @@
-import {
-  LectureBasic,
-  LectureGenerateTitle,
-  LectureRelationMap,
-  LectureScore,
-  LectureWithRelations,
-} from '@otl/server-nest/modules/lectures/domain/lecture'
+import { LectureBasic, LectureGenerateTitle, LectureScore } from '@otl/server-nest/modules/lectures/domain/lecture'
 
-import { mapCourse } from '@otl/prisma-client/common/mapper/course'
-import { mapDepartment } from '@otl/prisma-client/common/mapper/department'
-import { ECourse, EDepartment, ELecture } from '@otl/prisma-client/entities'
+import { ELecture } from '@otl/prisma-client/entities'
 
 export function mapLectureScore(lecture: ELecture.Basic): LectureScore {
   return {
@@ -32,29 +24,8 @@ export function mapLectureGenerateTitle(lecture: ELecture.Basic): LectureGenerat
     titleEnNoSpace: lecture.title_en_no_space,
   }
 }
-
-const relationPrismaToDomainMap = {
-  subject_department: 'department',
-  subject_lecture_professors: 'professors',
-  // subject_classtime: 'classtimes',
-  // subject_examtime: 'examtimes',
-  course: 'course',
-} as const
-type RelationPrismaToDomainMap = typeof relationPrismaToDomainMap
-
-type IncludedRelations<T extends ELecture.Basic> = {
-  [K in keyof T & keyof RelationPrismaToDomainMap]: NonNullable<T[K]> extends object
-    ? RelationPrismaToDomainMap[K]
-    : never
-}[keyof T & keyof RelationPrismaToDomainMap]
-
-const relationMappers = {
-  subject_department: (department: EDepartment.Basic) => mapDepartment(department),
-  course: (course: ECourse.Basic) => mapCourse(course),
-}
-
-export function mapLecture<T extends ELecture.Basic>(lecture: T): LectureWithRelations<IncludedRelations<T>> {
-  const base: LectureBasic = {
+export function mapLecture(lecture: ELecture.Basic): LectureBasic {
+  return {
     id: lecture.id,
     code: lecture.code,
     oldCode: lecture.old_code,
@@ -82,18 +53,4 @@ export function mapLecture<T extends ELecture.Basic>(lecture: T): LectureWithRel
     score: mapLectureScore(lecture),
     generatedTitle: mapLectureGenerateTitle(lecture),
   }
-
-  const withRelations = { ...base } as Partial<LectureRelationMap>
-
-  Object.keys(relationMappers).forEach((key) => {
-    if (key in lecture && lecture[key as keyof T]) {
-      const domainKey = relationPrismaToDomainMap[key as keyof RelationPrismaToDomainMap]
-
-      const mapper = relationMappers[key as keyof typeof relationMappers]
-
-      const relationObject = lecture[key as keyof T];
-      (withRelations as any)[domainKey] = mapper(relationObject as any)
-    }
-  })
-  return withRelations as LectureWithRelations<IncludedRelations<T>>
 }

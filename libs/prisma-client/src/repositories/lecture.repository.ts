@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { ServerConsumerLectureRepository } from '@otl/server-consumer/out/lecture.repository'
-import { LectureBasic } from '@otl/server-nest/modules/lectures/domain/lecture'
+import { LectureBasic, LectureScore } from '@otl/server-nest/modules/lectures/domain/lecture'
 import { Prisma, session_userprofile } from '@prisma/client'
 
 import { applyOffset, applyOrder, groupBy } from '@otl/common/utils/util'
@@ -314,7 +314,7 @@ export class LectureRepository implements ServerConsumerLectureRepository {
         id: lectureId,
       },
     })
-    return mapLecture<ELecture.Basic>(lecture)
+    return mapLecture(lecture)
   }
 
   async getRelatedLectureById(lectureId: number): Promise<LectureBasic[]> {
@@ -332,7 +332,7 @@ export class LectureRepository implements ServerConsumerLectureRepository {
           semester: lecture.semester,
         },
       })
-      .then((lectures) => lectures.map((l) => mapLecture<ELecture.Basic>(l)))
+      .then((lectures) => lectures.map((l) => mapLecture(l)))
   }
 
   async updateLectureTitle(lectures: LectureBasic[], commonTitle: string, isEnglish: boolean): Promise<boolean> {
@@ -374,5 +374,21 @@ export class LectureRepository implements ServerConsumerLectureRepository {
         console.error('Error updating lecture titles:', error)
         return false
       })
+  }
+
+  async updateLectureScore(id: number, grades: LectureScore): Promise<LectureBasic> {
+    const lecture = await this.prisma.subject_lecture.update({
+      where: { id },
+      data: {
+        review_total_weight: grades.reviewTotalWeight,
+        grade_sum: grades.gradeSum,
+        load_sum: grades.loadSum,
+        speech_sum: grades.speechSum,
+        grade: grades.grade,
+        load: grades.load,
+        speech: grades.speech,
+      },
+    })
+    return mapLecture(lecture)
   }
 }

@@ -1,16 +1,20 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { Transactional } from '@nestjs-cls/transactional'
 import { LECTURE_REPOSITORY, ServerConsumerLectureRepository } from '@otl/server-consumer/out/lecture.repository'
-import { LectureBasic } from '@otl/server-nest/modules/lectures/domain/lecture'
-import { review_review } from '@prisma/client'
-
-import { reCalcScoreReturn } from '@otl/prisma-client'
+import { PROFESSOR_REPOSITORY, ServerConsumerProfessorRepository } from '@otl/server-consumer/out/professor.repository'
+import { REVIEW_REPOSITORY, ServerConsumerReviewRepository } from '@otl/server-consumer/out/review.repository'
+import { LectureBasic, LectureScore } from '@otl/server-nest/modules/lectures/domain/lecture'
+import { ReviewWithLecture } from '@otl/server-nest/modules/reviews/domain/review'
 
 @Injectable()
 export class LectureService {
   constructor(
     @Inject(LECTURE_REPOSITORY)
     private readonly lectureRepository: ServerConsumerLectureRepository,
+    @Inject(PROFESSOR_REPOSITORY)
+    private readonly professorRepository: ServerConsumerProfessorRepository,
+    @Inject(REVIEW_REPOSITORY)
+    private readonly reviewRepository: ServerConsumerReviewRepository,
   ) {}
 
   @Transactional()
@@ -31,102 +35,52 @@ export class LectureService {
   }
 
   private async lectureRecalcScore(lecture: LectureBasic) {
-    const professors = await this.prisma.subject_professor.findMany({
-      where: {
-        subject_lecture_professors: {
-          some: { lecture: { id: lecture.id } },
-        },
-      },
-    })
-    const professorsId = professors.map((result) => result.id)
-    const reviews = await this.prisma.review_review.findMany({
-      where: {
-        lecture: {
-          AND: [
-            {
-              course: {
-                id: lecture.course_id,
-              },
-            },
-            {
-              subject_lecture_professors: {
-                some: {
-                  professor: {
-                    id: { in: professorsId },
-                  },
-                },
-              },
-            },
-          ],
-        },
-      },
-    })
-    const grades = await this.lectureCalcAverage(reviews)
-    await this.prisma.subject_lecture.update({
-      where: { id: lecture.id },
-      data: {
-        review_total_weight: grades.totalWeight,
-        grade_sum: grades.sums.gradeSum,
-        load_sum: grades.sums.loadSum,
-        speech_sum: grades.sums.speechSum,
-        grade: grades.avgs.grade,
-        load: grades.avgs.load,
-        speech: grades.avgs.speech,
-      },
-    })
+    const professors = await this.professorRepository.findProfessorsByLectureId(lecture.id)
+    const professorsId = professors.map((professor) => professor.id)
+    const relatedReviews = await this.reviewRepository.getRelatedReviewsByLectureId(lecture, professorsId)
+
+    const grades: LectureScore & { reviewNum: number } = await this.lectureCalcAverage(relatedReviews)
+    return await this.lectureRepository.updateLectureScore(lecture.id, grades)
   }
 
-  private async lectureCalcAverage(reviews: review_review[]): Promise<reCalcScoreReturn> {
+  private async lectureCalcAverage(reviews: ReviewWithLecture[]): Promise<LectureScore & { reviewNum: number }> {
     const nonzeroReviews = reviews.filter((review) => review.grade !== 0 || review.load !== 0 || review.speech !== 0)
-    const reducedNonzero = await Promise.all(
-      nonzeroReviews.map(async (review) => {
-        const weight = await this.lectureGetWeight(review)
-        return {
-          weight,
-          grade: review.grade,
-          speech: review.speech,
-          load: review.load,
-        }
-      }),
-    )
+    const reducedNonzero = nonzeroReviews.map((review) => {
+      const weight = this.lectureGetWeight(review)
+      return {
+        weight,
+        grade: review.grade,
+        speech: review.speech,
+        load: review.load,
+      }
+    })
     const reviewNum = reviews.length
-    const totalWeight = reducedNonzero.reduce((acc, r) => acc + r.weight, 0)
+    const reviewTotalWeight = reducedNonzero.reduce((acc, r) => acc + r.weight, 0)
     const gradeSum = reducedNonzero.reduce((acc, r) => acc + r.weight * r.grade * 3, 0)
     const loadSum = reducedNonzero.reduce((acc, r) => acc + r.weight * r.load * 3, 0)
     const speechSum = reducedNonzero.reduce((acc, r) => acc + r.weight * r.speech * 3, 0)
 
-    const grade = totalWeight !== 0 ? gradeSum / totalWeight : 0.0
-    const load = totalWeight !== 0 ? loadSum / totalWeight : 0.0
-    const speech = totalWeight !== 0 ? speechSum / totalWeight : 0.0
+    const grade = reviewTotalWeight !== 0 ? gradeSum / reviewTotalWeight : 0.0
+    const load = reviewTotalWeight !== 0 ? loadSum / reviewTotalWeight : 0.0
+    const speech = reviewTotalWeight !== 0 ? speechSum / reviewTotalWeight : 0.0
 
     return {
       reviewNum,
-      totalWeight,
-      sums: {
-        gradeSum,
-        loadSum,
-        speechSum,
-      },
-      avgs: {
-        grade,
-        load,
-        speech,
-      },
+      reviewTotalWeight,
+      gradeSum,
+      loadSum,
+      speechSum,
+      grade,
+      load,
+      speech,
     }
   }
 
-  private async lectureGetWeight(review: review_review): Promise<number> {
+  private lectureGetWeight(review: ReviewWithLecture): number {
     const baseYear = new Date().getFullYear()
-    const lectureYear: number = (
-      await this.prisma.subject_lecture.findUniqueOrThrow({
-        where: { id: review.id },
-        select: {
-          year: true,
-        },
-      })
-    ).year
+    const lectureYear: number = review.lecture.semester.year
     const yearDiff = baseYear > lectureYear ? baseYear - lectureYear : 0
-    return (Math.sqrt(review.like) + 2) * 0.85 ** yearDiff
+    return (Math.sqrt(review.likeCnt) + 2) * 0.85 ** yearDiff
   }
 
   private async addTitleFormat(lectures: LectureBasic[]) {
