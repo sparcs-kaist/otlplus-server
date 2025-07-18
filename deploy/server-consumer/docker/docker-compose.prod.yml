@@ -1,0 +1,9 @@
+# docker-compose.yml
+version: '3.9'
+services:
+  nest-service:
+    image: server-consumer-prod
+    ports:
+      - '53000:3000'
+    environment:
+      - NODE_ENV=production
