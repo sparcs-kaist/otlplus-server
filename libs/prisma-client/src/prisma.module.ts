@@ -1,7 +1,7 @@
 import {
   DynamicModule, Global, Module, OnModuleInit,
 } from '@nestjs/common'
-import { Prisma } from '@prisma/client'
+import * as mariadb from 'mariadb'
 
 import { CourseMiddleware } from '@otl/prisma-client/middleware/prisma.course'
 import { DepartmentMiddleware } from '@otl/prisma-client/middleware/prisma.department'
@@ -33,7 +33,7 @@ import {
 @Module({})
 @Global()
 export class PrismaModule implements OnModuleInit {
-  static register(ormOptions: Prisma.PrismaClientOptions, ormReadOptions?: Prisma.PrismaClientOptions): DynamicModule {
+  static register(ormOptions: mariadb.PoolConfig, ormReadOptions?: mariadb.PoolConfig): DynamicModule {
     return {
       module: PrismaModule,
       providers: [

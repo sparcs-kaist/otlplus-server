@@ -1,12 +1,36 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common'
-import { Prisma, PrismaClient } from '@prisma/client'
+import { PrismaMariaDb } from '@prisma/adapter-mariadb'
+import { PrismaClient } from '@prisma/client'
+import * as mariadb from 'mariadb'
 
 import { signalExtension } from './custom-prisma-client'
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
-  constructor(@Inject('ORM_OPTIONS') ormOption: Prisma.PrismaClientOptions) {
-    super(ormOption)
+  constructor(@Inject('ORM_OPTIONS') ormOption: mariadb.PoolConfig) {
+    const adapter = new PrismaMariaDb(ormOption)
+    super({
+      adapter,
+      log: [
+        // {
+        //   emit: 'event',
+        //   level: 'query',
+        // },
+        {
+          emit: 'stdout',
+          level: 'error',
+        },
+        {
+          emit: 'stdout',
+          level: 'info',
+        },
+        // {
+        //   emit: 'stdout',
+        //   level: 'warn',
+        // },
+      ],
+      errorFormat: 'pretty',
+    })
   }
 
   async onModuleInit() {
@@ -17,6 +41,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     //   console.log(`Params: ${e.params}`)
     //   console.log(`Duration: ${e.duration}ms`)
     // })
+    console.log('Prisma connected successfully')
     const extendedClient = this.$extends(signalExtension)
     Object.assign(this, extendedClient)
   }
