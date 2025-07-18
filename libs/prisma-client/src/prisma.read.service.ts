@@ -3,8 +3,6 @@ import { PrismaMariaDb } from '@prisma/adapter-mariadb'
 import { PrismaClient } from '@prisma/client'
 import * as mariadb from 'mariadb'
 
-import { signalExtension } from './custom-prisma-client'
-
 @Injectable()
 export class PrismaReadService extends PrismaClient implements OnModuleInit {
   constructor(
@@ -53,7 +51,7 @@ export class PrismaReadService extends PrismaClient implements OnModuleInit {
     //   console.log(`Duration: ${e.duration}ms`)
     // })
     console.log('Prisma Read connected successfully')
-    const extendedClient = this.$extends(signalExtension)
-    Object.assign(this, extendedClient)
+    // const extendedClient = this.$extends(signalExtension)
+    // Object.assign(this, extendedClient)
   }
 }
