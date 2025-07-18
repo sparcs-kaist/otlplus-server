@@ -12,10 +12,21 @@ export namespace ECourse {
   })
   export type Extended = Prisma.subject_courseGetPayload<typeof Extended>
 
+  export const ExtendedWithIsRead = Prisma.validator<Prisma.subject_courseDefaultArgs>()({
+    include: {
+      ...Extended.include,
+      subject_courseuser: true,
+    },
+  })
+  export type ExtendedWithIsRead = Prisma.subject_courseGetPayload<typeof ExtendedWithIsRead>
+
   export const Details = Prisma.validator<Prisma.subject_courseDefaultArgs>()({
     include: {
       ...Extended.include,
-      lecture: true,
+      lecture: {
+        orderBy: [{ year: 'desc' }, { semester: 'desc' }],
+        take: 1,
+      },
     },
   })
   export type Details = Prisma.subject_courseGetPayload<typeof Details>

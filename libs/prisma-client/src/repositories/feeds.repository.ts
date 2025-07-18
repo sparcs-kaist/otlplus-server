@@ -6,6 +6,7 @@ import {
   subject_department,
 } from '@prisma/client'
 
+import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 import { FeedRateMinDays, FeedVisibleRate } from '@otl/prisma-client/types'
 
@@ -13,10 +14,13 @@ import { EFeed } from '../entities/EFeed'
 
 @Injectable()
 export class FeedsRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly prismaRead: PrismaReadService,
+  ) {}
 
   public async getFamousHumanityReview(date: Date): Promise<EFeed.Details | null> {
-    return await this.prisma.main_famoushumanityreviewdailyfeed.findFirst({
+    return await this.prismaRead.main_famoushumanityreviewdailyfeed.findFirst({
       where: {
         date,
       },
@@ -41,7 +45,7 @@ export class FeedsRepository {
   }
 
   public async getRankedReview(date: Date) {
-    return await this.prisma.main_rankedreviewdailyfeed.findFirst({
+    return await this.prismaRead.main_rankedreviewdailyfeed.findFirst({
       where: {
         date,
       },
@@ -59,7 +63,7 @@ export class FeedsRepository {
   }
 
   public async getFamousMajorReview(date: Date, department: subject_department) {
-    return await this.prisma.main_famousmajorreviewdailyfeed.findFirst({
+    return await this.prismaRead.main_famousmajorreviewdailyfeed.findFirst({
       include: EFeed.FamousMajorReviewDetails.include,
       where: {
         date,
@@ -89,7 +93,7 @@ export class FeedsRepository {
   }
 
   public async getReviewWrite(date: Date, userId: number) {
-    return await this.prisma.main_reviewwritedailyuserfeed.findFirst({
+    return await this.prismaRead.main_reviewwritedailyuserfeed.findFirst({
       include: EFeed.ReviewWriteDetails.include,
       where: {
         date,
@@ -112,7 +116,7 @@ export class FeedsRepository {
   }
 
   public async getRelatedCourse(date: Date, userId: number) {
-    return await this.prisma.main_relatedcoursedailyuserfeed.findFirst({
+    return await this.prismaRead.main_relatedcoursedailyuserfeed.findFirst({
       include: EFeed.RelatedCourseDetails.include,
       where: {
         date,

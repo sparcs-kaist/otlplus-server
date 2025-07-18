@@ -5,7 +5,7 @@ import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { IPlanner } from '@otl/server-nest/common/interfaces'
 import { PlannerPipe } from '@otl/server-nest/common/pipe/planner.pipe'
 import { toJsonPlannerItem } from '@otl/server-nest/common/serializer/planner.item.serializer'
-import { toJsonPlanner } from '@otl/server-nest/common/serializer/planner.serializer'
+import { toJsonPlannerDetails } from '@otl/server-nest/common/serializer/planner.serializer'
 import { session_userprofile } from '@prisma/client'
 
 import { PlannersService } from './planners.service'
@@ -37,7 +37,7 @@ export class PlannersController {
       await this.plannersService.updateTakenLectures(user, plannerId, planner.start_year, planner.end_year)
     }
     const updatedPlanner = await this.plannersService.updatePlanner(plannerId, planner, user)
-    return toJsonPlanner(updatedPlanner)
+    return toJsonPlannerDetails(updatedPlanner)
   }
 
   @Delete(':plannerId')
@@ -106,7 +106,7 @@ export class PlannersController {
     @Body() reorder: IPlanner.ReorderBodyDto,
     @Param('plannerId') plannerId: number,
     @GetUser() user: session_userprofile,
-  ): Promise<IPlanner.Detail> {
+  ): Promise<IPlanner.Response> {
     return await this.plannersService.reorderPlanner(plannerId, reorder.arrange_order, user)
   }
 

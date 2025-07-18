@@ -5,7 +5,20 @@ import { EPlanners } from '@otl/prisma-client/entities/EPlanners'
 import { toJsonArbitraryItem, toJsonFutureItem, toJsonTakenItem } from './planner.item.serializer'
 import { toJsonAdditionalTrack, toJsonGeneralTrack, toJsonMajorTrack } from './track.serializer'
 
-export const toJsonPlanner = (planner: EPlanners.Details): IPlanner.Detail => ({
+export const toJsonPlanner = (planner: EPlanners.Basic): IPlanner.Response => ({
+  id: planner.id,
+  start_year: planner.start_year,
+  end_year: planner.end_year,
+  general_track: null,
+  major_track: null,
+  additional_tracks: null,
+  taken_items: null,
+  future_items: null,
+  arbitrary_items: null,
+  arrange_order: planner.arrange_order,
+})
+
+export const toJsonPlannerDetails = (planner: EPlanners.Details): IPlanner.Detail => ({
   id: planner.id,
   start_year: planner.start_year,
   end_year: planner.end_year,

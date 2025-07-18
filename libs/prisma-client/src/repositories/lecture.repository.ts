@@ -57,16 +57,17 @@ export class LectureRepository {
     const typeFilter = this.courseRepository.typeFilter(query?.type)
     const groupFilter = this.courseRepository.groupFilter(query?.group)
     const keywordFilter = this.courseRepository.keywordFilter(query?.keyword, false)
+    const researchFilter = researchTypes.map((type) => ({
+      type_en: {
+        not: type,
+      },
+    }))
     const defaultFilter = {
       AND: [
         {
           deleted: false,
         },
-        {
-          type_en: {
-            notIn: researchTypes,
-          },
-        },
+        ...researchFilter,
       ],
     }
 
@@ -89,8 +90,10 @@ export class LectureRepository {
       where: {
         AND: filters,
       },
+      orderBy: [{ year: 'desc' }, { semester: 'desc' }, { id: 'asc' }, { type_en: 'asc' }],
       take: query.limit ?? DEFAULT_LIMIT,
     })
+
     const levelFilteredResult = this.courseRepository.levelFilter<ELecture.Details>(queryResult, query?.level)
 
     const orderedQuery = applyOrder<ELecture.Details>(

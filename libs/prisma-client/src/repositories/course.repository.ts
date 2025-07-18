@@ -223,13 +223,13 @@ export class CourseRepository {
     const keyword_trimed = keyword.trim()
     const keyword_space_removed = keyword_trimed.replace(/\s/g, '')
     const title_filter = {
-      title_no_space: {
-        contains: keyword_space_removed,
+      title: {
+        search: `+${keyword_space_removed}`,
       },
     }
     const en_title_filter = {
-      title_en_no_space: {
-        contains: keyword_space_removed,
+      title_en: {
+        search: `+${keyword_space_removed}`,
       },
     }
     const department_name_filter = {
@@ -248,7 +248,7 @@ export class CourseRepository {
           some: {
             professor: {
               professor_name: {
-                contains: keyword_trimed,
+                search: `+${keyword_trimed}`,
               },
             },
           },
@@ -259,7 +259,7 @@ export class CourseRepository {
           some: {
             professor: {
               professor_name: {
-                contains: keyword_trimed,
+                search: `+${keyword_trimed}`,
               },
             },
           },
@@ -271,7 +271,7 @@ export class CourseRepository {
           some: {
             professor: {
               professor_name_en: {
-                contains: keyword_trimed,
+                search: `+${keyword_trimed}`,
               },
             },
           },
@@ -282,7 +282,7 @@ export class CourseRepository {
           some: {
             professor: {
               professor_name_en: {
-                contains: keyword_trimed,
+                search: `+${keyword_trimed}`,
               },
             },
           },
