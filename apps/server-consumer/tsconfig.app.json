@@ -1,0 +1,41 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2021",
+    "sourceMap": true,
+    "outDir": "../../dist/apps/server-consumer",
+    "baseUrl": "./",
+    "incremental": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "alwaysStrict": true,
+    "noImplicitAny": true,
+    "strictBindCallApply": false,
+    "forceConsistentCasingInFileNames": false,
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@otl/server-consumer/*": ["src/*"],
+      "@otl/server-consumer/out": ["../../apps/server-consumer/src/out"],
+      "@otl/server-consumer/out/*": ["../../apps/server-consumer/src/out/*"],
+      "@otl/prisma-client": ["../../libs/prisma-client/src"],
+      "@otl/prisma-client/*": ["../../libs/prisma-client/src/*"],
+      "@otl/common": ["../../libs/common/src"],
+      "@otl/common/*": ["../../libs/common/src/*"],
+      "@otl/rmq": ["../../libs/rmq/src"],
+      "@otl/rmq/*": ["../../libs/rmq/src/*"],
+      "@otl/server-nest/*": ["../../apps/server/src/*"],
+      "@otl/scholar-sync/domain": ["../../apps/scholar-sync/src/common/domain"],
+      "@otl/scholar-sync/domain/*": ["../../apps/scholar-sync/src/common/domain/*"],
+      "@otl/scholar-sync/clients/scholar/*": ["../../apps/scholar-sync/src/clients/scholar/*"],
+      "@otl/notification-consumer/out": ["../../apps/notification-consumer/src/out"],
+      "@otl/notification-consumer/out/*": ["../../apps/notification-consumer/src/out/*"]
+    }
+  },
+  "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]
+}

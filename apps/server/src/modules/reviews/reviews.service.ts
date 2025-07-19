@@ -1,4 +1,6 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import {
+  HttpException, HttpStatus, Inject, Injectable,
+} from '@nestjs/common'
 import { Transactional } from '@nestjs-cls/transactional'
 import { IReview } from '@otl/server-nest/common/interfaces'
 import { toJsonReview } from '@otl/server-nest/common/serializer/review.serializer'
@@ -7,12 +9,17 @@ import { session_userprofile } from '@prisma/client'
 import { EReview } from '@otl/prisma-client/entities'
 import { LectureRepository, ReviewsRepository } from '@otl/prisma-client/repositories'
 import EReviewVote = EReview.EReviewVote
+import { REVIEW_MQ, ReviewMQ } from '@otl/server-nest/modules/reviews/domain/out/ReviewMQ'
+
+import logger from '@otl/common/logger/logger'
 
 @Injectable()
 export class ReviewsService {
   constructor(
     private readonly reviewsRepository: ReviewsRepository,
     private readonly lectureRepository: LectureRepository,
+    @Inject(REVIEW_MQ)
+    private readonly reviewMQ: ReviewMQ,
   ) {}
 
   async getReviewById(
@@ -90,6 +97,17 @@ export class ReviewsService {
         userspecific_is_liked: isLiked,
       })
     }
+    await Promise.all([
+      await this.reviewMQ.publishCourseScoreUpdate(review.course_id),
+      await Promise.all(
+        review.lecture.subject_lecture_professors.map(async (professor) => {
+          await this.reviewMQ.publishProfessorScoreUpdate(professor.id)
+        }),
+      ),
+      await this.reviewMQ.publishLectureScoreUpdate(review.lecture_id),
+    ]).catch((e) => {
+      logger.error(`Error while publishing review score update: ${e.message}`, e)
+    })
     return Object.assign(result, {
       userspecific_is_liked: false,
     })
@@ -119,6 +137,17 @@ export class ReviewsService {
         userspecific_is_liked: isLiked,
       })
     }
+    await Promise.all([
+      await this.reviewMQ.publishCourseScoreUpdate(review.course_id),
+      await Promise.all(
+        review.lecture.subject_lecture_professors.map(async (professor) => {
+          await this.reviewMQ.publishProfessorScoreUpdate(professor.id)
+        }),
+      ),
+      await this.reviewMQ.publishLectureScoreUpdate(review.lecture_id),
+    ]).catch((e) => {
+      logger.error(`Error while publishing review score update: ${e.message}`, e)
+    })
     return Object.assign(result, {
       userspecific_is_liked: false,
     })
@@ -133,7 +162,11 @@ export class ReviewsService {
 
   @Transactional()
   async createReviewVote(reviewId: number, user: session_userprofile): Promise<EReviewVote.Basic> {
-    return await this.reviewsRepository.upsertReviewVote(reviewId, user.id)
+    const result = await this.reviewsRepository.upsertReviewVote(reviewId, user.id)
+    await this.reviewMQ.publishReviewLikeUpdate(reviewId).catch((e) => {
+      logger.error(`Error while publishing review like update: ${e.message}`, e)
+    })
+    return result
   }
 
   async deleteReviewVote(reviewId: number, user: session_userprofile) {
@@ -141,6 +174,10 @@ export class ReviewsService {
     if (!review) throw new HttpException('Can\'t find review', 404)
     const isLiked: boolean = await this.reviewsRepository.isLiked(review.id, user.id)
     if (!isLiked) throw new HttpException('Already UnLiked', HttpStatus.BAD_REQUEST)
-    return await this.reviewsRepository.deleteReviewVote(reviewId, user.id)
+    const result = await this.reviewsRepository.deleteReviewVote(reviewId, user.id)
+    await this.reviewMQ.publishReviewLikeUpdate(reviewId).catch((e) => {
+      logger.error(`Error while publishing review like update: ${e.message}`, e)
+    })
+    return result
   }
 }

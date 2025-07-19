@@ -75,6 +75,7 @@ export class ReviewsController {
       throw new HttpException('Already Liked', HttpStatus.BAD_REQUEST)
     }
     else {
+      // @Todo : Message(REVIEW_LIKE) 보내기
       const result = await this.reviewsService.createReviewVote(reviewId, user)
       return toJsonReviewVote(result)
     }
@@ -86,6 +87,7 @@ export class ReviewsController {
     @GetUser() user: session_userprofile,
   ): Promise<IReview.IReviewVote.Basic> {
     const reviewVote = await this.reviewsService.findReviewVote(reviewId, user)
+    // @Todo : Message(REVIEW_LIKE) 보내기
     if (!reviewVote) {
       throw new HttpException('Already UnLiked', HttpStatus.BAD_REQUEST)
     }

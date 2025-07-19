@@ -2,18 +2,16 @@ version: '3'
 
 services:
   rabbitmq:
-    image: rabbitmq:3-management
-    container_name: rabbitmq
+    build:
+      dockerfile: Dockerfile
+    container_name: otlplus-rabbitmq
     ports:
       - '5672:5672' # AMQP 프로토콜 (앱들이 사용하는 포트)
       - '15672:15672' # 관리 콘솔 (웹 UI) 포트
-    env_file: '../../env/.env.dev'
+      - '15692:15692' # Prometheus exporter 포트
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
     volumes:
-      - rabbitmq-data:/var/lib/rabbitmq
+      - ./rabbitmq-data:/var/lib/rabbitmq
     restart: unless-stopped
-
-volumes:
-  rabbitmq-data:

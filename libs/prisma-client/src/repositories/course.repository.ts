@@ -11,10 +11,14 @@ import { ELecture } from '../entities/ELecture'
 import { EReview } from '../entities/EReview'
 import { PrismaService } from '../prisma.service'
 import ECourseUser = ECourse.ECourseUser
+import { ServerConsumerCourseRepository } from '@otl/server-consumer/out/course.repository'
+import { CourseBasic, CourseScore } from '@otl/server-nest/modules/courses/domain/course'
+
+import { mapCourse } from '@otl/prisma-client/common/mapper/course'
 import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 
 @Injectable()
-export class CourseRepository {
+export class CourseRepository implements ServerConsumerCourseRepository {
   constructor(
     private readonly prisma: PrismaService,
     private readonly prismaRead: PrismaReadService,
@@ -223,13 +227,13 @@ export class CourseRepository {
     const keyword_trimed = keyword.trim()
     const keyword_space_removed = keyword_trimed.replace(/\s/g, '')
     const title_filter = {
-      title: {
-        search: `+${keyword_space_removed}`,
+      title_no_space: {
+        contains: keyword_space_removed,
       },
     }
     const en_title_filter = {
-      title_en: {
-        search: `+${keyword_space_removed}`,
+      title_en_no_space: {
+        contains: keyword_space_removed,
       },
     }
     const department_name_filter = {
@@ -248,7 +252,7 @@ export class CourseRepository {
           some: {
             professor: {
               professor_name: {
-                search: `+${keyword_trimed}`,
+                contains: keyword_trimed,
               },
             },
           },
@@ -259,7 +263,7 @@ export class CourseRepository {
           some: {
             professor: {
               professor_name: {
-                search: `+${keyword_trimed}`,
+                contains: keyword_trimed,
               },
             },
           },
@@ -271,7 +275,7 @@ export class CourseRepository {
           some: {
             professor: {
               professor_name_en: {
-                search: `+${keyword_trimed}`,
+                contains: keyword_trimed,
               },
             },
           },
@@ -282,7 +286,7 @@ export class CourseRepository {
           some: {
             professor: {
               professor_name_en: {
-                search: `+${keyword_trimed}`,
+                contains: keyword_trimed,
               },
             },
           },
@@ -491,5 +495,22 @@ export class CourseRepository {
       })
     }
     return result
+  }
+
+  async updateCourseScore(courseId: number, grades: CourseScore): Promise<CourseBasic> {
+    return mapCourse(
+      await this.prisma.subject_course.update({
+        where: { id: courseId },
+        data: {
+          review_total_weight: grades.reviewTotalWeight,
+          grade_sum: grades.gradeSum,
+          load_sum: grades.loadSum,
+          speech_sum: grades.speechSum,
+          grade: grades.grade,
+          load: grades.load,
+          speech: grades.speech,
+        },
+      }),
+    )
   }
 }

@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common'
 import { JwtModule } from '@nestjs/jwt'
 import { PassportModule } from '@nestjs/passport'
+import { AgreementModule } from '@otl/server-nest/modules/agreement/agreement.module'
+import { IsAdminCommand } from '@otl/server-nest/modules/auth/command/isAdmin.command'
 import { IsReviewProhibitedCommand } from '@otl/server-nest/modules/auth/command/isReviewProhibited.command'
 import { JwtHeaderCommand } from '@otl/server-nest/modules/auth/command/jwt.header.command'
 import { SidHeaderCommand } from '@otl/server-nest/modules/auth/command/sid.header.command'
@@ -27,6 +29,7 @@ import { JwtCookieStrategy } from './strategy/jwt-cookie.strategy'
     PassportModule.register({ defaultStrategy: 'jwt-cookie' }),
     JwtModule.register({}),
     SyncModule,
+    AgreementModule,
   ],
   controllers: [AuthController],
   providers: [
@@ -43,6 +46,7 @@ import { JwtCookieStrategy } from './strategy/jwt-cookie.strategy'
     SidCookieCommand,
     SyncApiKeyCommand,
     IsReviewProhibitedCommand,
+    IsAdminCommand,
     AuthConfig,
   ],
   exports: [AuthService, AuthConfig, AuthChain],

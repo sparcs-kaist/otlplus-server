@@ -11,14 +11,7 @@ import { Prisma, SyncType } from '@prisma/client'
 import { Result } from '@prisma/client/runtime/library'
 
 import {
-  EDepartment,
-  ELecture,
-  EProfessor,
-  EReview,
-  ESemester,
-  ESync,
-  EUser,
-  EUserProfile,
+  EDepartment, ELecture, EProfessor, EReview, ESemester, ESync, EUser,
 } from '@otl/prisma-client/entities'
 import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
@@ -259,7 +252,7 @@ export class SyncRepository {
   }: {
     year: number
     semester: number
-  }): Promise<EUserProfile.WithTakenLectures[]> {
+  }): Promise<EUser.WithTakenLectures[]> {
     return await this.prisma.session_userprofile.findMany({
       where: { taken_lectures: { some: { lecture: { year, semester } } } },
       include: { taken_lectures: { where: { lecture: { year, semester } } } },

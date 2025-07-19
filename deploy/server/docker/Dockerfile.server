@@ -20,6 +20,7 @@ COPY ./apps/server ./apps/server
 COPY ./apps/scholar-sync ./apps/scholar-sync
 COPY ./libs/common ./libs/common
 COPY ./libs/prisma-client ./libs/prisma-client
+COPY ./libs/rmq ./libs/rmq
 
 
 RUN yarn client:generate
@@ -35,6 +36,8 @@ COPY --from=build /var/www/otlplus-server/node_modules /var/www/otlplus-server/n
 COPY ./ecosystem.config.js /var/www/otlplus-server/ecosystem.config.js
 
 RUN yarn global add pm2
+
+RUN pm2 install pm2-metrics
 
 WORKDIR /var/www/otlplus-server
 

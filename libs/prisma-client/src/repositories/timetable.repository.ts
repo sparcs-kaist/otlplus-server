@@ -74,7 +74,7 @@ export class TimetableRepository {
     arrangeOrder: number,
     lectures: ELecture.Details[],
   ): Promise<ETimetable.Details> {
-    return this.prisma.timetable_timetable.create({
+    return this.prismaRead.timetable_timetable.create({
       data: {
         user_id: user.id,
         year,
@@ -162,5 +162,13 @@ export class TimetableRepository {
       where: { timetable_id: timetableId },
       include: ETimetable.WithLectureClasstimes.include,
     })
+  }
+
+  async getTimeTableLectures(timetableId: number): Promise<number[]> {
+    return (
+      await this.prismaRead.timetable_timetable_lectures.findMany({
+        where: { timetable_id: timetableId },
+      })
+    ).map((lecture) => lecture.lecture_id)
   }
 }
