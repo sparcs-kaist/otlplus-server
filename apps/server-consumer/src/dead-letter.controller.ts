@@ -32,6 +32,7 @@ export class DeadLetterController {
   })
   async handleScholarSyncDLQ(@RabbitPayload() msg: any, amqpMsg: ConsumeMessage) {
     // 공통 재시도 핸들러에 실제 비즈니스 로직을 콜백으로 전달
+    logger.info(`[DLQ] Received message in SCHOLAR_SYNC_DLQ: ${JSON.stringify(amqpMsg)}`)
     await this.handleWithRetry(msg, amqpMsg, async (request) => {
       if (request.type === EVENT_TYPE.LECTURE_TITLE) {
         if (!LectureCommonTitleUpdateMessage.isValid(request)) {
