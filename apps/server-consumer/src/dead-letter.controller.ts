@@ -53,6 +53,7 @@ export class DeadLetterController {
     ...settings().getRabbitMQConfig().queueConfig[QueueSymbols.STATISTICS_DLQ],
   })
   async handleStatisticsDLQ(@RabbitPayload() msg: any, amqpMsg: ConsumeMessage) {
+    logger.info(`[DLQ] Received message in SCHOLAR_SYNC_DLQ: ${JSON.stringify(amqpMsg)}`)
     // 공통 재시도 핸들러에 실제 비즈니스 로직을 콜백으로 전달
     await this.handleWithRetry(msg, amqpMsg, async (request) => {
       // 각 이벤트 타입에 맞는 핸들러를 찾아 실행
