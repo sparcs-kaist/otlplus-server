@@ -14,8 +14,12 @@ RUN yarn --production
 
 COPY ./apps/server ./apps/server
 COPY ./apps/scholar-sync ./apps/scholar-sync
+COPY ./apps/server-consumer ./apps/server-consumer
+COPY ./apps/notification-consumer ./apps/notification-consumer
 COPY ./libs/common ./libs/common
 COPY ./libs/prisma-client ./libs/prisma-client
+COPY ./libs/rmq ./libs/rmq
+
 
 RUN yarn client:generate
 RUN yarn build:scholar-sync

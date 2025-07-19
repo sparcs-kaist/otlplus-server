@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common'
+import { RmqConnectionModule, RmqModule } from '@otl/rmq'
 import { StatisticsUpdatePublisher } from '@otl/rmq/exchanges/statistics/statistics.publish'
 import { REVIEW_MQ } from '@otl/server-nest/modules/reviews/domain/out/ReviewMQ'
 
@@ -9,7 +10,7 @@ import { ReviewsController } from './reviews.controller'
 import { ReviewsService } from './reviews.service'
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, RmqModule, RmqConnectionModule.register()],
   controllers: [ReviewsController],
   providers: [
     {

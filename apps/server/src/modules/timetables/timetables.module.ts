@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common'
+import { RmqConnectionModule, RmqModule } from '@otl/rmq'
 import { StatisticsUpdatePublisher } from '@otl/rmq/exchanges/statistics/statistics.publish'
 import { TIMETABLE_MQ } from '@otl/server-nest/modules/timetables/domain/out/TimetableMQ'
 
@@ -9,7 +10,7 @@ import { TimetablesController } from './timetables.controller'
 import { TimetablesService } from './timetables.service'
 
 @Module({
-  imports: [PrismaModule, LecturesModule],
+  imports: [PrismaModule, LecturesModule, RmqModule, RmqConnectionModule.register()],
   controllers: [TimetablesController],
   providers: [
     {
