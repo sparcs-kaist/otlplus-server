@@ -4,7 +4,7 @@ services:
   rabbitmq:
     build:
       dockerfile: Dockerfile
-    container_name: delayed-rabbitmq
+    container_name: otlplus-rabbitmq
     ports:
       - '5672:5672' # AMQP 프로토콜 (앱들이 사용하는 포트)
       - '15672:15672' # 관리 콘솔 (웹 UI) 포트
