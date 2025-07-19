@@ -237,6 +237,9 @@ const getRabbitMQConfig = (): {
         routingKey: 'statistics',
         queue: QueueNames.STATISTICS,
         createQueueIfNotExists: true,
+        queueOptions: {
+          deadLetterExchange: ExchangeNames.STATISTICS_DLX,
+        },
       },
       STATISTICS_DLQ: {
         exchange: ExchangeNames.STATISTICS_DLX,

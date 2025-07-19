@@ -69,7 +69,12 @@ export class AppService {
   async updateLectureNumPeopleUpdateMessage(request: LectureNumPeopleUpdateMessage, _amqpMsg: ConsumeMessage) {
     const { lectureId } = request
     try {
-      return await this.lectureService.updateNumPeople(lectureId)
+      const result = await this.lectureService.updateNumPeople(lectureId)
+      if (!result) {
+        console.error(`Failed to update lecture num people for lectureId: ${lectureId}`)
+        return false
+      }
+      return true
     }
     catch (e) {
       console.error(`Failed to update lecture num people for lectureId: ${lectureId}`, e)
