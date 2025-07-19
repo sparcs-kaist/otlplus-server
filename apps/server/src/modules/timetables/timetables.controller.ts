@@ -43,7 +43,6 @@ export class TimetablesController {
     @GetUser() user: session_userprofile,
   ): Promise<ITimetable.Response[]> {
     const timetables = await this.timetablesService.deleteTimetable(user, timetableId)
-    // @Todo : Message(LECTURE_NUM_PEOPLE) 보내기
     return timetables.map((timeTable) => toJsonTimetable(timeTable))
   }
 

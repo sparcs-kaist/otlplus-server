@@ -26,7 +26,10 @@
       "@otl/prisma-client": ["../../libs/prisma-client/src"],
       "@otl/prisma-client/*": ["../../libs/prisma-client/src/*"],
       "@otl/common": ["../../libs/common/src"],
-      "@otl/common/*": ["../../libs/common/src/*"]
+      "@otl/common/*": ["../../libs/common/src/*"],
+      "@otl/rmq": ["../../libs/rmq/src"],
+      "@otl/rmq/*": ["../../libs/rmq/src/*"],
+      "@otl/server-consumer/*": ["../../apps/server-consumer/src/*"]
     }
   },
   "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]
