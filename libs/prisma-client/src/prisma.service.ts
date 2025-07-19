@@ -10,10 +10,10 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     super({
       adapter,
       log: [
-        // {
-        //   emit: 'event',
-        //   level: 'query',
-        // },
+        {
+          emit: 'event',
+          level: 'query',
+        },
         {
           emit: 'stdout',
           level: 'error',

@@ -29,7 +29,11 @@
       "@otl/common/*": ["../../libs/common/src/*"],
       "@otl/rmq": ["../../libs/rmq/src"],
       "@otl/rmq/*": ["../../libs/rmq/src/*"],
-      "@otl/server-consumer/*": ["../../apps/server-consumer/src/*"]
+      "@otl/server-consumer/*": ["../../apps/server-consumer/src/*"],
+      "@otl/server-nest/*": ["../../apps/server/src/*"],
+      "@otl/notification-consumer/*": ["../../apps/notification-consumer/src/*"],
+      "@otl/notification-consumer/domain": ["../../apps/notification-consumer/src/domain"],
+      "@otl/notification-consumer/domain/*": ["../../apps/notification-consumer/src/domain/*"]
     }
   },
   "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]

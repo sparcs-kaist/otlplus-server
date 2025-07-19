@@ -257,12 +257,9 @@ export class SyncService {
           if (LectureInfo.equals(foundLecture, derivedLecture)) {
             const updatedLecture = await this.syncRepository.updateLecture(foundLecture.id, derivedLecture)
             // @Todo : Message(LectureTitleUpdate) 보내기
-            try {
-              await this.SyncMQ.publishLectureTitleUpdate(foundLecture.id)
-            }
-            catch (e) {
+            await this.SyncMQ.publishLectureTitleUpdate(foundLecture.id).catch((e) => {
               this.logger.error(`Failed to publish LectureTitleUpdate for lecture ${foundLecture.id}`, e)
-            }
+            })
 
             lecturesSyncResultDetail.updated.push([foundLecture, updatedLecture])
           }
@@ -282,23 +279,17 @@ export class SyncService {
               removed: removedIds.map((id) => professorMap.get(id) || { id }),
             })
             // @Todo : Message(LectureScoreUpdate) 보내기
-            try {
-              await this.StatisticsMQ.publishLectureScoreUpdate(foundLecture.id)
-            }
-            catch (e) {
+            await this.StatisticsMQ.publishLectureScoreUpdate(foundLecture.id).catch((e) => {
               this.logger.error(`Failed to publish LectureScoreUpdate for lecture ${foundLecture.id}`, e)
-            }
+            })
           }
         }
         else {
           const newLecture = await this.syncRepository.createLecture(derivedLecture)
           // @Todo : Message(LectureTitleUpdate) 보내기
-          try {
-            await this.SyncMQ.publishLectureTitleUpdate(newLecture.id)
-          }
-          catch (e) {
+          await this.SyncMQ.publishLectureTitleUpdate(newLecture.id).catch((e) => {
             this.logger.error(`Failed to publish LectureTitleUpdate for lecture ${newLecture.id}`, e)
-          }
+          })
           const addedIds = professorCharges.map((charge) => professorMap.get(charge.PROF_ID)!.id)
 
           await this.syncRepository.updateLectureProfessors(newLecture.id, {
@@ -307,12 +298,9 @@ export class SyncService {
           })
           lecturesSyncResultDetail.created.push({ ...newLecture, professors: addedIds })
           // @Todo : Message(LectureScoreUpdate) 보내기
-          try {
-            await this.StatisticsMQ.publishLectureScoreUpdate(newLecture.id)
-          }
-          catch (e) {
+          await this.StatisticsMQ.publishLectureScoreUpdate(newLecture.id).catch((e) => {
             this.logger.error(`Failed to publish LectureScoreUpdate for lecture ${newLecture.id}`, e)
-          }
+          })
         }
       }
       catch (e: any) {

@@ -23,3 +23,5 @@ COPY --from=builder --chown=rabbitmq:rabbitmq \
 RUN rabbitmq-plugins enable rabbitmq_delayed_message_exchange
 
 RUN rabbitmq-plugins enable rabbitmq_consistent_hash_exchange
+
+RUN rabbitmq-plugins enable rabbitmq_prometheus

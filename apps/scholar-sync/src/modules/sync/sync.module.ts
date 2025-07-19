@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common'
 import { ScheduleModule } from '@nestjs/schedule'
+import { RmqConnectionModule, RmqModule } from '@otl/rmq'
 import { ScholarUpdatePublisher } from '@otl/rmq/exchanges/scholar-sync/lecture.publish'
 import { StatisticsUpdatePublisher } from '@otl/rmq/exchanges/statistics/statistics.publish'
 import { ScholarModule } from '@otl/scholar-sync/clients/scholar/scholar.module'
@@ -13,7 +14,7 @@ import { SyncService } from '@otl/scholar-sync/modules/sync/sync.service'
 import { PrismaModule } from '@otl/prisma-client/prisma.module'
 
 @Module({
-  imports: [PrismaModule, SlackModule, ScholarModule, ScheduleModule],
+  imports: [PrismaModule, SlackModule, ScholarModule, ScheduleModule, RmqModule, RmqConnectionModule.register()],
   controllers: [SyncDynamicController],
   providers: [
     {

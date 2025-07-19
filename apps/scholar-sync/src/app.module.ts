@@ -3,6 +3,7 @@ import { APP_GUARD } from '@nestjs/core'
 import { ScheduleModule } from '@nestjs/schedule'
 import { ClsPluginTransactional } from '@nestjs-cls/transactional'
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma'
+import { RmqConnectionModule, RmqModule } from '@otl/rmq'
 import { AuthConfig } from '@otl/scholar-sync/modules/auth/auth.config'
 import { AuthModule } from '@otl/scholar-sync/modules/auth/auth.module'
 import { AuthGuard } from '@otl/scholar-sync/modules/auth/guard/auth.guard'
@@ -20,6 +21,8 @@ import { AppService } from './app.service'
 @Module({
   imports: [
     PrismaModule.register(settings().ormconfig()),
+    RmqModule,
+    RmqConnectionModule.register(),
     SyncModule,
     AuthModule,
     ScheduleModule.forRoot(),

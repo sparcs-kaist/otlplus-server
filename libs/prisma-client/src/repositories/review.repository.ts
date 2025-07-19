@@ -427,7 +427,7 @@ export class ReviewsRepository implements ServerConsumerReviewRepository {
   }
 
   async getReviewLikeCount(reviewId: number): Promise<number> {
-    return await this.prisma.review_reviewvote.count({
+    return await this.prismaRead.review_reviewvote.count({
       where: { review_id: reviewId },
     })
   }
