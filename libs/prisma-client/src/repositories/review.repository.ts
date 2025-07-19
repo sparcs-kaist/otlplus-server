@@ -1,4 +1,7 @@
 import { Injectable } from '@nestjs/common'
+import { ServerConsumerReviewRepository } from '@otl/server-consumer/out/review.repository'
+import { LectureBasic } from '@otl/server-nest/modules/lectures/domain/lecture'
+import { ReviewBasic, ReviewWithLecture } from '@otl/server-nest/modules/reviews/domain/review'
 import {
   review_humanitybestreview,
   review_majorbestreview,
@@ -6,6 +9,7 @@ import {
   subject_department,
 } from '@prisma/client'
 
+import { mapReview, mapReviewWithLecture } from '@otl/prisma-client/common/mapper/review'
 import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 
@@ -14,7 +18,7 @@ import { ELecture } from '../entities/ELecture'
 import { EReview } from '../entities/EReview'
 
 @Injectable()
-export class ReviewsRepository {
+export class ReviewsRepository implements ServerConsumerReviewRepository {
   constructor(
     private readonly prisma: PrismaService,
     private readonly prismaRead: PrismaReadService,
@@ -304,9 +308,10 @@ export class ReviewsRepository {
   public async getRandomNHumanityBestReviews(n: number): Promise<review_humanitybestreview> {
     // Prisma does not support RAND() in ORDER BY.
     return await this.prisma.$queryRaw`
-      SELECT * FROM review_humanitybestreview 
-      ORDER BY RAND() 
-      LIMIT ${n}`
+        SELECT *
+        FROM review_humanitybestreview
+        ORDER BY RAND()
+            LIMIT ${n}`
   }
 
   public async getRandomNMajorBestReviews(
@@ -315,12 +320,13 @@ export class ReviewsRepository {
   ): Promise<review_majorbestreview[]> {
     // Prisma does not support RAND() in ORDER BY.
     return await this.prisma.$queryRaw`
-      SELECT mbr.* FROM review_majorbestreview mbr
-      INNER JOIN review_review r ON r.id = mbr.review_id
-      INNER JOIN subject_lecture l ON l.id = r.lecture_id
-      WHERE l.department_id = ${department.id}
-      ORDER BY RAND() 
-      LIMIT ${n}`
+        SELECT mbr.*
+        FROM review_majorbestreview mbr
+                 INNER JOIN review_review r ON r.id = mbr.review_id
+                 INNER JOIN subject_lecture l ON l.id = r.lecture_id
+        WHERE l.department_id = ${department.id}
+        ORDER BY RAND()
+            LIMIT ${n}`
   }
 
   async upsertReviewVote(reviewId: number, userId: number): Promise<EReview.EReviewVote.Basic> {
@@ -348,5 +354,92 @@ export class ReviewsRepository {
         },
       },
     })
+  }
+
+  async getRelatedReviewsByLectureId(lecture: LectureBasic, professorsId: number[]): Promise<ReviewWithLecture[]> {
+    if (lecture.courseId == null) {
+      return (
+        await this.prismaRead.review_review.findMany({
+          where: {
+            lecture: {
+              id: lecture.id,
+            },
+          },
+          include: EReview.WithLectures.include,
+        })
+      ).map((review) => mapReviewWithLecture(review))
+    }
+
+    const lectureProfessors = await this.prismaRead.subject_lecture_professors.findMany({
+      where: {
+        lecture: {
+          course: {
+            id: lecture.courseId,
+          },
+        },
+        professor_id: {
+          in: professorsId,
+        },
+      },
+      select: { id: true, professor_id: true, lecture_id: true },
+    })
+    const lectureIds = [...new Set(lectureProfessors.map((lp) => lp.lecture_id))]
+    const reviews = await this.prismaRead.review_review.findMany({
+      where: {
+        lecture: {
+          id: { in: lectureIds },
+        },
+      },
+      include: EReview.WithLectures.include,
+    })
+    return reviews.map((review) => mapReviewWithLecture(review))
+  }
+
+  async getRelatedReviewsByCourseId(courseId: number): Promise<ReviewWithLecture[]> {
+    const reviews = await this.prismaRead.review_review.findMany({
+      where: {
+        lecture: {
+          course: {
+            id: courseId,
+          },
+        },
+      },
+      include: EReview.WithLectures.include,
+    })
+    return reviews.map((review) => mapReviewWithLecture(review))
+  }
+
+  getRelatedReviewsByProfessorId(professorId: number): Promise<ReviewWithLecture[]> {
+    return this.prismaRead.review_review
+      .findMany({
+        where: {
+          lecture: {
+            subject_lecture_professors: {
+              some: {
+                professor_id: professorId,
+              },
+            },
+          },
+        },
+        include: EReview.WithLectures.include,
+      })
+      .then((reviews) => reviews.map((review) => mapReviewWithLecture(review)))
+  }
+
+  async getReviewLikeCount(reviewId: number): Promise<number> {
+    return await this.prismaRead.review_reviewvote.count({
+      where: { review_id: reviewId },
+    })
+  }
+
+  async updateReviewLikeCount(reviewId: number, likeCount: number): Promise<ReviewBasic> {
+    return mapReview(
+      await this.prisma.review_review.update({
+        where: { id: reviewId },
+        data: {
+          like: likeCount,
+        },
+      }),
+    )
   }
 }

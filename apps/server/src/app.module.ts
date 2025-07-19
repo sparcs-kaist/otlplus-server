@@ -3,8 +3,13 @@ import { CacheModule } from '@nestjs/cache-manager'
 import { Module } from '@nestjs/common'
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core'
 import { JwtService } from '@nestjs/jwt'
+import { ClientsModule } from '@nestjs/microservices'
 import { ClsPluginTransactional } from '@nestjs-cls/transactional'
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma'
+import { RmqModule } from '@otl/rmq/rmq.module'
+import { AgreementModule } from '@otl/server-nest/modules/agreement/agreement.module'
+import { DeviceModule } from '@otl/server-nest/modules/device/device.module'
+import { NotificationModule } from '@otl/server-nest/modules/notification/notification.module'
 import { SentryModule } from '@sentry/nestjs/setup'
 import * as Sentry from '@sentry/node'
 import { CacheableMemory } from 'cacheable'
@@ -70,6 +75,7 @@ async function createCacheStoreWithFallback(): Promise<Keyv> {
   imports: [
     SentryModule.forRoot(),
     PrismaModule.register(settings().ormconfig(), settings().ormReplicatedConfig()),
+    RmqModule,
     AuthModule,
     CoursesModule,
     LecturesModule,
@@ -87,6 +93,10 @@ async function createCacheStoreWithFallback(): Promise<Keyv> {
     PlannersModule,
     TracksModule,
     ShareModule,
+    AgreementModule,
+    ClientsModule,
+    DeviceModule,
+    NotificationModule,
     ClsModule.forRoot({
       global: true,
       middleware: { mount: true },

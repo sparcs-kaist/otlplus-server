@@ -24,11 +24,15 @@
       "@otl/server-nest/*": ["src/*"],
       "@otl/prisma-client": ["../../libs/prisma-client/src"],
       "@otl/prisma-client/*": ["../../libs/prisma-client/src/*"],
+      "@otl/rmq": ["../../libs/rmq/src"],
+      "@otl/rmq/*": ["../../libs/rmq/src/*"],
       "@otl/common": ["../../libs/common/src"],
       "@otl/common/*": ["../../libs/common/src/*"],
       "@otl/scholar-sync/domain": ["../../apps/scholar-sync/src/common/domain"],
       "@otl/scholar-sync/domain/*": ["../../apps/scholar-sync/src/common/domain/*"],
-      "@otl/scholar-sync/clients/scholar/*": ["../../apps/scholar-sync/src/clients/scholar/*"]
+      "@otl/scholar-sync/clients/scholar/*": ["../../apps/scholar-sync/src/clients/scholar/*"],
+      "@otl/notification-consumer/*": ["../../apps/notification-consumer/src/*"],
+      "@otl/server-consumer/*": ["../../apps/server-consumer/src/*"]
     },
     "assets": [
       {

@@ -25,13 +25,22 @@
       "@otl/common/*": ["libs/common/src/*"],
       "@otl/prisma-client": ["libs/prisma-client/src"],
       "@otl/prisma-client/*": ["libs/prisma-client/src/*"],
+      "@otl/rmq": ["libs/rmq/src"],
+      "@otl/rmq/*": ["libs/rmq/src/*"],
       "@otl/server-nest/": ["apps/server/src"],
       "@otl/server-nest/*": ["apps/server/src/*"],
       "@otl/scholar-sync/": ["apps/scholar-sync/src"],
       "@otl/scholar-sync/*": ["apps/scholar-sync/src/*"],
       "@otl/scholar-sync/domain": ["apps/scholar-sync/src/common/domain"],
       "@otl/scholar-sync/domain/*": ["apps/scholar-sync/src/common/domain/*"],
-      "@otl/scholar-sync/clients/scholar/*": ["apps/scholar-sync/src/clients/scholar/*"]
+      "@otl/scholar-sync/clients/scholar/*": ["apps/scholar-sync/src/clients/scholar/*"],
+      "@otl/notification-consumer/*": ["apps/notification-consumer/src/*"],
+      "@otl/notification-consumer/domain": ["apps/notification-consumer/src/domain"],
+      "@otl/notification-consumer/domain/*": ["apps/notification-consumer/src/domain/*"],
+      "@otl/server-consumer/": ["apps/server-consumer/src"],
+      "@otl/server-consumer/*": ["apps/server-consumer/src/*"],
+      "@otl/server-consumer/message": ["apps/server-consumer/src/messages"],
+      "@otl/server-consumer/message/*": ["apps/server-consumer/src/messages/*"]
     },
 
     "inlineSources": true,

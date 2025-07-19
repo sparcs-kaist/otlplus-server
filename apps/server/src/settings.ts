@@ -1,6 +1,7 @@
+import { RabbitHandlerConfig, RabbitMQExchangeConfig } from '@golevelup/nestjs-rabbitmq/lib/rabbitmq.interfaces'
 import { DocumentBuilder } from '@nestjs/swagger'
-import { Prisma } from '@prisma/client'
 import dotenv from 'dotenv'
+import * as mariadb from 'mariadb'
 
 import { dotEnvOptions } from './dotenv-options'
 
@@ -36,63 +37,27 @@ const getCorsConfig = () => {
   }
 }
 
-const getPrismaConfig = (): Prisma.PrismaClientOptions => ({
-  datasources: {
-    db: {
-      url: process.env.DATABASE_URL,
-    },
-  },
-  errorFormat: 'pretty',
-  log: [
-    // {
-    //   emit: 'event',
-    //   level: 'query',
-    // },
-    {
-      emit: 'stdout',
-      level: 'error',
-    },
-    {
-      emit: 'stdout',
-      level: 'info',
-    },
-    // {
-    //   emit: 'stdout',
-    //   level: 'warn',
-    // },
-  ],
+const getPrismaConnectConfig = (): mariadb.PoolConfig => ({
+  host: process.env.DATABASE_HOST,
+  port: Number(process.env.DATABASE_PORT) || 3306,
+  user: process.env.DATABASE_USER,
+  password: process.env.DATABASE_PASSWORD,
+  database: process.env.DATABASE_NAME,
+  connectionLimit: 20,
+})
+
+const getPrismaReadConnectConfig = (): mariadb.PoolConfig => ({
+  host: process.env.READ_DATABASE_HOST,
+  port: Number(process.env.READ_DATABASE_PORT) || 3306,
+  user: process.env.READ_DATABASE_USER,
+  password: process.env.READ_DATABASE_PASSWORD,
+  database: process.env.READ_DATABASE_NAME,
+  connectionLimit: 20,
 })
 
 const getRedisConfig = () => ({
   url: process.env.REDIS_URL,
   password: process.env.REDIS_PASSWORD,
-})
-
-const getReplicatedPrismaConfig = (): Prisma.PrismaClientOptions => ({
-  datasources: {
-    db: {
-      url: process.env.READ_ONLY_DATABASE_URL,
-    },
-  },
-  errorFormat: 'pretty',
-  log: [
-    // {
-    //   emit: 'event',
-    //   level: 'query',
-    // },
-    {
-      emit: 'stdout',
-      level: 'error',
-    },
-    {
-      emit: 'stdout',
-      level: 'info',
-    },
-    // {
-    //   emit: 'stdout',
-    //   level: 'warn',
-    // },
-  ],
 })
 
 const getAWSConfig = () => ({})
@@ -141,9 +106,163 @@ const sentryConfig = () => ({
   dsn: process.env.SENTRY_DSN,
 })
 
+export const QueueNames = {
+  NOTI_INFO_FCM: 'NOTI_INFO_FCM',
+  NOTI_AD_FCM: 'NOTI_AD_FCM',
+  NOTI_NIGHT_AD_FCM: 'NOTI_NIGHT_AD_FCM',
+  NOTI_FCM: 'NOTI_FCM',
+  NOTI_EMAIL: 'NOTI_EMAIL',
+  NOTI_INFO_FCM_DLQ: 'NOTI_INFO_FCM_DLQ',
+  NOTI_AD_FCM_DLQ: 'NOTI_AD_FCM_DLQ',
+  NOTI_NIGHT_AD_FCM_DLQ: 'NOTI_NIGHT_AD_FCM_DLQ',
+  NOTI_FCM_DLQ: 'NOTI_FCM_DLQ',
+  NOTI_EMAIL_DLQ: 'NOTI_EMAIL_DLQ',
+} as const
+
+export type QueueNames = (typeof QueueNames)[keyof typeof QueueNames]
+type rmqQueueConfig = Pick<
+  RabbitHandlerConfig,
+  | 'queue'
+  | 'name'
+  | 'deserializer'
+  | 'connection'
+  | 'exchange'
+  | 'routingKey'
+  | 'queueOptions'
+  | 'errorBehavior'
+  | 'errorHandler'
+  | 'assertQueueErrorHandler'
+  | 'createQueueIfNotExists'
+  | 'allowNonJsonMessages'
+  | 'usePersistentReplyTo'
+  | 'batchOptions'
+>
+const getRabbitMQConfig = (): {
+  url: string | undefined
+  user: string | undefined
+  password: string | undefined
+  queueName: string[]
+  exchangeConfig: {
+    exchanges: RabbitMQExchangeConfig[]
+  }
+  queueConfig: Record<string, rmqQueueConfig>
+} => ({
+  url: process.env.RABBITMQ_URL,
+  user: process.env.RABBITMQ_USER,
+  password: process.env.RABBITMQ_PASSWORD,
+  queueName: Object.values(QueueNames),
+  exchangeConfig: {
+    exchanges: [
+      {
+        name: 'notifications',
+        type: 'x-delayed-message',
+        createExchangeIfNotExists: true,
+        options: {
+          arguments: {
+            'x-delayed-type': 'direct',
+          },
+        },
+      },
+      {
+        name: 'notifications.dlx',
+        type: 'x-delayed-message',
+        createExchangeIfNotExists: true,
+        options: {
+          arguments: {
+            'x-delayed-type': 'direct',
+          },
+        },
+      },
+    ],
+  },
+  queueConfig: {
+    NOTI_FCM: {
+      exchange: 'notifications',
+      routingKey: 'notifications.fcm',
+      queue: 'notifications.fcm.queue',
+      createQueueIfNotExists: true,
+      queueOptions: {
+        deadLetterExchange: 'notifications.dlx',
+      },
+    },
+    NOTI_INFO_FCM: {
+      exchange: 'notifications',
+      routingKey: 'notifications.info.fcm',
+      queue: 'notifications.info.fcm.queue',
+      createQueueIfNotExists: true,
+      queueOptions: {
+        deadLetterExchange: 'notifications.dlx',
+      },
+    },
+    NOTI_AD_FCM: {
+      exchange: 'notifications',
+      routingKey: 'notifications.ad.fcm',
+      queue: 'notifications.ad.fcm.queue',
+      createQueueIfNotExists: true,
+      queueOptions: {
+        deadLetterExchange: 'notifications.dlx',
+      },
+    },
+    NOTI_NIGHT_AD_FCM: {
+      exchange: 'notifications',
+      routingKey: 'notifications.night-ad.fcm',
+      queue: 'notifications.night-ad.fcm.queue',
+      createQueueIfNotExists: true,
+      queueOptions: {
+        deadLetterExchange: 'notifications.dlx',
+      },
+    },
+    NOTI_EMAIL: {
+      exchange: 'notifications',
+      routingKey: 'notifications.email',
+      queue: 'notifications.email.queue',
+      createQueueIfNotExists: true,
+      queueOptions: {
+        deadLetterExchange: 'notifications.dlx',
+      },
+    },
+    NOTI_FCM_DLQ: {
+      exchange: 'notifications.dlx',
+      routingKey: 'notifications.fcm',
+      queue: 'notifications.fcm.dlq',
+      createQueueIfNotExists: true,
+    },
+    NOTI_INFO_FCM_DLQ: {
+      exchange: 'notifications.dlx',
+      routingKey: 'notifications.info.fcm',
+      queue: 'notifications.info.fcm.dlq',
+      createQueueIfNotExists: true,
+    },
+    NOTI_AD_FCM_DLQ: {
+      exchange: 'notifications.dlx',
+      routingKey: 'notifications.ad.fcm',
+      queue: 'notifications.ad.fcm.dlq',
+      createQueueIfNotExists: true,
+    },
+    NOTI_NIGHT_AD_FCM_DLQ: {
+      exchange: 'notifications.dlx',
+      routingKey: 'notifications.night-ad.fcm',
+      queue: 'notifications.night-ad.fcm.dlq',
+      createQueueIfNotExists: true,
+      queueOptions: {
+        deadLetterExchange: 'notifications.dlx',
+      },
+    },
+    NOTI_EMAIL_DLQ: {
+      exchange: 'notifications',
+      routingKey: 'notifications.email',
+      queue: 'notifications.email.queue',
+      createQueueIfNotExists: true,
+      queueOptions: {
+        deadLetterExchange: 'notifications.dlx',
+      },
+    },
+  },
+})
+
 export default () => ({
-  ormconfig: () => getPrismaConfig(),
-  ormReplicatedConfig: () => getReplicatedPrismaConfig(),
+  ormconfig: () => getPrismaConnectConfig(),
+  ormReplicatedConfig: () => getPrismaReadConnectConfig(),
   awsconfig: () => getAWSConfig(),
   getRedisConfig: () => getRedisConfig(),
   getJwtConfig: () => getJwtConfig(),
@@ -155,4 +274,5 @@ export default () => ({
   getSwaggerConfig: () => getSwaggerConfig(),
   getSwaggerStatsConfig: () => getSwaggerStatsConfig(),
   getSentryConfig: () => sentryConfig(),
+  getRabbitMQConfig: () => getRabbitMQConfig(),
 })

@@ -34,6 +34,26 @@
         "plugins": ["@nestjs/swagger/plugin"]
       }
     },
+    "notification-consumer": {
+      "type": "application",
+      "root": "apps/notification-consumer/src",
+      "sourceRoot": "apps/notification-consumer/src",
+      "entryFile": "bootstrap/bootstrap",
+      "compilerOptions": {
+        "tsConfigPath": "apps/notification-consumer/tsconfig.app.json",
+        "plugins": ["@nestjs/swagger/plugin"]
+      }
+    },
+    "server-consumer": {
+      "type": "application",
+      "root": "apps/server-consumer/src",
+      "sourceRoot": "apps/server-consumer/src",
+      "entryFile": "bootstrap/bootstrap",
+      "compilerOptions": {
+        "tsConfigPath": "apps/server-consumer/tsconfig.app.json",
+        "plugins": ["@nestjs/swagger/plugin"]
+      }
+    },
     "prisma-client": {
       "type": "library",
       "root": "libs/prisma-client",
@@ -50,6 +70,15 @@
       "sourceRoot": "libs/common/src",
       "compilerOptions": {
         "tsConfigPath": "libs/common/tsconfig.lib.json"
+      }
+    },
+    "rmq": {
+      "type": "library",
+      "root": "libs/rmq",
+      "sourceRoot": "libs/rmq/src",
+      "entryFile": "index",
+      "compilerOptions": {
+        "tsConfigPath": "libs/rmq/tsconfig.lib.json"
       }
     }
   }

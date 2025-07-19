@@ -7,7 +7,7 @@ import {
 } from '@otl/server-nest/common/interfaces/validators.decorator'
 import { Transform, Type } from 'class-transformer'
 import {
-  IsArray, IsNumber, IsOptional, IsString,
+  IsArray, IsNotEmpty, IsNumber, IsOptional, IsString,
 } from 'class-validator'
 
 export namespace IUser {
@@ -67,5 +67,15 @@ export namespace IUser {
     review_writable_lectures: ILecture.Detail[]
     my_timetable_lectures: ILecture.Detail[]
     reviews: IReview.Basic[]
+  }
+
+  export class TokenDto {
+    @IsNotEmpty()
+    token!: string
+  }
+
+  export interface TokenResponse {
+    accessToken: string
+    refreshToken: string
   }
 }

@@ -121,19 +121,19 @@ export class LectureMiddleware implements IPrismaMiddleware.Middleware {
   }
 
   private lcsFront(lectureTitles: string[]): string {
-    if (lectureTitles.length === 0) {
-      return ''
-    }
-    let result = ''
-    // eslint-disable-next-line no-plusplus
-    for (let i = lectureTitles[0].length; i > 0; i--) {
-      const targetSubstring = lectureTitles[0].substring(0, i)
-      if (lectureTitles.every((t) => t.substring(0, i) === targetSubstring)) {
-        result = targetSubstring
-        break
-      }
+    if (lectureTitles.length === 0) return ''
+
+    const sorted = [...lectureTitles].sort()
+    const first = sorted[0]
+    const last = sorted[sorted.length - 1]
+    const minLength = Math.min(first.length, last.length)
+
+    let i = 0
+    while (i < minLength && first[i] === last[i]) {
+      i += 1
     }
 
+    let result = first.substring(0, i)
     result = result.replace(/[<([{]+$/, '')
     return result
   }

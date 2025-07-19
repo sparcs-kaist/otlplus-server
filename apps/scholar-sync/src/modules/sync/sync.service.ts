@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common'
+import { Inject, Injectable, Logger } from '@nestjs/common'
 import { IScholar } from '@otl/scholar-sync/clients/scholar/IScholar'
 import { SlackNotiService } from '@otl/scholar-sync/clients/slack/slackNoti.service'
 import { ClassTimeInfo } from '@otl/scholar-sync/common/domain/ClassTimeInfo'
@@ -10,6 +10,8 @@ import { LectureInfo } from '@otl/scholar-sync/common/domain/LectureInfo'
 import { APPLICATION_TYPE, MajorInfo } from '@otl/scholar-sync/common/domain/MajorInfo'
 import { ProfessorInfo } from '@otl/scholar-sync/common/domain/ProfessorInfo'
 import { SyncResultDetail, SyncResultDetails, SyncTimeType } from '@otl/scholar-sync/common/interfaces/ISync'
+import { SCHOLAR_MQ, ScholarMQ } from '@otl/scholar-sync/domain/out/ScholarMQ'
+import { STATISTICS_MQ, SyncServerStatisticsMQ } from '@otl/scholar-sync/domain/out/StatisticsMQ'
 import { summarizeSyncResult } from '@otl/scholar-sync/modules/sync/util'
 import { review_review, SyncType } from '@prisma/client'
 
@@ -37,6 +39,10 @@ export class SyncService {
   constructor(
     private readonly syncRepository: SyncRepository,
     private readonly slackNoti: SlackNotiService,
+    @Inject(SCHOLAR_MQ)
+    private readonly SyncMQ: ScholarMQ,
+    @Inject(STATISTICS_MQ)
+    private readonly StatisticsMQ: SyncServerStatisticsMQ,
   ) {}
 
   async getSemesters(take?: number): Promise<ESemester.Basic[]> {
@@ -250,6 +256,11 @@ export class SyncService {
           notExistingLectures.delete(foundLecture.id)
           if (LectureInfo.equals(foundLecture, derivedLecture)) {
             const updatedLecture = await this.syncRepository.updateLecture(foundLecture.id, derivedLecture)
+            // @Todo : Message(LectureTitleUpdate) 보내기
+            await this.SyncMQ.publishLectureTitleUpdate(foundLecture.id).catch((e) => {
+              this.logger.error(`Failed to publish LectureTitleUpdate for lecture ${foundLecture.id}`, e)
+            })
+
             lecturesSyncResultDetail.updated.push([foundLecture, updatedLecture])
           }
           const { addedIds, removedIds } = this.lectureProfessorsChanges(foundLecture, professorCharges, professorMap)
@@ -267,10 +278,18 @@ export class SyncService {
               lecture: foundLecture.id,
               removed: removedIds.map((id) => professorMap.get(id) || { id }),
             })
+            // @Todo : Message(LectureScoreUpdate) 보내기
+            await this.StatisticsMQ.publishLectureScoreUpdate(foundLecture.id).catch((e) => {
+              this.logger.error(`Failed to publish LectureScoreUpdate for lecture ${foundLecture.id}`, e)
+            })
           }
         }
         else {
           const newLecture = await this.syncRepository.createLecture(derivedLecture)
+          // @Todo : Message(LectureTitleUpdate) 보내기
+          await this.SyncMQ.publishLectureTitleUpdate(newLecture.id).catch((e) => {
+            this.logger.error(`Failed to publish LectureTitleUpdate for lecture ${newLecture.id}`, e)
+          })
           const addedIds = professorCharges.map((charge) => professorMap.get(charge.PROF_ID)!.id)
 
           await this.syncRepository.updateLectureProfessors(newLecture.id, {
@@ -278,6 +297,10 @@ export class SyncService {
             removed: [],
           })
           lecturesSyncResultDetail.created.push({ ...newLecture, professors: addedIds })
+          // @Todo : Message(LectureScoreUpdate) 보내기
+          await this.StatisticsMQ.publishLectureScoreUpdate(newLecture.id).catch((e) => {
+            this.logger.error(`Failed to publish LectureScoreUpdate for lecture ${newLecture.id}`, e)
+          })
         }
       }
       catch (e: any) {
@@ -467,9 +490,7 @@ export class SyncService {
   }
 
   async syncTakenLecture(data: IScholar.TakenLectureBody) {
-    this.slackNoti.sendSyncNoti(
-      `syncTakenLecture: ${data.year}-${data.semester}: ${data.attend.length} attend records`,
-    )
+    this.slackNoti.sendSyncNoti(`syncTakenLecture: ${data.year}-${data.semester}: ${data.attend.length} attend records`)
     const startLog = await this.syncRepository.logSyncStartPoint(SyncType.TAKEN_LECTURES, data.year, data.semester)
 
     const result: SyncResultDetails = {
@@ -601,9 +622,7 @@ export class SyncService {
   }
 
   getLectureIdOfAttendRecord(lectures: ELecture.Basic[], attend: IScholar.ScholarAttendType) {
-    const lecture = lectures.find(
-      (l) => l.new_code === attend.SUBJECT_NO && l.class_no === attend.LECTURE_CLASS.trim(),
-    )
+    const lecture = lectures.find((l) => l.new_code === attend.SUBJECT_NO && l.class_no === attend.LECTURE_CLASS.trim())
     return lecture?.id
   }
 

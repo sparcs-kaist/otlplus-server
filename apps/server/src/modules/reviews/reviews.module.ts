@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common'
+import { StatisticsUpdatePublisher } from '@otl/rmq/exchanges/statistics/statistics.publish'
+import { REVIEW_MQ } from '@otl/server-nest/modules/reviews/domain/out/ReviewMQ'
 
 import { PrismaModule } from '@otl/prisma-client/prisma.module'
 
@@ -9,6 +11,13 @@ import { ReviewsService } from './reviews.service'
 @Module({
   imports: [PrismaModule],
   controllers: [ReviewsController],
-  providers: [ReviewsService, UserService],
+  providers: [
+    {
+      provide: REVIEW_MQ,
+      useClass: StatisticsUpdatePublisher,
+    },
+    ReviewsService,
+    UserService,
+  ],
 })
 export class ReviewsModule {}

@@ -1,8 +1,12 @@
 import { Injectable } from '@nestjs/common'
+import { ServerConsumerLectureRepository } from '@otl/server-consumer/out/lecture.repository'
+import { LectureBasic, LectureScore } from '@otl/server-nest/modules/lectures/domain/lecture'
 import { Prisma, session_userprofile } from '@prisma/client'
+import * as console from 'node:console'
 
 import { applyOffset, applyOrder, groupBy } from '@otl/common/utils/util'
 
+import { mapLecture } from '@otl/prisma-client/common/mapper/lecture'
 import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 import { LectureQuery } from '@otl/prisma-client/types/query'
@@ -11,14 +15,14 @@ import { ELecture } from '../entities/ELecture'
 import { CourseRepository } from './course.repository'
 
 @Injectable()
-export class LectureRepository {
+export class LectureRepository implements ServerConsumerLectureRepository {
   constructor(
     private readonly prisma: PrismaService,
     private readonly prismaRead: PrismaReadService,
     private readonly courseRepository: CourseRepository,
   ) {}
 
-  async getLectureById(id: number): Promise<ELecture.Details> {
+  async getLectureDetailById(id: number): Promise<ELecture.Details> {
     return await this.prismaRead.subject_lecture.findUniqueOrThrow({
       include: ELecture.Details.include,
       where: {
@@ -303,5 +307,117 @@ export class LectureRepository {
         subject_classtime: true, // Include classtime details if needed
       },
     })
+  }
+
+  async getLectureById(lectureId: number): Promise<LectureBasic> {
+    const lecture = await this.prismaRead.subject_lecture.findUniqueOrThrow({
+      where: {
+        id: lectureId,
+      },
+    })
+    return mapLecture(lecture)
+  }
+
+  async getRelatedLectureById(lectureId: number): Promise<LectureBasic[]> {
+    const lecture = await this.prismaRead.subject_lecture.findUniqueOrThrow({
+      where: {
+        id: lectureId,
+      },
+    })
+    return this.prismaRead.subject_lecture
+      .findMany({
+        where: {
+          course_id: lecture.course_id,
+          deleted: false,
+          year: lecture.year,
+          semester: lecture.semester,
+        },
+      })
+      .then((lectures) => lectures.map((l) => mapLecture(l)))
+  }
+
+  async updateLectureTitle(lectures: LectureBasic[], commonTitle: string, isEnglish: boolean): Promise<boolean> {
+    const titleFieldMap = {
+      ko: {
+        getTitle: (lecture: LectureBasic) => lecture.title,
+        updateClassField: 'class_title',
+        updateCommonField: 'common_title',
+      },
+      en: {
+        getTitle: (lecture: LectureBasic) => lecture.titleEn,
+        updateClassField: 'class_title_en',
+        updateCommonField: 'common_title_en',
+      },
+    } as const
+    const { getTitle, updateClassField, updateCommonField } = titleFieldMap[isEnglish === true ? 'en' : 'ko']
+
+    return await Promise.all(
+      lectures.map(async (lecture) => {
+        const titleField = getTitle(lecture)
+
+        const classTitle = titleField !== commonTitle
+          ? titleField.substring(commonTitle.length)
+          : lecture.classNo.length > 0
+            ? lecture.classNo
+            : 'A'
+
+        return this.prisma.subject_lecture.update({
+          where: { id: lecture.id },
+          data: {
+            [updateCommonField]: commonTitle,
+            [updateClassField]: classTitle,
+          },
+        })
+      }),
+    )
+      .then((results) => results.length > 0)
+      .catch((error) => {
+        console.error('Error updating lecture titles:', error)
+        return false
+      })
+  }
+
+  async updateLectureScore(id: number, grades: LectureScore): Promise<LectureBasic> {
+    const lecture = await this.prisma.subject_lecture.update({
+      where: { id },
+      data: {
+        review_total_weight: grades.reviewTotalWeight,
+        grade_sum: grades.gradeSum,
+        load_sum: grades.loadSum,
+        speech_sum: grades.speechSum,
+        grade: grades.grade,
+        load: grades.load,
+        speech: grades.speech,
+      },
+    })
+    return mapLecture(lecture)
+  }
+
+  async countNumPeople(lectureId: number): Promise<number> {
+    return (
+      (
+        await this.prismaRead.timetable_timetable.findMany({
+          distinct: ['user_id'],
+          where: {
+            timetable_timetable_lectures: {
+              some: {
+                lecture_id: lectureId,
+              },
+            },
+          },
+        })
+      )?.length ?? 0
+    )
+  }
+
+  async updateNumPeople(lectureId: number, count: number): Promise<LectureBasic> {
+    return mapLecture(
+      await this.prisma.subject_lecture.update({
+        where: { id: lectureId },
+        data: {
+          num_people: count,
+        },
+      }),
+    )
   }
 }

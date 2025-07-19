@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["fullTextIndex"]
+  previewFeatures = ["queryCompiler", "driverAdapters"]
 }
 
 datasource db {
@@ -370,6 +370,7 @@ model session_userprofile_notification {
 model notification {
   id                       Int                                        @id @default(autoincrement())
   name                     String                                     @db.VarChar(200)
+  description              String                                     @db.LongText
   agreementType            AgreementType
   created_at               DateTime                                   @default(now()) @db.DateTime(0)
   updated_at               DateTime                                   @default(now()) @db.DateTime(0)
@@ -997,33 +998,33 @@ model paper_professor {
 }
 
 model paper {
-  id             Int              @id @default(autoincrement())
-  professor_id   Int?
-  title          String?          @db.VarChar(1000)
-  abstract       String?          @db.Text
-  keywords       String?          @db.Text
-  doi            String?          @db.VarChar(100)
-  coverDate      DateTime?        @db.Date
-  coverDisplayDate String?        @db.VarChar(100)
-  publicationName  String?        @db.VarChar(500)
-  issn           String?          @db.VarChar(10)
-  source_id      Float?           
-  eIssn          String?          @db.VarChar(10)
-  aggregationType  String?        @db.VarChar(30)
-  volume         String?          @db.VarChar(100)
-  issueIdentifier  String?        @db.VarChar(20)
-  article_number String?          @db.VarChar(50)
-  pageRange      String?          @db.VarChar(20)
-  description    String?          @db.Text
-  citedby_count  Float?
-  source_title   String?          @db.VarChar(255)
-  publish_year   Float?
-  publish_month  String?          @db.VarChar(8)
-  page_range     String?          @db.VarChar(20)
-  cited_count    Float?
-  xml_link       String?          @db.VarChar(255) 
-  pdf_link       String?          @db.VarChar(300)
-  professor      paper_professor? @relation(fields: [professor_id], references: [id], onUpdate: Restrict)
+  id               Int              @id @default(autoincrement())
+  professor_id     Int?
+  title            String?          @db.VarChar(1000)
+  abstract         String?          @db.Text
+  keywords         String?          @db.Text
+  doi              String?          @db.VarChar(100)
+  coverDate        DateTime?        @db.Date
+  coverDisplayDate String?          @db.VarChar(100)
+  publicationName  String?          @db.VarChar(500)
+  issn             String?          @db.VarChar(10)
+  source_id        Float?
+  eIssn            String?          @db.VarChar(10)
+  aggregationType  String?          @db.VarChar(30)
+  volume           String?          @db.VarChar(100)
+  issueIdentifier  String?          @db.VarChar(20)
+  article_number   String?          @db.VarChar(50)
+  pageRange        String?          @db.VarChar(20)
+  description      String?          @db.Text
+  citedby_count    Float?
+  source_title     String?          @db.VarChar(255)
+  publish_year     Float?
+  publish_month    String?          @db.VarChar(8)
+  page_range       String?          @db.VarChar(20)
+  cited_count      Float?
+  xml_link         String?          @db.VarChar(255)
+  pdf_link         String?          @db.VarChar(300)
+  professor        paper_professor? @relation(fields: [professor_id], references: [id], onUpdate: Restrict)
 }
 
 enum SyncType {

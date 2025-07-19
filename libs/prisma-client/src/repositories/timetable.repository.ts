@@ -163,4 +163,12 @@ export class TimetableRepository {
       include: ETimetable.WithLectureClasstimes.include,
     })
   }
+
+  async getTimeTableLectures(timetableId: number): Promise<number[]> {
+    return (
+      await this.prismaRead.timetable_timetable_lectures.findMany({
+        where: { timetable_id: timetableId },
+      })
+    ).map((lecture) => lecture.lecture_id)
+  }
 }
