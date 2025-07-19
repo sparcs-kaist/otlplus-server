@@ -43,7 +43,7 @@ const getPrismaConnectConfig = (): mariadb.PoolConfig => ({
   user: process.env.DATABASE_USER,
   password: process.env.DATABASE_PASSWORD,
   database: process.env.DATABASE_NAME,
-  connectionLimit: 20,
+  connectionLimit: 10,
 })
 
 const getPrismaReadConnectConfig = (): mariadb.PoolConfig => ({
@@ -52,7 +52,7 @@ const getPrismaReadConnectConfig = (): mariadb.PoolConfig => ({
   user: process.env.READ_DATABASE_USER,
   password: process.env.READ_DATABASE_PASSWORD,
   database: process.env.READ_DATABASE_NAME,
-  connectionLimit: 20,
+  connectionLimit: 10,
 })
 
 const getRedisConfig = () => ({
