@@ -39,6 +39,7 @@
     "migrate:local": "dotenv -e env/.env.local -- npx prisma migrate dev --schema ./libs/prisma-client/src/schema.prisma",
     "migrate:deploy:local": "dotenv -e env/.env.local -- npx prisma migrate deploy --schema ./libs/prisma-client/src/schema.prisma",
     "migrate:deploy:dev": "dotenv -e env/.env.dev -- npx prisma migrate deploy --schema ./libs/prisma-client/src/schema.prisma",
+    "migrate:deploy:prod": "dotenv -e env/.env.prod -- npx prisma migrate deploy --schema ./libs/prisma-client/src/schema.prisma",
     "migrate:status:local": "dotenv -e env/.env.local -- npx prisma migrate status",
     "migrate:status:dev": "dotenv -e env/.env.dev -- npx prisma migrate status",
     "migrate:resolve:local": "dotenv -e env/.env.local -- npx prisma migrate resolve",
