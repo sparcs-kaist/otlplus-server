@@ -13,7 +13,7 @@ import { SyncResultDetail, SyncResultDetails, SyncTimeType } from '@otl/scholar-
 import { SCHOLAR_MQ, ScholarMQ } from '@otl/scholar-sync/domain/out/ScholarMQ'
 import { STATISTICS_MQ, SyncServerStatisticsMQ } from '@otl/scholar-sync/domain/out/StatisticsMQ'
 import { summarizeSyncResult } from '@otl/scholar-sync/modules/sync/util'
-import { review_review, SyncType } from '@prisma/client'
+import { review_review, subject_lecture, SyncType } from '@prisma/client'
 
 import { groupBy, normalizeArray } from '@otl/common/utils/util'
 
@@ -254,13 +254,13 @@ export class SyncService {
 
         if (foundLecture) {
           notExistingLectures.delete(foundLecture.id)
-          if (!LectureInfo.equals(foundLecture, derivedLecture)) {
-            const updatedLecture = await this.syncRepository.updateLecture(foundLecture.id, derivedLecture)
-            // @Todo : Message(LectureTitleUpdate) 보내기
+          if (this.checkClassTitleUpdateRequired(foundLecture)) {
             await this.SyncMQ.publishLectureTitleUpdate(foundLecture.id).catch((e) => {
               this.logger.error(`Failed to publish LectureTitleUpdate for lecture ${foundLecture.id}`, e)
             })
-
+          }
+          if (!LectureInfo.equals(foundLecture, derivedLecture)) {
+            const updatedLecture = await this.syncRepository.updateLecture(foundLecture.id, derivedLecture)
             lecturesSyncResultDetail.updated.push([foundLecture, updatedLecture])
           }
           const { addedIds, removedIds } = this.lectureProfessorsChanges(foundLecture, professorCharges, professorMap)
@@ -963,5 +963,15 @@ export class SyncService {
     await this.syncRepository.logSyncEndPoint(startLog.id, endTime, summarizeSyncResult(majorSyncResultDetail))
     result.results.push(majorSyncResultDetail)
     return result
+  }
+
+  private checkClassTitleUpdateRequired(lecture: subject_lecture) {
+    const isTitleEqual = lecture.common_title
+      && lecture.class_title
+      && [lecture.common_title + lecture.class_title, lecture.common_title].includes(lecture.title)
+    const isTitleEnEqual = lecture.common_title_en
+      && lecture.class_title_en
+      && [lecture.common_title_en + lecture.class_title_en, lecture.common_title_en].includes(lecture.title_en)
+    return !(isTitleEqual && isTitleEnEqual)
   }
 }
