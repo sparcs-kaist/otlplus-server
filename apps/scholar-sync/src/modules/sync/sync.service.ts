@@ -254,7 +254,7 @@ export class SyncService {
 
         if (foundLecture) {
           notExistingLectures.delete(foundLecture.id)
-          if (LectureInfo.equals(foundLecture, derivedLecture)) {
+          if (!LectureInfo.equals(foundLecture, derivedLecture)) {
             const updatedLecture = await this.syncRepository.updateLecture(foundLecture.id, derivedLecture)
             // @Todo : Message(LectureTitleUpdate) 보내기
             await this.SyncMQ.publishLectureTitleUpdate(foundLecture.id).catch((e) => {
