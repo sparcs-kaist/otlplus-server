@@ -36,7 +36,7 @@ export class AppService {
   async updateLectureScoreUpdateMessage(msg: LectureScoreUpdateMessage, _amqpMsg: ConsumeMessage): Promise<boolean> {
     const { lectureId } = msg
     try {
-      return await this.lectureService.updateClassTitle(lectureId)
+      return await this.lectureService.updateScore(lectureId)
     }
     catch (e) {
       console.error(`Failed to update lecture score for lectureId: ${lectureId}`, e)
