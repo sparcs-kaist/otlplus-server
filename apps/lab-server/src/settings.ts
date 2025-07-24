@@ -148,19 +148,16 @@ function getLoggingConfig() {
 }
 
 const getWeaviateConfig = () => ({
-  http_host: process.env.WEAVIATE_HTTP_HOST!,
-  http_port: Number(process.env.WEAVIATE_HTTP_PORT || 443),
-  http_secure: true,
-  grpc_host: process.env.WEAVIATE_GRPC_HOST!,
-  grpc_port: Number(process.env.WEAVIATE_GRPC_PORT || 443),
-  grpc_secure: true,
-  auth_credentials: false,
-  additional_config: false,
-  skip_init_checks: false,
-})
-
-const getEmbeddingConfig = () => ({
-  geminiKey: process.env.GEMINI_KEY,
+  weaviateConfig: {
+    httpHost: process.env.WEAVIATE_HTTP_HOST!,
+    httpPort: Number(process.env.WEAVIATE_HTTP_PORT || 443),
+    httpSecure: false,
+    grpcHost: process.env.WEAVIATE_GRPC_HOST!,
+    grpcPort: Number(process.env.WEAVIATE_GRPC_PORT || 443),
+    grpcSecure: false,
+    skipInitChecks: true,
+  },
+  geminiConfig: process.env.GEMINI_KEY || 'geminikey',
 })
 
 export default () => ({
@@ -173,5 +170,4 @@ export default () => ({
   getSwaggerStatsConfig: () => getSwaggerStatsConfig(),
   loggingConfig: () => getLoggingConfig(),
   weaviateConfig: () => getWeaviateConfig(),
-  embeddingConfig: () => getEmbeddingConfig(),
 })
