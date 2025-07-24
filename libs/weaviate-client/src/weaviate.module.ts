@@ -1,17 +1,17 @@
-import { DynamicModule, Module } from '@nestjs/common'
-import { ConnectToCustomOptions } from 'weaviate-client'
+import { DynamicModule, Module, OnModuleInit } from '@nestjs/common'
+import { WeaviateModuleConfig } from '@otl/lab-server/common/interfaces/IWeaviate'
 
 import { WeaviateService } from './weaviate.service'
 
 @Module({})
-export class WeaviateModule {
-  static register(config: ConnectToCustomOptions): DynamicModule {
+export class WeaviateModule implements OnModuleInit {
+  static register(config: WeaviateModuleConfig): DynamicModule {
     return {
       module: WeaviateModule,
       providers: [
         {
           provide: 'ConnectToCustomOptions',
-          useValue: config,
+          useValue: config.weaviateConfig,
         },
         WeaviateService,
       ],
@@ -19,7 +19,7 @@ export class WeaviateModule {
     }
   }
 
-  constructor(private readonly weaviate: WeaviateModule) {}
+  constructor(private readonly weaviate: WeaviateService) {}
 
   onModuleInit() {}
 }
