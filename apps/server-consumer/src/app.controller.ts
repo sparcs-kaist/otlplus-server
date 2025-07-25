@@ -13,6 +13,8 @@ import { ReviewLikeUpdateMessage } from '@otl/server-consumer/messages/review'
 import { ConsumeMessage } from 'amqplib'
 import { plainToInstance } from 'class-transformer'
 
+import logger from '@otl/common/logger/logger'
+
 import { AppService } from './app.service'
 
 @Controller()
@@ -31,7 +33,7 @@ export class AppController {
       }
       const result = await this.appService.updateLectureCommonTitle(request, amqpMsg)
       if (!result) {
-        console.error(`Failed to process lecture common title update message: ${JSON.stringify(request)}`)
+        logger.error(`Failed to process lecture common title update message: ${JSON.stringify(request)}`)
         return new Nack(false)
       }
       return true
@@ -51,7 +53,7 @@ export class AppController {
       }
       const result = await this.appService.updateLectureScoreUpdateMessage(request, amqpMsg)
       if (!result) {
-        console.error(`Failed to process lecture score update message: ${JSON.stringify(request)}`)
+        logger.error(`Failed to process lecture score update message: ${JSON.stringify(request)}`)
         return new Nack(false)
       }
       return true
@@ -62,7 +64,7 @@ export class AppController {
       }
       const result = await this.appService.updateCourseScoreUpdateMessage(request, amqpMsg)
       if (!result) {
-        console.error(`Failed to process course score update message: ${JSON.stringify(request)}`)
+        logger.error(`Failed to process course score update message: ${JSON.stringify(request)}`)
         return new Nack(false)
       }
     }
@@ -71,7 +73,7 @@ export class AppController {
         throw new Error(`Invalid professor score update message: ${JSON.stringify(request)}`)
       }
       if (!(await this.appService.updateProfessorScoreUpdateMessage(request, amqpMsg))) {
-        console.error(`Failed to process professor score update message: ${JSON.stringify(request)}`)
+        logger.error(`Failed to process professor score update message: ${JSON.stringify(request)}`)
         return new Nack(false)
       }
     }
@@ -81,7 +83,7 @@ export class AppController {
       }
       const result = await this.appService.updateLectureNumPeopleUpdateMessage(request, amqpMsg)
       if (!result) {
-        console.error(`Failed to process lecture num people update message: ${JSON.stringify(request)}`)
+        logger.error(`Failed to process lecture num people update message: ${JSON.stringify(request)}`)
         return new Nack(false)
       }
     }
@@ -91,7 +93,7 @@ export class AppController {
       }
       const result = await this.appService.updateReviewLikeUpdateMessage(request, amqpMsg)
       if (!result) {
-        console.error(`Failed to process review like update message: ${JSON.stringify(request)}`)
+        logger.error(`Failed to process review like update message: ${JSON.stringify(request)}`)
         return new Nack(false)
       }
     }

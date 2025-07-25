@@ -67,7 +67,7 @@ export class SyncSchedule {
       const lectures = await this.scholarApiClient.getLectureType(y, s)
       const charges = await this.scholarApiClient.getChargeType(y, s)
       const syncResultDetails: SyncResultDetails = await this.syncService.syncScholarDB({
-        year: s,
+        year: y,
         semester: s,
         lectures,
         charges,

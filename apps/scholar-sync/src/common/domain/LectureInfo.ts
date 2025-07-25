@@ -69,24 +69,24 @@ export class LectureInfo {
     return (
       // TODO: This can be problematic if multiple lectures have the same old code
       // -> new_code(=code)를 기준으로 lecture 구분하므로 code가 다르면 다른 lecture로 취급해야 함
-      existing.year !== lecture.year
-      && existing.semester !== lecture.semester
-      && existing.class_no !== lecture.class_no
-      && existing.department_id !== lecture.department_id
-      && existing.old_code !== lecture.old_code
-      && existing.title !== lecture.title
-      && existing.title_en !== lecture.title_en
-      && existing.type !== lecture.type
-      && existing.type_en !== lecture.type_en
-      && existing.audience !== lecture.audience
-      && existing.limit !== lecture.limit
-      && existing.credit !== lecture.credit
-      && existing.credit_au !== lecture.credit_au
-      && existing.num_classes !== lecture.num_classes
-      && existing.num_labs !== lecture.num_labs
-      && existing.is_english !== lecture.is_english
-      && existing.course_id !== lecture.course_id
-      && existing.new_code !== lecture.code
+      existing.year === lecture.year
+      && existing.semester === lecture.semester
+      && existing.class_no === lecture.class_no
+      && existing.department_id === lecture.department_id
+      && existing.old_code === lecture.old_code
+      && existing.title === lecture.title
+      && existing.title_en === lecture.title_en
+      && existing.type === lecture.type
+      && existing.type_en === lecture.type_en
+      && existing.audience === lecture.audience
+      && existing.limit === lecture.limit
+      && existing.credit === lecture.credit
+      && existing.credit_au === lecture.credit_au
+      && existing.num_classes === lecture.num_classes
+      && existing.num_labs === lecture.num_labs
+      && existing.is_english === lecture.is_english
+      && existing.course_id === lecture.course_id
+      && existing.new_code === lecture.code
     )
   }
 }

@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common'
-import { Transactional } from '@nestjs-cls/transactional'
 import { LECTURE_REPOSITORY, ServerConsumerLectureRepository } from '@otl/server-consumer/out/lecture.repository'
 import { PROFESSOR_REPOSITORY, ServerConsumerProfessorRepository } from '@otl/server-consumer/out/professor.repository'
 import { REVIEW_REPOSITORY, ServerConsumerReviewRepository } from '@otl/server-consumer/out/review.repository'
@@ -17,7 +16,6 @@ export class LectureService {
     private readonly reviewRepository: ServerConsumerReviewRepository,
   ) {}
 
-  @Transactional()
   public async updateClassTitle(lectureId: number): Promise<boolean> {
     const lectures = await this.lectureRepository.getRelatedLectureById(lectureId)
     const result = await this.addTitleFormat(lectures)
@@ -27,7 +25,6 @@ export class LectureService {
     return await this.addTitleFormatEn(lectures)
   }
 
-  @Transactional()
   public async updateScore(lectureId: number): Promise<boolean> {
     const lecture = await this.lectureRepository.getLectureById(lectureId)
     await this.lectureRecalcScore(lecture)

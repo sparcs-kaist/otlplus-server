@@ -4,6 +4,7 @@ import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-pr
 import { RmqConnectionModule } from '@otl/rmq'
 import { AppController } from '@otl/server-consumer/app.controller'
 import { AppService } from '@otl/server-consumer/app.service'
+import { DeadLetterController } from '@otl/server-consumer/dead-letter.controller'
 import { CourseModule } from '@otl/server-consumer/modules/course/course.module'
 import { LectureModule } from '@otl/server-consumer/modules/lecture/lecture.module'
 import { ProfessorModule } from '@otl/server-consumer/modules/professor/professor.module'
@@ -34,7 +35,7 @@ import { PrismaModule, PrismaService } from '@otl/prisma-client'
     ProfessorModule,
     CourseModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, DeadLetterController],
   providers: [AppService],
 })
 export class AppModule {}

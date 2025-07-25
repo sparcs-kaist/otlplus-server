@@ -39,7 +39,7 @@ COPY ./ecosystem.config.js /var/www/otlplus-server/ecosystem.config.js
 
 RUN yarn global add pm2
 
-RUN pm2 install pm2-metrics
+# RUN pm2 install pm2-metrics
 
 WORKDIR /var/www/otlplus-server
 
