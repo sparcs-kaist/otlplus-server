@@ -35,7 +35,22 @@ export class PlannersService {
 
   public async getPlannerByUser(query: IPlanner.QueryDto, user: session_userprofile) {
     const queryResult = await this.plannerRepository.getPlannerByUser(query, user)
-    return queryResult.map(toJsonPlannerDetails)
+    const result = await Promise.all(
+      queryResult.map(async (planner) => {
+        const futureItems = planner.planner_futureplanneritem
+        const courses = futureItems.map((item) => item.subject_course)
+        const courseRepresentativeLectureIdMap = new Map(
+          courses.map((c) => [c.representative_lecture_id, c.id] as const),
+        )
+        const representativeLectureIds = courses.map((c) => c.representative_lecture_id)
+        const lectures = await this.lectureRepository.getLecturesByIds(representativeLectureIds)
+        const futureItemsRepresentativeLectureMap = new Map(
+          lectures.map((l) => [courseRepresentativeLectureIdMap.get(l.id), l]),
+        )
+        return toJsonPlannerDetails(planner, futureItemsRepresentativeLectureMap)
+      }),
+    )
+    return result
   }
 
   async getRelatedPlanner(user: session_userprofile) {
@@ -92,8 +107,15 @@ export class PlannersService {
     if (!newPlanner) {
       throw new NotFoundException()
     }
-
-    return toJsonPlannerDetails(newPlanner)
+    const futureItems = newPlanner.planner_futureplanneritem
+    const courses = futureItems.map((item) => item.subject_course)
+    const courseRepresentativeLectureIdMap = new Map(courses.map((c) => [c.representative_lecture_id, c.id] as const))
+    const representativeLectureIds = courses.map((c) => c.representative_lecture_id)
+    const lectures = await this.lectureRepository.getLecturesByIds(representativeLectureIds)
+    const futureItemsRepresentativeLectureMap = new Map(
+      lectures.map((l) => [courseRepresentativeLectureIdMap.get(l.id), l]),
+    )
+    return toJsonPlannerDetails(newPlanner, futureItemsRepresentativeLectureMap)
   }
 
   @Transactional()
@@ -159,8 +181,15 @@ export class PlannersService {
     if (!planner) {
       throw new NotFoundException()
     }
-
-    return toJsonPlannerDetails(planner)
+    const futureItems = planner.planner_futureplanneritem
+    const courses = futureItems.map((item) => item.subject_course)
+    const courseRepresentativeLectureIdMap = new Map(courses.map((c) => [c.representative_lecture_id, c.id] as const))
+    const representativeLectureIds = courses.map((c) => c.representative_lecture_id)
+    const lectures = await this.lectureRepository.getLecturesByIds(representativeLectureIds)
+    const futureItemsRepresentativeLectureMap = new Map(
+      lectures.map((l) => [courseRepresentativeLectureIdMap.get(l.id), l]),
+    )
+    return toJsonPlannerDetails(planner, futureItemsRepresentativeLectureMap)
   }
 
   @Transactional()
@@ -185,7 +214,9 @@ export class PlannersService {
       semester,
       courseId,
     )
-    return toJsonFutureItem(item)
+    const representativeLectureId = item.subject_course.representative_lecture_id
+    const lectures = await this.lectureRepository.getLecturesByIds([representativeLectureId])
+    return toJsonFutureItem(item, lectures[0])
   }
 
   @Transactional()

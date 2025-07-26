@@ -6,13 +6,17 @@ import { IPlanner } from '@otl/server-nest/common/interfaces'
 import { PlannerPipe } from '@otl/server-nest/common/pipe/planner.pipe'
 import { toJsonPlannerItem } from '@otl/server-nest/common/serializer/planner.item.serializer'
 import { toJsonPlannerDetails } from '@otl/server-nest/common/serializer/planner.serializer'
+import { CoursesService } from '@otl/server-nest/modules/courses/courses.service'
 import { session_userprofile } from '@prisma/client'
 
 import { PlannersService } from './planners.service'
 
 @Controller('api/users/:id/planners')
 export class PlannersController {
-  constructor(private readonly plannersService: PlannersService) {}
+  constructor(
+    private readonly plannersService: PlannersService,
+    private readonly courseService: CoursesService,
+  ) {}
 
   @Get()
   async getPlanners(
@@ -23,8 +27,7 @@ export class PlannersController {
     if (id !== user.id) {
       throw new UnauthorizedException()
     }
-    const planners = await this.plannersService.getPlannerByUser(query, user)
-    return planners
+    return await this.plannersService.getPlannerByUser(query, user)
   }
 
   @Patch(':plannerId')
@@ -37,7 +40,10 @@ export class PlannersController {
       await this.plannersService.updateTakenLectures(user, plannerId, planner.start_year, planner.end_year)
     }
     const updatedPlanner = await this.plannersService.updatePlanner(plannerId, planner, user)
-    return toJsonPlannerDetails(updatedPlanner)
+    const futureItems = updatedPlanner.planner_futureplanneritem
+    const courseIds = futureItems.map((item) => item.course_id)
+    const futureItemsRepresentativeLectureMap = await this.courseService.getRepresentativeLectureByCourseIds(courseIds)
+    return toJsonPlannerDetails(updatedPlanner, futureItemsRepresentativeLectureMap)
   }
 
   @Delete(':plannerId')

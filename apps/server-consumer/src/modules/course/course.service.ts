@@ -26,7 +26,7 @@ export class CourseService {
     return true
   }
 
-  async updateRepresentativeLecture(courseId: number, lectureId: number) {
+  async updateRepresentativeLecture(courseId: number, lectureId: number | null) {
     console.log(courseId, lectureId)
     const result = this.courseRepository.updateCourseRepresentativeLecture(courseId, lectureId)
     if (!result) {
