@@ -54,7 +54,6 @@ export class SyncSchedule {
       await this.syncDegree()
       await this.syncMajor()
     }
-    await this.updateRepresentativeLectures()
   }
 
   @Cron(CronExpression.EVERY_HOUR, {
