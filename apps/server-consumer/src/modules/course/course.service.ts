@@ -27,15 +27,8 @@ export class CourseService {
   }
 
   async updateRepresentativeLecture(courseId: number, lectureId: number) {
-    const course = await this.courseRepository.getCourseBasicById(courseId)
-    if (!course) {
-      throw new Error(`Course not found for courseId: ${courseId}`)
-    }
-    const lecture = await this.lectureRepository.getLectureById(lectureId)
-    if (!lecture) {
-      throw new Error(`Lecture not found for lectureId: ${lectureId}`)
-    }
-    const result = this.courseRepository.updateCourseRepresentativeLecture(course.id, lecture.id)
+    console.log(courseId, lectureId)
+    const result = this.courseRepository.updateCourseRepresentativeLecture(courseId, lectureId)
     if (!result) {
       return false
     }

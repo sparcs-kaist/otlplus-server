@@ -3,7 +3,7 @@ module.exports = {
     {
       name: '@otl/server-nest',
       script: './dist/apps/server/apps/server/src/bootstrap/bootstrap.js',
-      instances: 2,
+      instances: 1,
       exec_mode: 'cluster',
       merge_logs: true,
       autorestart: true,
