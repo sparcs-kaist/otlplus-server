@@ -108,6 +108,13 @@ export class SyncDynamicController {
     await this.syncSchedule.syncMajor()
   }
 
+  @Post('major')
+  @ApiSecurity('X-API-KEY')
+  @SyncApiKeyAuth()
+  async updateRepresentativeLecture() {
+    await this.syncSchedule.updateRepresentativeLectures()
+  }
+
   @Post('best-review')
   async syncBestReview() {
     await this.syncSchedule.updateReviews()

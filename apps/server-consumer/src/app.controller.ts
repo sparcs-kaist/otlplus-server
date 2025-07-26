@@ -1,7 +1,10 @@
 import { defaultNackErrorHandler, Nack, RabbitSubscribe } from '@golevelup/nestjs-rabbitmq'
 import { Controller } from '@nestjs/common'
 import settings, { QueueSymbols } from '@otl/rmq/settings'
-import { CourseScoreUpdateMessage } from '@otl/server-consumer/messages/course'
+import {
+  CourseRepresentativeLectureUpdateMessage,
+  CourseScoreUpdateMessage,
+} from '@otl/server-consumer/messages/course'
 import {
   LectureCommonTitleUpdateMessage,
   LectureNumPeopleUpdateMessage,
@@ -37,6 +40,16 @@ export class AppController {
         return new Nack(false)
       }
       return true
+    }
+    if (request.type === EVENT_TYPE.COURSE_REPRESENTATIVE_LECTURE) {
+      if (!CourseRepresentativeLectureUpdateMessage.isValid(request)) {
+        throw new Error(`Invalid course representative lecture update message: ${JSON.stringify(request)}`)
+      }
+      const result = await this.appService.updateCourseRepresentativeLecture(request, amqpMsg)
+      if (!result) {
+        logger.error(`Failed to process course representative lecture update message: ${JSON.stringify(request)}`)
+        return new Nack(false)
+      }
     }
     return true
   }

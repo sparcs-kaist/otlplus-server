@@ -14,6 +14,9 @@ import { SCHOLAR_MQ, ScholarMQ } from '@otl/scholar-sync/domain/out/ScholarMQ'
 import { STATISTICS_MQ, SyncServerStatisticsMQ } from '@otl/scholar-sync/domain/out/StatisticsMQ'
 import { summarizeSyncResult } from '@otl/scholar-sync/modules/sync/util'
 import { review_review, subject_lecture, SyncType } from '@prisma/client'
+import {
+  catchError, from, lastValueFrom, of, retry, timer,
+} from 'rxjs'
 
 import { groupBy, normalizeArray } from '@otl/common/utils/util'
 
@@ -973,5 +976,38 @@ export class SyncService {
       && lecture.class_title_en
       && [lecture.common_title_en + lecture.class_title_en, lecture.common_title_en].includes(lecture.title_en)
     return !(isTitleEqual && isTitleEnEqual)
+  }
+
+  async updateRepresentativeLectures() {
+    const courses = await this.syncRepository.getCourses()
+
+    for (const course of courses) {
+      const representativeLecture = await this.syncRepository.getRepresentativeLecture(course.id)
+      if (!representativeLecture) {
+        this.logger.warn(`No representative lecture found for course ${course.id} (${course.title})`)
+        continue
+      }
+
+      if (course.representative_lecture_id !== representativeLecture.id) {
+        const publish$ = from(this.SyncMQ.publishRepresentativeLectureUpdate(course.id, representativeLecture.id)).pipe(
+          retry({
+            count: 3,
+            delay: (error, retryCount) => {
+              const delayMs = 1000 * retryCount // 점점 증가하는 딜레이
+              this.logger.warn(
+                `Retrying publishRepresentativeLectureUpdate for course ${course.id}, attempt #${retryCount + 1}, error: ${error}`,
+              )
+              return timer(delayMs)
+            },
+          }),
+          catchError((err) => {
+            this.logger.error(`Failed to publish RepresentativeLectureUpdate for course ${course.id}`, err)
+            return of(null)
+          }),
+        )
+
+        await lastValueFrom(publish$)
+      }
+    }
   }
 }
