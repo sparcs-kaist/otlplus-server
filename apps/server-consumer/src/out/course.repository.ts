@@ -6,5 +6,5 @@ export interface ServerConsumerCourseRepository {
 
   getCourseBasicById(courseId: number): Promise<CourseBasic | null>
 
-  updateCourseRepresentativeLecture(courseId: number, lectureId: number): Promise<CourseBasic>
+  updateCourseRepresentativeLecture(courseId: number, lectureId: number | null): Promise<CourseBasic>
 }

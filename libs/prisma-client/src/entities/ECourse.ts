@@ -23,10 +23,6 @@ export namespace ECourse {
   export const Details = Prisma.validator<Prisma.subject_courseDefaultArgs>()({
     include: {
       ...Extended.include,
-      lecture: {
-        orderBy: [{ year: 'desc' }, { semester: 'desc' }],
-        take: 1,
-      },
     },
   })
   export type Details = Prisma.subject_courseGetPayload<typeof Details>

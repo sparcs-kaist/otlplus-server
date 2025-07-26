@@ -10,7 +10,7 @@ import { EVENT_TYPE } from '@otl/server-consumer/messages/message'
 export class ScholarUpdatePublisher implements ScholarMQ {
   constructor(private readonly amqpConnection: AmqpConnection) {}
 
-  publishRepresentativeLectureUpdate(courseId: number, lectureId: number): Promise<boolean> {
+  publishRepresentativeLectureUpdate(courseId: number, lectureId: number | null): Promise<boolean> {
     const exchange = settings().getRabbitMQConfig().exchangeConfig.exchangeMap[ExchangeNames.SCHOLAR_SYNC]
     const routingKey = settings().getRabbitMQConfig().queueConfig[QueueSymbols.SCHOLAR_SYNC].routingKey as string
     const lectureUpdateMessage: CourseRepresentativeLectureUpdateMessage = {

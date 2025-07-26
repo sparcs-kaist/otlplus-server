@@ -13,13 +13,12 @@ export class CourseScoreUpdateMessage extends CourseUpdateMessage {
 }
 
 export class CourseRepresentativeLectureUpdateMessage extends CourseUpdateMessage {
-  lectureId!: number
+  lectureId!: number | null
 
   public static isValid(msg: any): msg is CourseRepresentativeLectureUpdateMessage {
     return (
       msg
       && typeof msg.courseId === 'number'
-      && typeof msg.lectureId === 'number'
       && typeof msg.type === 'string'
       && msg.type === EVENT_TYPE.COURSE_REPRESENTATIVE_LECTURE
     )

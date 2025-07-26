@@ -983,13 +983,10 @@ export class SyncService {
 
     for (const course of courses) {
       const representativeLecture = await this.syncRepository.getRepresentativeLecture(course.id)
-      if (!representativeLecture) {
-        this.logger.warn(`No representative lecture found for course ${course.id} (${course.title})`)
-        continue
-      }
+      const representativeLectureId = representativeLecture?.id ?? null
 
-      if (course.representative_lecture_id !== representativeLecture.id) {
-        const publish$ = from(this.SyncMQ.publishRepresentativeLectureUpdate(course.id, representativeLecture.id)).pipe(
+      if (course.representative_lecture_id !== representativeLectureId) {
+        const publish$ = from(this.SyncMQ.publishRepresentativeLectureUpdate(course.id, representativeLectureId)).pipe(
           retry({
             count: 3,
             delay: (error, retryCount) => {

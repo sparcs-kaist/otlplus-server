@@ -4,16 +4,18 @@ import { ICourse, IReview } from '@otl/server-nest/common/interfaces'
 import { addIsRead, toJsonCourseDetail } from '@otl/server-nest/common/serializer/course.serializer'
 import { toJsonLectureDetail } from '@otl/server-nest/common/serializer/lecture.serializer'
 import { toJsonReview } from '@otl/server-nest/common/serializer/review.serializer'
-import { getRepresentativeLecture } from '@otl/server-nest/common/utils/lecture.utils'
 import { session_userprofile } from '@prisma/client'
 
-import { ECourse } from '@otl/prisma-client/entities'
-import { CourseRepository } from '@otl/prisma-client/repositories'
+import { ECourse, ELecture } from '@otl/prisma-client/entities'
+import { CourseRepository, LectureRepository } from '@otl/prisma-client/repositories'
 import ECourseUser = ECourse.ECourseUser
 
 @Injectable()
 export class CoursesService {
-  constructor(private readonly courseRepository: CourseRepository) {}
+  constructor(
+    private readonly courseRepository: CourseRepository,
+    private readonly lectureRepository: LectureRepository,
+  ) {}
 
   public async getCourses(query: ICourse.Query, user: session_userprofile): Promise<ICourse.DetailWithIsRead[]> {
     const {
@@ -41,8 +43,15 @@ export class CoursesService {
     else {
       courseReads = await this.courseRepository.isUserSpecificRead(courseIds, user.id)
     }
+    const courseRepresentativeLectureIdMap = new Map(
+      queryResult.map((c) => [c.representative_lecture_id, c.id] as const),
+    )
+    const representativeLectureIds = queryResult.map((c) => c.representative_lecture_id)
+    const lectures = await this.lectureRepository.getLecturesByIds(representativeLectureIds)
+    const courseLectureMap = new Map(lectures.map((l) => [courseRepresentativeLectureIdMap.get(l.id), l]))
+
     queryResult.map(async (course) => {
-      const representativeLecture = getRepresentativeLecture(course.lecture)
+      const representativeLecture = courseLectureMap.get(course.id)
       if (!representativeLecture) {
         return
       }
@@ -65,7 +74,7 @@ export class CoursesService {
     if (!course) {
       throw new NotFoundException()
     }
-    const representativeLecture = getRepresentativeLecture(course.lecture)
+    const representativeLecture = (await this.lectureRepository.getLecturesByIds([course.representative_lecture_id]))[0]
     const professorRaw = course.subject_course_professors.map((x: { professor: any }) => x.professor)
     const result = toJsonCourseDetail(course, representativeLecture, professorRaw)
 
@@ -123,5 +132,13 @@ export class CoursesService {
   @Transactional()
   async readCourse(userId: number, courseId: number): Promise<ECourseUser.Basic> {
     return await this.courseRepository.readCourse(userId, courseId)
+  }
+
+  async getRepresentativeLectureByCourseIds(ids: number[]): Promise<Map<number | undefined, ELecture.Basic>> {
+    const courses = await this.courseRepository.getCoursesByIds(ids)
+    const courseRepresentativeLectureIdMap = new Map(courses.map((c) => [c.representative_lecture_id, c.id] as const))
+    const representativeLectureIds = courses.map((c) => c.representative_lecture_id)
+    const lectures = await this.lectureRepository.getLecturesByIds(representativeLectureIds)
+    return new Map(lectures.map((l) => [courseRepresentativeLectureIdMap.get(l.id), l]))
   }
 }
