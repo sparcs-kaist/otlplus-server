@@ -490,4 +490,15 @@ export class SyncRepository {
       },
     })
   }
+
+  async getCourses() {
+    return this.prisma.subject_course.findMany()
+  }
+
+  async getRepresentativeLecture(courseId: number) {
+    return this.prisma.subject_lecture.findFirst({
+      where: { course_id: courseId, deleted: false },
+      orderBy: [{ year: 'desc', semester: 'desc' }],
+    })
+  }
 }

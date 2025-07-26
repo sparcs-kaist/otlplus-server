@@ -74,7 +74,7 @@ export class TimetableRepository {
     arrangeOrder: number,
     lectures: ELecture.Details[],
   ): Promise<ETimetable.Details> {
-    return this.prisma.timetable_timetable.create({
+    return this.prismaRead.timetable_timetable.create({
       data: {
         user_id: user.id,
         year,

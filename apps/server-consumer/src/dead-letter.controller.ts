@@ -1,7 +1,10 @@
 import { AmqpConnection, RabbitPayload, RabbitSubscribe } from '@golevelup/nestjs-rabbitmq'
 import { Controller } from '@nestjs/common'
 import settings, { QueueSymbols } from '@otl/rmq/settings'
-import { CourseScoreUpdateMessage } from '@otl/server-consumer/messages/course'
+import {
+  CourseRepresentativeLectureUpdateMessage,
+  CourseScoreUpdateMessage,
+} from '@otl/server-consumer/messages/course'
 import {
   LectureCommonTitleUpdateMessage,
   LectureNumPeopleUpdateMessage,
@@ -39,6 +42,12 @@ export class DeadLetterController {
           throw new Error(`Invalid lecture title update message: ${JSON.stringify(request)}`)
         }
         return this.appService.updateLectureCommonTitle(request, amqpMsg)
+      }
+      if (request.type === EVENT_TYPE.COURSE_REPRESENTATIVE_LECTURE) {
+        if (!CourseRepresentativeLectureUpdateMessage.isValid(request)) {
+          throw new Error(`Invalid course representative lecture update message: ${JSON.stringify(request)}`)
+        }
+        return this.appService.updateCourseRepresentativeLecture(request, amqpMsg)
       }
       // 이 큐에서 처리하지 않는 타입이면 true를 반환하여 ack 처리
       logger.warn(`[DLQ] Unhandled message type in SCHOLAR_SYNC_DLQ: ${request.type}`)
