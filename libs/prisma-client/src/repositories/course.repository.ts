@@ -409,7 +409,6 @@ export class CourseRepository implements ServerConsumerCourseRepository {
       include: {
         subject_department: true,
         subject_course_professors: { include: { professor: true } },
-        lecture: true,
         subject_courseuser: { where: { user_profile_id: userId } },
       },
     })
@@ -525,14 +524,25 @@ export class CourseRepository implements ServerConsumerCourseRepository {
     )
   }
 
-  async updateCourseRepresentativeLecture(courseId: number, lectureId: number): Promise<CourseBasic> {
+  async updateCourseRepresentativeLecture(courseId: number, lectureId: number | null): Promise<CourseBasic> {
     return this.prisma.subject_course
       .update({
         where: { id: courseId },
         data: {
-          representative_lecture_id: lectureId,
+          representative_lecture_id: lectureId ?? undefined,
         },
       })
       .then((course) => mapCourse(course))
+  }
+
+  async getCoursesByIds(ids: number[]) {
+    return this.prismaRead.subject_course.findMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+      include: ECourse.Basic,
+    })
   }
 }

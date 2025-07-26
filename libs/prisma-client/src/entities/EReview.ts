@@ -1,6 +1,5 @@
 import { Prisma } from '@prisma/client'
 
-import { ECourse } from './ECourse'
 import { ELecture } from './ELecture'
 
 export namespace EReview {
@@ -8,7 +7,7 @@ export namespace EReview {
 
   export const Details = Prisma.validator<Prisma.review_reviewDefaultArgs>()({
     include: {
-      course: ECourse.Details,
+      // course: ECourse.Details,
       lecture: ELecture.Details,
       review_reviewvote: true,
     },

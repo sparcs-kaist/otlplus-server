@@ -1,14 +1,12 @@
 import { IReview } from '@otl/server-nest/common/interfaces'
-import { getRepresentativeLecture } from '@otl/server-nest/common/utils/lecture.utils'
 import { session_userprofile } from '@prisma/client'
 
 import { EReview } from '@otl/prisma-client/entities'
 
-import { toJsonCourseBasic } from './course.serializer'
 import { toJsonLectureBasic } from './lecture.serializer'
 
 export const toJsonReview = (review: EReview.Details, user?: session_userprofile): IReview.Basic => {
-  const representativeLecture = getRepresentativeLecture(review.course.lecture)
+  // const representativeLecture = getRepresentativeLecture(review.course.lecture)
 
   let isLiked = true
   if (!user || !review.review_reviewvote) {
@@ -18,11 +16,13 @@ export const toJsonReview = (review: EReview.Details, user?: session_userprofile
     isLiked = false
   }
 
-  const courseResult = toJsonCourseBasic(review.course, representativeLecture)
+  // const courseResult = toJsonCourseBasic(review.course, representativeLecture)
 
   const result = {
     id: review.id,
-    course: courseResult,
+    course: {
+      id: review.course_id,
+    },
     lecture: toJsonLectureBasic(review.lecture),
     content: review.is_deleted ? '관리자에 의해 삭제된 코멘트입니다.' : review.content,
     like: Math.round(review.like),

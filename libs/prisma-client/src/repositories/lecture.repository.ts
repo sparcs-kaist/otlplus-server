@@ -420,4 +420,15 @@ export class LectureRepository implements ServerConsumerLectureRepository {
       }),
     )
   }
+
+  async getLecturesByIds(representativeLectureIds: number[]) {
+    return this.prismaRead.subject_lecture.findMany({
+      where: {
+        id: {
+          in: representativeLectureIds,
+        },
+      },
+      include: ELecture.Basic,
+    })
+  }
 }

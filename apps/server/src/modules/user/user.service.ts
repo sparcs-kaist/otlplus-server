@@ -4,11 +4,11 @@ import { addIsRead, toJsonCourseDetail } from '@otl/server-nest/common/serialize
 import { toJsonDepartment } from '@otl/server-nest/common/serializer/department.serializer'
 import { toJsonLectureDetail } from '@otl/server-nest/common/serializer/lecture.serializer'
 import { toJsonReview } from '@otl/server-nest/common/serializer/review.serializer'
-import { getRepresentativeLecture } from '@otl/server-nest/common/utils/lecture.utils'
 import { session_userprofile } from '@prisma/client'
 
 import { ResearchLecture } from '@otl/common/enum/lecture'
 
+import { ELecture } from '@otl/prisma-client'
 import {
   CourseRepository,
   DepartmentRepository,
@@ -86,8 +86,10 @@ export class UserService {
       query.order ?? DEFAULT_ORDER,
       user.id,
     )
+
+    const courseTakenLectureMap = new Map(takenLectures.map((l) => [l.course_id, l]))
     return courses.map((course) => {
-      const representativeLecture = getRepresentativeLecture(course.lecture)
+      const representativeLecture = courseTakenLectureMap.get(course.id) as ELecture.Details
       const professorRaw = course.subject_course_professors.map((x) => x.professor)
       const result = toJsonCourseDetail(course, representativeLecture, professorRaw)
       const subjectCourseUser = course.subject_courseuser.filter(
