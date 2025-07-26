@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { CourseUpdateMessage } from '@otl/server-consumer/messages/course'
+import { CourseRepresentativeLectureUpdateMessage, CourseUpdateMessage } from '@otl/server-consumer/messages/course'
 import {
   LectureCommonTitleUpdateMessage,
   LectureNumPeopleUpdateMessage,
@@ -89,6 +89,23 @@ export class AppService {
     }
     catch (e) {
       console.error(`Failed to update review like for reviewId: ${reviewId}`, e)
+      return false
+    }
+  }
+
+  async updateCourseRepresentativeLecture(
+    request: CourseRepresentativeLectureUpdateMessage,
+    _amqpMsg: ConsumeMessage,
+  ): Promise<boolean> {
+    const { courseId, lectureId } = request
+    try {
+      return await this.courseService.updateRepresentativeLecture(courseId, lectureId)
+    }
+    catch (e) {
+      console.error(
+        `Failed to update course representative lecture for courseId: ${courseId}, lectureId: ${lectureId}`,
+        e,
+      )
       return false
     }
   }

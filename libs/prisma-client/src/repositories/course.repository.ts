@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common'
+import { ServerConsumerCourseRepository } from '@otl/server-consumer/out/course.repository'
+import { CourseBasic, CourseScore } from '@otl/server-nest/modules/courses/domain/course'
 import { Prisma } from '@prisma/client'
 
 import { applyOffset, applyOrder } from '@otl/common/utils/util'
 
 import { formatNewLectureCodeWithDot, orderFilter } from '@otl/prisma-client/common'
+import { mapCourse } from '@otl/prisma-client/common/mapper/course'
+import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 import { PaginationOption } from '@otl/prisma-client/types'
 
 import { ECourse } from '../entities/ECourse'
@@ -11,11 +15,6 @@ import { ELecture } from '../entities/ELecture'
 import { EReview } from '../entities/EReview'
 import { PrismaService } from '../prisma.service'
 import ECourseUser = ECourse.ECourseUser
-import { ServerConsumerCourseRepository } from '@otl/server-consumer/out/course.repository'
-import { CourseBasic, CourseScore } from '@otl/server-nest/modules/courses/domain/course'
-
-import { mapCourse } from '@otl/prisma-client/common/mapper/course'
-import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 
 @Injectable()
 export class CourseRepository implements ServerConsumerCourseRepository {
@@ -68,6 +67,18 @@ export class CourseRepository implements ServerConsumerCourseRepository {
         id,
       },
     })
+  }
+
+  public async getCourseBasicById(id: number): Promise<CourseBasic | null> {
+    const course = await this.prismaRead.subject_course.findUnique({
+      where: {
+        id,
+      },
+    })
+    if (!course) {
+      return null
+    }
+    return mapCourse(course)
   }
 
   public async getLecturesByCourseId(id: number, order?: string[]): Promise<ELecture.Details[]> {
@@ -512,5 +523,16 @@ export class CourseRepository implements ServerConsumerCourseRepository {
         },
       }),
     )
+  }
+
+  async updateCourseRepresentativeLecture(courseId: number, lectureId: number): Promise<CourseBasic> {
+    return this.prisma.subject_course
+      .update({
+        where: { id: courseId },
+        data: {
+          representative_lecture_id: lectureId,
+        },
+      })
+      .then((course) => mapCourse(course))
   }
 }

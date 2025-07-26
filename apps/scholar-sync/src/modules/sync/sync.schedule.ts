@@ -54,6 +54,7 @@ export class SyncSchedule {
       await this.syncDegree()
       await this.syncMajor()
     }
+    await this.updateRepresentativeLectures()
   }
 
   @Cron(CronExpression.EVERY_HOUR, {
@@ -173,10 +174,19 @@ export class SyncSchedule {
   @Cron(CronExpression.EVERY_WEEKEND, {
     name: 'syncBestReviews',
     timeZone: 'Asia/Seoul',
-    disabled: true,
+    disabled: false,
   })
   async updateReviews() {
     await this.syncService.updateBestReviews()
+  }
+
+  @Cron(CronExpression.EVERY_WEEKEND, {
+    name: 'syncRepresentativeLectures',
+    timeZone: 'Asia/Seoul',
+    disabled: false,
+  })
+  async updateRepresentativeLectures() {
+    await this.syncService.updateRepresentativeLectures()
   }
 
   private async determineTargetSemesters(year?: number, semester?: number, interval?: number) {
