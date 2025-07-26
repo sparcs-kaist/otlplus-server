@@ -504,12 +504,6 @@ model subject_course {
   @@index([title], map: "subject_course_title_index")
   @@index([title_no_space], map: "subject_course_title_no_space_index")
   @@index([title_en], map: "subject_course_title_en_index")
-  @@fulltext([title], map: "subject_course_title")
-  @@fulltext([title_en], map: "subject_course_title_en")
-  @@fulltext([old_code], map: "subject_course_old_code")
-  @@fulltext([new_code], map: "subject_course_new_code")
-  @@fulltext([title, title_en])
-  @@fulltext([title, title_en, old_code])
 }
 
 model subject_course_professors {
@@ -648,12 +642,8 @@ model subject_lecture {
   @@index([title_en], map: "subject_lecture_title_en_index")
   @@index([title], map: "subject_lecture_title_index")
   @@index([year, semester, deleted], map: "subject_lecture_deleted_year_semester_index")
-  @@fulltext([title], map: "subject_lecture_title")
-  @@fulltext([title_en], map: "subject_lecture_title_en")
-  @@fulltext([old_code], map: "subject_lecture_old_code")
-  @@fulltext([new_code], map: "subject_lecture_new_code")
-  @@fulltext([title, title_en])
-  @@fulltext([title, title_en, old_code])
+  @@index([semester, year, deleted, type_en, id], map: "subject_lecture_year_semester_deleted_type_en")
+  @@index([year, semester, type_en, department_id, deleted], map: "subject_lecture_year_semester_deleted_type_en_department")
 }
 
 model subject_lecture_professors {
@@ -683,10 +673,6 @@ model subject_professor {
   subject_course_professors  subject_course_professors[]
   subject_lecture_professors subject_lecture_professors[]
   paper_prof_to_subject_prof paper_prof_to_subject_prof[]
-
-  @@fulltext([professor_name], map: "subject_professor_professor_name_fulltext")
-  @@fulltext([professor_name_en], map: "subject_professor_professor_name_en_fulltext")
-  @@fulltext([professor_name, professor_name_en])
 }
 
 model subject_semester {
