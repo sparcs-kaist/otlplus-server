@@ -498,7 +498,7 @@ export class SyncRepository {
   async getRepresentativeLecture(courseId: number) {
     return this.prisma.subject_lecture.findFirst({
       where: { course_id: courseId, deleted: false },
-      orderBy: [{ year: 'desc', semester: 'desc' }],
+      orderBy: [{ year: 'desc' }, { semester: 'desc' }],
     })
   }
 }
