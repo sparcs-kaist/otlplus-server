@@ -108,7 +108,7 @@ export class SyncDynamicController {
     await this.syncSchedule.syncMajor()
   }
 
-  @Post('major')
+  @Post('representativeLecture')
   @ApiSecurity('X-API-KEY')
   @SyncApiKeyAuth()
   async updateRepresentativeLecture() {
