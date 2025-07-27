@@ -29,6 +29,6 @@ export class FieldRepository implements FieldRepositoryInterface {
       limit: 10,
     })
 
-    return result.objects.map((obj) => obj.properties as FieldData)
+    return result.objects.map((obj) => obj.properties as unknown as FieldData)
   }
 }

@@ -12,7 +12,7 @@
     "build:all": "nest build server && nest build scholar-sync && nest build lab-server",
     "build:server": "nest build server && yarn sentry:sourcemaps:dev",
     "postbuild:server": "cp -r apps/server/docs/swagger.json dist/apps/server/apps/server/docs/swagger.json",
-    "postbuild:lab-server": "cp -r apps/lab-server/docs/swagger.json dist/apps/server/apps/lab-server/docs/swagger.json",
+    "postbuild:lab-server": "cp -r apps/lab-server/docs/swagger.json dist/apps/lab-server/apps/lab-server/docs/swagger.json",
     "build:scholar-sync": "nest build scholar-sync",
     "build:notification-consumer": "nest build notification-consumer",
     "build:server-consumer": "nest build server-consumer && yarn sentry:sourcemaps:consumer-dev",
