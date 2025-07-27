@@ -9,12 +9,7 @@ export namespace EFeed {
     include: {
       main_famoushumanityreviewdailyfeed_reviews: {
         include: {
-          review_review: {
-            include: {
-              review_reviewvote: true,
-              lecture: ELecture.Extended,
-            },
-          },
+          review_review: EReview.Extended,
         },
       },
     },
@@ -27,12 +22,7 @@ export namespace EFeed {
       subject_department: true,
       main_famousmajorreviewdailyfeed_reviews: {
         include: {
-          review_review: {
-            include: {
-              review_reviewvote: true,
-              lecture: ELecture.Extended,
-            },
-          },
+          review_review: EReview.Extended,
         },
       },
     },
