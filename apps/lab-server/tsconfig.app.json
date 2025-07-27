@@ -20,6 +20,7 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
+      "@otl/scholar-sync/clients/scholar/*": ["../../apps/scholar-sync/src/clients/scholar/*"],
       "@otl/scholar-sync/domain": ["../../apps/scholar-sync/src/common/domain"],
       "@otl/scholar-sync/domain/*": ["../../apps/scholar-sync/src/common/domain/*"],
       "@otl/prisma-client": ["../../libs/prisma-client/src"],
@@ -34,7 +35,9 @@
       "@otl/notification-consumer/domain": ["../../apps/notification-consumer/src/domain"],
       "@otl/notification-consumer/domain/*": ["../../apps/notification-consumer/src/domain/*"],
       "@otl/lab-server": ["../../apps/lab-server/src"],
-      "@otl/lab-server/*": ["../../apps/lab-server/src/*"]
+      "@otl/lab-server/*": ["../../apps/lab-server/src/*"],
+      "@otl/weaviate-client": ["../../libs/weaviate-client/src"],
+      "@otl/weaviate-client/*": ["../../libs/weaviate-client/src/*"]
     }
   },
   "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]

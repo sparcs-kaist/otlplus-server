@@ -5,44 +5,7 @@
     "version": "1.0.0",
     "description": "OTL PLUS Lab Server의 Swagger 문서입니다."
   },
-  "paths": {
-    "/": {
-      "get": {
-        "summary": "AppController.getHello",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "null"
-                }
-              }
-            }
-          }
-        },
-        "security": []
-      }
-    },
-    "/api": {
-      "get": {
-        "summary": "AppController.getApiHello",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "null"
-                }
-              }
-            }
-          }
-        },
-        "security": []
-      }
-    }
-  },
+  "paths": {},
   "components": {
     "schemas": {
       "WeaviateModuleConfig": {

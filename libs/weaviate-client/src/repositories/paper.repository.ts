@@ -27,7 +27,7 @@ export class PaperRepository implements PaperRepositoryInterface {
       limit: 10,
     })
 
-    return result.objects.map((obj) => obj.properties as PaperData)
+    return result.objects.map((obj) => obj.properties as unknown as PaperData)
   }
 
   async findByProfName(name: string): Promise<any[]> {
@@ -35,6 +35,6 @@ export class PaperRepository implements PaperRepositoryInterface {
       limit: 10,
     })
 
-    return result.objects.map((obj) => obj.properties as PaperData)
+    return result.objects.map((obj) => obj.properties as unknown as PaperData)
   }
 }
