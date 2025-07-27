@@ -54,6 +54,16 @@
         "plugins": ["@nestjs/swagger/plugin"]
       }
     },
+    "lab-server": {
+      "type": "application",
+      "root": "apps/lab-server",
+      "sourceRoot": "apps/lab-server/src",
+      "entryFile": "bootstrap/bootstrap",
+      "compilerOptions": {
+        "tsConfigPath": "apps/lab-server/tsconfig.app.json",
+        "plugins": ["@nestjs/swagger/plugin"]
+      }
+    },
     "prisma-client": {
       "type": "library",
       "root": "libs/prisma-client",
