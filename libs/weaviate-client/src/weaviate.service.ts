@@ -5,13 +5,14 @@ import { createWeaviateClient } from './weaviate.factory'
 
 @Injectable()
 export class WeaviateService implements OnModuleInit {
-  private readonly client: Promise<WeaviateClient>
+  public client!: WeaviateClient
 
-  constructor(@Inject('ConnectToCustomOptions') config: ConnectToCustomOptions) {
-    this.client = createWeaviateClient(config)
-  }
+  constructor(
+    @Inject('ConnectToCustomOptions')
+    private readonly config: ConnectToCustomOptions,
+  ) {}
 
   async onModuleInit() {
-    Object.assign(this, await this.client)
+    this.client = await createWeaviateClient(this.config)
   }
 }
