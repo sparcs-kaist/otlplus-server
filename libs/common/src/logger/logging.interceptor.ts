@@ -2,7 +2,9 @@ import {
   CallHandler, ExecutionContext, Injectable, NestInterceptor,
 } from '@nestjs/common'
 import { Response } from 'express'
-import { Observable, tap } from 'rxjs'
+import {
+  catchError, Observable, tap, throwError,
+} from 'rxjs'
 
 import logger from '@otl/common/logger/logger'
 
@@ -28,6 +30,13 @@ export class LoggingInterceptor implements NestInterceptor {
         const logMessage = `[User#${userId}] ${method} ${url} OS/${clientOs} Ver/${apiVersion} → ${statusCode} (${delay}ms)`
 
         logger.info(logMessage)
+      }),
+      catchError((err) => {
+        const delay = Date.now() - now
+        const statusCode = response.statusCode ?? 500
+        const logMessage = `[User#${userId}] ${method} ${url} OS/${clientOs} Ver/${apiVersion} → ERROR ${statusCode} (${delay}ms): ${err.message}`
+        logger.error(logMessage)
+        return throwError(() => err)
       }),
     )
   }
