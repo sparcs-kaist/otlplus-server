@@ -5,7 +5,7 @@ import { EReview } from '@otl/prisma-client/entities'
 
 import { toJsonLectureBasic } from './lecture.serializer'
 
-export const toJsonReview = (review: EReview.Details, user?: session_userprofile): IReview.Basic => {
+export const toJsonReview = (review: EReview.Extended, user?: session_userprofile): IReview.Basic => {
   // const representativeLecture = getRepresentativeLecture(review.course.lecture)
 
   let isLiked = true

@@ -8,6 +8,51 @@ import { toJsonClasstime } from './classtime.serializer'
 import { toJsonExamtime } from './examtime.serializer'
 import { toJsonProfessors } from './professor.serializer'
 
+export function toJsonLectureMinimal(lecture: ELecture.Basic): ILecture.Minimal {
+  return {
+    id: lecture.id,
+    title: lecture.title,
+    title_en: lecture.title_en,
+    course: {
+      id: lecture.course_id,
+    },
+    course_id: lecture.course_id,
+    audience: lecture.audience,
+    old_old_code: lecture.old_code,
+    old_code: lecture.new_code,
+    class_no: lecture.class_no,
+    year: lecture.year,
+    semester: lecture.semester,
+    code: lecture.code,
+    department: {
+      id: lecture.department_id,
+    },
+    type: lecture.type,
+    type_en: lecture.type_en,
+    credit: lecture.credit,
+    credit_au: lecture.credit_au,
+    num_classes: lecture.num_classes,
+    num_labs: lecture.num_labs,
+    limit: lecture.limit,
+    num_people: lecture.num_people ?? 0,
+    is_english: lecture.is_english,
+    deleted: lecture.deleted,
+    class_title: lecture.class_title ?? '',
+    class_title_en: lecture.class_title_en ?? '',
+    common_title: lecture.common_title ?? '',
+    common_title_en: lecture.common_title_en ?? '',
+    title_en_no_space: lecture.title_en.replace(/\s/g, ''),
+    title_no_space: lecture.title.replace(/\s/g, ''),
+    grade_sum: lecture.grade_sum + 0.000001,
+    load_sum: lecture.load_sum + 0.000001,
+    speech_sum: lecture.speech_sum + 0.000001,
+    grade: lecture.grade + 0.000001,
+    load: lecture.load + 0.000001,
+    speech: lecture.speech + 0.000001,
+    review_total_weight: lecture.review_total_weight + 0.000001,
+  }
+}
+
 export function toJsonLectureBasic(lecture: ELecture.Extended): ILecture.Basic {
   const professors = lecture.subject_lecture_professors.map((x) => x.professor)
   const ordered_professors = applyOrder(professors, ['professor_name'])

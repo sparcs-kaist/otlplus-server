@@ -22,6 +22,14 @@ export namespace EReview {
 
   export type WithLectures = Prisma.review_reviewGetPayload<typeof WithLectures>
 
+  export const Extended = Prisma.validator<Prisma.review_reviewDefaultArgs>()({
+    include: {
+      lecture: ELecture.Extended,
+      review_reviewvote: true,
+    },
+  })
+  export type Extended = Prisma.review_reviewGetPayload<typeof Extended>
+
   export namespace EReviewVote {
     // eslint-disable-next-line no-shadow
     export type Basic = Prisma.review_reviewvoteGetPayload<Prisma.review_reviewvoteDefaultArgs>
