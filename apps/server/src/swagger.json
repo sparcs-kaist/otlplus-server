@@ -624,33 +624,6 @@
         ]
       }
     },
-    "/api/lab/autocomplete": {
-      "get": {
-        "summary": "LabController.autocomplete",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "null"
-                }
-              }
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "prefix",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ]
-      }
-    },
     "/api/lectures": {
       "get": {
         "summary": "LecturesController.getLectures",
