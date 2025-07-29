@@ -57,12 +57,6 @@ const getPrismaReadConnectConfig = (): mariadb.PoolConfig => ({
   connectionLimit: 10,
 })
 
-const getSyncConfig = () => ({
-  slackKey: process.env.SLACK_KEY,
-  scholarKey: process.env.SCHOLAR_AUTH_KEY,
-  scholarUrl: process.env.SCHOLAR_BASE_URL,
-})
-
 const getVersion = () => String(process.env.npm_package_version)
 
 const getSwaggerConfig = () => {
@@ -128,7 +122,6 @@ export default () => ({
   ormconfig: () => getPrismaConnectConfig(),
   ormReplicatedConfig: () => getPrismaReadConnectConfig(),
   getCorsConfig: () => getCorsConfig(),
-  syncConfig: () => getSyncConfig(),
   getVersion: () => getVersion(),
   getSwaggerConfig: () => getSwaggerConfig(),
   getSwaggerStatsConfig: () => getSwaggerStatsConfig(),
