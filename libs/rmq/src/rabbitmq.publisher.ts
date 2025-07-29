@@ -31,10 +31,11 @@ export class RabbitPublisherService {
 
     console.log(`Publishing to exchange: ${exchange}, routingKey: ${routingKey}, payload:`, payload)
 
-    channel.publish(exchange, routingKey, Buffer.from(JSON.stringify(payload)), {
+    const result = channel.publish(exchange, routingKey, Buffer.from(JSON.stringify(payload)), {
       persistent: true,
       contentType: 'application/json',
       headers: { 'x-delay': options.delay ?? 0 },
     })
+    console.log(`Publish result: ${result}`)
   }
 }
