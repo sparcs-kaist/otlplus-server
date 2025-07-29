@@ -7,7 +7,11 @@ export namespace EReview {
 
   export const Details = Prisma.validator<Prisma.review_reviewDefaultArgs>()({
     include: {
-      // course: ECourse.Details,
+      course: {
+        include: {
+          subject_department: true,
+        },
+      },
       lecture: ELecture.Details,
       review_reviewvote: true,
     },
@@ -21,6 +25,19 @@ export namespace EReview {
   })
 
   export type WithLectures = Prisma.review_reviewGetPayload<typeof WithLectures>
+
+  export const Extended = Prisma.validator<Prisma.review_reviewDefaultArgs>()({
+    include: {
+      course: {
+        include: {
+          subject_department: true,
+        },
+      },
+      lecture: ELecture.Extended,
+      review_reviewvote: true,
+    },
+  })
+  export type Extended = Prisma.review_reviewGetPayload<typeof Extended>
 
   export namespace EReviewVote {
     // eslint-disable-next-line no-shadow
