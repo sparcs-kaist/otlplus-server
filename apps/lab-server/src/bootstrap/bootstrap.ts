@@ -1,16 +1,11 @@
-import { HttpException, ValidationPipe, VersioningType } from '@nestjs/common'
+import { ValidationPipe, VersioningType } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
 import cookieParser from 'cookie-parser'
 import csrf from 'csurf'
-import { json } from 'express'
 import session from 'express-session'
 import fs from 'fs'
-import * as v8 from 'node:v8'
 import { join } from 'path'
-import swaggerStats from 'swagger-stats'
 import * as swaggerUi from 'swagger-ui-express'
-
-import { HttpExceptionFilter, UnexpectedExceptionFilter } from '@otl/common/exception/exception.filter'
 
 import { AppModule } from '../app.module'
 import settings from '../settings'
@@ -58,23 +53,6 @@ async function bootstrap() {
       }),
     )
   }
-  app.use(
-    swaggerStats.getMiddleware({
-      swaggerSpec: swaggerDocument,
-      uriPath: '/swagger-stats',
-      authentication: true,
-      onAuthenticate(_req, username, password) {
-        // simple check for username and password
-        const swaggerStatsConfig = settings().getSwaggerStatsConfig()
-        return username === swaggerStatsConfig.username && password === swaggerStatsConfig.password
-      },
-    }),
-  )
-
-  app.use('/api/sync', json({ limit: '50mb' }))
-  app.use(json({ limit: '100kb' }))
-  app.useGlobalFilters(new UnexpectedExceptionFilter(), new HttpExceptionFilter<HttpException>())
-  console.log(v8.getHeapStatistics().heap_size_limit / 1024 / 1024)
 
   app.enableShutdownHooks()
   return app.listen(8002)
