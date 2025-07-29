@@ -14,7 +14,7 @@ const getCorsConfig = () => {
   const { NODE_ENV } = process.env
   if (NODE_ENV === 'prod') {
     return {
-      origin: ['https://otl-sync.sparcs.org', 'http://otl-sync.sparcs.org'],
+      origin: ['https://otl.kaist.ac.kr', 'http://otl.kaist.ac.kr', 'https://otl.sparcs.org', 'http://otl.sparcs.org'],
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
       credentials: true,
       preflightContinue: false,
@@ -23,7 +23,7 @@ const getCorsConfig = () => {
   }
   if (NODE_ENV === 'dev') {
     return {
-      origin: ['https://otl-sync.dev.sparcs.org', 'http://localhost:9000'],
+      origin: ['https://otl.dev.sparcs.org', 'http://localhost:5173'],
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
       credentials: true,
       preflightContinue: false,
@@ -31,7 +31,7 @@ const getCorsConfig = () => {
     }
   }
   return {
-    origin: 'http://localhost:9000',
+    origin: ['http://localhost:5173', 'http://localhost:8000'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
     preflightContinue: false,
@@ -57,37 +57,21 @@ const getPrismaReadConnectConfig = (): mariadb.PoolConfig => ({
   connectionLimit: 10,
 })
 
-const getSyncConfig = () => ({
-  slackKey: process.env.SLACK_KEY,
-  scholarKey: process.env.SCHOLAR_AUTH_KEY,
-  scholarUrl: process.env.SCHOLAR_BASE_URL,
-})
-
 const getVersion = () => String(process.env.npm_package_version)
 
 const getSwaggerConfig = () => {
   const config = new DocumentBuilder()
-    .setTitle('OTLPlus-Scholar-Sync')
-    .setDescription('The OTL Scholar Sync API description')
+    .setTitle('OTLPlus-Lab')
+    .setDescription('OTLPLus Lab Server Description')
     .setVersion('1.0')
-    .addApiKey(
-      {
-        type: 'apiKey',
-        name: 'X-API-KEY',
-        in: 'header',
-        description: 'KAIST SCHOLAR API KEY',
-      },
-      'X-API-KEY',
-    )
-    // .addSecurity('x-api-key', {
-    //   type: 'apiKey',
-    //   in: 'header',
-    //   scheme: 'https',
-    //   description: 'KAIST SCHOLAR API KEY',
-    // })
     .build()
   return config
 }
+
+const getSwaggerStatsConfig = () => ({
+  username: process.env.SWAGGER_STATS_USERNAME,
+  password: process.env.SWAGGER_STAT_PASSWORD,
+})
 
 function getLoggingConfig() {
   const logDir = `${__dirname}/../../logs` // log 파일을 관리할 폴더
@@ -121,12 +105,26 @@ function getLoggingConfig() {
   }
 }
 
+const getWeaviateConfig = () => ({
+  weaviateConfig: {
+    httpHost: process.env.WEAVIATE_HTTP_HOST!,
+    httpPort: Number(process.env.WEAVIATE_HTTP_PORT || 443),
+    httpSecure: false,
+    grpcHost: process.env.WEAVIATE_GRPC_HOST!,
+    grpcPort: Number(process.env.WEAVIATE_GRPC_PORT || 443),
+    grpcSecure: false,
+    skipInitChecks: true,
+  },
+  geminiConfig: process.env.GEMINI_KEY || 'geminikey',
+})
+
 export default () => ({
   ormconfig: () => getPrismaConnectConfig(),
   ormReplicatedConfig: () => getPrismaReadConnectConfig(),
   getCorsConfig: () => getCorsConfig(),
-  syncConfig: () => getSyncConfig(),
   getVersion: () => getVersion(),
   getSwaggerConfig: () => getSwaggerConfig(),
+  getSwaggerStatsConfig: () => getSwaggerStatsConfig(),
   loggingConfig: () => getLoggingConfig(),
+  weaviateConfig: () => getWeaviateConfig(),
 })

@@ -1,0 +1,251 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "OTL Server/Lab-Server",
+    "version": "1.0.0",
+    "description": "OTL PLUS Lab Server의 Swagger 문서입니다."
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "WeaviateModuleConfig": {
+        "type": "object",
+        "properties": {
+          "weaviateConfig": {
+            "$ref": "#/components/schemas/ConnectToCustomOptions"
+          },
+          "geminiConfig": {
+            "type": "string"
+          }
+        },
+        "required": ["weaviateConfig", "geminiConfig"],
+        "additionalProperties": false
+      },
+      "ConnectToCustomOptions": {
+        "type": "object",
+        "properties": {
+          "httpHost": {
+            "type": "string",
+            "description": "The hostname of the HTTP/1.1 server"
+          },
+          "httpPath": {
+            "type": "string",
+            "description": "An additional path of the HTTP/1.1 server, e.g. `http://proxy.net/weaviate`"
+          },
+          "httpPort": {
+            "type": "number",
+            "description": "The port of the HTTP/1.1 server"
+          },
+          "httpSecure": {
+            "type": "boolean",
+            "description": "Whether to use a secure connection to the HTTP/1.1 server"
+          },
+          "grpcHost": {
+            "type": "string",
+            "description": "The hostname of the HTTP/2 server"
+          },
+          "grpcPort": {
+            "type": "number",
+            "description": "The port of the HTTP/2 server"
+          },
+          "grpcSecure": {
+            "type": "boolean",
+            "description": "Whether to use a secure connection to the HTTP/2 server"
+          },
+          "authCredentials": {
+            "$ref": "#/components/schemas/AuthCredentials",
+            "description": "The authentication credentials to use when connecting to Weaviate, e.g. API key"
+          },
+          "headers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Additional headers to include in the request"
+          },
+          "proxies": {
+            "$ref": "#/components/schemas/ProxiesParams",
+            "description": "The proxy configuration to use"
+          },
+          "timeout": {
+            "$ref": "#/components/schemas/TimeoutParams",
+            "description": "The timeouts to use when making requests to Weaviate"
+          },
+          "skipInitChecks": {
+            "type": "boolean",
+            "description": "Whether to skip the initialization checks"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AuthCredentials": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/AuthUserPasswordCredentials"
+          },
+          {
+            "$ref": "#/components/schemas/AuthAccessTokenCredentials"
+          },
+          {
+            "$ref": "#/components/schemas/AuthClientCredentials"
+          },
+          {
+            "$ref": "#/components/schemas/ApiKey"
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "description": "The allowed authentication credentials. See [the docs](https://weaviate.io/developers/weaviate/configuration/authentication) for more information.\n\nThe following types are allowed:\n- `AuthUserPasswordCredentials`\n- `AuthAccessTokenCredentials`\n- `AuthClientCredentials`\n- `ApiKey`\n- `string`\n\nA string is interpreted as an API key."
+      },
+      "AuthUserPasswordCredentials": {
+        "type": "object",
+        "properties": {
+          "silentRefresh": {
+            "type": "boolean"
+          }
+        },
+        "required": ["silentRefresh"],
+        "additionalProperties": false
+      },
+      "AuthAccessTokenCredentials": {
+        "type": "object",
+        "properties": {
+          "silentRefresh": {
+            "type": "boolean"
+          },
+          "accessToken": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "number"
+          },
+          "refreshToken": {
+            "type": "string"
+          },
+          "validate": {
+            "$comment": "(creds: AccessTokenCredentialsInput) => void",
+            "type": "object",
+            "properties": {
+              "namedArgs": {
+                "type": "object",
+                "properties": {
+                  "creds": {
+                    "$ref": "#/components/schemas/AccessTokenCredentialsInput"
+                  }
+                },
+                "required": ["creds"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "required": ["accessToken", "expiresAt", "silentRefresh", "validate"],
+        "additionalProperties": false
+      },
+      "AccessTokenCredentialsInput": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "expiresIn": {
+            "type": "number"
+          },
+          "refreshToken": {
+            "type": "string"
+          },
+          "silentRefresh": {
+            "type": "boolean"
+          }
+        },
+        "required": ["accessToken", "expiresIn"],
+        "additionalProperties": false
+      },
+      "AuthClientCredentials": {
+        "type": "object",
+        "properties": {
+          "silentRefresh": {
+            "type": "boolean"
+          }
+        },
+        "required": ["silentRefresh"],
+        "additionalProperties": false
+      },
+      "ApiKey": {
+        "type": "object",
+        "properties": {
+          "apiKey": {
+            "type": "string"
+          }
+        },
+        "required": ["apiKey"],
+        "additionalProperties": false
+      },
+      "ProxiesParams": {
+        "type": "object",
+        "properties": {
+          "grpc": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "You can only specify the gRPC proxy URL at this point in time. This is because ProxiesParams should be used to define tunnelling proxies and Weaviate does not support tunnelling proxies over HTTP/1.1 at this time.\n\nTo use a forwarding proxy you should instead specify its URL as if it were the Weaviate instance itself."
+      },
+      "TimeoutParams": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "number",
+            "description": "Define the configured timeout when querying data from Weaviate"
+          },
+          "insert": {
+            "type": "number",
+            "description": "Define the configured timeout when mutating data to Weaviate"
+          },
+          "init": {
+            "type": "number",
+            "description": "Define the configured timeout when initially connecting to Weaviate"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "jwtCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "accessToken"
+      },
+      "sidCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "AUTH-SID"
+      },
+      "jwtHeaderAccessToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "name": "accessToken"
+      },
+      "jwtHeaderRefreshToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "name": "X-REFRESH-TOKEN"
+      },
+      "sidHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-AUTH-SID"
+      }
+    }
+  },
+  "security": [
+    {
+      "jwtCookie": [],
+      "sidCookie": [],
+      "jwtHeaderAccessToken": [],
+      "jwtHeaderRefreshToken": [],
+      "sidHeader": []
+    }
+  ]
+}

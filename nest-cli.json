@@ -54,6 +54,16 @@
         "plugins": ["@nestjs/swagger/plugin"]
       }
     },
+    "lab-server": {
+      "type": "application",
+      "root": "apps/lab-server",
+      "sourceRoot": "apps/lab-server/src",
+      "entryFile": "bootstrap/bootstrap",
+      "compilerOptions": {
+        "tsConfigPath": "apps/lab-server/tsconfig.app.json",
+        "plugins": ["@nestjs/swagger/plugin"]
+      }
+    },
     "prisma-client": {
       "type": "library",
       "root": "libs/prisma-client",
@@ -61,6 +71,15 @@
       "entryFile": "index",
       "compilerOptions": {
         "tsConfigPath": "libs/prisma-client/tsconfig.lib.json"
+      }
+    },
+    "weaviate-client": {
+      "type": "library",
+      "root": "libs/weaviate-client",
+      "entryFile": "index",
+      "sourceRoot": "libs/weaviate-client/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/weaviate-client/tsconfig.lib.json"
       }
     },
     "common": {
