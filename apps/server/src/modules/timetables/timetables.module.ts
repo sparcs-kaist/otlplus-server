@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
 import { RmqConnectionModule, RmqModule } from '@otl/rmq'
-import { StatisticsUpdatePublisher } from '@otl/rmq/exchanges/statistics/statistics.publish'
+import { StatisticsUpdatePublisher } from '@otl/rmq/exchanges/statistics/statistics.publish.v2'
 import { TIMETABLE_MQ } from '@otl/server-nest/modules/timetables/domain/out/TimetableMQ'
 
 import { PrismaModule } from '@otl/prisma-client/prisma.module'
