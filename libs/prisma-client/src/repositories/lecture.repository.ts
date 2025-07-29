@@ -4,7 +4,7 @@ import { LectureBasic, LectureScore } from '@otl/server-nest/modules/lectures/do
 import { Prisma, session_userprofile } from '@prisma/client'
 import * as console from 'node:console'
 
-import { applyOffset, applyOrder, groupBy } from '@otl/common/utils/util'
+import { groupBy } from '@otl/common/utils/util'
 
 import { mapLecture } from '@otl/prisma-client/common/mapper/lecture'
 import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
@@ -52,7 +52,7 @@ export class LectureRepository implements ServerConsumerLectureRepository {
 
   async filterByRequest(query: LectureQuery): Promise<ELecture.Details[]> {
     const DEFAULT_LIMIT = 300
-    const DEFAULT_ORDER = ['year', 'semester', 'old_code', 'class_no']
+    // const DEFAULT_ORDER = ['year', 'semester', 'old_code', 'class_no']
     const researchTypes = ['Individual Study', 'Thesis Study(Undergraduate)', 'Thesis Research(MA/phD)']
 
     const semesterFilter = this.semesterFilter(query?.year, query?.semester)
@@ -61,6 +61,7 @@ export class LectureRepository implements ServerConsumerLectureRepository {
     const typeFilter = this.courseRepository.typeFilter(query?.type)
     const groupFilter = this.courseRepository.groupFilter(query?.group)
     const keywordFilter = this.courseRepository.keywordFilter(query?.keyword, false)
+    const levelFilter = this.courseRepository.levelFilter(query?.level)
     const researchFilter = researchTypes.map((type) => ({
       type_en: {
         not: type,
@@ -83,6 +84,7 @@ export class LectureRepository implements ServerConsumerLectureRepository {
       groupFilter,
       keywordFilter,
       defaultFilter,
+      levelFilter,
     ].filter((filter): filter is object => filter !== null)
     const queryResult = await this.prismaRead.subject_lecture.findMany({
       include: {
@@ -94,17 +96,17 @@ export class LectureRepository implements ServerConsumerLectureRepository {
       where: {
         AND: filters,
       },
-      orderBy: [{ year: 'desc' }, { semester: 'desc' }, { id: 'asc' }, { type_en: 'asc' }],
+      orderBy: [{ year: 'desc' }, { semester: 'desc' }, { old_code: 'asc' }, { class_no: 'asc' }],
+      skip: query.offset ?? 0,
       take: query.limit ?? DEFAULT_LIMIT,
     })
 
-    const levelFilteredResult = this.courseRepository.levelFilter<ELecture.Details>(queryResult, query?.level)
-
-    const orderedQuery = applyOrder<ELecture.Details>(
-      levelFilteredResult,
-      (query.order ?? DEFAULT_ORDER) as (keyof ELecture.Details)[],
-    )
-    return applyOffset<ELecture.Details>(orderedQuery, query.offset ?? 0)
+    // const orderedQuery = applyOrder<ELecture.Details>(
+    //   levelFilteredResult,
+    //   (query.order ?? DEFAULT_ORDER) as (keyof ELecture.Details)[],
+    // )
+    // return applyOffset<ELecture.Details>(orderedQuery, query.offset ?? 0)
+    return queryResult
   }
 
   async findReviewWritableLectures(user: session_userprofile, date?: Date): Promise<ELecture.Details[]> {
