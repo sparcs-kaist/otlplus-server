@@ -1,9 +1,4 @@
-export interface PaperData {
-  id: string
-  title: string
-  prof: string
-  keywords: string[]
-}
+import { PaperData } from '@otl/lab-server/modules/paper/domain/PaperData'
 
 export interface PaperRepositoryInterface {
   insert(data: PaperData): Promise<void>

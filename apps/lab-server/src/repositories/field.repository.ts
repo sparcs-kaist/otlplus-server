@@ -1,8 +1,4 @@
-export interface FieldData {
-  id: string
-  keyword: string
-  parentField?: string
-}
+import { FieldData } from '@otl/lab-server/modules/field/domain/FieldData'
 
 export interface FieldRepositoryInterface {
   insert(data: FieldData): Promise<void>
