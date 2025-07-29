@@ -3,8 +3,6 @@ import { ServerConsumerCourseRepository } from '@otl/server-consumer/out/course.
 import { CourseBasic, CourseScore } from '@otl/server-nest/modules/courses/domain/course'
 import { Prisma } from '@prisma/client'
 
-import { applyOffset, applyOrder } from '@otl/common/utils/util'
-
 import { formatNewLectureCodeWithDot, orderFilter } from '@otl/prisma-client/common'
 import { mapCourse } from '@otl/prisma-client/common/mapper/course'
 import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
@@ -126,31 +124,39 @@ export class CourseRepository implements ServerConsumerCourseRepository {
     limit: number | undefined,
   ): Promise<ECourse.Details[]> {
     const DEFAULT_LIMIT = 150
-    const DEFAULT_ORDER = ['old_code'] satisfies (keyof ECourse.Details)[]
+    // const DEFAULT_ORDER = ['old_code'] satisfies (keyof ECourse.Details)[]
     const departmentFilter = this.departmentFilter(department)
     const typeFilter = this.typeFilter(type)
     const groupFilter = this.groupFilter(group)
     const keywordFilter = this.keywordFilter(keyword)
     const term_filter = this.termFilter(term)
-    const filterList: object[] = [departmentFilter, typeFilter, groupFilter, keywordFilter, term_filter].filter(
-      (filter): filter is object => filter !== null,
-    )
+    const levelFilter = this.levelFilter(level)
+    const filterList: object[] = [
+      departmentFilter,
+      typeFilter,
+      groupFilter,
+      keywordFilter,
+      term_filter,
+      levelFilter,
+    ].filter((filter): filter is object => filter !== null)
 
     const queryResult = await this.prismaRead.subject_course.findMany({
       include: ECourse.Details.include,
       where: {
         AND: filterList,
       },
+      orderBy: [{ old_code: 'asc' }],
+      skip: offset ?? 0,
       take: limit ?? DEFAULT_LIMIT,
     })
-    const levelFilteredResult = this.levelFilter<ECourse.Details>(queryResult, level)
 
     // Apply Ordering and Offset
-    const orderedResult = applyOrder<ECourse.Details>(
-      levelFilteredResult,
-      (order as (keyof ECourse.Details)[]) ?? DEFAULT_ORDER,
-    )
-    return applyOffset<ECourse.Details>(orderedResult, offset ?? 0)
+    // const orderedResult = applyOrder<ECourse.Details>(
+    //   levelFilteredResult,
+    //   (order as (keyof ECourse.Details)[]) ?? DEFAULT_ORDER,
+    // )
+    // return applyOffset<ECourse.Details>(orderedResult, offset ?? 0)
+    return queryResult
   }
 
   public departmentFilter(department_names?: string[]): object | null {
@@ -358,25 +364,28 @@ export class CourseRepository implements ServerConsumerCourseRepository {
     }
   }
 
-  public levelFilter<T extends ECourse.Details | ELecture.Details>(queryResult: T[], levels?: string[]): T[] {
-    if (!levels) {
-      return queryResult
+  public levelFilter(levels?: string[]): object | null {
+    if (!levels || levels.includes('ALL')) {
+      return null
     }
 
-    const levelFilters = levels.map((level) => level[0])
-    if (levels.includes('ALL')) {
-      return queryResult
-    }
+    const levelDigits = levels.map((l) => l[0])
+
+    // ETC일 경우: level이 선택된 levelDigit들에 **포함되지 않는** 값
     if (levels.includes('ETC')) {
-      return queryResult.filter((item) => {
-        const level = item.old_code.replace(/[^0-9]/g, '')[0]
-        return !levelFilters.includes(level)
-      })
+      return {
+        level: {
+          notIn: levelDigits,
+        },
+      }
     }
-    return queryResult.filter((item) => {
-      const level = item.old_code.replace(/[^0-9]/g, '')[0]
-      return levelFilters.includes(level)
-    })
+
+    // 일반적인 in 조건
+    return {
+      level: {
+        in: levelDigits,
+      },
+    }
   }
 
   async getUserTakenCourses(

@@ -487,6 +487,7 @@ model subject_course {
   title_no_space                                                                                                   String                                     @default(dbgenerated()) @db.VarChar(100)
   title_en_no_space                                                                                                String                                     @default(dbgenerated()) @db.VarChar(200)
   representative_lecture_id                                                                                        Int                                        @default(0)
+  level                                                                                                            String?                                    @default(dbgenerated("SUBSTRING(REGEXP_REPLACE(new_code, '[^0-9]', ''), 1, 1)")) @db.VarChar(20)
   main_relatedcoursedailyuserfeed                                                                                  main_relatedcoursedailyuserfeed[]
   planner_futureplanneritem                                                                                        planner_futureplanneritem[]
   review                                                                                                           review_review[]
@@ -632,6 +633,7 @@ model subject_lecture {
   timetable_timetable_lectures    timetable_timetable_lectures[]
   timetable_wishlist_lectures     timetable_wishlist_lectures[]
   sync_taken_lectures             sync_taken_lectures[]
+  level                           String?                              @default(dbgenerated("SUBSTRING(REGEXP_REPLACE(new_code, '[^0-9]', ''), 1, 1)")) @db.VarChar(20)
 
   @@index([deleted], map: "subject_lecture_deleted_bedc6156_uniq")
   @@index([type_en], map: "subject_lecture_type_en_45ee2d3a_uniq")
