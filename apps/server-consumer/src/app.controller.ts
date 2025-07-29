@@ -13,6 +13,7 @@ import {
 } from '@otl/server-consumer/messages/lecture'
 import { EVENT_TYPE, Message } from '@otl/server-consumer/messages/message'
 import { ProfessorScoreUpdateMessage } from '@otl/server-consumer/messages/professor'
+import { ReviewLikeUpdateMessage } from '@otl/server-consumer/messages/review'
 import { ConsumeMessage } from 'amqplib'
 import { plainToInstance } from 'class-transformer'
 
@@ -24,10 +25,6 @@ import { AppService } from './app.service'
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  // @RabbitSubscribe({
-  //   ...settings().getRabbitMQConfig().queueConfig[QueueSymbols.SCHOLAR_SYNC],
-  //   errorHandler: defaultNackErrorHandler,
-  // })
   @RabbitConsumer(QueueSymbols.SCHOLAR_SYNC)
   async handleScholarMessage(amqpMsg: ConsumeMessage) {
     const msg = JSON.parse(amqpMsg.content.toString())
@@ -56,10 +53,6 @@ export class AppController {
     return true
   }
 
-  // @RabbitSubscribe({
-  //   ...settings().getRabbitMQConfig().queueConfig[QueueSymbols.STATISTICS],
-  //   errorHandler: defaultNackErrorHandler,
-  // })
   @RabbitConsumer(QueueSymbols.STATISTICS)
   async handleStatisticsMessage(amqpMsg: ConsumeMessage) {
     const msg = JSON.parse(amqpMsg.content.toString())
@@ -105,15 +98,14 @@ export class AppController {
       }
     }
     if (request.type === EVENT_TYPE.REVIEW_LIKE) {
-      throw new Error('Test DLQ and retry')
-      // if (!ReviewLikeUpdateMessage.isValid(request)) {
-      //   throw new Error(`Invalid review like update message: ${JSON.stringify(request)}`)
-      // }
-      // const result = await this.appService.updateReviewLikeUpdateMessage(request, amqpMsg)
-      // if (!result) {
-      //   logger.error(`Failed to process review like update message: ${JSON.stringify(request)}`)
-      //   return new Nack(false)
-      // }
+      if (!ReviewLikeUpdateMessage.isValid(request)) {
+        throw new Error(`Invalid review like update message: ${JSON.stringify(request)}`)
+      }
+      const result = await this.appService.updateReviewLikeUpdateMessage(request, amqpMsg)
+      if (!result) {
+        logger.error(`Failed to process review like update message: ${JSON.stringify(request)}`)
+        return new Nack(false)
+      }
     }
     return true
   }
