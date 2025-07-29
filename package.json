@@ -9,11 +9,11 @@
     "format:check": "prettier --check .",
     "generate:server:api-docs": "tsx apps/server/docs/openapi-generator.ts",
     "build:all": "nest build server && nest build scholar-sync",
-    "build:server": "nest build server && yarn sentry:sourcemaps",
+    "build:server": "nest build server && yarn sentry:sourcemaps:dev",
     "postbuild:server": "cp -r apps/server/docs/swagger.json dist/apps/server/apps/server/docs/swagger.json",
     "build:scholar-sync": "nest build scholar-sync",
     "build:notification-consumer": "nest build notification-consumer",
-    "build:server-consumer": "nest build server-consumer",
+    "build:server-consumer": "nest build server-consumer && yarn sentry:sourcemaps:consumer-dev",
     "build:prisma-client": "nest build prisma-client",
     "build:common": "nest build common",
     "start:server:local": "cross-env NODE_ENV=local nest start server --watch",
@@ -55,7 +55,9 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "prepare": "husky",
     "ts-node": "cross-env NODE_ENV=local node -r ts-node/register -r tsconfig-paths/register ",
-    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org sentry --project otl-server-nest-dev ./dist/apps/server && sentry-cli --url https://sentry.sparcs.org/ sourcemaps upload --org sentry --project otl-server-nest-dev ./dist/apps/server"
+    "sentry:sourcemaps:consumer-dev": "sentry-cli sourcemaps inject --org sentry --project otl-server-consumer-dev ./dist/apps/server-consumer && sentry-cli --url https://sentry.sparcs.org/ sourcemaps upload --org sentry --project otl-server-consumer-dev ./dist/apps/server-consumer",
+    "sentry:sourcemaps:dev": "sentry-cli sourcemaps inject --org sentry --project otl-server-nest-dev ./dist/apps/server && sentry-cli --url https://sentry.sparcs.org/ sourcemaps upload --org sentry --project otl-server-nest-dev ./dist/apps/server",
+    "sentry:sourcemaps:prod": "sentry-cli sourcemaps inject --org sentry --project otl-server-nest-prod ./dist/apps/server && sentry-cli --url https://sentry.sparcs.org/ sourcemaps upload --org sentry --project otl-server-nest-prod ./dist/apps/server"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",

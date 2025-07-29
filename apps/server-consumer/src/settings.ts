@@ -23,6 +23,9 @@ const getPrismaReadConnectConfig = (): mariadb.PoolConfig => ({
   database: process.env.READ_DATABASE_NAME,
   connectionLimit: 10,
 })
+const sentryConfig = () => ({
+  dsn: process.env.SENTRY_DSN_SERVER_CONSUMER,
+})
 
 const getVersion = () => String(process.env.npm_package_version)
 
@@ -30,4 +33,5 @@ export default () => ({
   ormconfig: () => getPrismaConnectConfig(),
   ormReplicatedConfig: () => getPrismaReadConnectConfig(),
   getVersion: () => getVersion(),
+  getSentryConfig: () => sentryConfig(),
 })

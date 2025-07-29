@@ -1,7 +1,7 @@
 import { createKeyv, Keyv } from '@keyv/redis'
 import { CacheModule } from '@nestjs/cache-manager'
 import { Module } from '@nestjs/common'
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core'
+import { APP_GUARD, APP_INTERCEPTOR, DiscoveryModule } from '@nestjs/core'
 import { JwtService } from '@nestjs/jwt'
 import { ClientsModule } from '@nestjs/microservices'
 import { ClsPluginTransactional } from '@nestjs-cls/transactional'
@@ -76,6 +76,7 @@ async function createCacheStoreWithFallback(): Promise<Keyv> {
     SentryModule.forRoot(),
     PrismaModule.register(settings().ormconfig(), settings().ormReplicatedConfig()),
     RmqModule,
+    DiscoveryModule,
     AuthModule,
     CoursesModule,
     LecturesModule,

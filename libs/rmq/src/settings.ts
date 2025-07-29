@@ -163,6 +163,7 @@ const getRabbitMQConfig = (): {
         queue: QueueNames.NOTI_FCM,
         createQueueIfNotExists: true,
         queueOptions: {
+          durable: true,
           deadLetterExchange: ExchangeNames.NOTIFICATIONS_DLX,
         },
       },
@@ -172,6 +173,7 @@ const getRabbitMQConfig = (): {
         queue: QueueNames.NOTI_INFO_FCM,
         createQueueIfNotExists: true,
         queueOptions: {
+          durable: true,
           deadLetterExchange: ExchangeNames.NOTIFICATIONS_DLX,
         },
       },
@@ -181,6 +183,7 @@ const getRabbitMQConfig = (): {
         queue: QueueNames.NOTI_AD_FCM,
         createQueueIfNotExists: true,
         queueOptions: {
+          durable: true,
           deadLetterExchange: ExchangeNames.NOTIFICATIONS_DLX,
         },
       },
@@ -190,6 +193,7 @@ const getRabbitMQConfig = (): {
         queue: QueueNames.NOTI_NIGHT_AD_FCM,
         createQueueIfNotExists: true,
         queueOptions: {
+          durable: true,
           deadLetterExchange: ExchangeNames.NOTIFICATIONS_DLX,
         },
       },
@@ -198,24 +202,36 @@ const getRabbitMQConfig = (): {
         routingKey: 'notifications.fcm',
         queue: QueueNames.NOTI_FCM_DLQ,
         createQueueIfNotExists: true,
+        queueOptions: {
+          durable: true,
+        },
       },
       NOTI_INFO_FCM_DLQ: {
         exchange: ExchangeNames.NOTIFICATIONS_DLX,
         routingKey: 'notifications.info.fcm',
         queue: QueueNames.NOTI_INFO_FCM_DLQ,
         createQueueIfNotExists: true,
+        queueOptions: {
+          durable: true,
+        },
       },
       NOTI_AD_FCM_DLQ: {
         exchange: ExchangeNames.NOTIFICATIONS_DLX,
         routingKey: 'notifications.ad.fcm',
         queue: QueueNames.NOTI_AD_FCM_DLQ,
         createQueueIfNotExists: true,
+        queueOptions: {
+          durable: true,
+        },
       },
       NOTI_NIGHT_AD_FCM_DLQ: {
         exchange: ExchangeNames.NOTIFICATIONS_DLX,
         routingKey: 'notifications.night-ad.fcm',
         queue: QueueNames.NOTI_NIGHT_AD_FCM_DLQ,
         createQueueIfNotExists: true,
+        queueOptions: {
+          durable: true,
+        },
       },
       SCHOLAR_SYNC: {
         exchange: ExchangeNames.SCHOLAR_SYNC,
@@ -224,6 +240,7 @@ const getRabbitMQConfig = (): {
         createQueueIfNotExists: true,
         queueOptions: {
           deadLetterExchange: ExchangeNames.SCHOLAR_SYNC_DLX,
+          durable: true,
         },
       },
       SCHOLAR_SYNC_DLQ: {
@@ -231,6 +248,9 @@ const getRabbitMQConfig = (): {
         routingKey: 'scholar-sync',
         queue: QueueNames.SCHOLAR_SYNC_DLQ,
         createQueueIfNotExists: true,
+        queueOptions: {
+          durable: true,
+        },
       },
       STATISTICS: {
         exchange: ExchangeNames.STATISTICS,
@@ -239,6 +259,7 @@ const getRabbitMQConfig = (): {
         createQueueIfNotExists: true,
         queueOptions: {
           deadLetterExchange: ExchangeNames.STATISTICS_DLX,
+          durable: true,
         },
       },
       STATISTICS_DLQ: {
@@ -246,6 +267,9 @@ const getRabbitMQConfig = (): {
         routingKey: 'statistics',
         queue: QueueNames.STATISTICS_DLQ,
         createQueueIfNotExists: true,
+        queueOptions: {
+          durable: true,
+        },
       },
     },
   }

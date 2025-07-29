@@ -1,0 +1,201 @@
+// @otl/rmq/rabbit-consumer-explorer.ts
+import { Injectable, OnModuleInit } from '@nestjs/common'
+import { DiscoveryService, Reflector } from '@nestjs/core'
+import { RABBIT_CONSUMER_METADATA, RabbitConsumerMetadata } from '@otl/rmq/decorator/rabbit-consumer.decorator'
+import { RabbitMQService } from '@otl/rmq/rmq.service'
+import settings from '@otl/rmq/settings'
+import { Channel, ConsumeMessage } from 'amqplib'
+import { Observable } from 'rxjs'
+import { bufferTime, filter } from 'rxjs/operators'
+
+import logger from '@otl/common/logger/logger'
+
+const MAX_RETRIES = 3
+const RETRY_DELAYS = [10000, 20000, 30000] // 10초, 20초, 30초
+const CONSUME_TIMEOUT = 5000 // 5초
+
+@Injectable()
+export class RabbitConsumerExplorer implements OnModuleInit {
+  private readonly config = settings().getRabbitMQConfig()
+
+  private readonly logger = logger
+
+  constructor(
+    private readonly discoveryService: DiscoveryService,
+    private readonly reflector: Reflector,
+    private readonly rabbitMQService: RabbitMQService,
+  ) {}
+
+  onModuleInit() {
+    this.discoverAndBindConsumers()
+  }
+
+  private discoverAndBindConsumers() {
+    const providers = this.discoveryService.getProviders()
+    for (const wrapper of providers) {
+      if (!wrapper.instance || !wrapper.metatype) continue
+
+      const { instance } = wrapper
+      const prototype = Object.getPrototypeOf(instance)
+      if (!prototype) continue
+
+      const methodNames = Object.getOwnPropertyNames(prototype).filter(
+        (name) => typeof instance[name] === 'function' && name !== 'constructor',
+      )
+
+      for (const methodName of methodNames) {
+        const method = instance[methodName]
+        const metadata = this.reflector.get<RabbitConsumerMetadata>(RABBIT_CONSUMER_METADATA, method)
+
+        if (metadata) {
+          this.setupConsumer(instance, method, metadata, methodName)
+        }
+      }
+    }
+  }
+
+  private async setupConsumer(
+    instance: object,
+    method: (payload: any) => Promise<void>,
+    metadata: RabbitConsumerMetadata,
+    methodName: string,
+  ) {
+    const { queueSymbol, options } = metadata
+    const queueConfig = this.config.queueConfig[queueSymbol]
+
+    if (!queueConfig || !queueConfig.queue) {
+      this.logger.error(`Queue configuration for "${queueSymbol}" is missing or invalid.`)
+      return
+    }
+
+    const exchangeConfig = this.config.exchangeConfig.exchangeMap[queueConfig.exchange as string]
+    if (!exchangeConfig) {
+      this.logger.error(`Exchange configuration for "${queueConfig.exchange}" not found.`)
+      return
+    }
+
+    try {
+      const connection = await this.rabbitMQService.getConnection()
+      // ❗️ 각 컨슈머를 위한 독립적인 채널 생성
+      const channel = await connection.createChannel()
+      channel.on('error', (err) => {
+        this.logger.error(`💥 Channel Error for queue ${queueConfig.queue}`, err.stack)
+        // 채널 에러 시 재설정 로직을 추가할 수 있습니다.
+      })
+
+      // ⚙️ Prefetch 설정 (컨슈머별)
+      await channel.prefetch(options.prefetch ?? 10)
+
+      // Exchange, Queue, Binding 설정
+      await channel.assertExchange(exchangeConfig.name, exchangeConfig.type as string, exchangeConfig.options || {})
+      await channel.assertQueue(queueConfig.queue, queueConfig.queueOptions || {})
+      await channel.bindQueue(queueConfig.queue, exchangeConfig.name, queueConfig.routingKey as string)
+
+      // 🚀 메시지 소비 시작
+      if (options.batchSize) {
+        this.consumeInBatch(channel, queueConfig.queue, instance, method, options)
+      }
+      else {
+        this.consumeIndividually(channel, queueConfig, instance, method)
+      }
+
+      this.logger.info(
+        `🐇 Consumer setup successful for ${instance.constructor.name}.${methodName} on queue: ${queueConfig.queue}`,
+      )
+    }
+    catch (err: any) {
+      this.logger.error(`❌ Failed to setup consumer for queue ${queueConfig.queue}`, err.stack)
+    }
+  }
+
+  /**
+   * 메시지를 개별적으로 처리하는 컨슈머
+   */
+  private consumeIndividually(
+    channel: Channel,
+    queueConfig: any,
+    instance: object,
+    method: (payload: any) => Promise<void>,
+  ) {
+    channel.consume(queueConfig.queue, async (msg) => {
+      if (!msg) return
+
+      const currentRetry = msg?.properties?.headers?.['x-retry-count'] || 0
+
+      try {
+        await Promise.race([
+          method.call(instance, msg),
+          new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Consumer timeout')), CONSUME_TIMEOUT)
+          }),
+        ])
+        channel.ack(msg)
+      }
+      catch (err: any) {
+        console.log(queueConfig.exchange)
+        const exchangeName = this.config.exchangeConfig.exchangeMap[queueConfig.exchange].name
+
+        if (currentRetry < MAX_RETRIES) {
+          // ✅ 원래 큐로 다시 보내되, x-delay 헤더로 지연 시간 설정
+          const delay = RETRY_DELAYS[currentRetry]
+          this.logger.warn(
+            `Retrying message for queue ${queueConfig.queue}. Delay: ${delay}ms (Attempt: ${currentRetry + 1}) Error: ${err.message}`,
+          )
+
+          channel.publish(exchangeName, queueConfig.routingKey, msg.content, {
+            ...msg.properties,
+            headers: {
+              ...msg.properties.headers,
+              'x-retry-count': currentRetry + 1,
+              'x-delay': delay, // 🚀 x-delayed-message 플러그인이 이 헤더를 사용
+            },
+          })
+        }
+        else {
+          // ❌ 최대 재시도 도달, DLQ로 전송
+          this.logger.error(`Max retries reached. Sending to DLQ for queue ${queueConfig.queue}`)
+          // deadLetterExchange를 사용하기 위해 nack 처리
+          // requeue: false로 설정해야 DLX로 감
+          channel.nack(msg, false, false)
+          return // nack 후에는 ack를 호출하면 안되므로 여기서 종료
+        }
+
+        // 재발행에 성공했으므로 원본 메시지는 ack
+        channel.ack(msg)
+      }
+    })
+  }
+
+  /**
+   * 메시지를 배치(batch)로 처리하는 컨슈머
+   */
+  private consumeInBatch(
+    channel: Channel,
+    queue: string,
+    instance: object,
+    method: (payload: any) => Promise<void>,
+    options: RabbitConsumerMetadata['options'],
+  ) {
+    const message$ = new Observable<ConsumeMessage>((subscriber) => {
+      channel.consume(queue, (msg) => msg && subscriber.next(msg), { noAck: false })
+    })
+
+    message$
+      .pipe(
+        bufferTime(options.batchTime ?? 1000, undefined),
+        filter((batch) => batch.length > 0),
+      )
+      .subscribe(async (messages: ConsumeMessage[]) => {
+        try {
+          await method.call(instance, messages)
+          // 모든 메시지가 성공적으로 처리되면 일괄 ack
+          messages.forEach((msg) => channel.ack(msg))
+        }
+        catch (err: any) {
+          this.logger.error(`❌ Error processing batch from queue ${queue}`, err.stack)
+          // 배치 처리 실패 시 모든 메시지를 nack
+          messages.forEach((msg) => channel.nack(msg, false, false))
+        }
+      })
+  }
+}
