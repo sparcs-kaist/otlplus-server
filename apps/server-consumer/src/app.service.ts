@@ -23,8 +23,8 @@ export class AppService {
   ) {}
 
   async updateLectureCommonTitle(msg: LectureCommonTitleUpdateMessage, _amqpMsg: ConsumeMessage): Promise<boolean> {
-    const { lectureId } = msg
-    return await this.lectureService.updateClassTitle(lectureId)
+    const { lectureId, courseId } = msg
+    return await this.lectureService.updateClassTitle(lectureId, courseId)
   }
 
   async updateLectureScoreUpdateMessage(msg: LectureScoreUpdateMessage, _amqpMsg: ConsumeMessage) {

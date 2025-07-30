@@ -16,8 +16,8 @@ export class LectureService {
     private readonly reviewRepository: ServerConsumerReviewRepository,
   ) {}
 
-  public async updateClassTitle(lectureId: number): Promise<boolean> {
-    const lectures = await this.lectureRepository.getRelatedLectureById(lectureId)
+  public async updateClassTitle(lectureId: number, courseId: number): Promise<boolean> {
+    const lectures = await this.lectureRepository.getRelatedLectureById(lectureId, courseId)
     const result = await this.addTitleFormat(lectures)
     if (!result) {
       throw new Error(`Failed to update lecture title for lectureId: ${lectureId}`)

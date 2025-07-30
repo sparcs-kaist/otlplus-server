@@ -258,7 +258,7 @@ export class SyncService {
         if (foundLecture) {
           notExistingLectures.delete(foundLecture.id)
           if (this.checkClassTitleUpdateRequired(foundLecture)) {
-            await this.SyncMQ.publishLectureTitleUpdate(foundLecture.id).catch((e) => {
+            await this.SyncMQ.publishLectureTitleUpdate(foundLecture.id, foundLecture.course_id).catch((e) => {
               this.logger.error(`Failed to publish LectureTitleUpdate for lecture ${foundLecture.id}`, e)
             })
           }
@@ -290,7 +290,7 @@ export class SyncService {
         else {
           const newLecture = await this.syncRepository.createLecture(derivedLecture)
           // @Todo : Message(LectureTitleUpdate) 보내기
-          await this.SyncMQ.publishLectureTitleUpdate(newLecture.id).catch((e) => {
+          await this.SyncMQ.publishLectureTitleUpdate(newLecture.id, newLecture.course_id).catch((e) => {
             this.logger.error(`Failed to publish LectureTitleUpdate for lecture ${newLecture.id}`, e)
           })
           const addedIds = professorCharges.map((charge) => professorMap.get(charge.PROF_ID)!.id)

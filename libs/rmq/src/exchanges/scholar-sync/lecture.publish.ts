@@ -28,10 +28,11 @@ export class ScholarUpdatePublisher implements ScholarMQ {
     return true
   }
 
-  async publishLectureTitleUpdate(lectureId: number): Promise<boolean> {
+  async publishLectureTitleUpdate(lectureId: number, courseId: number): Promise<boolean> {
     const { exchange, routingKey } = this.getExchangeAndRouting()
     const payload: LectureCommonTitleUpdateMessage = {
       lectureId,
+      courseId,
       type: EVENT_TYPE.LECTURE_TITLE,
     }
     await this.rabbitPublisherService.publishToExchange(exchange, routingKey, payload)

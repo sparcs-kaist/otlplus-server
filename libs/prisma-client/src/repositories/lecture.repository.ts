@@ -320,7 +320,7 @@ export class LectureRepository implements ServerConsumerLectureRepository {
     return mapLecture(lecture)
   }
 
-  async getRelatedLectureById(lectureId: number): Promise<LectureBasic[]> {
+  async getRelatedLectureById(lectureId: number, courseId: number): Promise<LectureBasic[]> {
     const lecture = await this.prismaRead.subject_lecture.findUniqueOrThrow({
       where: {
         id: lectureId,
@@ -329,7 +329,7 @@ export class LectureRepository implements ServerConsumerLectureRepository {
     return this.prismaRead.subject_lecture
       .findMany({
         where: {
-          course_id: lecture.course_id,
+          course_id: courseId,
           deleted: false,
           year: lecture.year,
           semester: lecture.semester,

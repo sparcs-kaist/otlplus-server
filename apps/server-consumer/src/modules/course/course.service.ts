@@ -33,7 +33,6 @@ export class CourseService {
         `Failed to update course representative lecture for courseId: ${courseId}, lectureId: ${lectureId}`,
       )
     }
-    console.log(result.id, result.representativeLectureId)
     return result
   }
 }

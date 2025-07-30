@@ -5,9 +5,15 @@ export class LectureUpdateMessage extends Message {
 }
 
 export class LectureCommonTitleUpdateMessage extends LectureUpdateMessage {
+  courseId!: number
+
   public static isValid(msg: any): msg is LectureCommonTitleUpdateMessage {
     return (
-      msg && typeof msg.lectureId === 'number' && typeof msg.type === 'string' && msg.type === EVENT_TYPE.LECTURE_TITLE
+      msg
+      && typeof msg.lectureId === 'number'
+      && typeof msg.courseId === 'number'
+      && typeof msg.type === 'string'
+      && msg.type === EVENT_TYPE.LECTURE_TITLE
     )
   }
 }
