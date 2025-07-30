@@ -27,13 +27,13 @@ export class CourseService {
   }
 
   async updateRepresentativeLecture(courseId: number, lectureId: number | null) {
-    console.log(courseId, lectureId)
-    const result = this.courseRepository.updateCourseRepresentativeLecture(courseId, lectureId)
+    const result = await this.courseRepository.updateCourseRepresentativeLecture(courseId, lectureId)
     if (!result) {
       throw new Error(
         `Failed to update course representative lecture for courseId: ${courseId}, lectureId: ${lectureId}`,
       )
     }
+    console.log(result.id, result.representativeLectureId)
     return result
   }
 }
