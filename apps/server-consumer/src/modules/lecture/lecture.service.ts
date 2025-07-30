@@ -26,7 +26,8 @@ export class LectureService {
     let lock
     try {
       lock = await this.redlock.acquire([resourceKey], lockDuration)
-
+      console.log(`Acquired lock for resource: ${resourceKey}`)
+      console.log(lectureId, courseId)
       const lectures = await this.lectureRepository.getRelatedLectureById(lectureId, courseId)
       const result = await this.addTitleFormat(lectures)
       if (!result) {
