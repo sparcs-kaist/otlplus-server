@@ -12,13 +12,13 @@ export class ReviewService {
     const likeCount = await this.reviewRepository.getReviewLikeCount(reviewId)
     if (likeCount === null) {
       console.error(`Failed to get like count for reviewId: ${reviewId}`)
-      return false
+      throw new Error(`Review with ID ${reviewId} not found or has no likes.`)
     }
     const review = await this.reviewRepository.updateReviewLikeCount(reviewId, likeCount)
     if (!review) {
       console.error(`Failed to update like count for reviewId: ${reviewId}`)
-      return false
+      throw new Error(`Failed to update like count for reviewId: ${reviewId}`)
     }
-    return true
+    return review
   }
 }

@@ -2,11 +2,9 @@ import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq'
 import { DynamicModule, Module } from '@nestjs/common'
 import settings from '@otl/rmq/settings'
 
-import { RmqService } from './rmq.service'
-
 @Module({
-  providers: [RmqService],
-  exports: [RmqService],
+  providers: [],
+  exports: [],
 })
 export class RmqConnectionModule {
   static register(): DynamicModule {

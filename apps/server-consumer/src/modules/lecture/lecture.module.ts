@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common'
+import { RedlockModule } from '@otl/redis'
 import { RmqConnectionModule } from '@otl/rmq'
 import { LectureService } from '@otl/server-consumer/modules/lecture/lecture.service'
 import { LECTURE_REPOSITORY } from '@otl/server-consumer/out/lecture.repository'
@@ -9,7 +10,14 @@ import { LectureRepository, PrismaModule, ReviewsRepository } from '@otl/prisma-
 import { ProfessorRepository } from '@otl/prisma-client/repositories/professor.repository'
 
 @Module({
-  imports: [PrismaModule, RmqConnectionModule.register()],
+  imports: [
+    PrismaModule,
+    RmqConnectionModule.register(),
+    RedlockModule.register({
+      retryCount: 0,
+      retryDelay: 1000,
+    }),
+  ],
   providers: [
     {
       provide: LECTURE_REPOSITORY,

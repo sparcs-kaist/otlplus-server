@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common'
 import { ServerConsumerLectureRepository } from '@otl/server-consumer/out/lecture.repository'
 import { LectureBasic, LectureScore } from '@otl/server-nest/modules/lectures/domain/lecture'
 import { Prisma, session_userprofile } from '@prisma/client'
-import * as console from 'node:console'
 
 import { groupBy } from '@otl/common/utils/util'
 
@@ -320,7 +319,7 @@ export class LectureRepository implements ServerConsumerLectureRepository {
     return mapLecture(lecture)
   }
 
-  async getRelatedLectureById(lectureId: number): Promise<LectureBasic[]> {
+  async getRelatedLectureById(lectureId: number, courseId: number): Promise<LectureBasic[]> {
     const lecture = await this.prismaRead.subject_lecture.findUniqueOrThrow({
       where: {
         id: lectureId,
@@ -329,7 +328,7 @@ export class LectureRepository implements ServerConsumerLectureRepository {
     return this.prismaRead.subject_lecture
       .findMany({
         where: {
-          course_id: lecture.course_id,
+          course_id: courseId,
           deleted: false,
           year: lecture.year,
           semester: lecture.semester,
@@ -352,31 +351,24 @@ export class LectureRepository implements ServerConsumerLectureRepository {
       },
     } as const
     const { getTitle, updateClassField, updateCommonField } = titleFieldMap[isEnglish === true ? 'en' : 'ko']
+    for (const lecture of lectures) {
+      const titleField = getTitle(lecture)
 
-    return await Promise.all(
-      lectures.map(async (lecture) => {
-        const titleField = getTitle(lecture)
+      const classTitle = titleField !== commonTitle
+        ? titleField.substring(commonTitle.length)
+        : lecture.classNo.length > 0
+          ? lecture.classNo
+          : 'A'
 
-        const classTitle = titleField !== commonTitle
-          ? titleField.substring(commonTitle.length)
-          : lecture.classNo.length > 0
-            ? lecture.classNo
-            : 'A'
-
-        return this.prisma.subject_lecture.update({
-          where: { id: lecture.id },
-          data: {
-            [updateCommonField]: commonTitle,
-            [updateClassField]: classTitle,
-          },
-        })
-      }),
-    )
-      .then((results) => results.length > 0)
-      .catch((error) => {
-        console.error('Error updating lecture titles:', error)
-        return false
+      await this.prisma.subject_lecture.update({
+        where: { id: lecture.id },
+        data: {
+          [updateCommonField]: commonTitle,
+          [updateClassField]: classTitle,
+        },
       })
+    }
+    return true
   }
 
   async updateLectureScore(id: number, grades: LectureScore): Promise<LectureBasic> {

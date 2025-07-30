@@ -26,6 +26,8 @@ export class Course {
   titleNoSpace!: string
 
   titleEnNoSpace!: string
+
+  representativeLectureId!: number | null
 }
 
 export class CourseScore {
