@@ -132,7 +132,6 @@ export class RabbitConsumerExplorer implements OnModuleInit {
         channel.ack(msg)
       }
       catch (err: any) {
-        console.log(queueConfig.exchange)
         const exchangeName = this.config.exchangeConfig.exchangeMap[queueConfig.exchange].name
 
         if (currentRetry < MAX_RETRIES) {

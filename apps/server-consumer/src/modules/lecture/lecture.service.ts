@@ -43,6 +43,7 @@ export class LectureService {
         logger.error(err)
         return false
       }
+      logger.error(err)
       throw err
     }
     finally {
