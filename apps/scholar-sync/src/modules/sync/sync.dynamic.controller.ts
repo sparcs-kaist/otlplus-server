@@ -166,4 +166,7 @@ export class SyncDynamicController {
     job.setTime(new CronTime.CronTime(cron))
     this.logger.log(`Job ${jobName} set to ${cron}`)
   }
+
+  @Post('takenLecture/request')
+  async postNewSyncRequest() {}
 }
