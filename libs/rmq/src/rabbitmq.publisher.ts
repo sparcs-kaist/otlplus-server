@@ -17,7 +17,7 @@ export class RabbitPublisherService {
     if (!connection) {
       throw new Error('RabbitMQ connection is not initialized')
     }
-    const channel = await connection.createChannel()
+    const channel = await this.rabbitMQService.getChannel()
 
     if (!channel) {
       throw new Error('RabbitMQ channel is not initialized')

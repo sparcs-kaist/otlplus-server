@@ -11,9 +11,12 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
 
   private connection: amqplib.ChannelModel | undefined
 
+  private channel: amqplib.Channel | undefined
+
   async onModuleInit() {
     try {
       this.connection = await this.createConnection()
+      this.channel = await this.createChannel()
       this.logger.log('✅ RabbitMQ connection initialized')
     }
     catch (err) {
@@ -67,5 +70,34 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
       return await this.createConnection()
     }
     return this.connection
+  }
+
+  public async createChannel(): Promise<amqplib.Channel> {
+    if (this.channel) {
+      this.logger.warn('RabbitMQ channel already exists. Returning existing channel.')
+      return this.channel
+    }
+    try {
+      if (!this.connection) {
+        this.connection = await this.createConnection()
+      }
+      this.channel = await this.connection.createChannel()
+      this.channel.on('error', (err) => {
+        this.logger.error('💥 RabbitMQ Channel Error', err)
+      })
+      this.logger.log('✅ RabbitMQ Channel created')
+      return this.channel
+    }
+    catch (err) {
+      this.logger.error('❌ Failed to create RabbitMQ channel', err)
+      throw err
+    }
+  }
+
+  public async getChannel(): Promise<amqplib.Channel> {
+    if (!this.channel) {
+      this.channel = await this.createChannel()
+    }
+    return this.channel
   }
 }
