@@ -258,9 +258,14 @@ export class SyncService {
         if (foundLecture) {
           notExistingLectures.delete(foundLecture.id)
           if (this.checkClassTitleUpdateRequired(foundLecture)) {
-            await this.SyncMQ.publishLectureTitleUpdate(foundLecture.id).catch((e) => {
-              this.logger.error(`Failed to publish LectureTitleUpdate for lecture ${foundLecture.id}`, e)
-            })
+            await this.SyncMQ.publishLectureTitleUpdate(foundLecture.id, foundLecture.course_id)
+              .then(() => {
+                this.logger.log(`Published LectureTitleUpdate for lecture ${foundLecture.id}`)
+              })
+              .catch((e) => {
+                this.logger.error(`Failed to publish LectureTitleUpdate for lecture ${foundLecture.id}`, e)
+              })
+            console.log(foundLecture.id, foundLecture.course_id)
           }
           if (!LectureInfo.equals(foundLecture, derivedLecture)) {
             const updatedLecture = await this.syncRepository.updateLecture(foundLecture.id, derivedLecture)
@@ -290,9 +295,13 @@ export class SyncService {
         else {
           const newLecture = await this.syncRepository.createLecture(derivedLecture)
           // @Todo : Message(LectureTitleUpdate) 보내기
-          await this.SyncMQ.publishLectureTitleUpdate(newLecture.id).catch((e) => {
-            this.logger.error(`Failed to publish LectureTitleUpdate for lecture ${newLecture.id}`, e)
-          })
+          await this.SyncMQ.publishLectureTitleUpdate(newLecture.id, newLecture.course_id)
+            .then(() => {
+              this.logger.log(`Published LectureTitleUpdate for lecture ${newLecture.id}`)
+            })
+            .catch((e) => {
+              this.logger.error(`Failed to publish LectureTitleUpdate for lecture ${newLecture.id}`, e)
+            })
           const addedIds = professorCharges.map((charge) => professorMap.get(charge.PROF_ID)!.id)
 
           await this.syncRepository.updateLectureProfessors(newLecture.id, {

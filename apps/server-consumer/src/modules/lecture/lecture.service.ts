@@ -1,9 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common'
+import { REDLOCK } from '@otl/redis/redlock.provider'
 import { LECTURE_REPOSITORY, ServerConsumerLectureRepository } from '@otl/server-consumer/out/lecture.repository'
 import { PROFESSOR_REPOSITORY, ServerConsumerProfessorRepository } from '@otl/server-consumer/out/professor.repository'
 import { REVIEW_REPOSITORY, ServerConsumerReviewRepository } from '@otl/server-consumer/out/review.repository'
 import { LectureBasic, LectureScore } from '@otl/server-nest/modules/lectures/domain/lecture'
 import { ReviewWithLecture } from '@otl/server-nest/modules/reviews/domain/review'
+import Redlock, { ExecutionError, ResourceLockedError } from 'redlock'
+
+import logger from '@otl/common/logger/logger'
 
 @Injectable()
 export class LectureService {
@@ -14,21 +18,41 @@ export class LectureService {
     private readonly professorRepository: ServerConsumerProfessorRepository,
     @Inject(REVIEW_REPOSITORY)
     private readonly reviewRepository: ServerConsumerReviewRepository,
+    @Inject(REDLOCK)
+    private readonly redlock: Redlock,
   ) {}
 
-  public async updateClassTitle(lectureId: number): Promise<boolean> {
-    const lectures = await this.lectureRepository.getRelatedLectureById(lectureId)
-    const result = await this.addTitleFormat(lectures)
-    if (!result) {
-      throw new Error(`Failed to update lecture title for lectureId: ${lectureId}`)
+  public async updateClassTitle(lectureId: number, courseId: number) {
+    const resourceKey = `locks:course:${courseId}:update-title`
+    const lockDuration = 10000
+    let lock
+    try {
+      lock = await this.redlock.acquire([resourceKey], lockDuration)
+      const lectures = await this.lectureRepository.getRelatedLectureById(lectureId, courseId)
+      const result = await this.addTitleFormat(lectures)
+      if (!result) {
+        throw new Error(`Failed to update lecture title for lectureId: ${lectureId}`)
+      }
+      return await this.addTitleFormatEn(lectures)
     }
-    return await this.addTitleFormatEn(lectures)
+    catch (err: any) {
+      if (err instanceof ExecutionError || err instanceof ResourceLockedError) {
+        // 일단 락을 획득하지 못하면 그저 넘어가도록 함 (다르게 획득된 락이 3번 retry를 시도하기 때문)
+        logger.warn(`Failed to acquire lock for courseId: ${courseId}. Reason: ${err.message}`)
+        return false
+      }
+      throw err
+    }
+    finally {
+      if (lock) {
+        await lock.release()
+      }
+    }
   }
 
-  public async updateScore(lectureId: number): Promise<boolean> {
+  public async updateScore(lectureId: number) {
     const lecture = await this.lectureRepository.getLectureById(lectureId)
-    await this.lectureRecalcScore(lecture)
-    return true
+    return await this.lectureRecalcScore(lecture)
   }
 
   private async lectureRecalcScore(lecture: LectureBasic) {

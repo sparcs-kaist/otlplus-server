@@ -29,5 +29,6 @@ export function mapCourse(course: ECourse.Basic): CourseBasic {
     latestWrittenDatetime: course.latest_written_datetime,
     titleNoSpace: course.title_no_space,
     titleEnNoSpace: course.title_en_no_space,
+    representativeLectureId: course.representative_lecture_id,
   }
 }

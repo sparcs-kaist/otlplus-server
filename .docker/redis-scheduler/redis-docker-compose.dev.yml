@@ -11,6 +11,7 @@ services:
     volumes:
       - ./redis-data:/data
       - ./redis.template.conf:/usr/local/etc/redis/redis.template.conf
+    restart: unless-stopped
     entrypoint: ['/bin/sh', '-c']
     command:
       - |
