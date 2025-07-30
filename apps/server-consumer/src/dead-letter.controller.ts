@@ -1,4 +1,3 @@
-import { RabbitPayload } from '@golevelup/nestjs-rabbitmq'
 import { Injectable } from '@nestjs/common'
 import { RabbitConsumer } from '@otl/rmq/decorator/rabbit-consumer.decorator'
 import { QueueSymbols } from '@otl/rmq/settings'
@@ -17,7 +16,7 @@ export class DeadLetterController {
    * SCHOLAR_SYNC_DLQ 메시지 핸들러
    */
   @RabbitConsumer(QueueSymbols.SCHOLAR_SYNC_DLQ)
-  async handleScholarSyncDLQ(@RabbitPayload() msg: any, amqpMsg: ConsumeMessage) {
+  async handleScholarSyncDLQ(amqpMsg: ConsumeMessage) {
     logger.info(`[DLQ] Received message in SCHOLAR_DLQ: ${JSON.stringify(amqpMsg)}`)
     const content = JSON.parse(amqpMsg.content.toString())
     const { headers } = amqpMsg.properties
