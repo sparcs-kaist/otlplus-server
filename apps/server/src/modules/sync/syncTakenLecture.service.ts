@@ -1,5 +1,14 @@
-import { Injectable } from '@nestjs/common'
+import { Inject, Injectable } from '@nestjs/common'
+import { REDIS_CLIENT } from '@otl/redis/redis.provider'
 import { ISync } from '@otl/server-nest/common/interfaces/ISync'
+import { TakenLectureMQ } from '@otl/server-nest/modules/sync/domain/sync.mq'
+import * as Sentry from '@sentry/node'
+import { StatusCodes } from 'http-status-codes'
+import Redis from 'ioredis'
+
+import { SyncProgress } from '@otl/common'
+import { SyncStatus } from '@otl/common/enum/sync'
+import { SyncException } from '@otl/common/exception/sync.exception'
 
 import { ELecture, ETakenLecture } from '@otl/prisma-client/entities'
 import { SyncRepository } from '@otl/prisma-client/repositories'
@@ -11,6 +20,8 @@ export class SyncTakenLectureService {
   constructor(
     private readonly syncRepository: SyncRepository,
     private readonly slackNoti: SlackNotiService,
+    @Inject(REDIS_CLIENT) private readonly redis: Redis,
+    @Inject(TakenLectureMQ) private readonly takenLectureMQ: TakenLectureMQ,
   ) {}
 
   async syncTakenLecture(data: ISync.TakenLectureBody) {
@@ -151,5 +162,73 @@ export class SyncTakenLectureService {
     if (Number.isNaN(studentId)) return // Skip if student_id is not a number
     const rawTakenLectures = await this.syncRepository.getRawTakenLecturesOfStudent(studentId)
     await this.syncRepository.repopulateTakenLecturesOfUser(user.id, rawTakenLectures)
+  }
+
+  async createRequest(year: number, semester: number, studentId: number) {
+    const jobIdentifier = `${studentId}:${year}:${semester}`
+    const statusKey = `taken-lecture-sync:status:${jobIdentifier}`
+
+    const existingRequestId = await this.redis.get(statusKey)
+    if (existingRequestId) {
+      const progressKey = `taken-lecture-sync:progress:${existingRequestId}`
+      const progressData = await this.redis.get(progressKey)
+      if (progressData) {
+        const error = new SyncException(
+          StatusCodes.BAD_REQUEST,
+          SyncException.DUPLICATE_TAKEN_LECTURE_SYNC_REQUEST,
+          'createRequest',
+        )
+        Sentry.captureException(error)
+        return { requestId: existingRequestId, ...JSON.parse(progressData) }
+      }
+    }
+
+    const requestId = crypto.randomUUID()
+    const progressKey = `taken-lecture-sync:progress:${requestId}`
+    const initialProgress: SyncProgress = {
+      status: SyncStatus.NotStarted,
+      completed: 0,
+      total: 0,
+      startedAt: new Date(),
+    }
+    const oneHourInSeconds = 3600
+
+    // 원자성을 보장하기 위해 Redis 트랜잭션(MULTI) 사용
+    await this.redis
+      .multi()
+      .set(statusKey, requestId, 'EX', oneHourInSeconds) // 1시간 후 만료
+      .set(progressKey, JSON.stringify(initialProgress), 'EX', oneHourInSeconds)
+      .exec()
+
+    await this.takenLectureMQ.publishTakenLectureSyncRequest(requestId, studentId, year, semester)
+    return { requestId, ...initialProgress }
+  }
+
+  async getActiveSyncRequest(requestId: string) {
+    const progressKey = `taken-lecture-sync:progress:${requestId}`
+    const progressData = await this.redis.get(progressKey)
+
+    if (!progressData) {
+      return null
+    }
+    const progress: SyncProgress = JSON.parse(progressData)
+    return { requestId, ...progress }
+  }
+
+  async getSyncRequests(year: number, semester: number, studentId: number) {
+    const statusKey = `taken-lecture-sync:status:${studentId}:${year}:${semester}`
+    const requestId = await this.redis.get(statusKey)
+
+    if (!requestId) {
+      return null
+    }
+
+    const progress = await this.getActiveSyncRequest(requestId)
+
+    if (progress && (progress.status === 'PENDING' || progress.status === 'IN_PROGRESS')) {
+      return requestId
+    }
+
+    return null
   }
 }

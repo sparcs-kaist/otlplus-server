@@ -463,4 +463,24 @@ export namespace ISync {
     @ValidateNested()
     charges!: ScholarChargeType[]
   }
+
+  export class TakenLectureSyncBody {
+    /** 동기화 대상 연도 */
+    @IsInt()
+    year!: number
+
+    /** 동기화 대상 학기 */
+    @IsIn([1, 2, 3, 4])
+    semester!: number
+  }
+
+  export class TakenLectureSyncQuery {
+    /** 동기화 대상 연도 */
+    @IsInt()
+    year!: number
+
+    /** 동기화 대상 학기 */
+    @IsIn([1, 2, 3, 4])
+    semester!: number
+  }
 }

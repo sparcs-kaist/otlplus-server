@@ -26,6 +26,8 @@
       "@otl/prisma-client/*": ["../../libs/prisma-client/src/*"],
       "@otl/rmq": ["../../libs/rmq/src"],
       "@otl/rmq/*": ["../../libs/rmq/src/*"],
+      "@otl/redis": ["../../libs/redis/src"],
+      "@otl/redis/*": ["../../libs/redis/src/*"],
       "@otl/common": ["../../libs/common/src"],
       "@otl/common/*": ["../../libs/common/src/*"],
       "@otl/scholar-sync/domain": ["../../apps/scholar-sync/src/common/domain"],

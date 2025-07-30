@@ -9,6 +9,8 @@ export class UserException extends OtlException {
 
   static readonly DEVICE_DUPLICATE = 'Device duplicate'
 
+  static readonly NO_STUDENT_ID = 'User does not have a student ID'
+
   public readonly code: number
 
   constructor(code: number, message: string, callee?: string) {

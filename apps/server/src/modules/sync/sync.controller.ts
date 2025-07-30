@@ -1,10 +1,16 @@
 import {
-  Body, Controller, Get, InternalServerErrorException, Post,
+  Body, Controller, Get, InternalServerErrorException, Param, Post, Query,
 } from '@nestjs/common'
+import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { SyncApiKeyAuth } from '@otl/server-nest/common/decorators/sync-api-key-auth.decorator'
 import { ISemester } from '@otl/server-nest/common/interfaces'
 import { ISync } from '@otl/server-nest/common/interfaces/ISync'
 import { toJsonSemester } from '@otl/server-nest/common/serializer/semester.serializer'
+import { session_userprofile } from '@prisma/client'
+import { StatusCodes } from 'http-status-codes'
+
+import { getCurrentMethodName } from '@otl/common'
+import { UserException } from '@otl/common/exception/user.exception'
 
 import { SyncScholarDBService } from './syncScholarDB.service'
 import { SyncTakenLectureService } from './syncTakenLecture.service'
@@ -46,5 +52,32 @@ export class SyncController {
   @SyncApiKeyAuth()
   async syncTakenLecture(@Body() body: ISync.TakenLectureBody) {
     return await this.syncTakenLectureService.syncTakenLecture(body)
+  }
+
+  @Post('requests')
+  async postNewSyncRequest(@Body() body: ISync.TakenLectureSyncBody, @GetUser() user: session_userprofile) {
+    const studentId = user.student_id
+    if (!studentId) {
+      throw new UserException(StatusCodes.BAD_REQUEST, UserException.NO_STUDENT_ID, getCurrentMethodName())
+    }
+    return await this.syncTakenLectureService.createRequest(body.year, body.semester, parseInt(studentId))
+  }
+
+  @Get('requests/active/:requestId')
+  async getActiveSyncRequest(@GetUser() user: session_userprofile, @Param('requestId') requestId: string) {
+    const studentId = user.student_id
+    if (!studentId) {
+      throw new UserException(StatusCodes.BAD_REQUEST, UserException.NO_STUDENT_ID, getCurrentMethodName())
+    }
+    return await this.syncTakenLectureService.getActiveSyncRequest(requestId)
+  }
+
+  @Get('requests/active')
+  async getSyncRequests(@GetUser() user: session_userprofile, @Query() query: ISync.TakenLectureSyncQuery) {
+    const studentId = user.student_id
+    if (!studentId) {
+      throw new UserException(StatusCodes.BAD_REQUEST, UserException.NO_STUDENT_ID, getCurrentMethodName())
+    }
+    return await this.syncTakenLectureService.getSyncRequests(query.year, query.semester, parseInt(studentId))
   }
 }

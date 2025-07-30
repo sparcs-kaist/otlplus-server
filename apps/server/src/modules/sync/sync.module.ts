@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common'
+import { RedisModule, RedlockModule } from '@otl/redis'
 
 import { PrismaModule } from '@otl/prisma-client/prisma.module'
 
@@ -10,7 +11,14 @@ import { SyncTakenLectureService } from './syncTakenLecture.service'
 @Module({
   controllers: [SyncController],
   providers: [SyncScholarDBService, SyncTakenLectureService, SlackNotiService],
-  imports: [PrismaModule],
+  imports: [
+    PrismaModule,
+    RedisModule,
+    RedlockModule.register({
+      retryCount: 3,
+      retryDelay: 200,
+    }),
+  ],
   exports: [SyncTakenLectureService],
 })
 export class SyncModule {}
