@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common'
 import { ClsPluginTransactional } from '@nestjs-cls/transactional'
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma'
+import { RedlockModule } from '@otl/redis'
 import { RmqModule } from '@otl/rmq'
 import { AppController } from '@otl/server-consumer/app.controller'
 import { AppService } from '@otl/server-consumer/app.service'
@@ -33,6 +34,7 @@ import { PrismaModule, PrismaService } from '@otl/prisma-client'
         }),
       ],
     }),
+    RedlockModule,
     LectureModule,
     ReviewModule,
     ProfessorModule,

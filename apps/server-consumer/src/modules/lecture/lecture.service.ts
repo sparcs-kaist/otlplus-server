@@ -1,9 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common'
+import { REDLOCK } from '@otl/redis/redlock.provider'
 import { LECTURE_REPOSITORY, ServerConsumerLectureRepository } from '@otl/server-consumer/out/lecture.repository'
 import { PROFESSOR_REPOSITORY, ServerConsumerProfessorRepository } from '@otl/server-consumer/out/professor.repository'
 import { REVIEW_REPOSITORY, ServerConsumerReviewRepository } from '@otl/server-consumer/out/review.repository'
 import { LectureBasic, LectureScore } from '@otl/server-nest/modules/lectures/domain/lecture'
 import { ReviewWithLecture } from '@otl/server-nest/modules/reviews/domain/review'
+import Redlock from 'redlock'
 
 @Injectable()
 export class LectureService {
@@ -14,15 +16,29 @@ export class LectureService {
     private readonly professorRepository: ServerConsumerProfessorRepository,
     @Inject(REVIEW_REPOSITORY)
     private readonly reviewRepository: ServerConsumerReviewRepository,
+    @Inject(REDLOCK)
+    private readonly redlock: Redlock,
   ) {}
 
   public async updateClassTitle(lectureId: number, courseId: number): Promise<boolean> {
-    const lectures = await this.lectureRepository.getRelatedLectureById(lectureId, courseId)
-    const result = await this.addTitleFormat(lectures)
-    if (!result) {
-      throw new Error(`Failed to update lecture title for lectureId: ${lectureId}`)
+    const resourceKey = `locks:course:${courseId}:update-title`
+    const lockDuration = 10000
+    let lock
+    try {
+      lock = await this.redlock.acquire([resourceKey], lockDuration)
+
+      const lectures = await this.lectureRepository.getRelatedLectureById(lectureId, courseId)
+      const result = await this.addTitleFormat(lectures)
+      if (!result) {
+        throw new Error(`Failed to update lecture title for lectureId: ${lectureId}`)
+      }
+      return await this.addTitleFormatEn(lectures)
     }
-    return await this.addTitleFormatEn(lectures)
+    finally {
+      if (lock) {
+        await lock.release()
+      }
+    }
   }
 
   public async updateScore(lectureId: number) {
