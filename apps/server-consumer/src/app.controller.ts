@@ -46,7 +46,6 @@ export class AppController {
   async handleStatisticsMessage(amqpMsg: ConsumeMessage) {
     const msg = JSON.parse(amqpMsg.content.toString())
     const request = plainToInstance(Message, msg)
-    console.log(msg)
     if (request.type === EVENT_TYPE.LECTURE_SCORE) {
       if (!LectureScoreUpdateMessage.isValid(request)) {
         throw new Error(`Invalid lecture score update message: ${JSON.stringify(request)}`)

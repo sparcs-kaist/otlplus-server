@@ -74,14 +74,12 @@ export class RabbitConsumerExplorer implements OnModuleInit {
 
     try {
       const connection = await this.rabbitMQService.getConnection()
-      // ❗️ 각 컨슈머를 위한 독립적인 채널 생성
       const channel = await connection.createChannel()
       channel.on('error', (err) => {
         this.logger.error(`💥 Channel Error for queue ${queueConfig.queue}`, err.stack)
-        // 채널 에러 시 재설정 로직을 추가할 수 있습니다.
       })
 
-      // ⚙️ Prefetch 설정 (컨슈머별)
+      //  Prefetch 설정
       await channel.prefetch(options.prefetch ?? 5)
 
       // Exchange, Queue, Binding 설정
@@ -89,7 +87,7 @@ export class RabbitConsumerExplorer implements OnModuleInit {
       await channel.assertQueue(queueConfig.queue, queueConfig.queueOptions || {})
       await channel.bindQueue(queueConfig.queue, exchangeConfig.name, queueConfig.routingKey as string)
 
-      // 🚀 메시지 소비 시작
+      // 메시지 소비 시작
       this.consumeIndividually(channel, queueConfig, instance, method, options)
 
       this.logger.info(
@@ -141,20 +139,16 @@ export class RabbitConsumerExplorer implements OnModuleInit {
             headers: {
               ...msg.properties.headers,
               'x-retry-count': currentRetry + 1,
-              'x-delay': delay, // 🚀 x-delayed-message 플러그인이 이 헤더를 사용
+              'x-delay': delay, // x-delayed-message 플러그인
             },
           })
         }
         else {
-          // ❌ 최대 재시도 도달, DLQ로 전송
           this.logger.error(`Max retries reached. Sending to DLQ for queue ${queueConfig.queue}`)
-          // deadLetterExchange를 사용하기 위해 nack 처리
-          // requeue: false로 설정해야 DLX로 감
           channel.nack(msg, false, false)
-          return // nack 후에는 ack를 호출하면 안되므로 여기서 종료
+          return
         }
 
-        // 재발행에 성공했으므로 원본 메시지는 ack
         channel.ack(msg)
       }
     })
