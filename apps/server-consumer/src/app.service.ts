@@ -22,7 +22,7 @@ export class AppService {
     private readonly reviewService: ReviewService,
   ) {}
 
-  async updateLectureCommonTitle(msg: LectureCommonTitleUpdateMessage, _amqpMsg: ConsumeMessage): Promise<boolean> {
+  async updateLectureCommonTitle(msg: LectureCommonTitleUpdateMessage, _amqpMsg: ConsumeMessage) {
     const { lectureId, courseId } = msg
     return await this.lectureService.updateClassTitle(lectureId, courseId)
   }

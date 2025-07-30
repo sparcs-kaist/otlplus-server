@@ -34,7 +34,10 @@ import { PrismaModule, PrismaService } from '@otl/prisma-client'
         }),
       ],
     }),
-    RedlockModule,
+    RedlockModule.register({
+      retryCount: 5,
+      retryDelay: 1000,
+    }),
     LectureModule,
     ReviewModule,
     ProfessorModule,

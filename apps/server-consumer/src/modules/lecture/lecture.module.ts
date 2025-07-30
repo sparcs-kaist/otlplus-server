@@ -10,7 +10,14 @@ import { LectureRepository, PrismaModule, ReviewsRepository } from '@otl/prisma-
 import { ProfessorRepository } from '@otl/prisma-client/repositories/professor.repository'
 
 @Module({
-  imports: [PrismaModule, RmqConnectionModule.register(), RedlockModule],
+  imports: [
+    PrismaModule,
+    RmqConnectionModule.register(),
+    RedlockModule.register({
+      retryCount: 0,
+      retryDelay: 1000,
+    }),
+  ],
   providers: [
     {
       provide: LECTURE_REPOSITORY,

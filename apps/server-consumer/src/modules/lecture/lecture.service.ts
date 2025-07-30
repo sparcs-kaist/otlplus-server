@@ -5,7 +5,7 @@ import { PROFESSOR_REPOSITORY, ServerConsumerProfessorRepository } from '@otl/se
 import { REVIEW_REPOSITORY, ServerConsumerReviewRepository } from '@otl/server-consumer/out/review.repository'
 import { LectureBasic, LectureScore } from '@otl/server-nest/modules/lectures/domain/lecture'
 import { ReviewWithLecture } from '@otl/server-nest/modules/reviews/domain/review'
-import Redlock from 'redlock'
+import Redlock, { ExecutionError, ResourceLockedError } from 'redlock'
 
 import logger from '@otl/common/logger/logger'
 
@@ -22,7 +22,7 @@ export class LectureService {
     private readonly redlock: Redlock,
   ) {}
 
-  public async updateClassTitle(lectureId: number, courseId: number): Promise<boolean> {
+  public async updateClassTitle(lectureId: number, courseId: number) {
     const resourceKey = `locks:course:${courseId}:update-title`
     const lockDuration = 10000
     let lock
@@ -38,12 +38,10 @@ export class LectureService {
       return await this.addTitleFormatEn(lectures)
     }
     catch (err: any) {
-      if (err.name === 'LockError') {
-        logger.warn(`Could not acquire lock for courseId: ${courseId}. Skipping update.`)
-        logger.error(err)
+      if (err instanceof ExecutionError || err instanceof ResourceLockedError) {
+        logger.warn(`Failed to acquire lock for courseId: ${courseId}. Reason: ${err.message}`)
         return false
       }
-      logger.error(err)
       throw err
     }
     finally {

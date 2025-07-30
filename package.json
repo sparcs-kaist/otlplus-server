@@ -129,7 +129,6 @@
     "@types/morgan": "^1.9.9",
     "@types/passport-jwt": "^4.0.1",
     "@types/passport-local": "^1.0.38",
-    "@types/redlock": "^4.0.7",
     "@types/sharp": "^0.32.0",
     "@types/swagger-stats": "^0.95.11",
     "@types/swagger-ui-express": "^4.1.8",
