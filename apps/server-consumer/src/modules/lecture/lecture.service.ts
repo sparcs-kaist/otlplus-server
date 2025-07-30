@@ -25,10 +25,9 @@ export class LectureService {
     return await this.addTitleFormatEn(lectures)
   }
 
-  public async updateScore(lectureId: number): Promise<boolean> {
+  public async updateScore(lectureId: number) {
     const lecture = await this.lectureRepository.getLectureById(lectureId)
-    await this.lectureRecalcScore(lecture)
-    return true
+    return await this.lectureRecalcScore(lecture)
   }
 
   private async lectureRecalcScore(lecture: LectureBasic) {

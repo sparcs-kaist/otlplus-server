@@ -23,6 +23,6 @@ export class ProfessorService {
     if (!professor) {
       throw new Error(`Failed to update professor score for professorId: ${professorId}`)
     }
-    return true
+    return professor
   }
 }

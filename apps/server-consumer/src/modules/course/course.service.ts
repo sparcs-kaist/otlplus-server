@@ -23,15 +23,17 @@ export class CourseService {
     if (!course) {
       throw new Error(`Failed to update course score for courseId: ${courseId}`)
     }
-    return true
+    return course
   }
 
   async updateRepresentativeLecture(courseId: number, lectureId: number | null) {
     console.log(courseId, lectureId)
     const result = this.courseRepository.updateCourseRepresentativeLecture(courseId, lectureId)
     if (!result) {
-      return false
+      throw new Error(
+        `Failed to update course representative lecture for courseId: ${courseId}, lectureId: ${lectureId}`,
+      )
     }
-    return true
+    return result
   }
 }

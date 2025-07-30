@@ -24,89 +24,36 @@ export class AppService {
 
   async updateLectureCommonTitle(msg: LectureCommonTitleUpdateMessage, _amqpMsg: ConsumeMessage): Promise<boolean> {
     const { lectureId } = msg
-    try {
-      return await this.lectureService.updateClassTitle(lectureId)
-    }
-    catch (e) {
-      console.error(`Failed to update lecture common title for lectureId: ${lectureId}`, e)
-      return false
-    }
+    return await this.lectureService.updateClassTitle(lectureId)
   }
 
-  async updateLectureScoreUpdateMessage(msg: LectureScoreUpdateMessage, _amqpMsg: ConsumeMessage): Promise<boolean> {
+  async updateLectureScoreUpdateMessage(msg: LectureScoreUpdateMessage, _amqpMsg: ConsumeMessage) {
     const { lectureId } = msg
-    try {
-      return await this.lectureService.updateScore(lectureId)
-    }
-    catch (e) {
-      console.error(`Failed to update lecture score for lectureId: ${lectureId}`, e)
-      return false
-    }
+    return await this.lectureService.updateScore(lectureId)
   }
 
-  async updateCourseScoreUpdateMessage(request: CourseUpdateMessage, _amqpMsg: ConsumeMessage): Promise<boolean> {
+  async updateCourseScoreUpdateMessage(request: CourseUpdateMessage, _amqpMsg: ConsumeMessage) {
     const { courseId } = request
-    try {
-      return await this.courseService.updateScore(courseId)
-    }
-    catch (e) {
-      console.error(`Failed to update course score for courseId: ${courseId}`, e)
-      return false
-    }
+    return await this.courseService.updateScore(courseId)
   }
 
-  async updateProfessorScoreUpdateMessage(request: ProfessorUpdateMessage, _amqpMsg: ConsumeMessage): Promise<boolean> {
+  async updateProfessorScoreUpdateMessage(request: ProfessorUpdateMessage, _amqpMsg: ConsumeMessage) {
     const { professorId } = request
-    try {
-      return await this.professorService.updateScore(professorId)
-    }
-    catch (e) {
-      console.error(`Failed to update professor score for professorId: ${professorId}`, e)
-      return false
-    }
+    return await this.professorService.updateScore(professorId)
   }
 
   async updateLectureNumPeopleUpdateMessage(request: LectureNumPeopleUpdateMessage, _amqpMsg: ConsumeMessage) {
     const { lectureId } = request
-    try {
-      const result = await this.lectureService.updateNumPeople(lectureId)
-      if (!result) {
-        console.error(`Failed to update lecture num people for lectureId: ${lectureId}`)
-        return false
-      }
-      return true
-    }
-    catch (e) {
-      console.error(`Failed to update lecture num people for lectureId: ${lectureId}`, e)
-      return false
-    }
+    return await this.lectureService.updateNumPeople(lectureId)
   }
 
   async updateReviewLikeUpdateMessage(request: ReviewLikeUpdateMessage, _amqpMsg: ConsumeMessage) {
     const { reviewId } = request
-    try {
-      return await this.reviewService.updateReviewLike(reviewId)
-    }
-    catch (e) {
-      console.error(`Failed to update review like for reviewId: ${reviewId}`, e)
-      return false
-    }
+    return await this.reviewService.updateReviewLike(reviewId)
   }
 
-  async updateCourseRepresentativeLecture(
-    request: CourseRepresentativeLectureUpdateMessage,
-    _amqpMsg: ConsumeMessage,
-  ): Promise<boolean> {
+  async updateCourseRepresentativeLecture(request: CourseRepresentativeLectureUpdateMessage, _amqpMsg: ConsumeMessage) {
     const { courseId, lectureId } = request
-    try {
-      return await this.courseService.updateRepresentativeLecture(courseId, lectureId)
-    }
-    catch (e) {
-      console.error(
-        `Failed to update course representative lecture for courseId: ${courseId}, lectureId: ${lectureId}`,
-        e,
-      )
-      return false
-    }
+    return await this.courseService.updateRepresentativeLecture(courseId, lectureId)
   }
 }
