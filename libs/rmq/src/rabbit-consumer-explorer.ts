@@ -4,9 +4,7 @@ import { DiscoveryService, Reflector } from '@nestjs/core'
 import { RABBIT_CONSUMER_METADATA, RabbitConsumerMetadata } from '@otl/rmq/decorator/rabbit-consumer.decorator'
 import { RabbitMQService } from '@otl/rmq/rmq.service'
 import settings from '@otl/rmq/settings'
-import { Channel, ConsumeMessage } from 'amqplib'
-import { Observable } from 'rxjs'
-import { bufferTime, filter } from 'rxjs/operators'
+import { Channel } from 'amqplib'
 
 import logger from '@otl/common/logger/logger'
 
@@ -84,7 +82,7 @@ export class RabbitConsumerExplorer implements OnModuleInit {
       })
 
       // ⚙️ Prefetch 설정 (컨슈머별)
-      await channel.prefetch(options.prefetch ?? 10)
+      await channel.prefetch(options.prefetch ?? 5)
 
       // Exchange, Queue, Binding 설정
       await channel.assertExchange(exchangeConfig.name, exchangeConfig.type as string, exchangeConfig.options || {})
@@ -92,12 +90,7 @@ export class RabbitConsumerExplorer implements OnModuleInit {
       await channel.bindQueue(queueConfig.queue, exchangeConfig.name, queueConfig.routingKey as string)
 
       // 🚀 메시지 소비 시작
-      if (options.batchSize) {
-        this.consumeInBatch(channel, queueConfig.queue, instance, method, options)
-      }
-      else {
-        this.consumeIndividually(channel, queueConfig, instance, method)
-      }
+      this.consumeIndividually(channel, queueConfig, instance, method, options)
 
       this.logger.info(
         `🐇 Consumer setup successful for ${instance.constructor.name}.${methodName} on queue: ${queueConfig.queue}`,
@@ -116,17 +109,19 @@ export class RabbitConsumerExplorer implements OnModuleInit {
     queueConfig: any,
     instance: object,
     method: (payload: any) => Promise<void>,
+    options: RabbitConsumerMetadata['options'],
   ) {
     channel.consume(queueConfig.queue, async (msg) => {
       if (!msg) return
 
       const currentRetry = msg?.properties?.headers?.['x-retry-count'] || 0
+      const consumeTimeout = options.timeout ?? CONSUME_TIMEOUT
 
       try {
         await Promise.race([
           method.call(instance, msg),
           new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('Consumer timeout')), CONSUME_TIMEOUT)
+            setTimeout(() => reject(new Error('Consumer timeout')), consumeTimeout)
           }),
         ])
         channel.ack(msg)
@@ -163,38 +158,5 @@ export class RabbitConsumerExplorer implements OnModuleInit {
         channel.ack(msg)
       }
     })
-  }
-
-  /**
-   * 메시지를 배치(batch)로 처리하는 컨슈머
-   */
-  private consumeInBatch(
-    channel: Channel,
-    queue: string,
-    instance: object,
-    method: (payload: any) => Promise<void>,
-    options: RabbitConsumerMetadata['options'],
-  ) {
-    const message$ = new Observable<ConsumeMessage>((subscriber) => {
-      channel.consume(queue, (msg) => msg && subscriber.next(msg), { noAck: false })
-    })
-
-    message$
-      .pipe(
-        bufferTime(options.batchTime ?? 1000, undefined),
-        filter((batch) => batch.length > 0),
-      )
-      .subscribe(async (messages: ConsumeMessage[]) => {
-        try {
-          await method.call(instance, messages)
-          // 모든 메시지가 성공적으로 처리되면 일괄 ack
-          messages.forEach((msg) => channel.ack(msg))
-        }
-        catch (err: any) {
-          this.logger.error(`❌ Error processing batch from queue ${queue}`, err.stack)
-          // 배치 처리 실패 시 모든 메시지를 nack
-          messages.forEach((msg) => channel.nack(msg, false, false))
-        }
-      })
   }
 }

@@ -23,7 +23,7 @@ import { AppService } from './app.service'
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @RabbitConsumer(QueueSymbols.SCHOLAR_SYNC)
+  @RabbitConsumer(QueueSymbols.SCHOLAR_SYNC, { prefetch: 5, timeout: 30000 })
   async handleScholarMessage(amqpMsg: ConsumeMessage) {
     const msg = JSON.parse(amqpMsg.content.toString())
     const request = plainToInstance(Message, msg)
@@ -42,7 +42,7 @@ export class AppController {
     throw new Error(`Unknown message type: ${request.type}`)
   }
 
-  @RabbitConsumer(QueueSymbols.STATISTICS)
+  @RabbitConsumer(QueueSymbols.STATISTICS, { prefetch: 5, timeout: 30000 })
   async handleStatisticsMessage(amqpMsg: ConsumeMessage) {
     const msg = JSON.parse(amqpMsg.content.toString())
     const request = plainToInstance(Message, msg)
