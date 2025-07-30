@@ -7,6 +7,8 @@ import { LectureBasic, LectureScore } from '@otl/server-nest/modules/lectures/do
 import { ReviewWithLecture } from '@otl/server-nest/modules/reviews/domain/review'
 import Redlock from 'redlock'
 
+import logger from '@otl/common/logger/logger'
+
 @Injectable()
 export class LectureService {
   constructor(
@@ -34,6 +36,14 @@ export class LectureService {
         throw new Error(`Failed to update lecture title for lectureId: ${lectureId}`)
       }
       return await this.addTitleFormatEn(lectures)
+    }
+    catch (err: any) {
+      if (err.name === 'LockError') {
+        logger.warn(`Could not acquire lock for courseId: ${courseId}. Skipping update.`)
+        logger.error(err)
+        return false
+      }
+      throw err
     }
     finally {
       if (lock) {
