@@ -14,6 +14,7 @@ import {
   ServerConsumerTakenLectureRepository,
   TAKENLECTURE_REPOSITORY,
 } from '@otl/server-consumer/out/ServerConsumerTakenLectureRepository'
+import settings from '@otl/server-consumer/settings'
 import { SyncType } from '@prisma/client'
 import * as Sentry from '@sentry/nestjs'
 import { logger } from '@sentry/nestjs'
@@ -463,9 +464,13 @@ export class TakenLectureService {
     const sseChannel = `sync-progress:${requestId}`
 
     console.log(`[Consumer 1] Triggering data fetch for student ${studentId}, requestId: ${requestId}`)
-
+    const { host } = settings().getScholarSyncInfo()
+    if (!host) {
+      throw new Error('Scholar Sync host is not configured')
+    }
+    const url = `${host}/api/dynamic-sync/takenLecture`
     const request$ = from(
-      this.httpService.post('https://scholar-sync-server/sync/individual', {
+      this.httpService.post(url, {
         year,
         semester,
         studentId,
