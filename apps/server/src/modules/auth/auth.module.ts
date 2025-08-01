@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common'
 import { JwtModule } from '@nestjs/jwt'
 import { PassportModule } from '@nestjs/passport'
+import { RmqModule } from '@otl/rmq'
+import { ScholarUpdatePublisher } from '@otl/rmq/exchanges/scholar-sync/scholar.publish'
 import { AgreementModule } from '@otl/server-nest/modules/agreement/agreement.module'
 import { IsAdminCommand } from '@otl/server-nest/modules/auth/command/isAdmin.command'
 import { IsReviewProhibitedCommand } from '@otl/server-nest/modules/auth/command/isReviewProhibited.command'
@@ -8,6 +10,7 @@ import { JwtHeaderCommand } from '@otl/server-nest/modules/auth/command/jwt.head
 import { SidHeaderCommand } from '@otl/server-nest/modules/auth/command/sid.header.command'
 import { StudentIdHeaderCommand } from '@otl/server-nest/modules/auth/command/studentId.header.command'
 import { LecturesService } from '@otl/server-nest/modules/lectures/lectures.service'
+import { TakenLectureMQ } from '@otl/server-nest/modules/sync/domain/sync.mq'
 import { SyncModule } from '@otl/server-nest/modules/sync/sync.module'
 
 import { PrismaModule } from '@otl/prisma-client/prisma.module'
@@ -30,6 +33,7 @@ import { JwtCookieStrategy } from './strategy/jwt-cookie.strategy'
     JwtModule.register({}),
     SyncModule,
     AgreementModule,
+    RmqModule,
   ],
   controllers: [AuthController],
   providers: [
@@ -48,6 +52,10 @@ import { JwtCookieStrategy } from './strategy/jwt-cookie.strategy'
     IsReviewProhibitedCommand,
     IsAdminCommand,
     AuthConfig,
+    {
+      provide: TakenLectureMQ,
+      useClass: ScholarUpdatePublisher,
+    },
   ],
   exports: [AuthService, AuthConfig, AuthChain],
 })

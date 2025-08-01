@@ -1,21 +1,9 @@
 import {
-  Body,
-  Controller,
-  Get,
-  Inject,
-  InternalServerErrorException,
-  MessageEvent,
-  Param,
-  Post,
-  Query,
-  Sse,
+  Body, Controller, Get, Inject, MessageEvent, Param, Post, Query, Sse,
 } from '@nestjs/common'
 import { REDIS_SUBSCRIBER_CLIENT } from '@otl/redis/redis.provider'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
-import { SyncApiKeyAuth } from '@otl/server-nest/common/decorators/sync-api-key-auth.decorator'
-import { ISemester } from '@otl/server-nest/common/interfaces'
 import { ISync } from '@otl/server-nest/common/interfaces/ISync'
-import { toJsonSemester } from '@otl/server-nest/common/serializer/semester.serializer'
 import { session_userprofile } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 import Redis from 'ioredis'
@@ -24,48 +12,14 @@ import { finalize, Observable, Subject } from 'rxjs'
 import { getCurrentMethodName } from '@otl/common'
 import { UserException } from '@otl/common/exception/user.exception'
 
-import { SyncScholarDBService } from './syncScholarDB.service'
 import { SyncTakenLectureService } from './syncTakenLecture.service'
 
 @Controller('api/sync')
 export class SyncController {
   constructor(
-    private readonly syncScholarDBService: SyncScholarDBService,
     private readonly syncTakenLectureService: SyncTakenLectureService,
     @Inject(REDIS_SUBSCRIBER_CLIENT) private readonly redisSubscriber: Redis,
   ) {}
-
-  @Get('defaultSemester')
-  @SyncApiKeyAuth()
-  async getDefaultSemester(): Promise<ISemester.Response> {
-    const semester = await this.syncScholarDBService.getDefaultSemester()
-    if (!semester) throw new InternalServerErrorException('No default semester in DB')
-    return toJsonSemester(semester)
-  }
-
-  @Post('scholarDB')
-  @SyncApiKeyAuth()
-  async syncScholarDB(@Body() body: ISync.ScholarDBBody) {
-    return await this.syncScholarDBService.syncScholarDB(body)
-  }
-
-  @Post('examtime')
-  @SyncApiKeyAuth()
-  async syncExamtime(@Body() body: ISync.ExamtimeBody) {
-    return await this.syncScholarDBService.syncExamtime(body)
-  }
-
-  @Post('classtime')
-  @SyncApiKeyAuth()
-  async syncClasstime(@Body() body: ISync.ClasstimeBody) {
-    return await this.syncScholarDBService.syncClassTime(body)
-  }
-
-  @Post('takenLecture')
-  @SyncApiKeyAuth()
-  async syncTakenLecture(@Body() body: ISync.TakenLectureBody) {
-    return await this.syncTakenLectureService.syncTakenLecture(body)
-  }
 
   @Post('requests')
   async postNewSyncRequest(@Body() body: ISync.TakenLectureSyncBody, @GetUser() user: session_userprofile) {
@@ -73,7 +27,7 @@ export class SyncController {
     if (!studentId) {
       throw new UserException(StatusCodes.BAD_REQUEST, UserException.NO_STUDENT_ID, getCurrentMethodName())
     }
-    return await this.syncTakenLectureService.createRequest(body.year, body.semester, user.id)
+    return await this.syncTakenLectureService.createRequest(body.year, body.semester, user.id, parseInt(studentId))
   }
 
   @Get('requests/active/:requestId')

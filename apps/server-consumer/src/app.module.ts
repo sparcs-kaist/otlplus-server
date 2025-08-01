@@ -11,6 +11,7 @@ import { CourseModule } from '@otl/server-consumer/modules/course/course.module'
 import { LectureModule } from '@otl/server-consumer/modules/lecture/lecture.module'
 import { ProfessorModule } from '@otl/server-consumer/modules/professor/professor.module'
 import { ReviewModule } from '@otl/server-consumer/modules/review/review.module'
+import { TakenLectureModule } from '@otl/server-consumer/modules/takenLecture/takenLecture.module'
 import settings from '@otl/server-consumer/settings'
 import { SentryModule } from '@sentry/nestjs/setup'
 import { ClsModule } from 'nestjs-cls'
@@ -42,6 +43,7 @@ import { PrismaModule, PrismaService } from '@otl/prisma-client'
     ReviewModule,
     ProfessorModule,
     CourseModule,
+    TakenLectureModule,
   ],
   controllers: [],
   providers: [AppService, AppController, DeadLetterController],

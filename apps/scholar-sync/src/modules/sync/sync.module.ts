@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common'
 import { ScheduleModule } from '@nestjs/schedule'
 import { RmqConnectionModule, RmqModule } from '@otl/rmq'
-import { ScholarUpdatePublisher } from '@otl/rmq/exchanges/scholar-sync/lecture.publish'
+import { ScholarUpdatePublisher } from '@otl/rmq/exchanges/scholar-sync/scholar.publish'
 import { StatisticsUpdatePublisher } from '@otl/rmq/exchanges/statistics/statistics.publish.v2'
 import { ScholarModule } from '@otl/scholar-sync/clients/scholar/scholar.module'
 import { SlackModule } from '@otl/scholar-sync/clients/slack/slack.module'
