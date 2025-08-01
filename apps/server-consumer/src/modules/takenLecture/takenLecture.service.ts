@@ -152,7 +152,7 @@ export class TakenLectureService {
       year: data.year,
       semester: data.semester,
     })
-    const existingLectureMap = new Map()
+    const existingLectureMap = new Map<string, ELecture.Details>()
     for (const l of existingLectures) {
       const key = `${l.new_code}::${l.class_no.trim()}`
       existingLectureMap.set(key, l)
