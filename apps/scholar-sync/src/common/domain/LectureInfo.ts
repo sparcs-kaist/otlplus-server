@@ -65,7 +65,7 @@ export class LectureInfo {
     }
   }
 
-  public static equals(existing: ELecture.Details, lecture: LectureInfo) {
+  public static equals(existing: ELecture.Basic, lecture: LectureInfo) {
     return (
       // TODO: This can be problematic if multiple lectures have the same old code
       // -> new_code(=code)를 기준으로 lecture 구분하므로 code가 다르면 다른 lecture로 취급해야 함

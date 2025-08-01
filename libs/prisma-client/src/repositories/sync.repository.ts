@@ -7,9 +7,12 @@ import {
   LectureInfo,
   ProfessorInfo,
 } from '@otl/scholar-sync/domain'
+import { ServerConsumerTakenLectureRepository } from '@otl/server-consumer/out/ServerConsumerTakenLectureRepository'
+import { LectureBasic } from '@otl/server-nest/modules/lectures/domain/lecture'
 import { Prisma, SyncType } from '@prisma/client'
 import { Result } from '@prisma/client/runtime/library'
 
+import { mapLecture } from '@otl/prisma-client/common/mapper/lecture'
 import {
   EDepartment, ELecture, EProfessor, EReview, ESemester, ESync, EUser,
 } from '@otl/prisma-client/entities'
@@ -18,7 +21,7 @@ import { PrismaService } from '@otl/prisma-client/prisma.service'
 import { STAFF_ID } from '@otl/prisma-client/types'
 
 @Injectable()
-export class SyncRepository {
+export class SyncRepository implements ServerConsumerTakenLectureRepository {
   constructor(
     private readonly prisma: PrismaService,
     private readonly prismaRead: PrismaReadService,
@@ -43,6 +46,15 @@ export class SyncRepository {
       where: { year, semester, deleted: false }, // 기존 코드에서 한 번 삭제된 강의는 복구되지 않고 새로 생성하던 것으로 보임.
       include: ELecture.Details.include,
     })
+  }
+
+  async getExistingLectures({ year, semester }: { year: number, semester: number }): Promise<LectureBasic[]> {
+    return (
+      await this.prismaRead.subject_lecture.findMany({
+        where: { year, semester, deleted: false },
+        include: ELecture.Basic,
+      })
+    ).map((lecture) => mapLecture(lecture))
   }
 
   async getOrCreateStaffProfessor(): Promise<EProfessor.Basic> {
@@ -246,7 +258,7 @@ export class SyncRepository {
     }
   }
 
-  async getUserExistingTakenLectures({
+  async getExistingTakenLectures({
     year,
     semester,
   }: {
@@ -255,6 +267,16 @@ export class SyncRepository {
   }): Promise<EUser.WithTakenLectures[]> {
     return await this.prismaRead.session_userprofile.findMany({
       where: { taken_lectures: { some: { lecture: { year, semester } } } },
+      include: { taken_lectures: { where: { lecture: { year, semester } } } },
+    })
+  }
+
+  async getExistingTakenLecturesByStudentIds(year: number, semester: number, userId: number) {
+    return await this.prismaRead.session_userprofile.findUnique({
+      where: {
+        id: userId,
+        taken_lectures: { some: { lecture: { year, semester } } },
+      },
       include: { taken_lectures: { where: { lecture: { year, semester } } } },
     })
   }
@@ -499,6 +521,18 @@ export class SyncRepository {
     return this.prisma.subject_lecture.findFirst({
       where: { course_id: courseId },
       orderBy: [{ year: 'desc' }, { semester: 'desc' }],
+    })
+  }
+
+  async deleteTakenLectures(chunk: number[]): Promise<void> {
+    await this.prisma.session_userprofile_taken_lectures.deleteMany({
+      where: { id: { in: chunk } },
+    })
+  }
+
+  async createTakenLectures(dataToCreate: { userprofile_id: number, lecture_id: number }[]): Promise<void> {
+    await this.prisma.session_userprofile_taken_lectures.createMany({
+      data: dataToCreate,
     })
   }
 }

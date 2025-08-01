@@ -7,10 +7,15 @@ import {
 } from '@otl/server-consumer/messages/lecture'
 import { ProfessorUpdateMessage } from '@otl/server-consumer/messages/professor'
 import { ReviewLikeUpdateMessage } from '@otl/server-consumer/messages/review'
+import {
+  IndividualSyncUpdateRequestMessage,
+  IndividualSyncUpdateStartMessage,
+} from '@otl/server-consumer/messages/sync'
 import { CourseService } from '@otl/server-consumer/modules/course/course.service'
 import { LectureService } from '@otl/server-consumer/modules/lecture/lecture.service'
 import { ProfessorService } from '@otl/server-consumer/modules/professor/professor.service'
 import { ReviewService } from '@otl/server-consumer/modules/review/review.service'
+import { TakenLectureService } from '@otl/server-consumer/modules/takenLecture/takenLecture.service'
 import { ConsumeMessage } from 'amqplib'
 
 @Injectable()
@@ -20,6 +25,7 @@ export class AppService {
     private readonly courseService: CourseService,
     private readonly professorService: ProfessorService,
     private readonly reviewService: ReviewService,
+    private readonly takenLectureService: TakenLectureService,
   ) {}
 
   async updateLectureCommonTitle(msg: LectureCommonTitleUpdateMessage, _amqpMsg: ConsumeMessage) {
@@ -55,5 +61,35 @@ export class AppService {
   async updateCourseRepresentativeLecture(request: CourseRepresentativeLectureUpdateMessage, _amqpMsg: ConsumeMessage) {
     const { courseId, lectureId } = request
     return await this.courseService.updateRepresentativeLecture(courseId, lectureId)
+  }
+
+  async handleIndividualSyncUpdateRequest(request: IndividualSyncUpdateRequestMessage, _amqpMsg: ConsumeMessage) {
+    const {
+      year, semester, studentId, userId, requestId,
+    } = request
+    return await this.takenLectureService.getIndividualTakenLectureDataSync(
+      year,
+      semester,
+      studentId,
+      userId,
+      requestId,
+    )
+  }
+
+  async handleIndividualSyncUpdateStart(request: IndividualSyncUpdateStartMessage, _amqpMsg: ConsumeMessage) {
+    const {
+      requestId, lectureData, classtimeData, examTimeData, takenLectureData, studentId, userId, year, semester,
+    } = request
+    return await this.takenLectureService.syncIndividualTakenLectureAndBroadCast(
+      requestId,
+      lectureData,
+      classtimeData,
+      examTimeData,
+      takenLectureData,
+      studentId,
+      userId,
+      year,
+      semester,
+    )
   }
 }

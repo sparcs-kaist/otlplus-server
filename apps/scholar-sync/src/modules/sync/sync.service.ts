@@ -518,7 +518,7 @@ export class SyncService {
       semester: data.semester,
     })
     const existingUserTakenLectures = (
-      await this.syncRepository.getUserExistingTakenLectures({
+      await this.syncRepository.getExistingTakenLectures({
         year: data.year,
         semester: data.semester,
       })

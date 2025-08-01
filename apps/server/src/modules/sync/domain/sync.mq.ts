@@ -4,5 +4,5 @@ export interface TakenLectureMQ {
 
   publishRepresentativeLectureUpdate(courseId: number, lectureId: number | null): Promise<boolean>
 
-  publishTakenLectureSyncRequest(requestId: string, studentId: number, year: number, semester: number): Promise<boolean>
+  publishTakenLectureSyncRequest(requestId: string, userId: number, year: number, semester: number): Promise<boolean>
 }

@@ -1,13 +1,11 @@
 import {
-  Body, Controller, Get, Inject, Logger, Param, Patch, Post, Query,
+  Body, Controller, Get, Logger, Param, Patch, Post, Query,
 } from '@nestjs/common'
 import { SchedulerRegistry } from '@nestjs/schedule'
 import { ApiQuery, ApiSecurity } from '@nestjs/swagger'
 import { Public } from '@otl/scholar-sync/common/decorators/skip-auth.decorator'
 import { SyncApiKeyAuth } from '@otl/scholar-sync/common/decorators/sync-api-key-auth.decorator'
-import { SyncTerm } from '@otl/scholar-sync/common/interfaces/ISync'
-import { SCHOLAR_MQ, ScholarMQ } from '@otl/scholar-sync/domain/out/ScholarMQ'
-import { STATISTICS_MQ, SyncServerStatisticsMQ } from '@otl/scholar-sync/domain/out/StatisticsMQ'
+import { SyncBody, SyncTerm } from '@otl/scholar-sync/common/interfaces/ISync'
 import { SyncSchedule } from '@otl/scholar-sync/modules/sync/sync.schedule'
 import CronTime from 'cron'
 
@@ -18,10 +16,6 @@ export class SyncDynamicController {
   constructor(
     private readonly syncSchedule: SyncSchedule,
     private readonly schedulerRegistry: SchedulerRegistry,
-    @Inject(SCHOLAR_MQ)
-    private readonly SyncMQ: ScholarMQ,
-    @Inject(STATISTICS_MQ)
-    private readonly StatisticsMQ: SyncServerStatisticsMQ,
   ) {}
 
   @Get('jobs')
@@ -167,6 +161,14 @@ export class SyncDynamicController {
     this.logger.log(`Job ${jobName} set to ${cron}`)
   }
 
-  @Post('takenLecture/request')
-  async postNewSyncRequest() {}
+  @Post('takenLecture')
+  async postNewSyncRequest(@Body() body: SyncBody) {
+    return await this.syncSchedule.syncIndividualTakenLecture(
+      body.year,
+      body.semester,
+      body.studentId,
+      body.userId,
+      body.requestId,
+    )
+  }
 }

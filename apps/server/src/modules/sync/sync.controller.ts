@@ -73,7 +73,7 @@ export class SyncController {
     if (!studentId) {
       throw new UserException(StatusCodes.BAD_REQUEST, UserException.NO_STUDENT_ID, getCurrentMethodName())
     }
-    return await this.syncTakenLectureService.createRequest(body.year, body.semester, parseInt(studentId))
+    return await this.syncTakenLectureService.createRequest(body.year, body.semester, user.id)
   }
 
   @Get('requests/active/:requestId')
@@ -91,7 +91,7 @@ export class SyncController {
     if (!studentId) {
       throw new UserException(StatusCodes.BAD_REQUEST, UserException.NO_STUDENT_ID, getCurrentMethodName())
     }
-    return await this.syncTakenLectureService.getSyncRequests(query.year, query.semester, parseInt(studentId))
+    return await this.syncTakenLectureService.getSyncRequests(query.year, query.semester, user.id)
   }
 
   @Sse('sync/requests/:requestId/stream')

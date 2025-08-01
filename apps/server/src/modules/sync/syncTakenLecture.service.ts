@@ -38,7 +38,7 @@ export class SyncTakenLectureService {
       semester: data.semester,
     })
     const existingUserTakenLectures = (
-      await this.syncRepository.getUserExistingTakenLectures({
+      await this.syncRepository.getExistingTakenLectures({
         year: data.year,
         semester: data.semester,
       })
@@ -164,8 +164,8 @@ export class SyncTakenLectureService {
     await this.syncRepository.repopulateTakenLecturesOfUser(user.id, rawTakenLectures)
   }
 
-  async createRequest(year: number, semester: number, studentId: number) {
-    const jobIdentifier = `${studentId}:${year}:${semester}`
+  async createRequest(year: number, semester: number, userId: number) {
+    const jobIdentifier = `${userId}:${year}:${semester}`
     const statusKey = `taken-lecture-sync:status:${jobIdentifier}`
 
     const existingRequestId = await this.redis.get(statusKey)
@@ -185,38 +185,46 @@ export class SyncTakenLectureService {
 
     const requestId = crypto.randomUUID()
     const progressKey = `taken-lecture-sync:progress:${requestId}`
-    const initialProgress: SyncProgress = {
+    // startedAt을 ISO 문자열로 변환하여 저장
+    const initialProgress = {
       status: SyncStatus.NotStarted,
       completed: 0,
       total: 0,
-      startedAt: new Date(),
+      startedAt: new Date().toISOString(), // Date 객체는 문자열로 저장
     }
     const oneHourInSeconds = 3600
 
-    // 원자성을 보장하기 위해 Redis 트랜잭션(MULTI) 사용
+    // ✨ .set() 대신 .hmset() 또는 .hset() 사용
     await this.redis
       .multi()
-      .set(statusKey, requestId, 'EX', oneHourInSeconds) // 1시간 후 만료
-      .set(progressKey, JSON.stringify(initialProgress), 'EX', oneHourInSeconds)
+      .set(statusKey, requestId, 'EX', oneHourInSeconds)
+      // 객체를 해시로 저장 (ioredis는 hmset에 객체를 바로 넘길 수 있음)
+      .hmset(progressKey, initialProgress)
+      .expire(progressKey, oneHourInSeconds) // 해시에도 만료 시간 설정
       .exec()
 
-    await this.takenLectureMQ.publishTakenLectureSyncRequest(requestId, studentId, year, semester)
-    return { requestId, ...initialProgress }
+    await this.takenLectureMQ.publishTakenLectureSyncRequest(requestId, userId, year, semester)
+    return { requestId, ...initialProgress, startedAt: new Date(initialProgress.startedAt) }
   }
 
   async getActiveSyncRequest(requestId: string) {
     const progressKey = `taken-lecture-sync:progress:${requestId}`
-    const progressData = await this.redis.get(progressKey)
 
-    if (!progressData) {
+    const progressData = await this.redis.hgetall(progressKey)
+    if (!progressData || Object.keys(progressData).length === 0) {
       return null
     }
-    const progress: SyncProgress = JSON.parse(progressData)
+    const progress: SyncProgress = {
+      status: progressData.status as SyncStatus,
+      total: parseInt(progressData.total),
+      completed: parseInt(progressData.completed),
+      startedAt: new Date(progressData.startedAt),
+    }
     return { requestId, ...progress }
   }
 
-  async getSyncRequests(year: number, semester: number, studentId: number) {
-    const statusKey = `taken-lecture-sync:status:${studentId}:${year}:${semester}`
+  async getSyncRequests(year: number, semester: number, userId: number) {
+    const statusKey = `taken-lecture-sync:status:${userId}:${year}:${semester}`
     const requestId = await this.redis.get(statusKey)
 
     if (!requestId) {

@@ -11,3 +11,10 @@ export interface SyncProgress {
   status: SyncStatus
   startedAt: Date
 }
+
+export interface SyncSSEMessage {
+  requestId: string
+  progress: SyncProgress
+  error?: string
+  message?: string
+}

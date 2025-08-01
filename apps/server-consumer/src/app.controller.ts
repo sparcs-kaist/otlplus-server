@@ -13,6 +13,10 @@ import {
 import { EVENT_TYPE, Message } from '@otl/server-consumer/messages/message'
 import { ProfessorScoreUpdateMessage } from '@otl/server-consumer/messages/professor'
 import { ReviewLikeUpdateMessage } from '@otl/server-consumer/messages/review'
+import {
+  IndividualSyncUpdateRequestMessage,
+  IndividualSyncUpdateStartMessage,
+} from '@otl/server-consumer/messages/sync'
 import { ConsumeMessage } from 'amqplib'
 import { plainToInstance } from 'class-transformer'
 
@@ -23,7 +27,7 @@ import { AppService } from './app.service'
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @RabbitConsumer(QueueSymbols.SCHOLAR_SYNC, { prefetch: 5, timeout: 30000 })
+  @RabbitConsumer(QueueSymbols.SCHOLAR_SYNC, { prefetch: 5, timeout: 60000 })
   async handleScholarMessage(amqpMsg: ConsumeMessage) {
     const msg = JSON.parse(amqpMsg.content.toString())
     const request = plainToInstance(Message, msg)
@@ -38,6 +42,18 @@ export class AppController {
         throw new Error(`Invalid course representative lecture update message: ${JSON.stringify(request)}`)
       }
       return await this.appService.updateCourseRepresentativeLecture(request, amqpMsg)
+    }
+    if (request.type === EVENT_TYPE.INDIVIDUAL_SYNC_UPDATE_REQUEST) {
+      if (!IndividualSyncUpdateRequestMessage.isValid(request)) {
+        throw new Error(`Invalid individual sync update request message: ${JSON.stringify(request)}`)
+      }
+      return await this.appService.handleIndividualSyncUpdateRequest(request, amqpMsg)
+    }
+    if (request.type === EVENT_TYPE.INDIVIDUAL_SYNC_UPDATE_START) {
+      if (!IndividualSyncUpdateStartMessage.isValid(request)) {
+        throw new Error(`Invalid individual sync update start message: ${JSON.stringify(request)}`)
+      }
+      return await this.appService.handleIndividualSyncUpdateStart(request, amqpMsg)
     }
     throw new Error(`Unknown message type: ${request.type}`)
   }

@@ -1,6 +1,8 @@
 import { SyncType } from '@prisma/client'
 import { Type } from 'class-transformer'
-import { IsIn, IsNumber, IsOptional } from 'class-validator'
+import {
+  IsIn, IsNumber, IsOptional, IsString,
+} from 'class-validator'
 
 export class CronExpress {
   cron!: string
@@ -22,6 +24,28 @@ export class SyncTerm {
   @IsNumber()
   @Type(() => Number)
   interval!: number
+}
+
+export class SyncBody {
+  @IsNumber()
+  @Type(() => Number)
+  year!: number
+
+  @IsIn([1, 2, 3, 4])
+  @IsNumber()
+  @Type(() => Number)
+  semester!: 1 | 2 | 3 | 4
+
+  @IsNumber()
+  @Type(() => Number)
+  studentId!: number
+
+  @IsNumber()
+  @Type(() => Number)
+  userId!: number
+
+  @IsString()
+  requestId!: string
 }
 
 export type SyncTimeType = typeof SyncType.EXAMTIME | typeof SyncType.CLASSTIME
