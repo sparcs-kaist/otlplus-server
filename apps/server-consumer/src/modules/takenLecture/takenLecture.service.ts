@@ -20,7 +20,7 @@ import * as Sentry from '@sentry/nestjs'
 import { logger } from '@sentry/nestjs'
 import Redis from 'ioredis'
 import {
-  catchError, from, lastValueFrom, of, retry, timer,
+  catchError, from, lastValueFrom, retry, timer,
 } from 'rxjs'
 
 import { SyncProgress, SyncSSEMessage } from '@otl/common'
@@ -460,6 +460,8 @@ export class TakenLectureService {
     userId: number,
     requestId: string,
   ) {
+    const jobIdentifier = `${userId}:${year}:${semester}`
+    const statusKey = `taken-lecture-sync:status:${jobIdentifier}`
     const progressKey = `taken-lecture-sync:progress:${requestId}`
     const sseChannel = `sync-progress:${requestId}`
 
@@ -488,21 +490,25 @@ export class TakenLectureService {
           return timer(delayMs)
         },
       }),
-      catchError(async (err) => {
+      catchError((err) => {
         console.error(`[Consumer 1] Permanently failed to trigger sync for ${requestId}`, err.message)
         const errorProgress = { status: SyncStatus.Error, error: `Trigger failed: ${err.message}` }
-        const fifteenMinutesInSeconds = 900
+        const fifteenMinutesInSeconds = 90
 
-        // ✨ 수정됨: .set() 대신 .hmset()과 .expire() 사용
-        await this.redis.hmset(progressKey, errorProgress)
-        await this.redis.expire(progressKey, fifteenMinutesInSeconds)
-        await this.redis.publish(sseChannel, JSON.stringify(errorProgress))
-
-        return of(null)
+        return from(
+          (async () => {
+            await this.redis.hmset(progressKey, errorProgress)
+            await this.redis.expire(statusKey, fifteenMinutesInSeconds)
+            await this.redis.expire(progressKey, fifteenMinutesInSeconds)
+            await this.redis.publish(sseChannel, JSON.stringify(errorProgress))
+            return null
+          })(),
+        )
       }),
     )
 
     const result = await lastValueFrom(request$)
+    console.log(result)
 
     if (result) {
       console.log(`[Consumer 1] Successfully triggered sync for ${requestId}. Waiting for data from sync-server.`)

@@ -4,6 +4,7 @@ import { TakenLectureMQ } from '@otl/server-nest/modules/sync/domain/sync.mq'
 import * as Sentry from '@sentry/node'
 import { StatusCodes } from 'http-status-codes'
 import Redis from 'ioredis'
+import { uuid } from 'uuidv4'
 
 import { SyncProgress } from '@otl/common'
 import { SyncStatus } from '@otl/common/enum/sync'
@@ -35,7 +36,8 @@ export class SyncTakenLectureService {
     const existingRequestId = await this.redis.get(statusKey)
     if (existingRequestId) {
       const progressKey = `taken-lecture-sync:progress:${existingRequestId}`
-      const progressData = await this.redis.get(progressKey)
+      const progressData = await this.redis.hgetall(progressKey)
+      const progress = this.parseProgress(progressData)!
       if (progressData) {
         const error = new SyncException(
           StatusCodes.BAD_REQUEST,
@@ -43,11 +45,11 @@ export class SyncTakenLectureService {
           'createRequest',
         )
         Sentry.captureException(error)
-        return { requestId: existingRequestId, ...JSON.parse(progressData) }
+        return { requestId: existingRequestId, progress }
       }
     }
 
-    const requestId = crypto.randomUUID()
+    const requestId = uuid()
     const progressKey = `taken-lecture-sync:progress:${requestId}`
     const initialProgress = {
       status: SyncStatus.NotStarted,
@@ -99,5 +101,18 @@ export class SyncTakenLectureService {
     }
 
     return null
+  }
+
+  private parseProgress(data: Record<string, string>): SyncProgress | null {
+    if (!data || Object.keys(data).length === 0) {
+      return null
+    }
+    return {
+      status: data.status as SyncStatus,
+      total: parseInt(data.total) || 0,
+      completed: parseInt(data.completed) || 0,
+      startedAt: new Date(data.startedAt),
+      ...(data.error && { error: data.error }),
+    }
   }
 }

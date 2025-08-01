@@ -221,6 +221,7 @@ export class SyncSchedule {
     const charges = await this.scholarApiClient.getChargeType(year, semester)
     const examtimes = await this.scholarApiClient.getExamTimeType(year, semester)
     const classtimes = await this.scholarApiClient.getClassTimeType(year, semester)
+    console.log(lectures, takenLectures, charges, examtimes, classtimes)
     await this.syncMQ.publishIndividualTakenLectureUpdate(
       year,
       semester,

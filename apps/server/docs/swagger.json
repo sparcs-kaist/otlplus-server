@@ -1315,7 +1315,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/IPlanner.Detail"
+                  "$ref": "#/components/schemas/IPlanner.Response"
                 }
               }
             }
@@ -1634,6 +1634,24 @@
         ]
       }
     },
+    "/api/semesters/current": {
+      "get": {
+        "summary": "SemestersController.getCurrentSemester",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ISemester.Response"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
     "/session/department-options": {
       "get": {
         "summary": "SessionController.departmentOptions",
@@ -1756,129 +1774,99 @@
         "security": []
       }
     },
-    "/api/sync/defaultSemester": {
+    "/api/sync/requests": {
+      "post": {
+        "summary": "SyncController.postNewSyncRequest",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ISync.TakenLectureSyncBody"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sync/requests/active/{requestId}": {
       "get": {
-        "summary": "SyncController.getDefaultSemester",
+        "summary": "SyncController.getActiveSyncRequest",
         "responses": {
           "200": {
             "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ISemester.Response"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/sync/scholarDB": {
-      "post": {
-        "summary": "SyncController.syncScholarDB",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "type": "{ total: number; completed: number; status: string; startedAt: Date; requestId: string; }"
+                    }
+                  ]
                 }
               }
             }
           }
         },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ISync.ScholarDBBody"
-              }
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
             }
           }
-        }
+        ]
       }
     },
-    "/api/sync/examtime": {
-      "post": {
-        "summary": "SyncController.syncExamtime",
+    "/api/sync/requests/active": {
+      "get": {
+        "summary": "SyncController.getSyncRequests",
         "responses": {
           "200": {
             "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
                 }
               }
             }
           }
         },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ISync.ExamtimeBody"
-              }
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ISync.TakenLectureSyncQuery"
             }
           }
-        }
-      }
-    },
-    "/api/sync/classtime": {
-      "post": {
-        "summary": "SyncController.syncClasstime",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ISync.ClasstimeBody"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/sync/takenLecture": {
-      "post": {
-        "summary": "SyncController.syncTakenLecture",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ISync.TakenLectureBody"
-              }
-            }
-          }
-        }
+        ]
       }
     },
     "/api/users/{userId}/timetables": {
@@ -3208,7 +3196,14 @@
             "type": "number"
           },
           "course": {
-            "$ref": "#/components/schemas/ICourse.Basic"
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number"
+              }
+            },
+            "required": ["id"],
+            "additionalProperties": false
           },
           "lecture": {
             "$ref": "#/components/schemas/ILecture.Basic"
@@ -3842,6 +3837,207 @@
           "room_name",
           "unit_time",
           "lecture_id"
+        ],
+        "additionalProperties": false
+      },
+      "ILecture.Minimal": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "code": {
+            "type": "string"
+          },
+          "old_old_code": {
+            "type": "string"
+          },
+          "old_code": {
+            "type": "string"
+          },
+          "year": {
+            "type": "number"
+          },
+          "semester": {
+            "type": "number"
+          },
+          "course": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number"
+              }
+            },
+            "required": ["id"],
+            "additionalProperties": false
+          },
+          "department": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number"
+              }
+            },
+            "required": ["id"],
+            "additionalProperties": false
+          },
+          "class_no": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "title_en": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "type_en": {
+            "type": "string"
+          },
+          "audience": {
+            "type": "number"
+          },
+          "credit": {
+            "type": "number"
+          },
+          "title_en_no_space": {
+            "type": "string"
+          },
+          "title_no_space": {
+            "type": "string"
+          },
+          "num_classes": {
+            "type": "number"
+          },
+          "num_labs": {
+            "type": "number"
+          },
+          "credit_au": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "num_people": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "is_english": {
+            "type": "boolean"
+          },
+          "deleted": {
+            "type": "boolean"
+          },
+          "course_id": {
+            "type": "number"
+          },
+          "grade_sum": {
+            "type": "number"
+          },
+          "load_sum": {
+            "type": "number"
+          },
+          "speech_sum": {
+            "type": "number"
+          },
+          "grade": {
+            "type": "number"
+          },
+          "load": {
+            "type": "number"
+          },
+          "speech": {
+            "type": "number"
+          },
+          "review_total_weight": {
+            "type": "number"
+          },
+          "class_title": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "class_title_en": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "common_title": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "common_title_en": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "old_old_code",
+          "old_code",
+          "year",
+          "semester",
+          "course",
+          "department",
+          "class_no",
+          "title",
+          "title_en",
+          "type",
+          "type_en",
+          "audience",
+          "credit",
+          "title_en_no_space",
+          "title_no_space",
+          "num_classes",
+          "num_labs",
+          "credit_au",
+          "limit",
+          "num_people",
+          "is_english",
+          "deleted",
+          "course_id",
+          "grade_sum",
+          "load_sum",
+          "speech_sum",
+          "grade",
+          "load",
+          "speech",
+          "review_total_weight",
+          "class_title",
+          "class_title_en",
+          "common_title",
+          "common_title_en"
         ],
         "additionalProperties": false
       },
@@ -4812,6 +5008,97 @@
         "type": "object",
         "required": ["start_year", "end_year", "general_track", "major_track", "additional_tracks"]
       },
+      "IPlanner.Response": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "start_year": {
+            "type": "number"
+          },
+          "end_year": {
+            "type": "number"
+          },
+          "general_track": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IPlanner.ITrack.General"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "major_track": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IPlanner.ITrack.Major"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "additional_tracks": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/IPlanner.ITrack.Additional"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "taken_items": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/IPlanner.IItem.Taken"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "future_items": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/IPlanner.IItem.Future"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "arbitrary_items": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/IPlanner.IItem.Arbitrary"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "arrange_order": {
+            "type": "number"
+          }
+        },
+        "required": ["id", "start_year", "end_year", "arrange_order"],
+        "additionalProperties": false
+      },
       "IRate.Basic": {
         "type": "object",
         "properties": {
@@ -4860,7 +5147,14 @@
             "type": "number"
           },
           "course": {
-            "$ref": "#/components/schemas/ICourse.Basic"
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number"
+              }
+            },
+            "required": ["id"],
+            "additionalProperties": false
           },
           "lecture": {
             "$ref": "#/components/schemas/ILecture.Basic"
@@ -6067,6 +6361,32 @@
         },
         "type": "object",
         "required": ["year", "semester", "lectures", "charges"]
+      },
+      "ISync.TakenLectureSyncBody": {
+        "properties": {
+          "year": {
+            "type": "integer"
+          },
+          "semester": {
+            "type": "number",
+            "enum": [1, 2, 3, 4]
+          }
+        },
+        "type": "object",
+        "required": ["year", "semester"]
+      },
+      "ISync.TakenLectureSyncQuery": {
+        "properties": {
+          "year": {
+            "type": "integer"
+          },
+          "semester": {
+            "type": "number",
+            "enum": [1, 2, 3, 4]
+          }
+        },
+        "type": "object",
+        "required": ["year", "semester"]
       },
       "ITimetable.Response": {
         "type": "object",

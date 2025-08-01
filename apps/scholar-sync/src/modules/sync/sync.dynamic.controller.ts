@@ -162,6 +162,7 @@ export class SyncDynamicController {
   }
 
   @Post('takenLecture')
+  @Public()
   async postNewSyncRequest(@Body() body: SyncBody) {
     return await this.syncSchedule.syncIndividualTakenLecture(
       body.year,
