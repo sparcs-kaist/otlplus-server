@@ -17,7 +17,6 @@ import {
 import settings from '@otl/server-consumer/settings'
 import { SyncType } from '@prisma/client'
 import * as Sentry from '@sentry/nestjs'
-import { logger } from '@sentry/nestjs'
 import Redis from 'ioredis'
 import {
   catchError, from, lastValueFrom, retry, timer,
@@ -25,10 +24,9 @@ import {
 
 import { SyncProgress, SyncSSEMessage } from '@otl/common'
 import { SyncStatus } from '@otl/common/enum/sync'
+import logger from '@otl/common/logger/logger'
 
-import {
-  EDepartment, ELecture, EProfessor, ETakenLecture,
-} from '@otl/prisma-client'
+import { EDepartment, ELecture, EProfessor } from '@otl/prisma-client'
 
 @Injectable()
 export class TakenLectureService {
@@ -75,7 +73,8 @@ export class TakenLectureService {
         }
       }
       catch (e: any) {
-        Sentry.logger.error(e)
+        Sentry.captureException(e)
+        logger.error(e)
       }
     }
 
@@ -96,7 +95,8 @@ export class TakenLectureService {
         }
       }
       catch (e: any) {
-        Sentry.logger.error(e)
+        Sentry.captureException(e)
+        logger.error(e)
       }
     }
 
@@ -194,7 +194,8 @@ export class TakenLectureService {
         }
       }
       catch (e: any) {
-        Sentry.logger.error(e)
+        Sentry.captureException(e)
+        logger.error(e)
       }
     }
 
@@ -203,7 +204,8 @@ export class TakenLectureService {
       await this.syncRepository.markLecturesDeleted(Array.from(notExistingLectures))
     }
     catch (e: any) {
-      Sentry.logger.error(e)
+      Sentry.captureException(e)
+      logger.error(e)
     }
   }
 
@@ -308,14 +310,14 @@ export class TakenLectureService {
       year: data.year,
       semester: data.semester,
     })
-    const user = await this.syncRepository.getExistingTakenLecturesByStudentIds(data.year, data.semester, userId)
+    const user = await this.syncRepository.getUser(userId)
+    const takenLectures = (await this.syncRepository.getExistingTakenLecturesByStudentId(data.year, data.semester, userId)) ?? []
     if (!user) {
       throw new Error(
         `User with ID ${userId} not found in the database for year ${data.year} and semester ${data.semester}.`,
       )
     }
-    const takenLectures = user.taken_lectures
-    const studentPairMap = new Map<number, [ETakenLecture.Basic[], number[]]>()
+    const studentPairMap = new Map<number, [ELecture.Basic[], number[]]>()
     studentPairMap.set(userId, [takenLectures, []])
 
     const lectureMap = new Map<string, ELecture.Basic>()
@@ -334,55 +336,56 @@ export class TakenLectureService {
     }
 
     const saveToDB = []
-    for (const [_, [existingTakenLectures, attendRecords]] of studentPairMap) {
-      try {
-        if (attendRecords.length) {
-          saveToDB.push(
-            ...attendRecords.map((lectureId) => ({
-              studentId: parseInt(user.student_id),
-              lectureId,
-            })),
-          )
-        }
-        const recordIdsToRemove = []
-        const recordsToAdd = [...attendRecords]
-        for (const existing of existingTakenLectures) {
-          const idx = recordsToAdd.indexOf(existing.lecture_id)
-          if (idx === -1) recordIdsToRemove.push(existing.id)
-          else recordsToAdd.splice(idx, 1)
-        }
+    const existingTakenLectures = studentPairMap.get(userId)![0]
+    const attendRecords = studentPairMap.get(userId)![1]
+    const recordIdsToRemove = []
+    const recordsToAdd = [...attendRecords]
+    try {
+      if (attendRecords.length) {
+        saveToDB.push(
+          ...attendRecords.map((lectureId) => ({
+            studentId: parseInt(user.student_id),
+            lectureId,
+          })),
+        )
+      }
+      for (const existing of existingTakenLectures) {
+        const idx = recordsToAdd.indexOf(existing.id)
+        if (idx === -1) recordIdsToRemove.push(existing.id)
+        else recordsToAdd.splice(idx, 1)
+      }
 
-        if (recordIdsToRemove.length || recordsToAdd.length) {
-          await this.updateTakenLectures(
-            userId,
-            {
-              remove: recordIdsToRemove,
-              add: recordsToAdd,
-            },
-            sseChannel,
-            progressKey,
-            requestId,
-          )
-        }
-      }
-      catch (e: any) {
-        Sentry.captureException(e, {
-          extra: {
-            userId,
-            year: data.year,
-            semester: data.semester,
-            attendRecords,
+      if (recordIdsToRemove.length || recordsToAdd.length) {
+        await this.updateTakenLectures(
+          userId,
+          {
+            remove: recordIdsToRemove,
+            add: recordsToAdd,
           },
-        })
-        logger.error(`Error syncing taken lectures for user ${userId}: ${e.message || 'Unknown error'}`)
-        throw e
+          sseChannel,
+          progressKey,
+          requestId,
+        )
       }
+    }
+    catch (e: any) {
+      Sentry.captureException(e, {
+        extra: {
+          userId,
+          year: data.year,
+          semester: data.semester,
+          attendRecords,
+        },
+      })
+      logger.error(`Error syncing taken lectures for user ${userId}: ${e.message || 'Unknown error'}`)
+      throw e
     }
 
     await this.syncRepository.replaceRawTakenLectures(saveToDB, {
       year: data.year,
       semester: data.semester,
     })
+    return recordIdsToRemove.length + recordsToAdd.length
   }
 
   private async updateTakenLectures(
@@ -392,35 +395,54 @@ export class TakenLectureService {
     progressKey: string,
     requestId: string,
   ) {
-    // 한 번에 처리할 DB 작업 및 업데이트 알림의 묶음 크기
-    const BATCH_SIZE = 5
+    const progressData = await this.redis.hgetall(progressKey)
+    if (!progressData || Object.keys(progressData).length === 0) {
+      const error = new Error(`Progress key not found for requestId: ${requestId}`)
+      Sentry.captureException(error)
+      logger.error('[Consumer 2] No progress data found, initializing new progress state.')
+      throw error
+    }
+    const progress = this.parseProgress(progressData)!
 
+    progress.status = SyncStatus.InProgress
+    progress.total = items.add.length + items.remove.length
+    progress.completed = 0
+
+    await this.redis.hmset(progressKey, {
+      status: progress.status,
+      total: progress.total,
+      completed: progress.completed,
+    })
+
+    // 한 번에 처리할 DB 작업 및 업데이트 알림의 묶음 크기
+    logger.info(`[Consumer 2] Updating taken lectures for user ${userId}, requestId: ${requestId}`)
     // 1. 기존 수강 기록 삭제 처리
-    for (let i = 0; i < items.remove.length; i += BATCH_SIZE) {
-      const chunk = items.remove.slice(i, i + BATCH_SIZE)
-      if (chunk.length > 0) {
-        // DB에서 레코드 삭제
-        await this.syncRepository.deleteTakenLectures(chunk)
-        // 진행 상황 업데이트 및 방송
-        await this.updateAndBroadcastProgress(progressKey, sseChannel, requestId, chunk.length)
+    for (let i = 0; i < items.remove.length; i += 1) {
+      const item = items.remove[i]
+      const dataToDelete = {
+        userprofile_id: userId,
+        lecture_id: item,
       }
+      // DB에서 레코드 삭제
+      await this.syncRepository.deleteTakenLecture(dataToDelete)
+      // 진행 상황 업데이트 및 방송
+      await this.updateAndBroadcastProgress(progressKey, sseChannel, requestId, 1)
     }
 
     // 2. 새로운 수강 기록 추가 처리
-    for (let i = 0; i < items.add.length; i += BATCH_SIZE) {
-      const chunk = items.add.slice(i, i + BATCH_SIZE)
-      if (chunk.length > 0) {
-        // DB에 추가할 데이터 형태로 변환
-        const dataToCreate = chunk.map((lectureId) => ({
-          userprofile_id: userId,
-          lecture_id: lectureId,
-        }))
-        // DB에 레코드 생성
-        await this.syncRepository.createTakenLectures(dataToCreate)
-        // 진행 상황 업데이트 및 방송
-        await this.updateAndBroadcastProgress(progressKey, sseChannel, requestId, chunk.length)
+    for (let i = 0; i < items.add.length; i += 1) {
+      const item = items.add[i]
+      // DB에 추가할 데이터 형태로 변환
+      const dataToCreate = {
+        userprofile_id: userId,
+        lecture_id: item,
       }
+      // DB에 레코드 생성
+      await this.syncRepository.createTakenLecture(dataToCreate)
+      // 진행 상황 업데이트 및 방송
+      await this.updateAndBroadcastProgress(progressKey, sseChannel, requestId, 1)
     }
+    logger.info(`[Consumer 2] Completed taken lecture updates for user ${userId}, requestId: ${requestId}`)
   }
 
   /**
@@ -465,10 +487,13 @@ export class TakenLectureService {
     const progressKey = `taken-lecture-sync:progress:${requestId}`
     const sseChannel = `sync-progress:${requestId}`
 
-    console.log(`[Consumer 1] Triggering data fetch for student ${studentId}, requestId: ${requestId}`)
+    logger.info(`[Consumer 1] Triggering data fetch for student ${studentId}, requestId: ${requestId}`)
     const { host } = settings().getScholarSyncInfo()
     if (!host) {
-      throw new Error('Scholar Sync host is not configured')
+      const error = new Error('Scholar Sync host is not configured')
+      Sentry.captureException(error)
+      logger.error(`[Consumer 1] Scholar Sync host is not configured: ${error.message}`)
+      throw error
     }
     const url = `${host}/api/dynamic-sync/individual-takenLecture`
     const request$ = from(
@@ -484,22 +509,29 @@ export class TakenLectureService {
         count: 3,
         delay: (error, retryCount) => {
           const delayMs = 5000 * retryCount
-          console.warn(
-            `[Consumer 1] Retrying trigger for ${requestId}, attempt #${retryCount}. Error: ${error.message}`,
-          )
+          logger.warn(`[Consumer 1] Retrying trigger for ${requestId}, attempt #${retryCount}. Error: ${error.message}`)
           return timer(delayMs)
         },
       }),
       catchError((err) => {
-        console.error(`[Consumer 1] Permanently failed to trigger sync for ${requestId}`, err.message)
+        Sentry.captureException(err, {
+          extra: {
+            requestId,
+            year,
+            semester,
+            studentId,
+            userId,
+          },
+        })
+        logger.error(`[Consumer 1] Permanently failed to trigger sync for ${requestId}`, err.message)
         const errorProgress = { status: SyncStatus.Error, error: `Trigger failed: ${err.message}` }
-        const fifteenMinutesInSeconds = 90
+        const tenMinutesInSeconds = 600
 
         return from(
           (async () => {
             await this.redis.hmset(progressKey, errorProgress)
-            await this.redis.expire(statusKey, fifteenMinutesInSeconds)
-            await this.redis.expire(progressKey, fifteenMinutesInSeconds)
+            await this.redis.expire(statusKey, tenMinutesInSeconds)
+            await this.redis.expire(progressKey, tenMinutesInSeconds)
             await this.redis.publish(sseChannel, JSON.stringify(errorProgress))
             return null
           })(),
@@ -508,10 +540,9 @@ export class TakenLectureService {
     )
 
     const result = await lastValueFrom(request$)
-    console.log(result)
 
     if (result) {
-      console.log(`[Consumer 1] Successfully triggered sync for ${requestId}. Waiting for data from sync-server.`)
+      logger.info(`[Consumer 1] Successfully triggered sync for ${requestId}. Waiting for data from sync-server.`)
     }
   }
 
@@ -530,19 +561,22 @@ export class TakenLectureService {
       const progressKey = `taken-lecture-sync:progress:${requestId}`
       const sseChannel = `sync-progress:${requestId}`
 
-      console.log(`[Consumer 2] Starting data processing for requestId: ${requestId}`)
+      logger.info(`[Consumer 2] Starting data processing for requestId: ${requestId}`)
 
       // 1. 상태를 '진행 중'으로 업데이트
       const progressData = await this.redis.hgetall(progressKey)
       if (!progressData || Object.keys(progressData).length === 0) {
-        throw new Error(`Progress key not found for requestId: ${requestId}`)
+        const error = new Error(`Progress key not found for requestId: ${requestId}`)
+        Sentry.captureException(error)
+        logger.error('[Consumer 2] No progress data found, initializing new progress state.')
+        throw error
       }
       // ✨ 수정됨: hgetall 결과를 파싱
       const progress = this.parseProgress(progressData)!
 
       // 1. 상태를 '진행 중'으로 업데이트
       progress.status = SyncStatus.InProgress
-      progress.total = takenLectureData.attend.length
+      progress.total = 0
       progress.completed = 0
 
       // ✨ 수정됨: .set() 대신 .hmset() 사용
@@ -571,30 +605,37 @@ export class TakenLectureService {
 
       sseMessage = { ...sseMessage, message: 'Syncing TakenLectures...' }
       await this.redis.publish(sseChannel, JSON.stringify(sseMessage))
-      await this.syncIndividualTakenLecture(takenLectureData, userId, sseChannel, progressKey, requestId)
+      const totalProcessed = await this.syncIndividualTakenLecture(
+        takenLectureData,
+        userId,
+        sseChannel,
+        progressKey,
+        requestId,
+      )
 
       // 3. 최종 완료 상태 업데이트
       const finalProgress: SyncProgress = {
         status: 'COMPLETED',
-        total: takenLectureData.attend.length,
-        completed: takenLectureData.attend.length,
+        total: totalProcessed,
+        completed: totalProcessed,
         startedAt: progress.startedAt,
       }
       sseMessage = { ...sseMessage, progress: finalProgress, message: 'Sync TakenLecture Completed' }
       // ✨ 수정됨: 최종 상태를 hset으로 업데이트.
-      await this.redis.hset(progressKey, 'status', SyncStatus.Completed)
+      await this.redis.hset(progressKey, finalProgress)
       await this.redis.publish(sseChannel, JSON.stringify(sseMessage))
 
       // 2. statusKey를 찾기 위해 jobIdentifier를 만듭니다. (이 정보는 MQ 메시지에 포함되어야 함)
-      const jobIdentifier = `${studentId}:${year}:${semester}`
+      const jobIdentifier = `${userId}:${year}:${semester}`
       const statusKey = `taken-lecture-sync:status:${jobIdentifier}`
       await this.redis.expire(progressKey, 30)
       await this.redis.expire(statusKey, 30)
 
-      console.log(`[Consumer 2] Successfully processed data for requestId: ${requestId}`)
+      logger.info(`[Consumer 2] Successfully processed data for requestId: ${requestId}`)
     }
     catch (error: any) {
-      const jobIdentifier = `${studentId}:${year}:${semester}`
+      logger.error(error)
+      const jobIdentifier = `${userId}:${year}:${semester}`
       const statusKey = `taken-lecture-sync:status:${jobIdentifier}`
       const progressKey = `taken-lecture-sync:progress:${requestId}`
       const errorProgress: Partial<SyncProgress> = {
@@ -602,7 +643,7 @@ export class TakenLectureService {
       }
       // ✨ 수정됨: 에러 상태를 .hmset으로 업데이트
       await this.redis.hmset(progressKey, errorProgress)
-      const fifteenMinutesInSeconds = 900
+      const fifteenMinutesInSeconds = 90
       await this.redis.expire(progressKey, fifteenMinutesInSeconds)
       await this.redis.expire(statusKey, fifteenMinutesInSeconds)
 

@@ -27,7 +27,7 @@ import { AppService } from './app.service'
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @RabbitConsumer(QueueSymbols.SCHOLAR_SYNC, { prefetch: 5, timeout: 60000 })
+  @RabbitConsumer(QueueSymbols.SCHOLAR_SYNC, { prefetch: 5, timeout: 600000 })
   async handleScholarMessage(amqpMsg: ConsumeMessage) {
     const msg = JSON.parse(amqpMsg.content.toString())
     const request = plainToInstance(Message, msg)

@@ -50,16 +50,19 @@ export interface ServerConsumerTakenLectureRepository {
 
   updateLectureClasstimes(id: number, { added, removed }: { added: ClassTimeInfo[], removed: number[] }): Promise<void>
 
-  getExistingTakenLecturesByStudentIds(
+  getUser(id: number): Promise<EUser.Basic | null>
+
+  getExistingTakenLecturesByStudentId(
     year: number,
     semester: number,
     studentId: number,
-  ): Promise<EUser.WithTakenLectures | null>
+  ): Promise<ELecture.Basic[] | null>
+
   replaceRawTakenLectures(
     data: { studentId: number, lectureId: number }[],
     { year, semester }: { year: number, semester: number },
   ): Promise<void>
 
-  deleteTakenLectures(chunk: number[]): Promise<void>
-  createTakenLectures(dataToCreate: { userprofile_id: number, lecture_id: number }[]): Promise<void>
+  deleteTakenLecture(dataToDelete: { userprofile_id: number, lecture_id: number }): Promise<void>
+  createTakenLecture(dataToCreate: { userprofile_id: number, lecture_id: number }): Promise<void>
 }

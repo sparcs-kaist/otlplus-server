@@ -271,14 +271,22 @@ export class SyncRepository implements ServerConsumerTakenLectureRepository {
     })
   }
 
-  async getExistingTakenLecturesByStudentIds(year: number, semester: number, userId: number) {
+  async getUser(id: number): Promise<EUser.Basic | null> {
     return await this.prismaRead.session_userprofile.findUnique({
-      where: {
-        id: userId,
-        taken_lectures: { some: { lecture: { year, semester } } },
-      },
-      include: { taken_lectures: { where: { lecture: { year, semester } } } },
+      where: { id },
     })
+  }
+
+  async getExistingTakenLecturesByStudentId(year: number, semester: number, userId: number) {
+    return (
+      await this.prisma.session_userprofile_taken_lectures.findMany({
+        where: {
+          userprofile_id: userId,
+          lecture: { year, semester },
+        },
+        include: { lecture: true },
+      })
+    ).map((takenLecture) => takenLecture.lecture)
   }
 
   async getUserProfileIdsFromStudentIds(studentIds: number[]) {
@@ -524,13 +532,13 @@ export class SyncRepository implements ServerConsumerTakenLectureRepository {
     })
   }
 
-  async deleteTakenLectures(chunk: number[]): Promise<void> {
+  async deleteTakenLecture(dataToDelete: { userprofile_id: number, lecture_id: number }): Promise<void> {
     await this.prisma.session_userprofile_taken_lectures.deleteMany({
-      where: { id: { in: chunk } },
+      where: { userprofile_id: dataToDelete.userprofile_id, lecture_id: dataToDelete.lecture_id },
     })
   }
 
-  async createTakenLectures(dataToCreate: { userprofile_id: number, lecture_id: number }[]): Promise<void> {
+  async createTakenLecture(dataToCreate: { userprofile_id: number, lecture_id: number }): Promise<void> {
     await this.prisma.session_userprofile_taken_lectures.createMany({
       data: dataToCreate,
     })

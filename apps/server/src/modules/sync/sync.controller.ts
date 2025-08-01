@@ -10,6 +10,7 @@ import Redis from 'ioredis'
 import { finalize, Observable, Subject } from 'rxjs'
 
 import { getCurrentMethodName } from '@otl/common'
+import { SyncStatus } from '@otl/common/enum/sync'
 import { UserException } from '@otl/common/exception/user.exception'
 
 import { SyncTakenLectureService } from './syncTakenLecture.service'
@@ -65,7 +66,7 @@ export class SyncController {
         subject.next({ data: progress })
 
         // 작업 완료 또는 실패 시 스트림을 종료합니다.
-        if (progress.status === 'COMPLETED' || progress.status === 'FAILED') {
+        if (progress.progress.status === SyncStatus.Completed || progress.progress.status === SyncStatus.Error) {
           subject.complete()
         }
       }
