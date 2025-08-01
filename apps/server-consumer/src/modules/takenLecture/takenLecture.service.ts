@@ -470,7 +470,7 @@ export class TakenLectureService {
     if (!host) {
       throw new Error('Scholar Sync host is not configured')
     }
-    const url = `${host}/api/dynamic-sync/takenLecture`
+    const url = `${host}/api/dynamic-sync/individual-takenLecture`
     const request$ = from(
       this.httpService.post(url, {
         year,

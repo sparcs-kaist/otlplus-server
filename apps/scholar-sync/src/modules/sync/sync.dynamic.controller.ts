@@ -161,7 +161,7 @@ export class SyncDynamicController {
     this.logger.log(`Job ${jobName} set to ${cron}`)
   }
 
-  @Post('takenLecture')
+  @Post('individual-takenLecture')
   @Public()
   async postNewSyncRequest(@Body() body: SyncBody) {
     return await this.syncSchedule.syncIndividualTakenLecture(

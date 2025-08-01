@@ -30,6 +30,7 @@ export class AuthChain {
   }
 
   private async handleException(result: AuthResult) {
+    console.log(result)
     if (result.isPublic) return true
 
     if (!result.authentication) throw new UnauthorizedException()
