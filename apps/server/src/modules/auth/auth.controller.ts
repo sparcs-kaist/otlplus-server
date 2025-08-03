@@ -92,6 +92,7 @@ export class AuthController {
     } = await this.authService.tokenRefresh(token)
     res.cookie('accessToken', accessToken, accessTokenOptions)
     res.cookie('refreshToken', refreshToken, refreshTokenOptions)
+    res.status(200)
     return {
       accessToken,
       refreshToken,
