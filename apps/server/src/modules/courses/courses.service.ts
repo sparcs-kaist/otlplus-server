@@ -50,20 +50,15 @@ export class CoursesService {
     const lectures = await this.lectureRepository.getLecturesByIds(representativeLectureIds)
     const courseLectureMap = new Map(lectures.map((l) => [courseRepresentativeLectureIdMap.get(l.id), l]))
 
-    await Promise.all(
-      queryResult.map(async (course) => {
-        const representativeLecture = courseLectureMap.get(course.id)
-        if (!representativeLecture) {
-          return
-        }
-        const professorRaw = course.subject_course_professors.map((x: { professor: any }) => x.professor)
-        const result = toJsonCourseDetail(course, representativeLecture, professorRaw)
+    for (const course of queryResult) {
+      const representativeLecture = courseLectureMap.get(course.id)
+      if (!representativeLecture) continue
 
-        const userspecific_is_read = user ? courseReads[course.id] : false
-
-        resultList.push(addIsRead(result, userspecific_is_read))
-      }),
-    )
+      const professorRaw = course.subject_course_professors.map((x) => x.professor)
+      const result = toJsonCourseDetail(course, representativeLecture, professorRaw)
+      const userspecific_is_read = courseReads[course.id] ?? false
+      resultList.push(addIsRead(result, userspecific_is_read))
+    }
     return resultList
   }
 
