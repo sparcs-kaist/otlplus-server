@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common'
-import { FieldData, FieldRepositoryInterface } from '@otl/lab-server/repositories/field.repository'
+import { Field } from '@otl/lab-server/modules/field/domain/field'
+import { FieldRepository } from '@otl/lab-server/modules/field/domain/field.repository'
 import { WeaviateService } from '@otl/weaviate-client'
 
 @Injectable()
-export class FieldRepository implements FieldRepositoryInterface {
+export class FieldWeaviateRepository implements FieldRepository {
   constructor(private readonly weaviate: WeaviateService) {}
 
   private get field() {
@@ -11,10 +12,10 @@ export class FieldRepository implements FieldRepositoryInterface {
   }
 
   // weaviate generates random UUID if no id is given
-  async insert(data: FieldData): Promise<void> {
+  async insert(data: Field): Promise<void> {
     await this.field.data.insert({
       // id: '12345678-e64f-5d94-90db-c8cfa3fc1234',
-      keyword: data.keyword,
+      keyword: data.name,
       parentField: data.parentField ?? null,
     })
   }
@@ -29,6 +30,6 @@ export class FieldRepository implements FieldRepositoryInterface {
       limit: 10,
     })
 
-    return result.objects.map((obj) => obj.properties as unknown as FieldData)
+    return result.objects.map((obj) => obj.properties as unknown as Field)
   }
 }

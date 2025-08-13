@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common'
-import { LabData, LabRepositoryInterface } from '@otl/lab-server/repositories/lab.repository'
+import { Lab } from '@otl/lab-server/modules/lab/domain/lab'
+import { LabRepository } from '@otl/lab-server/modules/lab/domain/lab.repository'
 import { WeaviateService } from '@otl/weaviate-client'
 
 @Injectable()
-export class LabRepository implements LabRepositoryInterface {
+export class LabWeaviateRepository implements LabRepository {
   constructor(private readonly weaviate: WeaviateService) {}
 
   private get lab() {
@@ -11,15 +12,14 @@ export class LabRepository implements LabRepositoryInterface {
   }
 
   // weaviate generates random UUID if no id is given
-  async insert(data: LabData): Promise<void> {
+  async insert(data: Lab): Promise<void> {
     await this.lab.data.insert({
       // id: '12345678-e64f-5d94-90db-c8cfa3fc1234',
       properties: {
         name: data.name,
-        prof: data.prof,
+        prof: data.professorName,
         department: data.department,
-        location: data.location ?? null,
-        keywords: data.keywords ?? [],
+        keywords: data.fields ?? [],
       },
     })
   }

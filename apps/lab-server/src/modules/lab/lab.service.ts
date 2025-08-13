@@ -1,7 +1,10 @@
-import { Injectable } from '@nestjs/common'
-import { LabRepository } from '@otl/weaviate-client/repositories/lab.repository'
+import { Inject, Injectable } from '@nestjs/common'
+import { LAB_REPOSITORY, LabRepository } from '@otl/lab-server/modules/lab/domain/lab.repository'
 
 @Injectable()
 export class LabService {
-  constructor(private readonly labRepository: LabRepository) {}
+  constructor(
+    @Inject(LAB_REPOSITORY)
+    private readonly labRepository: LabRepository,
+  ) {}
 }

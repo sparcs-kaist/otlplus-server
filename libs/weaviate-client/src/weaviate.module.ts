@@ -21,5 +21,5 @@ export class WeaviateModule implements OnModuleInit {
 
   constructor(private readonly weaviate: WeaviateService) {}
 
-  onModuleInit() {}
+  async onModuleInit() {}
 }

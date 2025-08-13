@@ -1,7 +1,10 @@
-import { Injectable } from '@nestjs/common'
-import { PaperRepository } from '@otl/weaviate-client/repositories/paper.repository'
+import { Inject, Injectable } from '@nestjs/common'
+import { PAPER_REPOSITORY, PaperRepository } from '@otl/lab-server/modules/paper/domain/paper.repository'
 
 @Injectable()
 export class PaperService {
-  constructor(private readonly paperRepository: PaperRepository) {}
+  constructor(
+    @Inject(PAPER_REPOSITORY)
+    private readonly paperRepository: PaperRepository,
+  ) {}
 }

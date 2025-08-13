@@ -25,6 +25,8 @@
       "@otl/scholar-sync/domain/*": ["../../apps/scholar-sync/src/common/domain/*"],
       "@otl/scholar-sync/clients/scholar/*": ["../../apps/scholar-sync/src/clients/scholar/*"],
       "@otl/server-nest/*": ["../../apps/server/src/*"],
+      "@otl/lab-server": ["../../apps/lab-server/src"],
+      "@otl/lab-server/*": ["../../apps/lab-server/src/*"],
       "@otl/prisma-client/*": ["../../libs/prisma-client/src/*"],
       "@otl/weaviate-client/*": ["./src/*"]
     }
