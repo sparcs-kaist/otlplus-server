@@ -27,7 +27,7 @@ export class SyncSchedule {
     console.log(this.logFileDir)
   }
 
-  @Cron(CronExpression.EVERY_MINUTE, {
+  @Cron(CronExpression.EVERY_30_SECONDS, {
     name: 'syncAll',
     timeZone: 'Asia/Seoul',
   })
@@ -51,9 +51,9 @@ export class SyncSchedule {
       await this.syncExamTime(year, semester)
       await this.syncClassTime(year, semester)
       await this.syncTakenLecture(year, semester)
-      await this.syncDegree()
-      await this.syncMajor()
     }
+    await this.syncDegree()
+    await this.syncMajor()
   }
 
   @Cron(CronExpression.EVERY_HOUR, {
