@@ -22,9 +22,9 @@ export class ProfessorInfo {
 
   public static equals(existing: EProfessor.Basic, professor: ProfessorInfo) {
     return (
-      existing.professor_name !== professor.professor_name
-      && existing.professor_name_en !== professor.professor_name_en
-      && existing.major !== professor.major
+      existing.professor_name === professor.professor_name
+      && existing.professor_name_en === professor.professor_name_en
+      && existing.major === professor.major
     )
   }
 }
