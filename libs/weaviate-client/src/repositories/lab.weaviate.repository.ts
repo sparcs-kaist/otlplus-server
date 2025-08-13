@@ -2,24 +2,26 @@ import { Injectable } from '@nestjs/common'
 import { Lab } from '@otl/lab-server/modules/lab/domain/lab'
 import { LabRepository } from '@otl/lab-server/modules/lab/domain/lab.repository'
 import { WeaviateService } from '@otl/weaviate-client'
+import { generateUuid5 } from 'weaviate-client'
 
 @Injectable()
 export class LabWeaviateRepository implements LabRepository {
   constructor(private readonly weaviate: WeaviateService) {}
 
   private get lab() {
-    return this.weaviate.client.collections.use('Lab')
+    return this.weaviate.lab
   }
 
   // weaviate generates random UUID if no id is given
-  async insert(data: Lab): Promise<void> {
+  async insert(data: Omit<Lab, 'id'>): Promise<void> {
     await this.lab.data.insert({
-      // id: '12345678-e64f-5d94-90db-c8cfa3fc1234',
+      id: generateUuid5(JSON.stringify(data)),
       properties: {
-        name: data.name,
-        prof: data.professorName,
-        department: data.department,
-        keywords: data.fields ?? [],
+        name: data.name ? data.name : null,
+        professor: data.professor.id,
+        department: data.department.id,
+        fields: data.fields.map((field) => field.id),
+        labLink: data.labLink,
       },
     })
   }
@@ -35,7 +37,7 @@ export class LabWeaviateRepository implements LabRepository {
 
   async findByProfName(name: string): Promise<any[]> {
     const result = await this.lab.query.fetchObjects({
-      filters: this.lab.filter.byProperty('prof').equal(name),
+      filters: this.lab.filter.byProperty('professor').equal(name),
       limit: 10,
     })
 

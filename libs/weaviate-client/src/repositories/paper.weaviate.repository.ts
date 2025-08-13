@@ -2,19 +2,30 @@ import { Injectable } from '@nestjs/common'
 import { Paper } from '@otl/lab-server/modules/paper/domain/paper'
 import { PaperRepository } from '@otl/lab-server/modules/paper/domain/paper.repository'
 import { WeaviateService } from '@otl/weaviate-client'
+import { generateUuid5 } from 'weaviate-client'
 
 @Injectable()
 export class PaperWeaviateRepository implements PaperRepository {
   constructor(private readonly weaviate: WeaviateService) {}
 
+  private get paper() {
+    return this.weaviate.paper
+  }
+
   // weaviate generates random UUID if no id is given
   async insert(data: Paper): Promise<void> {
-    await this.weaviate.paper.data.insert({
-      // id: '12345678-e64f-5d94-90db-c8cfa3fc1234',
+    await this.paper.data.insert({
+      id: generateUuid5(
+        JSON.stringify({
+          title: data.title,
+          abstract: data.abstract,
+          professor: data.professor.id,
+        }),
+      ),
       properties: {
         title: data.title,
-        professor: data.prof,
-        fields: data.fields,
+        professor: data.professor.id,
+        fields: data.fields.map((field) => field.id),
         doi: data.doi ?? null,
         coverDate: data.coverDate ?? null,
         coverDisplayDate: data.coverDisplayDate ?? null,

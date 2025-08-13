@@ -10,7 +10,7 @@ export class Paper {
 
   abstract?: string
 
-  prof!: Professor
+  professor!: Professor
 
   fields!: Field[]
 

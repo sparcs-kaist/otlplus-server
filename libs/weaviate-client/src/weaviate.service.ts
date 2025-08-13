@@ -1,5 +1,7 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common'
-import { FIELD_SCHEMA, LAB_SCHEMA, PAPER_SCHEMA } from '@otl/weaviate-client/types'
+import {
+  DEPARTMENT_SCHEMA, FIELD_SCHEMA, LAB_SCHEMA, PAPER_SCHEMA, PROFESSOR_SCHEMA,
+} from '@otl/weaviate-client/types'
 import {
   Collection, ConnectToCustomOptions, dataType, WeaviateClient,
 } from 'weaviate-client'
@@ -24,6 +26,10 @@ export class WeaviateService implements OnModuleInit {
 
   private fieldCollection!: Collection<undefined, symbol, undefined> | Collection<undefined, string, undefined>
 
+  private departmentCollection!: Collection<undefined, symbol, undefined> | Collection<undefined, string, undefined>
+
+  private professorCollection!: Collection<undefined, symbol, undefined> | Collection<undefined, string, undefined>
+
   private labCollection!: Collection<undefined, symbol, undefined> | Collection<undefined, string, undefined>
 
   get paper() {
@@ -34,6 +40,14 @@ export class WeaviateService implements OnModuleInit {
     return this.fieldCollection
   }
 
+  get department() {
+    return this.departmentCollection
+  }
+
+  get professor() {
+    return this.professorCollection
+  }
+
   get lab() {
     return this.labCollection
   }
@@ -42,6 +56,8 @@ export class WeaviateService implements OnModuleInit {
     this.paperCollection = await this.paperSchema()
     this.fieldCollection = await this.fieldSchema()
     this.labCollection = await this.labSchema()
+    this.departmentCollection = await this.departmentSchema()
+    this.professorCollection = await this.professorSchema()
   }
 
   private async paperSchema() {
@@ -53,45 +69,129 @@ export class WeaviateService implements OnModuleInit {
         name,
         properties: [
           { name: 'id', dataType: dataType.UUID },
-          { name: 'title', dataType: dataType.TEXT },
-          { name: 'body', dataType: dataType.TEXT },
+          {
+            name: 'title',
+            dataType: dataType.TEXT,
+            tokenization: 'word',
+            indexInverted: true,
+            indexSearchable: true,
+          },
+          {
+            name: 'abstract',
+            dataType: dataType.TEXT,
+            tokenization: 'word',
+            indexInverted: true,
+            indexSearchable: true,
+          },
           {
             name: 'professor',
-            dataType: dataType.OBJECT,
-            nestedProperties: [
-              { name: 'id', dataType: dataType.UUID },
-              { name: 'name', dataType: dataType.TEXT },
-              { name: 'eid', dataType: dataType.TEXT },
-              { name: 'orcid', dataType: dataType.TEXT },
-              { name: 'rid', dataType: dataType.TEXT },
-              {
-                name: 'department',
-                dataType: dataType.OBJECT,
-                nestedProperties: [
-                  { name: 'id', dataType: dataType.UUID },
-                  { name: 'name', dataType: dataType.TEXT },
-                ],
-              },
-            ],
+            dataType: dataType.UUID,
           },
-          { name: 'fields', dataType: dataType.OBJECT_ARRAY },
+          {
+            name: 'fields',
+            dataType: dataType.UUID_ARRAY,
+            indexInverted: true,
+            indexSearchable: true,
+            indexFilterable: true,
+          },
           { name: 'doi', dataType: dataType.TEXT },
-          { name: 'coverDate', dataType: dataType.DATE },
-          { name: 'coverDisplayDate', dataType: dataType.TEXT },
-          { name: 'publicationName', dataType: dataType.TEXT },
-          { name: 'issn', dataType: dataType.TEXT },
-          { name: 'sourceId', dataType: dataType.TEXT },
-          { name: 'eIssn', dataType: dataType.TEXT },
-          { name: 'aggregationType', dataType: dataType.TEXT },
-          { name: 'volume', dataType: dataType.TEXT },
-          { name: 'issueIdentifier', dataType: dataType.TEXT },
+          {
+            name: 'coverDate',
+            dataType: dataType.DATE,
+            indexRangeFilters: true,
+            indexInverted: false,
+            indexSearchable: true,
+            indexFilterable: true,
+          },
+          {
+            name: 'coverDisplayDate',
+            dataType: dataType.TEXT,
+            indexInverted: false,
+            indexSearchable: true,
+            indexFilterable: true,
+          },
+          {
+            name: 'publicationName',
+            dataType: dataType.TEXT,
+            indexInverted: false,
+            indexSearchable: true,
+            indexFilterable: true,
+          },
+          {
+            name: 'issn',
+            dataType: dataType.TEXT,
+            indexInverted: false,
+            indexSearchable: true,
+            indexFilterable: true,
+          },
+          {
+            name: 'sourceId',
+            dataType: dataType.TEXT,
+            indexInverted: false,
+            indexSearchable: true,
+            indexFilterable: true,
+          },
+          {
+            name: 'eIssn',
+            dataType: dataType.TEXT,
+            indexInverted: false,
+            indexSearchable: true,
+            indexFilterable: true,
+          },
+          {
+            name: 'aggregationType',
+            dataType: dataType.TEXT,
+            indexInverted: false,
+            indexSearchable: true,
+            indexFilterable: true,
+          },
+          {
+            name: 'volume',
+            dataType: dataType.TEXT,
+            indexInverted: false,
+            indexSearchable: true,
+            indexFilterable: true,
+          },
+          {
+            name: 'issueIdentifier',
+            dataType: dataType.TEXT,
+            indexInverted: false,
+            indexSearchable: true,
+            indexFilterable: true,
+          },
           { name: 'articleNumber', dataType: dataType.TEXT },
           { name: 'pageRange', dataType: dataType.TEXT },
           { name: 'citedByCount', dataType: dataType.INT },
-          { name: 'publishYear', dataType: dataType.INT },
-          { name: 'publishMonth', dataType: dataType.INT },
-          { name: 'xmlLink', dataType: dataType.TEXT },
-          { name: 'pdfLink', dataType: dataType.TEXT },
+          {
+            name: 'publishYear',
+            dataType: dataType.INT,
+            indexInverted: false,
+            indexSearchable: true,
+            indexFilterable: true,
+            indexRangeFilters: true,
+          },
+          {
+            name: 'publishMonth',
+            dataType: dataType.INT,
+            indexInverted: false,
+            indexSearchable: true,
+            indexFilterable: true,
+            indexRangeFilters: true,
+          },
+          {
+            name: 'xmlLink',
+            dataType: dataType.TEXT,
+            indexInverted: false,
+            indexSearchable: true,
+            indexFilterable: true,
+          },
+          {
+            name: 'pdfLink',
+            dataType: dataType.TEXT,
+            indexInverted: false,
+            indexSearchable: true,
+            indexFilterable: true,
+          },
         ],
       })
     }
@@ -107,7 +207,14 @@ export class WeaviateService implements OnModuleInit {
         name,
         properties: [
           { name: 'id', dataType: dataType.UUID },
-          { name: 'name', dataType: dataType.TEXT },
+          {
+            name: 'name',
+            dataType: dataType.TEXT,
+            tokenization: 'word',
+            indexInverted: true,
+            indexSearchable: true,
+            indexFilterable: true,
+          },
           {
             name: 'parentField',
             dataType: dataType.OBJECT,
@@ -115,6 +222,52 @@ export class WeaviateService implements OnModuleInit {
               { name: 'id', dataType: dataType.UUID },
               { name: 'name', dataType: dataType.TEXT },
             ],
+          },
+        ],
+      })
+    }
+    return this.client.collections.get(name.toString())
+  }
+
+  private async departmentSchema() {
+    const name = DEPARTMENT_SCHEMA
+
+    const exists = await this.client.collections.exists(name.toString())
+    if (!exists) {
+      return await this.client.collections.create({
+        name,
+        properties: [
+          { name: 'id', dataType: dataType.UUID },
+          { name: 'name', dataType: dataType.TEXT },
+        ],
+      })
+    }
+    return this.client.collections.get(name.toString())
+  }
+
+  private async professorSchema() {
+    const name = PROFESSOR_SCHEMA
+
+    const exists = await this.client.collections.exists(name.toString())
+    if (!exists) {
+      return await this.client.collections.create({
+        name,
+        properties: [
+          { name: 'id', dataType: dataType.UUID },
+          {
+            name: 'name',
+            dataType: dataType.TEXT,
+            tokenization: 'word',
+            indexInverted: true,
+            indexSearchable: true,
+            indexFilterable: true,
+          },
+          { name: 'eid', dataType: dataType.TEXT },
+          { name: 'orcid', dataType: dataType.TEXT },
+          { name: 'rid', dataType: dataType.TEXT },
+          {
+            name: 'department',
+            dataType: dataType.UUID,
           },
         ],
       })
@@ -131,37 +284,25 @@ export class WeaviateService implements OnModuleInit {
         name,
         properties: [
           { name: 'id', dataType: dataType.UUID },
-          { name: 'name', dataType: dataType.TEXT },
+          {
+            name: 'name',
+            dataType: dataType.TEXT,
+            tokenization: 'word',
+            indexInverted: true,
+            indexSearchable: true,
+            indexFilterable: true,
+          },
           {
             name: 'professor',
-            dataType: dataType.OBJECT,
-            nestedProperties: [
-              { name: 'id', dataType: dataType.UUID },
-              { name: 'name', dataType: dataType.TEXT },
-              { name: 'eid', dataType: dataType.TEXT },
-              { name: 'orcid', dataType: dataType.TEXT },
-              { name: 'rid', dataType: dataType.TEXT },
-              {
-                name: 'department',
-                dataType: dataType.OBJECT,
-                nestedProperties: [
-                  { name: 'id', dataType: dataType.UUID },
-                  { name: 'name', dataType: dataType.TEXT },
-                ],
-              },
-            ],
+            dataType: dataType.UUID,
           },
           {
             name: 'department',
-            dataType: dataType.OBJECT,
-            nestedProperties: [
-              { name: 'id', dataType: dataType.UUID },
-              { name: 'name', dataType: dataType.TEXT },
-            ],
+            dataType: dataType.UUID,
           },
           {
             name: 'fields',
-            dataType: dataType.OBJECT_ARRAY,
+            dataType: dataType.UUID_ARRAY,
           },
           { name: 'labLink', dataType: dataType.TEXT },
         ],
