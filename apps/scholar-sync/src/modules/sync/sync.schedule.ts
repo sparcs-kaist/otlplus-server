@@ -27,7 +27,7 @@ export class SyncSchedule {
     console.log(this.logFileDir)
   }
 
-  @Cron(CronExpression.EVERY_HOUR, {
+  @Cron(CronExpression.EVERY_MINUTE, {
     name: 'syncAll',
     timeZone: 'Asia/Seoul',
   })
@@ -199,6 +199,6 @@ export class SyncSchedule {
     if (interval) {
       return (await this.syncService.getSemesters(interval)).map((s) => [s.year, s.semester])
     }
-    return (await this.syncService.getSemesters(3)).map((s) => [s.year, s.semester])
+    return (await this.syncService.getSemesters(1)).map((s) => [s.year, s.semester])
   }
 }
