@@ -1,8 +1,8 @@
-export const PAPER_SCHEMA = Symbol('PAPER')
-export const LAB_SCHEMA = Symbol('LAB')
-export const FIELD_SCHEMA = Symbol('FIELD')
-export const DEPARTMENT_SCHEMA = Symbol('DEPARTMENT')
-export const PROFESSOR_SCHEMA = Symbol('PROFESSOR')
+export const PAPER_SCHEMA = 'Paper'
+export const LAB_SCHEMA = 'Lab'
+export const FIELD_SCHEMA = 'Field'
+export const DEPARTMENT_SCHEMA = 'Department'
+export const PROFESSOR_SCHEMA = 'Professor'
 export type SchemaType =
   | typeof PAPER_SCHEMA
   | typeof LAB_SCHEMA

@@ -1,9 +1,7 @@
 import { DocumentBuilder } from '@nestjs/swagger'
+import { WeaviateModuleConfig } from '@otl/lab-server/common/interfaces/IWeaviate'
 import dotenv from 'dotenv'
 import * as mariadb from 'mariadb'
-import { utilities } from 'nest-winston'
-import winston from 'winston'
-import DailyRotateFile from 'winston-daily-rotate-file'
 
 import { dotEnvOptions } from './dotenv-options'
 
@@ -73,39 +71,7 @@ const getSwaggerStatsConfig = () => ({
   password: process.env.SWAGGER_STAT_PASSWORD,
 })
 
-function getLoggingConfig() {
-  const logDir = `${__dirname}/../../logs` // log 파일을 관리할 폴더
-  const { NODE_ENV } = process.env
-  const dailyOptions = (level: string) => ({
-    level,
-    datePattern: 'YYYY-MM-DD',
-    dirname: `${logDir}/${NODE_ENV}`,
-    filename: `%DATE%.${level}.log`,
-    maxFiles: 30, // 30일치 로그파일 저장
-    zippedArchive: true, // 로그가 쌓이면 압축하여 관리
-  })
-  return {
-    logDir,
-    transports: [
-      new winston.transports.Console({
-        level: NODE_ENV === 'prod' ? 'http' : 'silly',
-        format:
-          NODE_ENV === 'prod'
-            ? winston.format.simple()
-            : winston.format.combine(
-              winston.format.timestamp(),
-              utilities.format.nestLike('@otl/scholar-sync', { prettyPrint: true }),
-            ),
-      }),
-      // info, warn, error 로그는 파일로 관리
-      new DailyRotateFile(dailyOptions('info')),
-      new DailyRotateFile(dailyOptions('warn')),
-      new DailyRotateFile(dailyOptions('error')),
-    ],
-  }
-}
-
-const getWeaviateConfig = () => ({
+const getWeaviateConfig = (): WeaviateModuleConfig => ({
   weaviateConfig: {
     httpHost: process.env.WEAVIATE_HTTP_HOST!,
     httpPort: Number(process.env.WEAVIATE_HTTP_PORT || 443),
@@ -119,12 +85,11 @@ const getWeaviateConfig = () => ({
 })
 
 export default () => ({
-  ormconfig: () => getPrismaConnectConfig(),
+  ormConfig: () => getPrismaConnectConfig(),
   ormReplicatedConfig: () => getPrismaReadConnectConfig(),
   getCorsConfig: () => getCorsConfig(),
   getVersion: () => getVersion(),
   getSwaggerConfig: () => getSwaggerConfig(),
   getSwaggerStatsConfig: () => getSwaggerStatsConfig(),
-  loggingConfig: () => getLoggingConfig(),
   weaviateConfig: () => getWeaviateConfig(),
 })

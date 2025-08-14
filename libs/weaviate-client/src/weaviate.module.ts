@@ -1,10 +1,11 @@
-import { DynamicModule, Module, OnModuleInit } from '@nestjs/common'
+import { DynamicModule, Global, Module } from '@nestjs/common'
 import { WeaviateModuleConfig } from '@otl/lab-server/common/interfaces/IWeaviate'
 
 import { WeaviateService } from './weaviate.service'
 
 @Module({})
-export class WeaviateModule implements OnModuleInit {
+@Global()
+export class WeaviateModule {
   static register(config: WeaviateModuleConfig): DynamicModule {
     return {
       module: WeaviateModule,
@@ -18,8 +19,4 @@ export class WeaviateModule implements OnModuleInit {
       exports: [WeaviateService],
     }
   }
-
-  constructor(private readonly weaviate: WeaviateService) {}
-
-  async onModuleInit() {}
 }
