@@ -120,6 +120,7 @@ function getLoggingConfig() {
     ],
   }
 }
+
 export default () => ({
   ormconfig: () => getPrismaConnectConfig(),
   ormReplicatedConfig: () => getPrismaReadConnectConfig(),

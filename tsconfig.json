@@ -42,7 +42,11 @@
       "@otl/server-consumer/": ["apps/server-consumer/src"],
       "@otl/server-consumer/*": ["apps/server-consumer/src/*"],
       "@otl/server-consumer/message": ["apps/server-consumer/src/messages"],
-      "@otl/server-consumer/message/*": ["apps/server-consumer/src/messages/*"]
+      "@otl/server-consumer/message/*": ["apps/server-consumer/src/messages/*"],
+      "@otl/lab-server": ["apps/lab-server/src"],
+      "@otl/lab-server/*": ["apps/lab-server/src/*"],
+      "@otl/weaviate-client": ["libs/weaviate-client/src"],
+      "@otl/weaviate-client/*": ["libs/weaviate-client/src/*"]
     },
 
     "inlineSources": true,
