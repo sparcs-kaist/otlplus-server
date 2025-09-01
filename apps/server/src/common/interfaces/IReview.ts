@@ -8,8 +8,10 @@ import {
 } from '@otl/server-nest/common/interfaces/validators.decorator'
 import { Transform, Type } from 'class-transformer'
 import {
-  IsArray, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min, Validate,
+  IsArray, IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min, Validate,
 } from 'class-validator'
+
+import { ReviewSearchMode } from '@otl/common/enum/review'
 
 export namespace IReview {
   export interface Basic {
@@ -34,6 +36,25 @@ export namespace IReview {
     speech: number
 
     userspecific_is_liked: boolean
+  }
+
+  export interface v2Basic {
+    reviewId: number
+    professorName: string
+    year: number
+    semester: number
+    content: string
+    like: number
+    isDeleted: boolean
+    grade: number
+    load: number
+    speech: number
+    userspecificIsLiked: boolean | null
+  }
+
+  export interface v2Response {
+    reviews: v2Basic[]
+    myReviewId: number | null
   }
 
   export interface WithLiked extends Basic {
@@ -125,6 +146,34 @@ export namespace IReview {
     @IsNumber()
     @Type(() => Number)
     limit?: number
+  }
+
+  export class v2QueryDto {
+    @IsOptional()
+    @IsInt()
+    @Type(() => Number)
+    courseId?: number
+
+    @IsOptional()
+    @IsInt()
+    @Type(() => Number)
+    professorId?: number
+
+    @IsEnum(ReviewSearchMode)
+    @IsString()
+    @IsOptional()
+    @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+    mode?: ReviewSearchMode
+
+    @IsOptional()
+    @IsInt()
+    @Type(() => Number)
+    year?: number
+
+    @IsOptional()
+    @IsInt()
+    @Type(() => Number)
+    semester?: number
   }
 
   export class CreateDto {

@@ -6,12 +6,12 @@ import { TIMETABLE_MQ } from '@otl/server-nest/modules/timetables/domain/out/Tim
 import { PrismaModule } from '@otl/prisma-client/prisma.module'
 
 import { LecturesModule } from '../lectures/lectures.module'
-import { TimetablesController } from './timetables.controller'
+import { TimetablesController, v2TimetablesController } from './timetables.controller'
 import { TimetablesService } from './timetables.service'
 
 @Module({
   imports: [PrismaModule, LecturesModule, RmqModule, RmqConnectionModule.register()],
-  controllers: [TimetablesController],
+  controllers: [TimetablesController, v2TimetablesController],
   providers: [
     {
       provide: TIMETABLE_MQ,

@@ -27,3 +27,16 @@ export interface LectureQuery {
 
   end?: number
 }
+
+export interface v2LectureQuery {
+  keyword?: string
+  type?: string
+  department?: number
+  level?: number
+  limit?: number
+  year?: number
+  semester?: number
+  day?: number
+  begin?: number
+  end?: number
+}

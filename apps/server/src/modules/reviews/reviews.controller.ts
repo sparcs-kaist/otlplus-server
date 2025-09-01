@@ -97,3 +97,28 @@ export class ReviewsController {
     }
   }
 }
+
+@Controller('api/v2/reviews')
+export class v2ReviewsController {
+  constructor(private readonly reviewsService: ReviewsService) {}
+
+  // 아직 개발 중인 api임. 코드 수정이 필요함.
+  /*
+  @Public()
+  @Get()
+  async getReviews(
+    @Query() reviewsParam: IReview.v2QueryDto,
+    @GetUser() user: session_userprofile,
+  ): Promise<IReview.v2Response> {
+    if (reviewsParam.response_type === 'count') {
+      const reviewsCount = await this.reviewsService.getReviewsCount(
+        reviewsParam.year,
+        reviewsParam.semester,
+      )
+      return reviewsCount
+    }
+    const result = await this.reviewsService.getReviews(reviewsParam, user)
+    return result
+  }
+  */
+}

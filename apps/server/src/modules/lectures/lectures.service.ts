@@ -1,11 +1,20 @@
 import { Injectable } from '@nestjs/common'
 import { ILecture, IReview } from '@otl/server-nest/common/interfaces'
-import { toJsonLectureDetail } from '@otl/server-nest/common/serializer/lecture.serializer'
+// Make sure DetailsWithCourse is exported from ILecture, or define it here if missing
+import {
+  toJsonLectureDetail,
+  v2toJsonLectureWithCourseDetail,
+} from '@otl/server-nest/common/serializer/lecture.serializer'
 import { toJsonReview } from '@otl/server-nest/common/serializer/review.serializer'
 import { session_userprofile } from '@prisma/client'
 
 import {
-  EReview, LectureRepository, PrismaService, ReviewsRepository,
+  CourseRepository,
+  EReview,
+  LectureRepository,
+  PrismaService,
+  ReviewsRepository,
+  WishlistRepository,
 } from '@otl/prisma-client'
 import { ELecture } from '@otl/prisma-client/entities'
 
@@ -14,6 +23,7 @@ export class LecturesService {
   constructor(
     private lectureRepository: LectureRepository,
     private reviewsRepository: ReviewsRepository,
+    private courseRepo: CourseRepository,
     private prisma: PrismaService,
   ) {}
 
@@ -22,9 +32,42 @@ export class LecturesService {
     return queryResult.map((lecture) => toJsonLectureDetail(lecture))
   }
 
+  public async v2getLectureByFilter(
+    query: ILecture.v2QueryDto,
+    lectureRepository: LectureRepository,
+    user: session_userprofile,
+    wishlistRepository: WishlistRepository,
+  ): Promise<ILecture.v2Response[] | ILecture.v2Response2[]> {
+    const queryResult = await lectureRepository.v2filterByRequest(query)
+    return await Promise.all(
+      queryResult.map((lecture) => v2toJsonLectureWithCourseDetail(lecture, lectureRepository, user, true, wishlistRepository)),
+    )
+  }
+
   public async getLectureById(id: number): Promise<ILecture.Detail> {
     const queryResult = await this.lectureRepository.getLectureDetailById(id)
     return toJsonLectureDetail(queryResult)
+  }
+
+  public async getELectureDetailsById(id: number): Promise<ELecture.Details> {
+    return await this.lectureRepository.getLectureById(id)
+  }
+
+  public async v2attachCourseToDetails(lectures: ELecture.Details[]): Promise<ELecture.DetailsWithCourse[]> {
+    return await Promise.all(
+      lectures.map(async (lec) => {
+        const courseObj = await this.courseRepo.getCourseById(lec.course_id)
+        if (!courseObj) {
+          throw new Error(`Course with id ${lec.course_id} not found`)
+        }
+        const enriched: ELecture.DetailsWithCourse = {
+          ...lec,
+          course: courseObj,
+        }
+
+        return enriched
+      }),
+    )
   }
 
   public async getLectureReviews(
@@ -102,13 +145,25 @@ export class LecturesService {
 
   private findAutocompleteFromCandidate(candidate: ELecture.Extended, keyword: string) {
     const keywordLower = keyword.toLowerCase()
-    if (candidate.subject_department.name.startsWith(keyword)) return candidate.subject_department.name
-    if (candidate.subject_department.name_en?.toLowerCase().startsWith(keywordLower)) return candidate.subject_department.name_en
-    if (candidate.title.startsWith(keyword)) return candidate.title
-    if (candidate.title_en.toLowerCase().startsWith(keywordLower)) return candidate.title_en
+    if (candidate.subject_department.name.startsWith(keyword)) {
+      return candidate.subject_department.name
+    }
+    if (candidate.subject_department.name_en?.toLowerCase().startsWith(keywordLower)) {
+      return candidate.subject_department.name_en
+    }
+    if (candidate.title.startsWith(keyword)) {
+      return candidate.title
+    }
+    if (candidate.title_en.toLowerCase().startsWith(keywordLower)) {
+      return candidate.title_en
+    }
     for (const professor of candidate.subject_lecture_professors) {
-      if (professor.professor.professor_name.startsWith(keyword)) return professor.professor.professor_name
-      if (professor.professor.professor_name_en?.toLowerCase().startsWith(keywordLower)) return professor.professor.professor_name_en
+      if (professor.professor.professor_name.startsWith(keyword)) {
+        return professor.professor.professor_name
+      }
+      if (professor.professor.professor_name_en?.toLowerCase().startsWith(keywordLower)) {
+        return professor.professor.professor_name_en
+      }
     }
     return undefined
   }

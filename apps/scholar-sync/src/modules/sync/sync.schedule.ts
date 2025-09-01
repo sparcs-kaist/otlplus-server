@@ -27,7 +27,7 @@ export class SyncSchedule {
     console.log(this.logFileDir)
   }
 
-  @Cron(CronExpression.EVERY_30_SECONDS, {
+  @Cron(CronExpression.EVERY_HOUR, {
     name: 'syncAll',
     timeZone: 'Asia/Seoul',
   })

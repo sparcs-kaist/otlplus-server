@@ -184,6 +184,20 @@ export class CourseRepository implements ServerConsumerCourseRepository {
     }
   }
 
+  public v2DepartmentFilter(department?: number): object | null {
+    if (!department) {
+      return null
+    }
+    if (department === 0) {
+      return null
+    }
+    return {
+      subject_department: {
+        id: department,
+      },
+    }
+  }
+
   public typeFilter(types?: string[]): object | null {
     if (!types) {
       return null
@@ -210,6 +224,34 @@ export class CourseRepository implements ServerConsumerCourseRepository {
           contains: this.TYPE_ACRONYMS[type as keyof typeof this.TYPE_ACRONYMS],
         },
       })),
+    }
+  }
+
+  public v2TypeFilter(type?: string): object | null {
+    if (!type) {
+      return null
+    }
+    if (type === 'ALL') {
+      return null
+    }
+    return {
+      type_en: {
+        contains: this.TYPE_ACRONYMS[type as keyof typeof this.TYPE_ACRONYMS],
+      },
+    }
+  }
+
+  public v2LevelFilter(level?: number): object | null {
+    if (!level) {
+      return null
+    }
+    if (level === 0) {
+      return null
+    }
+    return {
+      new_code: {
+        contains: `__${level.toString()[0]}`,
+      },
     }
   }
 

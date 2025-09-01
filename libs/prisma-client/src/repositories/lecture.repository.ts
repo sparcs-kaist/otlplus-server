@@ -3,12 +3,12 @@ import { ServerConsumerLectureRepository } from '@otl/server-consumer/out/lectur
 import { LectureBasic, LectureScore } from '@otl/server-nest/modules/lectures/domain/lecture'
 import { Prisma, session_userprofile } from '@prisma/client'
 
-import { groupBy } from '@otl/common/utils/util'
+import { applyOffset, applyOrder, groupBy } from '@otl/common/utils/util'
 
 import { mapLecture } from '@otl/prisma-client/common/mapper/lecture'
 import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
-import { LectureQuery } from '@otl/prisma-client/types/query'
+import { LectureQuery, v2LectureQuery } from '@otl/prisma-client/types/query'
 
 import { ELecture } from '../entities/ELecture'
 import { CourseRepository } from './course.repository'
@@ -424,5 +424,58 @@ export class LectureRepository implements ServerConsumerLectureRepository {
       },
       include: ELecture.Basic,
     })
+  }
+
+  async v2filterByRequest(query: v2LectureQuery): Promise<ELecture.DetailsWithCourse[]> {
+    const DEFAULT_LIMIT = 300
+    const DEFAULT_ORDER = ['year', 'semester', 'old_code', 'class_no']
+    const researchTypes = ['Individual Study', 'Thesis Study(Undergraduate)', 'Thesis Research(MA/phD)']
+
+    const semesterFilter = this.semesterFilter(query?.year, query?.semester)
+    const timeFilter = this.timeFilter(query?.day, query?.begin, query?.end)
+    const departmentFilter = this.courseRepository.v2DepartmentFilter(query?.department)
+    const typeFilter = this.courseRepository.v2TypeFilter(query?.type)
+    const keywordFilter = this.courseRepository.keywordFilter(query?.keyword, false)
+    const levelFilter = this.courseRepository.v2LevelFilter(query?.level)
+    const defaultFilter = {
+      AND: [
+        {
+          deleted: false,
+        },
+        {
+          type_en: {
+            notIn: researchTypes,
+          },
+        },
+      ],
+    }
+
+    const filters: object[] = [
+      semesterFilter,
+      timeFilter,
+      departmentFilter,
+      typeFilter,
+      keywordFilter,
+      levelFilter,
+      defaultFilter,
+    ].filter((filter): filter is object => filter !== null)
+    const queryResult = await this.prisma.subject_lecture.findMany({
+      include: {
+        subject_department: true,
+        subject_lecture_professors: { include: { professor: true } },
+        subject_classtime: true,
+        subject_examtime: true,
+        course: true, // Add this line to include the 'course' relation
+      },
+      where: {
+        AND: filters,
+      },
+      take: query.limit ?? DEFAULT_LIMIT,
+    })
+    const orderedQuery = applyOrder<ELecture.DetailsWithCourse>(
+      queryResult,
+      DEFAULT_ORDER as (keyof ELecture.DetailsWithCourse)[],
+    )
+    return applyOffset<ELecture.DetailsWithCourse>(orderedQuery, 0)
   }
 }

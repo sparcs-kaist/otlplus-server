@@ -7,7 +7,7 @@ import {
 } from '@otl/server-nest/common/interfaces/validators.decorator'
 import { Transform, Type } from 'class-transformer'
 import {
-  IsArray, IsNotEmpty, IsNumber, IsOptional, IsString,
+  ArrayNotEmpty, IsArray, IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString,
 } from 'class-validator'
 
 export namespace IUser {
@@ -18,6 +18,24 @@ export namespace IUser {
     @IsString({ each: true })
     @OrderDefaultValidator(PROHIBITED_FIELD_PATTERN)
     order?: string[]
+  }
+
+  export class v2AddOrRemoveWishlistDto {
+    @IsNumber()
+    @Type(() => Number)
+    lectureId!: number
+
+    @IsEnum(['delete', 'add'])
+    @IsString()
+    mode?: 'delete' | 'add'
+  }
+
+  export class v2ModifyInterestedMajorDepartmentIdsDto {
+    @IsArray()
+    @ArrayNotEmpty()
+    @Type(() => Number)
+    @IsInt({ each: true })
+    interestedMajorDepartmentIds!: number[]
   }
 
   export class ReviewLikedQueryDto {
@@ -77,5 +95,52 @@ export namespace IUser {
   export interface TokenResponse {
     accessToken: string
     refreshToken: string
+  }
+
+  export interface v2TakenLectures {
+    totalLectures: number
+    reviewdLectures: number
+    totalLikes: number
+    info: v2TakenLecturesinfo[]
+  }
+
+  export interface v2TakenLecturesinfo {
+    year: number
+    semester: number
+    lectures: v2TakenLecturesDetail[]
+  }
+
+  export interface v2TakenLecturesDetail {
+    lectureId: number
+    code: string
+    lectureName: string
+    isReviewed: boolean
+    courseId: number
+    professorId: number
+  }
+
+  export interface v2LikedReviews {
+    courseId: number
+    reviewId: number
+    lectureName: string
+    professorName: string
+    year: number
+    semester: number
+    content: string
+    like: number
+    isDeleted: boolean
+    grade: number
+    load: number
+    speech: number
+    userspecificIsLiked: boolean | null
+  }
+
+  export interface v2UserInfo {
+    name: string
+    mail: string | null
+    studentNumber: number
+    courses: string[]
+    majorDepartment: string | undefined
+    interestedMajorDepartments: string[]
   }
 }

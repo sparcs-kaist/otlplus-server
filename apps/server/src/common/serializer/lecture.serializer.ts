@@ -1,12 +1,14 @@
-import { ILecture } from '@otl/server-nest/common/interfaces'
+import { ILecture, IUser } from '@otl/server-nest/common/interfaces'
+import { session_userprofile } from '@prisma/client'
 
 import { applyOrder } from '@otl/common/utils'
 
+import { LectureRepository, WishlistRepository } from '@otl/prisma-client'
 import { ELecture } from '@otl/prisma-client/entities'
 
-import { toJsonClasstime } from './classtime.serializer'
-import { toJsonExamtime } from './examtime.serializer'
-import { toJsonProfessors } from './professor.serializer'
+import { toJsonClasstime, v2toJsonClasstime } from './classtime.serializer'
+import { toJsonExamtime, v2toJsonExamtime } from './examtime.serializer'
+import { toJsonProfessors, v2toJsonProfessors } from './professor.serializer'
 
 export function toJsonLectureMinimal(lecture: ELecture.Basic): ILecture.Minimal {
   return {
@@ -92,7 +94,7 @@ export function toJsonLectureBasic(lecture: ELecture.Extended): ILecture.Basic {
 
 export function toJsonLectureDetail(lecture: ELecture.Details): ILecture.Detail {
   const basic = toJsonLectureBasic(lecture)
-  if (!ELecture.isDetails(lecture)) throw new Error('Lecture is not of type \'ELecture.Details\'')
+  if (!ELecture.isDetails(lecture)) throw new Error(`Lecture is not of type ${ELecture.Details}`)
 
   return Object.assign(basic, {
     grade: lecture.grade + 0.000001,
@@ -101,4 +103,139 @@ export function toJsonLectureDetail(lecture: ELecture.Details): ILecture.Detail 
     classtimes: lecture.subject_classtime.map((classtime) => toJsonClasstime(classtime)),
     examtimes: lecture.subject_examtime.map((examtime) => toJsonExamtime(examtime)),
   })
+}
+
+export function v2toJsonLectureDetail(lecture: ELecture.Details): ILecture.v2Detail {
+  if (!ELecture.isDetails(lecture)) throw new Error(`Lecture is not of type ${ELecture.Details}`)
+
+  return {
+    lectureId: lecture.id,
+    courseId: lecture.course_id,
+    classNo: lecture.class_no,
+    lectureName: lecture.title,
+    code: lecture.code,
+    departmentId: lecture.department_id,
+    type: lecture.type,
+    limitPeople: lecture.limit,
+    numPeople: lecture.num_people,
+    lectureDuration:
+      (new Date(lecture.subject_classtime[0].end).getTime() - new Date(lecture.subject_classtime[0].begin).getTime())
+      / 1000
+      / 60,
+    credit: lecture.credit,
+    au: lecture.credit_au,
+    scoreGrade: lecture.grade,
+    scoreLoad: lecture.load,
+    scoreSpeech: lecture.speech,
+    isEnglish: lecture.is_english,
+    professors: v2toJsonProfessors(lecture.subject_lecture_professors.map((x) => x.professor)),
+    classes: lecture.subject_classtime.map((classtime) => v2toJsonClasstime(classtime)),
+    examTimes: lecture.subject_examtime.map((examtime) => v2toJsonExamtime(examtime)),
+  }
+}
+
+export async function v2toJsonLectureWithCourseDetail(
+  lecture: ELecture.DetailsWithCourse,
+  lectureRepository: LectureRepository,
+  user: session_userprofile,
+  includeWishlist: boolean,
+  wishlistRepository?: WishlistRepository,
+): Promise<ILecture.v2Response | ILecture.v2Response2> {
+  const lectureData = await lectureRepository.getLectureById(lecture.id)
+  const takenLectures = await lectureRepository.getTakenLectures(user)
+  const completedCourse = takenLectures.some((l: any) => l.course_id === lectureData.courseId)
+
+  let isWishlited: boolean | undefined
+
+  if (includeWishlist) {
+    if (!wishlistRepository) {
+      throw new Error('wishlistRepository is required when includeWishlist is true.')
+    }
+    const wishlist = await wishlistRepository.getOrCreateWishlist(user.id)
+    const findLectureInWishlist = await wishlistRepository.getLectureInWishlist(wishlist.id, lecture.id)
+    isWishlited = findLectureInWishlist !== null
+  }
+
+  const baseLecture = {
+    lectureId: lecture.id,
+    courseId: lecture.course_id,
+    classNo: lecture.class_no,
+    lectureName: lecture.title,
+    code: lecture.code,
+    departmentId: lecture.department_id,
+    type: lecture.type,
+    limitPeople: lecture.limit,
+    numPeople: lecture.num_people,
+    lectureDuration:
+      (new Date(lecture.subject_classtime[0].end).getTime() - new Date(lecture.subject_classtime[0].begin).getTime())
+      / 1000
+      / 60,
+    credit: lecture.credit,
+    au: lecture.credit_au,
+    scoreGrade: lecture.grade,
+    scoreLoad: lecture.load,
+    scoreSpeech: lecture.speech,
+    isEnglish: lecture.is_english,
+    professors: v2toJsonProfessors(lecture.subject_lecture_professors.map((x) => x.professor)),
+    classes: lecture.subject_classtime.map((classtime) => v2toJsonClasstime(classtime)),
+    examTimes: lecture.subject_examtime.map((examtime) => v2toJsonExamtime(examtime)),
+  }
+
+  return {
+    name: lecture.course.title,
+    code: lecture.course.new_code,
+    type: lecture.course.type,
+    completedCourse,
+    lectures: includeWishlist ? { ...baseLecture, isWishlited } : baseLecture,
+  } as ILecture.v2Response | ILecture.v2Response2
+}
+
+export async function v2toJsonTakenLectures(
+  lectures: ELecture.Details[],
+  totalLikes: number,
+  reviewIds: number[],
+): Promise<IUser.v2TakenLectures> {
+  const takenLecturesJsons = []
+
+  for (const lecture of lectures) {
+    let added = false
+    for (const takenlist of takenLecturesJsons) {
+      if (takenlist.year === lecture.year && takenlist.semester === lecture.semester) {
+        // const professor = lecture.subject_lecture_professors
+        takenlist.lectures.push({
+          lectureId: lecture.id,
+          code: lecture.code,
+          lectureName: lecture.title,
+          isReviewed: lecture.id in reviewIds,
+          courseId: lecture.course_id,
+          professorId: lecture.subject_lecture_professors[0].professor_id,
+        })
+        added = true
+        break
+      }
+    }
+    if (added === false) {
+      takenLecturesJsons.push({
+        year: lecture.year,
+        semester: lecture.semester,
+        lectures: [
+          {
+            lectureId: lecture.id,
+            code: lecture.code,
+            lectureName: lecture.title,
+            isReviewed: lecture.id in reviewIds,
+            courseId: lecture.course_id,
+            professorId: lecture.subject_lecture_professors[0].professor_id,
+          },
+        ],
+      })
+    }
+  }
+
+  return {
+    totalLectures: lectures.length,
+    reviewdLectures: reviewIds.length,
+    totalLikes,
+    info: takenLecturesJsons,
+  }
 }
