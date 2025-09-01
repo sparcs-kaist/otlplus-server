@@ -143,7 +143,7 @@ export async function v2toJsonLectureWithCourseDetail(
 ): Promise<ILecture.v2Response | ILecture.v2Response2> {
   const lectureData = await lectureRepository.getLectureById(lecture.id)
   const takenLectures = await lectureRepository.getTakenLectures(user)
-  const completedCourse = takenLectures.some((l: any) => l.course_id === lectureData.course_id)
+  const completedCourse = takenLectures.some((l: any) => l.course_id === lectureData.courseId)
 
   let isWishlited: boolean | undefined
 
