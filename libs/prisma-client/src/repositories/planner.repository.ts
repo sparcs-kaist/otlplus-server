@@ -1,18 +1,25 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
-import { Transactional } from '@nestjs-cls/transactional'
+import { Transactional, TransactionHost } from '@nestjs-cls/transactional'
 import { Prisma, session_userprofile } from '@prisma/client'
 
 import { EPlanners } from '../entities/EPlanners'
 import CreateInput = EPlanners.EItems.Arbitrary.CreateInput
+import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma'
+
 import { PlannerItemType } from '@otl/common/enum/planner'
 
 import { orderFilter } from '@otl/prisma-client/common/util'
+import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 import { PaginationOption } from '@otl/prisma-client/types/pagination'
 
 @Injectable()
 export class PlannerRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly txHost: TransactionHost<TransactionalAdapterPrisma>,
+    private readonly prismaRead: PrismaReadService,
+  ) {}
 
   public async getPlannerByUser(query: PaginationOption, user: session_userprofile): Promise<EPlanners.Details[]> {
     return await this.prisma.planner_planner.findMany({
@@ -34,9 +41,8 @@ export class PlannerRepository {
     })
   }
 
-  public async createPlanner(body: EPlanners.CreateBody, user: session_userprofile): Promise<EPlanners.Details> {
+  public async createPlanner(body: EPlanners.CreateBody, user: session_userprofile): Promise<EPlanners.Basic> {
     return await this.prisma.planner_planner.create({
-      ...EPlanners.Details,
       data: {
         session_userprofile: {
           connect: {
@@ -79,9 +85,8 @@ export class PlannerRepository {
     })
   }
 
-  public async updateOrder(plannerId: number, order: number): Promise<EPlanners.Details> {
-    return await this.prisma.planner_planner.update({
-      ...EPlanners.Details,
+  public async updateOrder(plannerId: number, order: number): Promise<EPlanners.Basic> {
+    return await this.txHost.tx.planner_planner.update({
       where: {
         id: plannerId,
       },
@@ -92,7 +97,7 @@ export class PlannerRepository {
   }
 
   public async incrementOrders(plannerIds: number[], from: number, to: number): Promise<void> {
-    await this.prisma.planner_planner.updateMany({
+    await this.txHost.tx.planner_planner.updateMany({
       where: {
         id: {
           in: plannerIds,
@@ -111,7 +116,7 @@ export class PlannerRepository {
   }
 
   public async decrementOrders(plannerIds: number[], from: number, to: number): Promise<void> {
-    await this.prisma.planner_planner.updateMany({
+    await this.txHost.tx.planner_planner.updateMany({
       where: {
         id: {
           in: plannerIds,
@@ -370,7 +375,7 @@ export class PlannerRepository {
     plannerId: number,
     lectureId: number,
   ): Promise<EPlanners.EItems.Taken.Basic | null> {
-    return await this.prisma.planner_takenplanneritem.findFirst({
+    return await this.prismaRead.planner_takenplanneritem.findFirst({
       where: {
         planner_id: plannerId,
         lecture_id: lectureId,

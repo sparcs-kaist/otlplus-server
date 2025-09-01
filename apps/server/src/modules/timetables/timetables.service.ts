@@ -1,13 +1,14 @@
 import {
-  BadRequestException, HttpException, HttpStatus, Injectable,
+  BadRequestException, HttpException, HttpStatus, Inject, Injectable,
 } from '@nestjs/common'
 import { Transactional } from '@nestjs-cls/transactional'
 import { ITimetable } from '@otl/server-nest/common/interfaces'
+import { TIMETABLE_MQ, TimetableMQ } from '@otl/server-nest/modules/timetables/domain/out/TimetableMQ'
 import { session_userprofile } from '@prisma/client'
 
-import {
-  LectureRepository, PrismaService, SemesterRepository, TimetableRepository,
-} from '@otl/prisma-client'
+import logger from '@otl/common/logger/logger'
+
+import { LectureRepository, SemesterRepository, TimetableRepository } from '@otl/prisma-client'
 import { orderFilter } from '@otl/prisma-client/common/util'
 import { ELecture } from '@otl/prisma-client/entities/ELecture'
 import { ETimetable } from '@otl/prisma-client/entities/ETimetable'
@@ -15,10 +16,11 @@ import { ETimetable } from '@otl/prisma-client/entities/ETimetable'
 @Injectable()
 export class TimetablesService {
   constructor(
-    private readonly prismaService: PrismaService,
     private readonly timetableRepository: TimetableRepository,
     private readonly lectureRepository: LectureRepository,
     private readonly semesterRepository: SemesterRepository,
+    @Inject(TIMETABLE_MQ)
+    private readonly timetableMQ: TimetableMQ,
   ) {}
 
   async getTimetables(query: ITimetable.QueryDto, user: session_userprofile) {
@@ -73,7 +75,13 @@ export class TimetablesService {
     const filteredLectures = lectures.filter(
       (lecture) => lecture.semester === timeTableBody.semester && lecture.year === timeTableBody.year,
     )
-    return await this.timetableRepository.createTimetable(user, year, semester, arrangeOrder, filteredLectures)
+    const result = await this.timetableRepository.createTimetable(user, year, semester, arrangeOrder, filteredLectures)
+    await Promise.all(lectures.map((lecture) => this.timetableMQ.publishLectureNumUpdate(lecture.id))).catch(
+      (error) => {
+        logger.error('Failed to publish lecture num update', error)
+      },
+    )
+    return result
   }
 
   @Transactional()
@@ -88,6 +96,9 @@ export class TimetablesService {
       throw new BadRequestException('Wrong field \\\'lecture\\\' in request data')
     }
     await this.timetableRepository.addLectureToTimetable(timeTableId, lectureId)
+    await this.timetableMQ.publishLectureNumUpdate(lectureId).catch((error) => {
+      logger.error('Failed to publish lecture num update', error)
+    })
     return await this.timetableRepository.getTimeTableById(timeTableId)
   }
 
@@ -103,12 +114,16 @@ export class TimetablesService {
       throw new BadRequestException('Wrong field \\\'lecture\\\' in request data')
     }
     await this.timetableRepository.removeLectureFromTimetable(timeTableId, lectureId)
+    await this.timetableMQ.publishLectureNumUpdate(lectureId).catch((error) => {
+      logger.error('Failed to publish lecture num update', error)
+    })
     return await this.timetableRepository.getTimeTableById(timeTableId)
   }
 
   @Transactional()
   async deleteTimetable(user: session_userprofile, timetableId: number): Promise<ETimetable.Basic[]> {
     const { semester, year, arrange_order } = await this.timetableRepository.getTimeTableById(timetableId)
+    const lectureIds = await this.timetableRepository.getTimeTableLectures(timetableId)
     await this.timetableRepository.deleteById(timetableId)
     const relatedTimeTables = await this.timetableRepository.getTimetables(user, year, semester)
     const timeTablesToBeUpdated = relatedTimeTables
@@ -117,9 +132,15 @@ export class TimetablesService {
         id: timeTable.id,
         arrange_order: timeTable.arrange_order - 1,
       }))
-    return await Promise.all(
+    const result = await Promise.all(
       timeTablesToBeUpdated.map(async (updateElem) => this.timetableRepository.updateOrder(updateElem.id, updateElem.arrange_order)),
     )
+    await Promise.all(lectureIds.map((lectureId) => this.timetableMQ.publishLectureNumUpdate(lectureId))).catch(
+      (error) => {
+        logger.error('Failed to publish lecture num update', error)
+      },
+    )
+    return result
   }
 
   @Transactional()

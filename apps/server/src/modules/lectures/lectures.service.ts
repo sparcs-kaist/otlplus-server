@@ -45,7 +45,7 @@ export class LecturesService {
   }
 
   public async getLectureById(id: number): Promise<ILecture.Detail> {
-    const queryResult = await this.lectureRepository.getLectureById(id)
+    const queryResult = await this.lectureRepository.getLectureDetailById(id)
     return toJsonLectureDetail(queryResult)
   }
 
@@ -109,7 +109,7 @@ export class LecturesService {
     const DEFAULT_LIMIT = 100
     const DEFAULT_ORDER = ['-written_datetime', '-id']
 
-    const lecture = await this.lectureRepository.getLectureById(lectureId)
+    const lecture = await this.lectureRepository.getLectureDetailById(lectureId)
     const reviews: EReview.Details[] = await this.reviewsRepository.getRelatedReviewsOfLecture(
       query.order ?? DEFAULT_ORDER,
       query.offset ?? 0,

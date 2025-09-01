@@ -39,9 +39,12 @@ export function toJsonFeedRelated(course: subject_course): ICourse.FeedRelated {
 }
 
 export function toJsonCourseBasic(
-  course: Omit<ECourse.Details, 'subject_course_professors'>,
+  course: Omit<ECourse.Extended, 'subject_course_professors'>,
   lecture: subject_lecture,
 ): ICourse.Basic {
+  if (!lecture) {
+    console.log(course, lecture)
+  }
   return {
     id: course.id,
     old_old_code: course.old_code,
@@ -61,7 +64,7 @@ export function toJsonCourseBasic(
 }
 
 export function toJsonCourseDetail(
-  course: ECourse.Details,
+  course: ECourse.Extended,
   lecture: subject_lecture,
   professor: subject_professor[],
 ): ICourse.Detail {

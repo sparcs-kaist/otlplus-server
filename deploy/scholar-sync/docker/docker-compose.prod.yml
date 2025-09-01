@@ -21,6 +21,7 @@ services:
       - '9000'
     volumes:
       - '/etc/timezone:/etc/timezone:ro'
-      - '../../../apps/scholar-sync/logs:/var/www/otlplus/apps/scholar-sync/logs'
-    working_dir: /var/www/otlplus/apps/scholar-sync
-    command: node dist/src/bootstrap/bootstrap.js
+      - '../../../apps/scholar-sync/logs:/var/www/otlplus/dist/apps/scholar-sync/apps/logs'
+
+    working_dir: /var/www/otlplus
+    command: node dist/apps/scholar-sync/apps/scholar-sync/src/bootstrap/bootstrap.js

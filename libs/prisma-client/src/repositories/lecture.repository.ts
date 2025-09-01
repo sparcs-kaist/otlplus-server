@@ -1,8 +1,12 @@
 import { Injectable } from '@nestjs/common'
+import { ServerConsumerLectureRepository } from '@otl/server-consumer/out/lecture.repository'
+import { LectureBasic, LectureScore } from '@otl/server-nest/modules/lectures/domain/lecture'
 import { Prisma, session_userprofile } from '@prisma/client'
 
 import { applyOffset, applyOrder, groupBy } from '@otl/common/utils/util'
 
+import { mapLecture } from '@otl/prisma-client/common/mapper/lecture'
+import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 import { LectureQuery, v2LectureQuery } from '@otl/prisma-client/types/query'
 
@@ -10,14 +14,15 @@ import { ELecture } from '../entities/ELecture'
 import { CourseRepository } from './course.repository'
 
 @Injectable()
-export class LectureRepository {
+export class LectureRepository implements ServerConsumerLectureRepository {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly prismaRead: PrismaReadService,
     private readonly courseRepository: CourseRepository,
   ) {}
 
-  async getLectureById(id: number): Promise<ELecture.Details> {
-    return await this.prisma.subject_lecture.findUniqueOrThrow({
+  async getLectureDetailById(id: number): Promise<ELecture.Details> {
+    return await this.prismaRead.subject_lecture.findUniqueOrThrow({
       include: ELecture.Details.include,
       where: {
         id,
@@ -26,7 +31,7 @@ export class LectureRepository {
   }
 
   async getLectureBasicById(id: number): Promise<ELecture.Basic> {
-    return await this.prisma.subject_lecture.findUniqueOrThrow({
+    return await this.prismaRead.subject_lecture.findUniqueOrThrow({
       where: {
         id,
       },
@@ -34,7 +39,7 @@ export class LectureRepository {
   }
 
   async getLectureByIds(ids: number[]): Promise<ELecture.Details[]> {
-    return await this.prisma.subject_lecture.findMany({
+    return await this.prismaRead.subject_lecture.findMany({
       include: ELecture.Details.include,
       where: {
         id: {
@@ -46,7 +51,7 @@ export class LectureRepository {
 
   async filterByRequest(query: LectureQuery): Promise<ELecture.Details[]> {
     const DEFAULT_LIMIT = 300
-    const DEFAULT_ORDER = ['year', 'semester', 'old_code', 'class_no']
+    // const DEFAULT_ORDER = ['year', 'semester', 'old_code', 'class_no']
     const researchTypes = ['Individual Study', 'Thesis Study(Undergraduate)', 'Thesis Research(MA/phD)']
 
     const semesterFilter = this.semesterFilter(query?.year, query?.semester)
@@ -55,16 +60,18 @@ export class LectureRepository {
     const typeFilter = this.courseRepository.typeFilter(query?.type)
     const groupFilter = this.courseRepository.groupFilter(query?.group)
     const keywordFilter = this.courseRepository.keywordFilter(query?.keyword, false)
+    const levelFilter = this.courseRepository.levelFilter(query?.level)
+    const researchFilter = researchTypes.map((type) => ({
+      type_en: {
+        not: type,
+      },
+    }))
     const defaultFilter = {
       AND: [
         {
           deleted: false,
         },
-        {
-          type_en: {
-            notIn: researchTypes,
-          },
-        },
+        ...researchFilter,
       ],
     }
 
@@ -76,8 +83,9 @@ export class LectureRepository {
       groupFilter,
       keywordFilter,
       defaultFilter,
+      levelFilter,
     ].filter((filter): filter is object => filter !== null)
-    const queryResult = await this.prisma.subject_lecture.findMany({
+    const queryResult = await this.prismaRead.subject_lecture.findMany({
       include: {
         subject_department: true,
         subject_lecture_professors: { include: { professor: true } },
@@ -87,21 +95,23 @@ export class LectureRepository {
       where: {
         AND: filters,
       },
+      orderBy: [{ year: 'desc' }, { semester: 'desc' }, { old_code: 'asc' }, { class_no: 'asc' }],
+      skip: query.offset ?? 0,
       take: query.limit ?? DEFAULT_LIMIT,
     })
-    const levelFilteredResult = this.courseRepository.levelFilter<ELecture.Details>(queryResult, query?.level)
 
-    const orderedQuery = applyOrder<ELecture.Details>(
-      levelFilteredResult,
-      (query.order ?? DEFAULT_ORDER) as (keyof ELecture.Details)[],
-    )
-    return applyOffset<ELecture.Details>(orderedQuery, query.offset ?? 0)
+    // const orderedQuery = applyOrder<ELecture.Details>(
+    //   levelFilteredResult,
+    //   (query.order ?? DEFAULT_ORDER) as (keyof ELecture.Details)[],
+    // )
+    // return applyOffset<ELecture.Details>(orderedQuery, query.offset ?? 0)
+    return queryResult
   }
 
   async findReviewWritableLectures(user: session_userprofile, date?: Date): Promise<ELecture.Details[]> {
     type Semester = { semester: number, year: number }
     const currDate = date ?? new Date()
-    const notWritableSemesters = await this.prisma.subject_semester.findMany({
+    const notWritableSemesters = await this.prismaRead.subject_semester.findMany({
       where: {
         OR: [
           {
@@ -156,7 +166,7 @@ export class LectureRepository {
 
   async getTakenLectures(user: session_userprofile): Promise<ELecture.Details[]> {
     const lectures = (
-      await this.prisma.session_userprofile_taken_lectures.findMany({
+      await this.prismaRead.session_userprofile_taken_lectures.findMany({
         where: {
           userprofile_id: user.id,
         },
@@ -236,7 +246,7 @@ export class LectureRepository {
   }
 
   async getLectureAutocomplete(year: number, semester: number, keyword: string): Promise<ELecture.Extended | null> {
-    const candidate = await this.prisma.subject_lecture.findFirst({
+    const candidate = await this.prismaRead.subject_lecture.findFirst({
       where: {
         year,
         semester,
@@ -265,7 +275,7 @@ export class LectureRepository {
   }
 
   async getUserLecturesByYearSemester(userId: number, year: number, semester: number): Promise<ELecture.UserTaken[]> {
-    const lectures = await this.prisma.session_userprofile_taken_lectures.findMany({
+    const lectures = await this.prismaRead.session_userprofile_taken_lectures.findMany({
       where: {
         userprofile_id: userId,
         lecture: {
@@ -283,7 +293,7 @@ export class LectureRepository {
   }
 
   async getLectureDetailsForTimetable(lectureIds: number[]) {
-    return await this.prisma.subject_lecture.findMany({
+    return await this.prismaRead.subject_lecture.findMany({
       where: {
         id: {
           in: lectureIds,
@@ -297,6 +307,122 @@ export class LectureRepository {
         },
         subject_classtime: true, // Include classtime details if needed
       },
+    })
+  }
+
+  async getLectureById(lectureId: number): Promise<LectureBasic> {
+    const lecture = await this.prismaRead.subject_lecture.findUniqueOrThrow({
+      where: {
+        id: lectureId,
+      },
+    })
+    return mapLecture(lecture)
+  }
+
+  async getRelatedLectureById(lectureId: number, courseId: number): Promise<LectureBasic[]> {
+    const lecture = await this.prismaRead.subject_lecture.findUniqueOrThrow({
+      where: {
+        id: lectureId,
+      },
+    })
+    return this.prismaRead.subject_lecture
+      .findMany({
+        where: {
+          course_id: courseId,
+          deleted: false,
+          year: lecture.year,
+          semester: lecture.semester,
+        },
+      })
+      .then((lectures) => lectures.map((l) => mapLecture(l)))
+  }
+
+  async updateLectureTitle(lectures: LectureBasic[], commonTitle: string, isEnglish: boolean): Promise<boolean> {
+    const titleFieldMap = {
+      ko: {
+        getTitle: (lecture: LectureBasic) => lecture.title,
+        updateClassField: 'class_title',
+        updateCommonField: 'common_title',
+      },
+      en: {
+        getTitle: (lecture: LectureBasic) => lecture.titleEn,
+        updateClassField: 'class_title_en',
+        updateCommonField: 'common_title_en',
+      },
+    } as const
+    const { getTitle, updateClassField, updateCommonField } = titleFieldMap[isEnglish === true ? 'en' : 'ko']
+    for (const lecture of lectures) {
+      const titleField = getTitle(lecture)
+
+      const classTitle = titleField !== commonTitle
+        ? titleField.substring(commonTitle.length)
+        : lecture.classNo.length > 0
+          ? lecture.classNo
+          : 'A'
+
+      await this.prisma.subject_lecture.update({
+        where: { id: lecture.id },
+        data: {
+          [updateCommonField]: commonTitle,
+          [updateClassField]: classTitle,
+        },
+      })
+    }
+    return true
+  }
+
+  async updateLectureScore(id: number, grades: LectureScore): Promise<LectureBasic> {
+    const lecture = await this.prisma.subject_lecture.update({
+      where: { id },
+      data: {
+        review_total_weight: grades.reviewTotalWeight,
+        grade_sum: grades.gradeSum,
+        load_sum: grades.loadSum,
+        speech_sum: grades.speechSum,
+        grade: grades.grade,
+        load: grades.load,
+        speech: grades.speech,
+      },
+    })
+    return mapLecture(lecture)
+  }
+
+  async countNumPeople(lectureId: number): Promise<number> {
+    return (
+      (
+        await this.prismaRead.timetable_timetable.findMany({
+          distinct: ['user_id'],
+          where: {
+            timetable_timetable_lectures: {
+              some: {
+                lecture_id: lectureId,
+              },
+            },
+          },
+        })
+      )?.length ?? 0
+    )
+  }
+
+  async updateNumPeople(lectureId: number, count: number): Promise<LectureBasic> {
+    return mapLecture(
+      await this.prisma.subject_lecture.update({
+        where: { id: lectureId },
+        data: {
+          num_people: count,
+        },
+      }),
+    )
+  }
+
+  async getLecturesByIds(representativeLectureIds: number[]) {
+    return this.prismaRead.subject_lecture.findMany({
+      where: {
+        id: {
+          in: representativeLectureIds,
+        },
+      },
+      include: ELecture.Basic,
     })
   }
 

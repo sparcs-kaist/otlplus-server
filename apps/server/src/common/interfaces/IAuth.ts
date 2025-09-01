@@ -1,3 +1,4 @@
+import { IsString } from 'class-validator'
 import { Request as _Request, Response as _Response } from 'express'
 
 export namespace IAuth {
@@ -18,6 +19,7 @@ export namespace IAuth {
   }
 
   export class TokenDto {
+    @IsString()
     token!: string
   }
 

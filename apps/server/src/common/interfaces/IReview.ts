@@ -17,7 +17,9 @@ export namespace IReview {
   export interface Basic {
     id: number
 
-    course: ICourse.Basic
+    course: {
+      id: number
+    }
 
     lecture: ILecture.Basic
 

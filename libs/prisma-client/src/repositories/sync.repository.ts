@@ -11,25 +11,22 @@ import { Prisma, SyncType } from '@prisma/client'
 import { Result } from '@prisma/client/runtime/library'
 
 import {
-  EDepartment,
-  ELecture,
-  EProfessor,
-  EReview,
-  ESemester,
-  ESync,
-  EUser,
-  EUserProfile,
+  EDepartment, ELecture, EProfessor, EReview, ESemester, ESync, EUser,
 } from '@otl/prisma-client/entities'
+import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 import { STAFF_ID } from '@otl/prisma-client/types'
 
 @Injectable()
 export class SyncRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly prismaRead: PrismaReadService,
+  ) {}
 
   async getDefaultSemester(): Promise<ESemester.Basic | null> {
     const now = new Date()
-    return await this.prisma.subject_semester.findFirst({
+    return await this.prismaRead.subject_semester.findFirst({
       where: { courseDesciptionSubmission: { lt: now } },
       orderBy: { courseDesciptionSubmission: 'desc' },
     })
@@ -42,14 +39,14 @@ export class SyncRepository {
     year: number
     semester: number
   }): Promise<ELecture.Details[]> {
-    return this.prisma.subject_lecture.findMany({
+    return this.prismaRead.subject_lecture.findMany({
       where: { year, semester, deleted: false }, // 기존 코드에서 한 번 삭제된 강의는 복구되지 않고 새로 생성하던 것으로 보임.
       include: ELecture.Details.include,
     })
   }
 
   async getOrCreateStaffProfessor(): Promise<EProfessor.Basic> {
-    const staffProfessor = await this.prisma.subject_professor.findFirst({
+    const staffProfessor = await this.prismaRead.subject_professor.findFirst({
       where: { professor_id: STAFF_ID },
     })
     if (staffProfessor) return staffProfessor
@@ -71,7 +68,7 @@ export class SyncRepository {
   }
 
   async getExistingDepartments(): Promise<EDepartment.Basic[]> {
-    return this.prisma.subject_department.findMany()
+    return this.prismaRead.subject_department.findMany()
   }
 
   async createDepartment(data: DepartmentInfo) {
@@ -95,13 +92,13 @@ export class SyncRepository {
   }
 
   async getExistingCoursesByOldCodes(oldCodes: string[]) {
-    return await this.prisma.subject_course.findMany({
+    return await this.prismaRead.subject_course.findMany({
       where: { old_code: { in: oldCodes } },
     })
   }
 
   async getExistingCoursesByNewCodes(newCodes: string[]) {
-    return this.prisma.subject_course.findMany({
+    return this.prismaRead.subject_course.findMany({
       where: { new_code: { in: newCodes } },
     })
   }
@@ -138,7 +135,7 @@ export class SyncRepository {
   }
 
   async getExistingProfessorsById(professorIds: number[]) {
-    return await this.prisma.subject_professor.findMany({
+    return await this.prismaRead.subject_professor.findMany({
       where: { professor_id: { in: professorIds } },
     })
   }
@@ -255,15 +252,15 @@ export class SyncRepository {
   }: {
     year: number
     semester: number
-  }): Promise<EUserProfile.WithTakenLectures[]> {
-    return await this.prisma.session_userprofile.findMany({
+  }): Promise<EUser.WithTakenLectures[]> {
+    return await this.prismaRead.session_userprofile.findMany({
       where: { taken_lectures: { some: { lecture: { year, semester } } } },
       include: { taken_lectures: { where: { lecture: { year, semester } } } },
     })
   }
 
   async getUserProfileIdsFromStudentIds(studentIds: number[]) {
-    return await this.prisma.session_userprofile.findMany({
+    return await this.prismaRead.session_userprofile.findMany({
       where: { student_id: { in: studentIds.map((id) => id.toString()) } },
       select: { id: true, student_id: true },
     })
@@ -309,7 +306,7 @@ export class SyncRepository {
   }
 
   async getUserWithId(userId: number) {
-    return await this.prisma.session_userprofile.findUnique({
+    return await this.prismaRead.session_userprofile.findUnique({
       where: { id: userId },
     })
   }
@@ -336,7 +333,7 @@ export class SyncRepository {
 
   // Fetch humanity reviews (HSS department)
   async getHumanityReviews(): Promise<EReview.WithLectures[]> {
-    return this.prisma.review_review.findMany({
+    return this.prismaRead.review_review.findMany({
       where: {
         course: {
           subject_department: {
@@ -350,7 +347,7 @@ export class SyncRepository {
 
   // Fetch major reviews (Non-HSS department)
   async getMajorReviews(): Promise<EReview.WithLectures[]> {
-    return this.prisma.review_review.findMany({
+    return this.prismaRead.review_review.findMany({
       where: {
         AND: {
           course: {
@@ -391,7 +388,7 @@ export class SyncRepository {
 
   async getSemesters(take?: number) {
     const now = new Date()
-    return this.prisma.subject_semester.findMany({
+    return this.prismaRead.subject_semester.findMany({
       take: take ?? 3,
       where: { courseDesciptionSubmission: { lt: now } },
       orderBy: { courseDesciptionSubmission: 'desc' },
@@ -399,20 +396,20 @@ export class SyncRepository {
   }
 
   getUsersByStudentIds(studentIds: string[]): Promise<EUser.Basic[]> {
-    return this.prisma.session_userprofile.findMany({
+    return this.prismaRead.session_userprofile.findMany({
       where: { student_id: { in: studentIds } },
     })
   }
 
   getUsersWithMajorsByStudentIds(studentIds: string[]): Promise<EUser.WithMajors[]> {
-    return this.prisma.session_userprofile.findMany({
+    return this.prismaRead.session_userprofile.findMany({
       where: { student_id: { in: studentIds } },
       include: EUser.WithMajors.include,
     })
   }
 
   getUsersWithMinorsByStudentIds(studentIds: string[]): Promise<EUser.WithMinors[]> {
-    return this.prisma.session_userprofile.findMany({
+    return this.prismaRead.session_userprofile.findMany({
       where: { student_id: { in: studentIds } },
       include: EUser.WithMinors.include,
     })
@@ -428,7 +425,7 @@ export class SyncRepository {
   }
 
   async getDepartments(): Promise<EDepartment.Basic[]> {
-    return this.prisma.subject_department.findMany({
+    return this.prismaRead.subject_department.findMany({
       where: { visible: true },
     })
   }
@@ -491,6 +488,17 @@ export class SyncRepository {
         endTime,
         data: JSON.stringify(data, null, 2),
       },
+    })
+  }
+
+  async getCourses() {
+    return this.prisma.subject_course.findMany()
+  }
+
+  async getRepresentativeLecture(courseId: number) {
+    return this.prisma.subject_lecture.findFirst({
+      where: { course_id: courseId },
+      orderBy: [{ year: 'desc' }, { semester: 'desc' }],
     })
   }
 }

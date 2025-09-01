@@ -1,6 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
-  // previewFeatures = ["relationJoins"]
+  provider        = "prisma-client-js"
+  previewFeatures = ["queryCompiler", "driverAdapters"]
 }
 
 datasource db {
@@ -275,7 +275,11 @@ model session_userprofile {
   id                                    Int                                        @id @default(autoincrement())
   user_id                               Int?                                       @unique(map: "session_userprofile_user_id_09dd6af1_uniq")
   student_id                            String                                     @db.VarChar(10)
+  uid                                   String?                                    @db.VarChar(30)
   sid                                   String                                     @db.VarChar(30)
+  last_login                            DateTime?                                  @db.DateTime(0)
+  kaist_id                              String?                                    @db.VarChar(30)
+  status                                String?                                    @db.VarChar(30)
   language                              String?                                    @db.VarChar(15)
   portal_check                          Int?                                       @default(0)
   department_id                         Int?
@@ -295,14 +299,99 @@ model session_userprofile {
   session_userprofile_majors            session_userprofile_majors[]
   session_userprofile_minors            session_userprofile_minors[]
   session_userprofile_specialized_major session_userprofile_specialized_major[]
+  session_userprofile_device            session_userprofile_device[]
   taken_lectures                        session_userprofile_taken_lectures[]
   subject_courseuser                    subject_courseuser[]
   support_rate                          support_rate[]
   timetable_timetable                   timetable_timetable[]
   timetable_wishlist                    timetable_wishlist?
+  session_userprofile_notification      session_userprofile_notification[]
+  session_userprofile_agreement         session_userprofile_agreement[]
+  session_userprofile_notification_hist session_userprofile_notification_history[]
 
   @@index([department_id], map: "session_userprofile_department_id_fkey")
   @@index([student_id], map: "session_userprofile_student_id_index")
+}
+
+model session_userprofile_device {
+  id              Int                 @id @default(autoincrement())
+  userprofile_id  Int
+  token           String              @db.VarChar(255)
+  is_active       Boolean             @default(false)
+  deviceType      DeviceType?
+  deviceOsVersion String?             @db.VarChar(255)
+  appVersion      String?             @db.VarChar(255)
+  userprofile     session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
+
+  @@unique([userprofile_id, token], map: "session_fcm_token_userprofile_id_token_uniq")
+  @@index([token], map: "session_fcm_token_token_index")
+}
+
+model session_userprofile_agreement {
+  id               Int                 @id @default(autoincrement())
+  userprofile_id   Int
+  userprofile      session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
+  agreement_id     Int
+  agreement        agreement           @relation(fields: [agreement_id], references: [id], onUpdate: Restrict)
+  agreement_status Boolean             @default(false)
+  need_to_show     Boolean             @default(true)
+  created_at       DateTime            @default(now()) @db.DateTime(0)
+  updated_at       DateTime            @default(now()) @db.DateTime(0)
+
+  @@unique([userprofile_id, agreement_id], map: "session_userprofile_agreement_userprofile_id_agreement_id_uniq")
+  @@index([agreement_id], map: "session_userprofile_agreement_agreement_id_fkey")
+  @@index([userprofile_id, agreement_id], map: "session_userprofile_agreement_userprofile_id_agreement_id_index")
+}
+
+model agreement {
+  id                            Int                             @id @default(autoincrement())
+  name                          AgreementType
+  session_userprofile_agreement session_userprofile_agreement[]
+  created_at                    DateTime                        @default(now()) @db.DateTime(0)
+  updated_at                    DateTime                        @default(now()) @db.DateTime(0)
+
+  @@unique([name], map: "session_userprofile_agreement_name_uniq")
+}
+
+model session_userprofile_notification {
+  id              Int                 @id @default(autoincrement())
+  userprofile_id  Int
+  notification_id Int
+  userprofile     session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
+  noti            notification        @relation(fields: [notification_id], references: [id], onUpdate: Restrict)
+  created_at      DateTime            @default(now()) @db.DateTime(0)
+  updated_at      DateTime            @default(now()) @db.DateTime(0)
+  is_active       Boolean             @default(false)
+
+  @@unique([userprofile_id, notification_id], map: "session_userprofile_notification_id_uniq")
+  @@index([notification_id], map: "session_userprofile_notification_notification_id_fkey")
+}
+
+model notification {
+  id                       Int                                        @id @default(autoincrement())
+  name                     String                                     @db.VarChar(200)
+  description              String                                     @db.LongText
+  agreementType            AgreementType
+  created_at               DateTime                                   @default(now()) @db.DateTime(0)
+  updated_at               DateTime                                   @default(now()) @db.DateTime(0)
+  session_userprofile_noti session_userprofile_notification[]
+  session_userprofile_hist session_userprofile_notification_history[]
+
+  @@unique([name], map: "notification_name_uniq")
+}
+
+model session_userprofile_notification_history {
+  id                  Int                 @id @default(autoincrement())
+  userprofile_id      Int
+  notification_id     Int
+  notification_req_id String              @db.LongText
+  content             String              @db.LongText
+  to                  String?             @db.LongText
+  fcm_id              String?             @db.LongText
+  userprofile         session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
+  noti                notification        @relation(fields: [notification_id], references: [id], onUpdate: Restrict)
+  created_at          DateTime            @default(now()) @db.DateTime(0)
+  read_at             DateTime?           @db.DateTime(0)
 }
 
 model session_userprofile_favorite_departments {
@@ -397,6 +486,8 @@ model subject_course {
   latest_written_datetime                                                                                          DateTime?                                  @db.DateTime(0)
   title_no_space                                                                                                   String                                     @default(dbgenerated()) @db.VarChar(100)
   title_en_no_space                                                                                                String                                     @default(dbgenerated()) @db.VarChar(200)
+  representative_lecture_id                                                                                        Int                                        @default(0)
+  level                                                                                                            String?                                    @default(dbgenerated("SUBSTRING(REGEXP_REPLACE(new_code, '[^0-9]', ''), 1, 1)")) @db.VarChar(20)
   main_relatedcoursedailyuserfeed                                                                                  main_relatedcoursedailyuserfeed[]
   planner_futureplanneritem                                                                                        planner_futureplanneritem[]
   review                                                                                                           review_review[]
@@ -542,6 +633,7 @@ model subject_lecture {
   timetable_timetable_lectures    timetable_timetable_lectures[]
   timetable_wishlist_lectures     timetable_wishlist_lectures[]
   sync_taken_lectures             sync_taken_lectures[]
+  level                           String?                              @default(dbgenerated("SUBSTRING(REGEXP_REPLACE(new_code, '[^0-9]', ''), 1, 1)")) @db.VarChar(20)
 
   @@index([deleted], map: "subject_lecture_deleted_bedc6156_uniq")
   @@index([type_en], map: "subject_lecture_type_en_45ee2d3a_uniq")
@@ -551,6 +643,9 @@ model subject_lecture {
   @@index([title_no_space], map: "subject_lecture_title_no_space_index")
   @@index([title_en], map: "subject_lecture_title_en_index")
   @@index([title], map: "subject_lecture_title_index")
+  @@index([year, semester, deleted], map: "subject_lecture_deleted_year_semester_index")
+  @@index([semester, year, deleted, type_en, id], map: "subject_lecture_year_semester_deleted_type_en")
+  @@index([year, semester, type_en, department_id, deleted], map: "subject_lecture_year_semester_deleted_type_en_department")
 }
 
 model subject_lecture_professors {
@@ -858,7 +953,7 @@ model sync_history {
   endTime   DateTime?
   year      Int?
   semester  Int?
-  data      String?
+  data      String?   @db.VarChar(500)
 }
 
 model paper_prof_to_subject_prof {
@@ -879,26 +974,46 @@ model paper_professor_department {
 
 model paper_professor {
   id                         Int                          @id @default(autoincrement())
-  professor_name             String?                      @db.VarChar(255)
-  professor_name_en          String?                      @db.VarChar(255)
+  prof_name                  String?                      @db.VarChar(255)
+  department                 String?                      @db.VarChar(60)
+  orcid_id                   String?                      @db.VarChar(20)
+  rid                        String?                      @db.VarChar(20)
+  lab_link                   String?                      @db.VarChar(255)
+  first_journal_title        String?                      @db.VarChar(255)
+  first_conference_title     String?                      @db.VarChar(255)
   papers                     paper[]
   prof_names_to_prof_link    paper_prof_to_subject_prof[]
   paper_professor_department paper_professor_department[]
 }
 
 model paper {
-  id             Int              @id @default(autoincrement())
-  professor_id   Int?
-  professor_name String           @db.VarChar(255)
-  title          String?          @db.VarChar(300)
-  abstract       String?          @db.Text
-  keywords       String?          @db.Text
-  category       String?          @db.VarChar(100)
-  doi            String?          @db.VarChar(100)
-  pdf_link       String?          @db.VarChar(255)
-  xml_link       String?          @db.VarChar(255)
-  url            String?          @db.VarChar(255)
-  professor      paper_professor? @relation(fields: [professor_id], references: [id], onUpdate: Restrict)
+  id               Int              @id @default(autoincrement())
+  professor_id     Int?
+  title            String?          @db.VarChar(1000)
+  abstract         String?          @db.Text
+  keywords         String?          @db.Text
+  doi              String?          @db.VarChar(100)
+  coverDate        DateTime?        @db.Date
+  coverDisplayDate String?          @db.VarChar(100)
+  publicationName  String?          @db.VarChar(500)
+  issn             String?          @db.VarChar(10)
+  source_id        Float?
+  eIssn            String?          @db.VarChar(10)
+  aggregationType  String?          @db.VarChar(30)
+  volume           String?          @db.VarChar(100)
+  issueIdentifier  String?          @db.VarChar(20)
+  article_number   String?          @db.VarChar(50)
+  pageRange        String?          @db.VarChar(20)
+  description      String?          @db.Text
+  citedby_count    Float?
+  source_title     String?          @db.VarChar(255)
+  publish_year     Float?
+  publish_month    String?          @db.VarChar(8)
+  page_range       String?          @db.VarChar(20)
+  cited_count      Float?
+  xml_link         String?          @db.VarChar(255)
+  pdf_link         String?          @db.VarChar(300)
+  professor        paper_professor? @relation(fields: [professor_id], references: [id], onUpdate: Restrict)
 }
 
 enum SyncType {
@@ -912,4 +1027,16 @@ enum SyncType {
   CLASSTIME
   TAKEN_LECTURES
   CHARGE
+}
+
+enum DeviceType {
+  ANDROID
+  IOS
+  WEB
+}
+
+enum AgreementType {
+  INFO
+  MARKETING
+  NIGHT_MARKETING
 }

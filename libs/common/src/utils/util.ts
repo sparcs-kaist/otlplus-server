@@ -66,3 +66,16 @@ export function generationUnionTypeChecker<UnionType extends string>(...values: 
     return values.includes(value as UnionType) ? (value as UnionType) : new Error(`Invalid value: ${value}`)
   }
 }
+
+export function getCurrentMethodName(): string {
+  const err = new Error()
+  const stack = err.stack?.split('\n')
+  if (stack && stack.length > 2) {
+    const line = stack[2].trim() // 예: 'at ClassName.methodName (file.ts:line:column)'
+    const match = line.match(/at\s+(.*)\s+\(/)
+    if (match && match[1]) {
+      return match[1]
+    }
+  }
+  return 'unknown'
+}

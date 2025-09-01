@@ -1,0 +1,19 @@
+services:
+  redis-scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: redis-scheduler
+    ports:
+      - '46379:6379'
+    env_file:
+      - ../../env/.env.local
+    volumes:
+      - ./redis-data:/data
+      - ./redis.template.conf:/usr/local/etc/redis/redis.template.conf
+    restart: unless-stopped
+    entrypoint: ['/bin/sh', '-c']
+    command:
+      - |
+        envsubst < /usr/local/etc/redis/redis.template.conf > /usr/local/etc/redis/redis.conf && \
+        redis-server /usr/local/etc/redis/redis.conf

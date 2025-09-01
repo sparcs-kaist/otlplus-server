@@ -21,7 +21,7 @@ export class WishlistService {
 
     if (await this.wishlistRepository.getLectureInWishlist(wishlist.id, body.lecture)) throw new BadRequestException('Wrong field \'lecture\' in request data')
 
-    const lecture = await this.lectureRepository.getLectureById(body.lecture)
+    const lecture = await this.lectureRepository.getLectureDetailById(body.lecture)
     if (!lecture) throw new NotFoundException(`Lecture with id ${body.lecture} does not exist`)
 
     await this.wishlistRepository.addLecture(wishlist.id, lecture.id)

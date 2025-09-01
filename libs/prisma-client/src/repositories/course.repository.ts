@@ -1,21 +1,25 @@
 import { Injectable } from '@nestjs/common'
+import { ServerConsumerCourseRepository } from '@otl/server-consumer/out/course.repository'
+import { CourseBasic, CourseScore } from '@otl/server-nest/modules/courses/domain/course'
 import { Prisma } from '@prisma/client'
 
-import { applyOffset, applyOrder } from '@otl/common/utils/util'
-
-import { ECourse } from '../entities/ECourse'
-import ECourseUser = ECourse.ECourseUser
-
 import { formatNewLectureCodeWithDot, orderFilter } from '@otl/prisma-client/common'
+import { mapCourse } from '@otl/prisma-client/common/mapper/course'
+import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 import { PaginationOption } from '@otl/prisma-client/types'
 
+import { ECourse } from '../entities/ECourse'
 import { ELecture } from '../entities/ELecture'
 import { EReview } from '../entities/EReview'
 import { PrismaService } from '../prisma.service'
+import ECourseUser = ECourse.ECourseUser
 
 @Injectable()
-export class CourseRepository {
-  constructor(private readonly prisma: PrismaService) {}
+export class CourseRepository implements ServerConsumerCourseRepository {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly prismaRead: PrismaReadService,
+  ) {}
 
   private TYPE_ACRONYMS = {
     GR: 'General Required',
@@ -54,7 +58,7 @@ export class CourseRepository {
   ]
 
   public async getCourseById(id: number): Promise<ECourse.Details | null> {
-    return await this.prisma.subject_course.findUnique({
+    return await this.prismaRead.subject_course.findUnique({
       // relationLoadStrategy: 'query',
       include: ECourse.Details.include,
       where: {
@@ -63,9 +67,21 @@ export class CourseRepository {
     })
   }
 
+  public async getCourseBasicById(id: number): Promise<CourseBasic | null> {
+    const course = await this.prismaRead.subject_course.findUnique({
+      where: {
+        id,
+      },
+    })
+    if (!course) {
+      return null
+    }
+    return mapCourse(course)
+  }
+
   public async getLecturesByCourseId(id: number, order?: string[]): Promise<ELecture.Details[]> {
     const orders = order || ['year', 'semester', 'class_no']
-    const course = await this.prisma.subject_course.findUnique({
+    const course = await this.prismaRead.subject_course.findUnique({
       include: {
         lecture: {
           include: {
@@ -86,7 +102,7 @@ export class CourseRepository {
   }
 
   public async getReviewsByCourseId(option: PaginationOption, id: number): Promise<EReview.Details[]> {
-    const review = await this.prisma.review_review.findMany({
+    const review = await this.prismaRead.review_review.findMany({
       where: { course_id: id },
       include: EReview.Details.include,
       take: option.limit,
@@ -108,31 +124,39 @@ export class CourseRepository {
     limit: number | undefined,
   ): Promise<ECourse.Details[]> {
     const DEFAULT_LIMIT = 150
-    const DEFAULT_ORDER = ['old_code'] satisfies (keyof ECourse.Details)[]
+    // const DEFAULT_ORDER = ['old_code'] satisfies (keyof ECourse.Details)[]
     const departmentFilter = this.departmentFilter(department)
     const typeFilter = this.typeFilter(type)
     const groupFilter = this.groupFilter(group)
     const keywordFilter = this.keywordFilter(keyword)
     const term_filter = this.termFilter(term)
-    const filterList: object[] = [departmentFilter, typeFilter, groupFilter, keywordFilter, term_filter].filter(
-      (filter): filter is object => filter !== null,
-    )
+    const levelFilter = this.levelFilter(level)
+    const filterList: object[] = [
+      departmentFilter,
+      typeFilter,
+      groupFilter,
+      keywordFilter,
+      term_filter,
+      levelFilter,
+    ].filter((filter): filter is object => filter !== null)
 
-    const queryResult = await this.prisma.subject_course.findMany({
+    const queryResult = await this.prismaRead.subject_course.findMany({
       include: ECourse.Details.include,
       where: {
         AND: filterList,
       },
+      orderBy: [{ old_code: 'asc' }],
+      skip: offset ?? 0,
       take: limit ?? DEFAULT_LIMIT,
     })
-    const levelFilteredResult = this.levelFilter<ECourse.Details>(queryResult, level)
 
     // Apply Ordering and Offset
-    const orderedResult = applyOrder<ECourse.Details>(
-      levelFilteredResult,
-      (order as (keyof ECourse.Details)[]) ?? DEFAULT_ORDER,
-    )
-    return applyOffset<ECourse.Details>(orderedResult, offset ?? 0)
+    // const orderedResult = applyOrder<ECourse.Details>(
+    //   levelFilteredResult,
+    //   (order as (keyof ECourse.Details)[]) ?? DEFAULT_ORDER,
+    // )
+    // return applyOffset<ECourse.Details>(orderedResult, offset ?? 0)
+    return queryResult
   }
 
   public departmentFilter(department_names?: string[]): object | null {
@@ -382,28 +406,35 @@ export class CourseRepository {
     }
   }
 
-  public levelFilter<T extends ECourse.Details | ELecture.Details>(queryResult: T[], levels?: string[]): T[] {
-    if (!levels) {
-      return queryResult
+  public levelFilter(levels?: string[]): object | null {
+    if (!levels || levels.includes('ALL')) {
+      return null
     }
 
-    const levelFilters = levels.map((level) => level[0])
-    if (levels.includes('ALL')) {
-      return queryResult
-    }
+    const levelDigits = levels.map((l) => l[0])
+
+    // ETC일 경우: level이 선택된 levelDigit들에 **포함되지 않는** 값
     if (levels.includes('ETC')) {
-      return queryResult.filter((item) => {
-        const level = item.old_code.replace(/[^0-9]/g, '')[0]
-        return !levelFilters.includes(level)
-      })
+      return {
+        level: {
+          notIn: levelDigits,
+        },
+      }
     }
-    return queryResult.filter((item) => {
-      const level = item.old_code.replace(/[^0-9]/g, '')[0]
-      return levelFilters.includes(level)
-    })
+
+    // 일반적인 in 조건
+    return {
+      level: {
+        in: levelDigits,
+      },
+    }
   }
 
-  async getUserTakenCourses(takenLecturesId: number[], order: string[]): Promise<ECourse.DetailWithIsRead[]> {
+  async getUserTakenCourses(
+    takenLecturesId: number[],
+    order: string[],
+    userId: number,
+  ): Promise<ECourse.DetailWithIsRead[]> {
     const orderFilters: { [key: string]: string }[] = []
     order.forEach((orderList) => {
       const orderDict: { [key: string]: string } = {}
@@ -415,7 +446,7 @@ export class CourseRepository {
       orderDict[orderBy[orderBy.length - 1]] = sorOrder
       orderFilters.push(orderDict)
     })
-    return this.prisma.subject_course.findMany({
+    return this.prismaRead.subject_course.findMany({
       where: {
         lecture: {
           some: {
@@ -429,14 +460,13 @@ export class CourseRepository {
       include: {
         subject_department: true,
         subject_course_professors: { include: { professor: true } },
-        lecture: true,
-        subject_courseuser: true,
+        subject_courseuser: { where: { user_profile_id: userId } },
       },
     })
   }
 
   async getCourseAutocomplete(keyword: string): Promise<ECourse.Extended | null> {
-    const candidate = await this.prisma.subject_course.findFirst({
+    const candidate = await this.prismaRead.subject_course.findFirst({
       where: {
         OR: [
           { subject_department: { name: { startsWith: keyword } } },
@@ -483,19 +513,87 @@ export class CourseRepository {
     })
   }
 
-  public async isUserSpecificRead(courseId: number, userId: number) {
-    const courseUser = await this.prisma.subject_courseuser.findFirst({
+  private isRead(courseUser: {
+    subject_course: { latest_written_datetime: Date | null }
+    latest_read_datetime: Date | null
+  }): boolean {
+    if (!courseUser.subject_course.latest_written_datetime) return false
+    if (!courseUser.latest_read_datetime) return false
+    return courseUser.subject_course.latest_written_datetime <= courseUser.latest_read_datetime
+  }
+
+  public async isUserSpecificRead(courseId: number | number[], userId: number) {
+    let courseIds
+    if (!Array.isArray(courseId)) {
+      courseIds = [courseId]
+    }
+    else {
+      courseIds = courseId
+    }
+    const courseUsers = await this.prismaRead.subject_courseuser.findMany({
       select: {
         subject_course: { select: { latest_written_datetime: true } },
         latest_read_datetime: true,
+        user_profile_id: true,
+        course_id: true,
       },
       where: {
-        course_id: courseId,
+        course_id: {
+          in: courseIds,
+        },
         user_profile_id: userId,
       },
     })
-    if (!courseUser || !courseUser.subject_course.latest_written_datetime) return false
+    const result: { [key: number]: boolean } = {}
+    if (!courseUsers || courseUsers.length === 0) {
+      courseIds.forEach((id) => {
+        result[id] = false
+      })
+    }
+    else {
+      courseUsers.forEach((courseUser) => {
+        result[courseUser.course_id] = this.isRead(courseUser)
+      })
+    }
+    return result
+  }
 
-    return courseUser.subject_course.latest_written_datetime <= courseUser.latest_read_datetime
+  async updateCourseScore(courseId: number, grades: CourseScore): Promise<CourseBasic> {
+    return mapCourse(
+      await this.prisma.subject_course.update({
+        where: { id: courseId },
+        data: {
+          review_total_weight: grades.reviewTotalWeight,
+          grade_sum: grades.gradeSum,
+          load_sum: grades.loadSum,
+          speech_sum: grades.speechSum,
+          grade: grades.grade,
+          load: grades.load,
+          speech: grades.speech,
+        },
+      }),
+    )
+  }
+
+  async updateCourseRepresentativeLecture(courseId: number, lectureId: number | null): Promise<CourseBasic> {
+    return this.prisma.subject_course
+      .update({
+        where: { id: courseId },
+        data: {
+          representative_lecture_id: lectureId ?? undefined,
+        },
+      })
+      .then((course) => mapCourse(course))
+  }
+
+  async getCoursesByIds(ids: number[]) {
+    return this.prismaRead.subject_course.findMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+      include: ECourse.Basic,
+    })
   }
 }

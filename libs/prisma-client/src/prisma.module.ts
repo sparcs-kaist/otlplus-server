@@ -1,7 +1,7 @@
 import {
   DynamicModule, Global, Module, OnModuleInit,
 } from '@nestjs/common'
-import { Prisma } from '@prisma/client'
+import * as mariadb from 'mariadb'
 
 import { CourseMiddleware } from '@otl/prisma-client/middleware/prisma.course'
 import { DepartmentMiddleware } from '@otl/prisma-client/middleware/prisma.department'
@@ -12,10 +12,12 @@ import { ReviewVoteMiddleware } from '@otl/prisma-client/middleware/prisma.revie
 import { SemesterMiddleware } from '@otl/prisma-client/middleware/prisma.semester'
 import { TimetableMiddleware } from '@otl/prisma-client/middleware/prisma.timetable'
 import { TimetableLectureMiddleware } from '@otl/prisma-client/middleware/prisma.timetablelecture'
+import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 import {
   CourseRepository,
   DepartmentRepository,
+  FeedsRepository,
   LectureRepository,
   NoticesRepository,
   PlannerRepository,
@@ -27,11 +29,12 @@ import {
   UserRepository,
   WishlistRepository,
 } from '@otl/prisma-client/repositories'
+import { NotificationPrismaRepository } from '@otl/prisma-client/repositories/notification.repository'
 
 @Module({})
 @Global()
 export class PrismaModule implements OnModuleInit {
-  static register(ormOptions: Prisma.PrismaClientOptions): DynamicModule {
+  static register(ormOptions: mariadb.PoolConfig, ormReadOptions?: mariadb.PoolConfig): DynamicModule {
     return {
       module: PrismaModule,
       providers: [
@@ -39,6 +42,11 @@ export class PrismaModule implements OnModuleInit {
           provide: 'ORM_OPTIONS',
           useValue: ormOptions,
         },
+        {
+          provide: 'ORM_READ_OPTIONS',
+          useValue: ormReadOptions,
+        },
+        PrismaReadService,
         PrismaService,
         UserRepository,
         LectureRepository,
@@ -51,11 +59,14 @@ export class PrismaModule implements OnModuleInit {
         PlannerRepository,
         TracksRepository,
         NoticesRepository,
+        FeedsRepository,
         SyncRepository,
+        NotificationPrismaRepository,
         ReviewMiddleware,
       ],
       exports: [
         PrismaService,
+        PrismaReadService,
         UserRepository,
         LectureRepository,
         ReviewsRepository,
@@ -67,6 +78,8 @@ export class PrismaModule implements OnModuleInit {
         PlannerRepository,
         TracksRepository,
         NoticesRepository,
+        FeedsRepository,
+        NotificationPrismaRepository,
         SyncRepository,
       ],
     }

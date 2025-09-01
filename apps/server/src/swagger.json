@@ -24,6 +24,88 @@
         "security": []
       }
     },
+    "/agreement/user": {
+      "get": {
+        "summary": "AgreementController.getUserAgreement",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IAgreement.Response"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "queryDto",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/IAgreement.AgreementModalQueryDto"
+            }
+          }
+        ]
+      },
+      "patch": {
+        "summary": "AgreementController.allowOrDisAllow",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IAgreement.Response"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IAgreement.AgreementAllowDto"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agreement/user/modal": {
+      "patch": {
+        "summary": "AgreementController.toggleModal",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IAgreement.Response"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IAgreement.AgreementToggleDto"
+              }
+            }
+          }
+        }
+      }
+    },
     "/session/login": {
       "get": {
         "summary": "AuthController.user_login",
@@ -105,7 +187,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/IAuth.TokenResponse"
+                  "$ref": "#/components/schemas/IUser.TokenResponse"
                 }
               }
             }
@@ -117,7 +199,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/IAuth.TokenDto"
+                "$ref": "#/components/schemas/IUser.TokenDto"
               }
             }
           }
@@ -386,6 +468,132 @@
         ]
       }
     },
+    "/device": {
+      "post": {
+        "summary": "DeviceController.registerDevice",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IDevice.Response.DeviceResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IDevice.RegisterDeviceDto"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "DeviceController.unregisterDevice",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IDevice.Response.DeviceResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "unregisterDeviceDto",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/IDevice.UnregisterDeviceDto"
+            }
+          }
+        ]
+      },
+      "get": {
+        "summary": "DeviceController.getDevice",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/components/schemas/IDevice.Response.UserDeviceResponseDto"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "DeviceController.updateDevice",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IDevice.Response.UserDeviceResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IDevice.UpdateDeviceDto"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/device/user": {
+      "get": {
+        "summary": "DeviceController.getUserDevice",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/IDevice.Response.UserDeviceResponseDto"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/users/{userId}/feeds": {
       "get": {
         "summary": "FeedsController.getUserFeeds",
@@ -588,37 +796,6 @@
         ]
       }
     },
-    "/api/v2/lectures": {
-      "get": {
-        "summary": "v2LecturesController.getLectures",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ILecture.v2Response"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [],
-        "parameters": [
-          {
-            "name": "query",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/ILecture.v2QueryDto"
-            }
-          }
-        ]
-      }
-    },
     "/api/notices": {
       "get": {
         "summary": "NoticesController.getNotices",
@@ -638,6 +815,227 @@
           }
         },
         "security": []
+      }
+    },
+    "/notification/hello": {
+      "get": {
+        "summary": "NotificationController.getHello",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/notification/domain/notification\").NotificationRequest"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/notification/read": {
+      "post": {
+        "summary": "NotificationController.read",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/notification/domain/notification\").FCMNotificationRequest"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/INotification.ReadDto"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notification/user": {
+      "patch": {
+        "summary": "NotificationController.allowOrDisallow",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/notification/domain/notification\").UserNotification"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/INotification.ActiveDto"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notification/agreements": {
+      "get": {
+        "summary": "NotificationController.getAgreements",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/agreement/domain/UserAgreement\").Agreement"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notification": {
+      "post": {
+        "summary": "NotificationController.createNotification",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/notification/domain/notification\").Notification"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/INotification.CreateDto"
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "NotificationController.updateNotification",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/notification/domain/notification\").Notification"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/INotification.UpdateDto"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "NotificationController.deleteNotification",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/INotification.DeleteDto"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "NotificationController.getAllNotifications",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/notification/domain/notification\").Notification"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notification/{name}": {
+      "get": {
+        "summary": "NotificationController.getNotification",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/notification/domain/notification\").Notification"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "/api/users/{id}/planners": {
@@ -1736,173 +2134,6 @@
         }
       }
     },
-    "/api/v2/timetables": {
-      "get": {
-        "summary": "v2TimetablesController.getTimetables",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ITimetable.v2Response"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "query",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/ITimetable.QueryDto"
-            }
-          }
-        ]
-      },
-      "post": {
-        "summary": "v2TimetablesController.createTimetable",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ITimetable.v2DetailedResponse"
-                }
-              }
-            }
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ITimetable.v2CreateDto"
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "summary": "v2TimetablesController.deleteTimetable",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "null"
-                }
-              }
-            }
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ITimetable.v2DeleteDto"
-              }
-            }
-          }
-        }
-      },
-      "patch": {
-        "summary": "v2TimetablesController.updateTimetable",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "null"
-                }
-              }
-            }
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ITimetable.v2UpdateDto"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v2/timetables/{timetableId}": {
-      "get": {
-        "summary": "v2TimetablesController.getTimeTable",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ITimetable.v2DetailedResponse"
-                }
-              }
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "timetableId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ]
-      },
-      "patch": {
-        "summary": "v2TimetablesController.modifyLectureToTimetable",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ILecture.v2Detail"
-                }
-              }
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "timetableId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ITimetable.v2ModifyLectureDto"
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/tracks": {
       "get": {
         "summary": "TracksController.getTracks",
@@ -2018,192 +2249,6 @@
         ]
       }
     },
-    "/api/v2/users/{userId}/wishlist": {
-      "get": {
-        "summary": "UserV2Controller.getUserWishlist",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ILecture.v2Response2"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ]
-      },
-      "patch": {
-        "summary": "UserV2Controller.AddOrRemoveLectureToWishlist",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "null"
-                }
-              }
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/IUser.v2AddOrRemoveWishlistDto"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v2/users/{userId}/lectures": {
-      "get": {
-        "summary": "UserV2Controller.getUserLectures",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/IUser.v2TakenLectures"
-                }
-              }
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ]
-      }
-    },
-    "/api/v2/users/{userId}/reviews/liked": {
-      "get": {
-        "summary": "UserV2Controller.getUserLikedReviews",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/IUser.v2LikedReviews"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ]
-      }
-    },
-    "/api/v2/users/{userId}/info": {
-      "get": {
-        "summary": "UserV2Controller.getUserInfo",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/IUser.v2UserInfo"
-                }
-              }
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ]
-      }
-    },
-    "/api/v2/users/{userId}/interested-majors": {
-      "put": {
-        "summary": "UserV2Controller.modifyInterestedInfo",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "null"
-                }
-              }
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/IUser.v2ModifyInterestedMajorDepartmentIdsDto"
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/users/{userId}/wishlist": {
       "get": {
         "summary": "WishlistController.getWishlist",
@@ -2308,6 +2353,75 @@
   },
   "components": {
     "schemas": {
+      "IAgreement.AgreementQueryDto": {
+        "properties": {
+          "modal": {},
+          "agreementStatus": {},
+          "agreementType": {}
+        },
+        "type": "object"
+      },
+      "IAgreement.AgreementModalQueryDto": {
+        "properties": {
+          "modal": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "IAgreement.Response": {
+        "type": "object",
+        "properties": {
+          "agreementId": {
+            "type": "number"
+          },
+          "agreementType": {
+            "$ref": "#/components/schemas/AgreementType"
+          },
+          "agreementStatus": {
+            "type": "boolean"
+          },
+          "modal": {
+            "type": "boolean"
+          }
+        },
+        "required": ["agreementId", "agreementType", "agreementStatus", "modal"],
+        "additionalProperties": false
+      },
+      "AgreementType": {
+        "type": "string",
+        "enum": ["INFO", "MARKETING", "NIGHT_MARKETING"]
+      },
+      "IAgreement.AgreementAllowDto": {
+        "properties": {
+          "allow": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "agreementType": {
+            "minLength": 1,
+            "type": "string",
+            "enum": ["INFO", "MARKETING", "NIGHT_MARKETING"]
+          }
+        },
+        "type": "object",
+        "required": ["allow", "agreementType"]
+      },
+      "IAgreement.AgreementToggleDto": {
+        "properties": {
+          "agreementType": {
+            "minLength": 1,
+            "type": "string",
+            "enum": ["INFO", "MARKETING", "NIGHT_MARKETING"]
+          },
+          "modal": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["agreementType", "modal"]
+      },
       "ICourse.Basic": {
         "type": "object",
         "properties": {
@@ -2389,25 +2503,6 @@
           }
         },
         "required": ["id", "name", "name_en", "code"],
-        "additionalProperties": false
-      },
-      "ICourse.v2BasicForLecture": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "code": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
-          },
-          "completedCourse": {
-            "type": "boolean"
-          }
-        },
-        "required": ["name", "code", "type", "completedCourse"],
         "additionalProperties": false
       },
       "ICourse.Detail": {
@@ -2903,6 +2998,169 @@
         },
         "type": "object"
       },
+      "IDevice.RegisterDeviceDto": {
+        "properties": {
+          "deviceToken": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "deviceType": {
+            "type": "string",
+            "enum": ["ANDROID", "IOS", "WEB"]
+          },
+          "deviceOsVersion": {},
+          "appVersion": {},
+          "isActive": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["deviceToken", "isActive"]
+      },
+      "IDevice.UnregisterDeviceDto": {
+        "properties": {
+          "deviceToken": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["deviceToken"]
+      },
+      "IDevice.DeviceActivateDto": {
+        "properties": {
+          "deviceToken": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "isActive": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["deviceToken", "isActive"]
+      },
+      "IDevice.UpdateDeviceDto": {
+        "properties": {
+          "deviceOsVersion": {},
+          "appVersion": {},
+          "deviceToken": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "isActive": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["deviceToken", "isActive"]
+      },
+      "IDevice.Response.DeviceResponseDto": {
+        "type": "object",
+        "properties": {
+          "deviceToken": {
+            "type": "string"
+          },
+          "deviceType": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "deviceOsVersion": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "appVersion": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "isActive": {
+            "oneOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": ["deviceToken"],
+        "additionalProperties": false
+      },
+      "IDevice.Response.UserDeviceResponseDto": {
+        "type": "object",
+        "properties": {
+          "deviceToken": {
+            "type": "string"
+          },
+          "deviceType": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "deviceOsVersion": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "appVersion": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "isActive": {
+            "oneOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "userId": {
+            "type": "number"
+          }
+        },
+        "required": ["deviceToken", "userId"],
+        "additionalProperties": false
+      },
       "IFeed.Basic": {
         "type": "object",
         "properties": {
@@ -3046,14 +3304,7 @@
             "type": "number"
           },
           "num_people": {
-            "oneOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ]
+            "type": "number"
           },
           "is_english": {
             "type": "boolean"
@@ -3290,38 +3541,6 @@
         ],
         "additionalProperties": false
       },
-      "ILecture.v2Classtime": {
-        "type": "object",
-        "properties": {
-          "day": {
-            "type": "number"
-          },
-          "begin": {
-            "type": "number"
-          },
-          "end": {
-            "type": "number"
-          },
-          "buildingCode": {
-            "type": "string"
-          },
-          "placeName": {
-            "type": "string"
-          },
-          "placeNameShort": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "required": ["day", "begin", "end", "buildingCode", "placeName", "placeNameShort"],
-        "additionalProperties": false
-      },
       "ILecture.ExamTime": {
         "type": "object",
         "properties": {
@@ -3342,25 +3561,6 @@
           }
         },
         "required": ["day", "str", "str_en", "begin", "end"],
-        "additionalProperties": false
-      },
-      "ILecture.v2ExamTime": {
-        "type": "object",
-        "properties": {
-          "day": {
-            "type": "number"
-          },
-          "str": {
-            "type": "string"
-          },
-          "begin": {
-            "type": "number"
-          },
-          "end": {
-            "type": "number"
-          }
-        },
-        "required": ["day", "str", "begin", "end"],
         "additionalProperties": false
       },
       "ILecture.Raw": {
@@ -3700,14 +3900,7 @@
             "type": "number"
           },
           "num_people": {
-            "oneOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ]
+            "type": "number"
           },
           "is_english": {
             "type": "boolean"
@@ -3805,267 +3998,6 @@
         ],
         "additionalProperties": false
       },
-      "ILecture.v2Detail": {
-        "type": "object",
-        "properties": {
-          "lectureId": {
-            "type": "number"
-          },
-          "courseId": {
-            "type": "number"
-          },
-          "classNo": {
-            "type": "string"
-          },
-          "lectureName": {
-            "type": "string"
-          },
-          "code": {
-            "type": "string"
-          },
-          "departmentId": {
-            "type": "number"
-          },
-          "type": {
-            "type": "string"
-          },
-          "limitPeople": {
-            "type": "number"
-          },
-          "numPeople": {
-            "oneOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "lectureDuration": {
-            "type": "number"
-          },
-          "credit": {
-            "type": "number"
-          },
-          "au": {
-            "type": "number"
-          },
-          "scoreGrade": {
-            "type": "number"
-          },
-          "scoreLoad": {
-            "type": "number"
-          },
-          "scoreSpeech": {
-            "type": "number"
-          },
-          "isEnglish": {
-            "type": "boolean"
-          },
-          "professors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/IProfessor.v2Basic"
-            }
-          },
-          "classes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ILecture.v2Classtime"
-            }
-          },
-          "examTimes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ILecture.v2ExamTime"
-            }
-          }
-        },
-        "required": [
-          "lectureId",
-          "courseId",
-          "classNo",
-          "lectureName",
-          "code",
-          "departmentId",
-          "type",
-          "limitPeople",
-          "numPeople",
-          "lectureDuration",
-          "credit",
-          "au",
-          "scoreGrade",
-          "scoreLoad",
-          "scoreSpeech",
-          "isEnglish",
-          "professors",
-          "classes",
-          "examTimes"
-        ],
-        "additionalProperties": false
-      },
-      "IProfessor.v2Basic": {
-        "type": "object",
-        "properties": {
-          "professorName": {
-            "type": "string"
-          },
-          "professerId": {
-            "type": "number"
-          }
-        },
-        "required": ["professorName", "professerId"],
-        "additionalProperties": false
-      },
-      "ILecture.v2DetailwithWishlited": {
-        "type": "object",
-        "properties": {
-          "lectureId": {
-            "type": "number"
-          },
-          "courseId": {
-            "type": "number"
-          },
-          "classNo": {
-            "type": "string"
-          },
-          "lectureName": {
-            "type": "string"
-          },
-          "code": {
-            "type": "string"
-          },
-          "departmentId": {
-            "type": "number"
-          },
-          "type": {
-            "type": "string"
-          },
-          "limitPeople": {
-            "type": "number"
-          },
-          "numPeople": {
-            "oneOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "lectureDuration": {
-            "type": "number"
-          },
-          "credit": {
-            "type": "number"
-          },
-          "au": {
-            "type": "number"
-          },
-          "scoreGrade": {
-            "type": "number"
-          },
-          "scoreLoad": {
-            "type": "number"
-          },
-          "scoreSpeech": {
-            "type": "number"
-          },
-          "isEnglish": {
-            "type": "boolean"
-          },
-          "isWishlited": {
-            "type": "boolean"
-          },
-          "professors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/IProfessor.v2Basic"
-            }
-          },
-          "classes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ILecture.v2Classtime"
-            }
-          },
-          "examTimes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ILecture.v2ExamTime"
-            }
-          }
-        },
-        "required": [
-          "lectureId",
-          "courseId",
-          "classNo",
-          "lectureName",
-          "code",
-          "departmentId",
-          "type",
-          "limitPeople",
-          "numPeople",
-          "lectureDuration",
-          "credit",
-          "au",
-          "scoreGrade",
-          "scoreLoad",
-          "scoreSpeech",
-          "isEnglish",
-          "isWishlited",
-          "professors",
-          "classes",
-          "examTimes"
-        ],
-        "additionalProperties": false
-      },
-      "ILecture.v2Response": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "code": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
-          },
-          "completedCourse": {
-            "type": "boolean"
-          },
-          "lectures": {
-            "$ref": "#/components/schemas/ILecture.v2DetailwithWishlited"
-          }
-        },
-        "required": ["code", "completedCourse", "lectures", "name", "type"],
-        "additionalProperties": false
-      },
-      "ILecture.v2Response2": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "code": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
-          },
-          "completedCourse": {
-            "type": "boolean"
-          },
-          "lectures": {
-            "$ref": "#/components/schemas/ILecture.v2Detail"
-          }
-        },
-        "required": ["code", "completedCourse", "lectures", "name", "type"],
-        "additionalProperties": false
-      },
       "ILecture.UserTaken": {
         "type": "object",
         "properties": {
@@ -4118,14 +4050,7 @@
             "type": "number"
           },
           "num_people": {
-            "oneOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ]
+            "type": "number"
           },
           "is_english": {
             "type": "boolean"
@@ -4269,41 +4194,6 @@
         },
         "type": "object"
       },
-      "ILecture.v2QueryDto": {
-        "properties": {
-          "keyword": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
-          },
-          "department": {
-            "type": "integer"
-          },
-          "level": {
-            "type": "integer"
-          },
-          "limit": {
-            "type": "integer"
-          },
-          "year": {
-            "type": "number"
-          },
-          "semester": {
-            "type": "number"
-          },
-          "day": {
-            "type": "number"
-          },
-          "begin": {
-            "type": "number"
-          },
-          "end": {
-            "type": "number"
-          }
-        },
-        "type": "object"
-      },
       "ILecture.AutocompleteQueryDto": {
         "properties": {
           "year": {
@@ -4339,6 +4229,82 @@
         },
         "required": ["title", "content", "start_time", "end_time"],
         "additionalProperties": false
+      },
+      "INotification.ReadDto": {
+        "properties": {
+          "requestUUID": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["requestUUID"]
+      },
+      "INotification.ActiveDto": {
+        "properties": {
+          "active": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "notificationType": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["active", "notificationType"]
+      },
+      "INotification.CreateDto": {
+        "properties": {
+          "name": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "description": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "agreementType": {
+            "minLength": 1,
+            "type": "string",
+            "enum": ["INFO", "MARKETING", "NIGHT_MARKETING"]
+          }
+        },
+        "type": "object",
+        "required": ["name", "description", "agreementType"]
+      },
+      "INotification.UpdateDto": {
+        "properties": {
+          "id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "description": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "agreementType": {
+            "minLength": 1,
+            "type": "string",
+            "enum": ["INFO", "MARKETING", "NIGHT_MARKETING"]
+          }
+        },
+        "type": "object",
+        "required": ["id", "name", "description", "agreementType"]
+      },
+      "INotification.DeleteDto": {
+        "properties": {
+          "id": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["id"]
       },
       "IPlanner.ITrack.Additional": {
         "type": "object",
@@ -4887,88 +4853,6 @@
         "type": "object",
         "required": ["score"]
       },
-      "IReview.v2Basic": {
-        "type": "object",
-        "properties": {
-          "reviewId": {
-            "type": "number"
-          },
-          "professorName": {
-            "type": "string"
-          },
-          "year": {
-            "type": "number"
-          },
-          "semester": {
-            "type": "number"
-          },
-          "content": {
-            "type": "string"
-          },
-          "like": {
-            "type": "number"
-          },
-          "isDeleted": {
-            "type": "boolean"
-          },
-          "grade": {
-            "type": "number"
-          },
-          "load": {
-            "type": "number"
-          },
-          "speech": {
-            "type": "number"
-          },
-          "userspecificIsLiked": {
-            "oneOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "required": [
-          "reviewId",
-          "professorName",
-          "year",
-          "semester",
-          "content",
-          "like",
-          "isDeleted",
-          "grade",
-          "load",
-          "speech",
-          "userspecificIsLiked"
-        ],
-        "additionalProperties": false
-      },
-      "IReview.v2Response": {
-        "type": "object",
-        "properties": {
-          "reviews": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/IReview.v2Basic"
-            }
-          },
-          "myReviewId": {
-            "oneOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "required": ["reviews", "myReviewId"],
-        "additionalProperties": false
-      },
       "IReview.WithLiked": {
         "type": "object",
         "properties": {
@@ -5141,27 +5025,6 @@
           },
           "limit": {
             "type": "number"
-          }
-        },
-        "type": "object"
-      },
-      "IReview.v2QueryDto": {
-        "properties": {
-          "courseId": {
-            "type": "integer"
-          },
-          "professorId": {
-            "type": "integer"
-          },
-          "mode": {
-            "type": "string",
-            "enum": ["default", "recent", "hall-of-fame"]
-          },
-          "year": {
-            "type": "integer"
-          },
-          "semester": {
-            "type": "integer"
           }
         },
         "type": "object"
@@ -6231,101 +6094,6 @@
         "required": ["id", "arrange_order"],
         "additionalProperties": false
       },
-      "ITimetable.v2Response": {
-        "type": "object",
-        "properties": {
-          "timetableId": {
-            "type": "number"
-          },
-          "year": {
-            "oneOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "semester": {
-            "oneOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "timetableOrder": {
-            "type": "number"
-          },
-          "userId": {
-            "type": "number"
-          }
-        },
-        "required": ["timetableId", "year", "semester", "timetableOrder", "userId"],
-        "additionalProperties": false
-      },
-      "ITimetable.v2DetailedResponse": {
-        "type": "object",
-        "properties": {
-          "timetableId": {
-            "type": "number"
-          },
-          "timetableName": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "userId": {
-            "type": "number"
-          },
-          "year": {
-            "oneOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "semester": {
-            "oneOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "timetableOrder": {
-            "type": "number"
-          },
-          "lectures": {
-            "anyOf": [
-              {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/ILecture.v2Detail"
-                }
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "required": ["timetableId", "timetableName", "userId", "year", "semester", "timetableOrder"],
-        "additionalProperties": false
-      },
       "ITimetable.QueryDto": {
         "properties": {
           "year": {
@@ -6367,63 +6135,6 @@
         "type": "object",
         "required": ["year", "semester", "lectures"]
       },
-      "ITimetable.v2CreateDto": {
-        "properties": {
-          "userId": {
-            "type": "number"
-          },
-          "year": {
-            "type": "number"
-          },
-          "semester": {
-            "type": "number"
-          },
-          "lectures": {
-            "items": {
-              "type": "number"
-            },
-            "type": "array"
-          }
-        },
-        "type": "object",
-        "required": ["userId", "year", "semester", "lectures"]
-      },
-      "ITimetable.v2DeleteDto": {
-        "properties": {
-          "timeTableId": {
-            "type": "number"
-          }
-        },
-        "type": "object",
-        "required": ["timeTableId"]
-      },
-      "ITimetable.v2UpdateDto": {
-        "properties": {
-          "timeTableId": {
-            "type": "number"
-          },
-          "timeTableName": {
-            "type": "string"
-          },
-          "timeTableOrder": {
-            "type": "number"
-          }
-        },
-        "type": "object",
-        "required": ["timeTableId"]
-      },
-      "ITimetable.v2ModifyLectureDto": {
-        "properties": {
-          "lectureId": {
-            "type": "number"
-          },
-          "mode": {
-            "type": "string"
-          }
-        },
-        "type": "object",
-        "required": ["lectureId", "mode"]
-      },
       "ITimetable.AddLectureDto": {
         "properties": {
           "lecture": {
@@ -6453,20 +6164,6 @@
         },
         "type": "object"
       },
-      "IUser.v2AddOrRemoveWishlistDto": {
-        "properties": {
-          "lectureId": {
-            "type": "number"
-          },
-          "mode": {
-            "type": "string",
-            "enum": ["delete", "add"]
-          }
-        },
-        "type": "object",
-        "required": ["lectureId", "mode"]
-      },
-      "IUser.v2ModifyInterestedMajorDepartmentIdsDto": {},
       "IUser.ReviewLikedQueryDto": {
         "properties": {
           "order": {
@@ -6664,175 +6361,27 @@
         ],
         "additionalProperties": false
       },
-      "IUser.v2TakenLectures": {
-        "type": "object",
+      "IUser.TokenDto": {
         "properties": {
-          "totalLectures": {
-            "type": "number"
-          },
-          "reviewdLectures": {
-            "type": "number"
-          },
-          "totalLikes": {
-            "type": "number"
-          },
-          "info": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/IUser.v2TakenLecturesinfo"
-            }
+          "token": {
+            "minLength": 1,
+            "type": "string"
           }
         },
-        "required": ["totalLectures", "reviewdLectures", "totalLikes", "info"],
-        "additionalProperties": false
+        "type": "object",
+        "required": ["token"]
       },
-      "IUser.v2TakenLecturesinfo": {
+      "IUser.TokenResponse": {
         "type": "object",
         "properties": {
-          "year": {
-            "type": "number"
+          "accessToken": {
+            "type": "string"
           },
-          "semester": {
-            "type": "number"
-          },
-          "lectures": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/IUser.v2TakenLecturesDetail"
-            }
+          "refreshToken": {
+            "type": "string"
           }
         },
-        "required": ["year", "semester", "lectures"],
-        "additionalProperties": false
-      },
-      "IUser.v2TakenLecturesDetail": {
-        "type": "object",
-        "properties": {
-          "lectureId": {
-            "type": "number"
-          },
-          "code": {
-            "type": "string"
-          },
-          "lectureName": {
-            "type": "string"
-          },
-          "isReviewed": {
-            "type": "boolean"
-          },
-          "courseId": {
-            "type": "number"
-          },
-          "professorId": {
-            "type": "number"
-          }
-        },
-        "required": ["lectureId", "code", "lectureName", "isReviewed", "courseId", "professorId"],
-        "additionalProperties": false
-      },
-      "IUser.v2LikedReviews": {
-        "type": "object",
-        "properties": {
-          "courseId": {
-            "type": "number"
-          },
-          "reviewId": {
-            "type": "number"
-          },
-          "lectureName": {
-            "type": "string"
-          },
-          "professorName": {
-            "type": "string"
-          },
-          "year": {
-            "type": "number"
-          },
-          "semester": {
-            "type": "number"
-          },
-          "content": {
-            "type": "string"
-          },
-          "like": {
-            "type": "number"
-          },
-          "isDeleted": {
-            "type": "boolean"
-          },
-          "grade": {
-            "type": "number"
-          },
-          "load": {
-            "type": "number"
-          },
-          "speech": {
-            "type": "number"
-          },
-          "userspecificIsLiked": {
-            "oneOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "required": [
-          "courseId",
-          "reviewId",
-          "lectureName",
-          "professorName",
-          "year",
-          "semester",
-          "content",
-          "like",
-          "isDeleted",
-          "grade",
-          "load",
-          "speech",
-          "userspecificIsLiked"
-        ],
-        "additionalProperties": false
-      },
-      "IUser.v2UserInfo": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "mail": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "studentNumber": {
-            "type": "number"
-          },
-          "courses": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "majorDepartment": {
-            "type": "string"
-          },
-          "interestedMajorDepartments": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": ["name", "mail", "studentNumber", "courses", "interestedMajorDepartments"],
+        "required": ["accessToken", "refreshToken"],
         "additionalProperties": false
       },
       "IWishlist.WithLectures": {

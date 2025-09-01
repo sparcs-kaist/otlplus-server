@@ -12,8 +12,6 @@ import { ESSOUser } from '@otl/prisma-client/entities'
 import { UserService } from '../user/user.service'
 import { AuthService } from './auth.service'
 import { Client } from './utils/sparcs-sso'
-import TokenResponse = IAuth.TokenResponse
-import TokenDto = IAuth.TokenDto
 
 @Controller('session')
 export class AuthController {
@@ -37,7 +35,13 @@ export class AuthController {
     @Res() res: IAuth.Response,
   ): void {
     if (req.user) {
-      return res.redirect(next ?? process.env.WEB_URL)
+      const accessToken = this.authService.extractTokenFromHeader(req, 'accessToken')
+        ?? this.authService.extractTokenFromCookie(req, 'accessToken')
+      const refreshToken = this.authService.extractTokenFromHeader(req, 'refreshToken')
+        ?? this.authService.extractTokenFromCookie(req, 'refreshToken')
+      return res.redirect(
+        `${process.env.WEB_URL}/login/success#accessToken=${accessToken}&refreshToken=${refreshToken}`,
+      )
     }
     // req.session['next'] = next ?? '/';
     res.cookie('next', next ?? '/', { httpOnly: true, secure: true, sameSite: 'strict' })
@@ -72,19 +76,23 @@ export class AuthController {
     @Todo
     call import_student_lectures(studentId)
      */
-    const next_url = req.cookies.next ?? `${process.env.WEB_URL}/login/success#accessToken=${accessToken}&refreshToken=${refreshToken}`
+    const next_url = `${process.env.WEB_URL}/login/success#accessToken=${accessToken}&refreshToken=${refreshToken}`
     response.redirect(next_url)
   }
 
   @Public()
   @Post('refresh')
-  async refreshToken(@Body() body: TokenDto, @Res({ passthrough: true }) res: IAuth.Response): Promise<TokenResponse> {
+  async refreshToken(
+    @Body() body: IUser.TokenDto,
+    @Res({ passthrough: true }) res: IAuth.Response,
+  ): Promise<IUser.TokenResponse> {
     const { token } = body
     const {
       accessToken, accessTokenOptions, refreshToken, refreshTokenOptions,
     } = await this.authService.tokenRefresh(token)
     res.cookie('accessToken', accessToken, accessTokenOptions)
     res.cookie('refreshToken', refreshToken, refreshTokenOptions)
+    res.status(200)
     return {
       accessToken,
       refreshToken,

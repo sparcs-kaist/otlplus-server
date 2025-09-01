@@ -8,7 +8,9 @@ export namespace EFeed {
   export const FamousHumanityReviewDetails = Prisma.validator<Prisma.main_famoushumanityreviewdailyfeedDefaultArgs>()({
     include: {
       main_famoushumanityreviewdailyfeed_reviews: {
-        include: { review_review: { include: EReview.Details.include } },
+        include: {
+          review_review: EReview.Extended,
+        },
       },
     },
   })
@@ -19,7 +21,9 @@ export namespace EFeed {
     include: {
       subject_department: true,
       main_famousmajorreviewdailyfeed_reviews: {
-        include: { review_review: { include: EReview.Details.include } },
+        include: {
+          review_review: EReview.Extended,
+        },
       },
     },
   })
@@ -27,7 +31,7 @@ export namespace EFeed {
   export const ReviewWriteDetails = Prisma.validator<Prisma.main_reviewwritedailyuserfeedDefaultArgs>()({
     include: {
       subject_lecture: {
-        include: ELecture.Details.include,
+        include: ELecture.Extended.include,
       },
     },
   })
@@ -35,7 +39,7 @@ export namespace EFeed {
   export const RelatedCourseDetails = Prisma.validator<Prisma.main_relatedcoursedailyuserfeedDefaultArgs>()({
     include: {
       subject_course: {
-        include: ECourse.Details.include,
+        include: ECourse.Extended.include,
       },
     },
   })
@@ -47,7 +51,7 @@ export namespace EFeed {
   >
 
   export type RankedReviewDetails = Prisma.main_rankedreviewdailyfeedGetPayload<typeof RankedReviewDetails> & {
-    reviews: EReview.Details[]
+    reviews: EReview.Extended[]
   }
 
   export type FamousMajorReviewDetails = Prisma.main_famousmajorreviewdailyfeedGetPayload<

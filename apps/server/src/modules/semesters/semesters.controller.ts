@@ -15,4 +15,11 @@ export class SemestersController {
     const semesters = await this.semestersService.getSemesters(query)
     return semesters.map((semester) => toJsonSemester(semester))
   }
+
+  @Get('/current')
+  @Public()
+  async getCurrentSemester(): Promise<ISemester.Response> {
+    const semester = await this.semestersService.getCurrentSemester()
+    return toJsonSemester(semester)
+  }
 }

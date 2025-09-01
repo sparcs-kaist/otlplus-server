@@ -66,6 +66,7 @@ export class TimetablesController {
     @GetUser() user: session_userprofile,
   ): Promise<ITimetable.Response> {
     const timeTable = await this.timetablesService.createTimetable(timeTableBody, user)
+    // @Todo : Message(LECTURE_NUM_PEOPLE) 보내기
     return toJsonTimetable(timeTable)
   }
 
@@ -75,6 +76,7 @@ export class TimetablesController {
     @Body() body: ITimetable.AddLectureDto,
   ): Promise<ITimetable.Response> {
     const timeTable = await this.timetablesService.addLectureToTimetable(timetableId, body)
+    // @Todo : Message(LECTURE_NUM_PEOPLE) 보내기
     return toJsonTimetable(timeTable)
   }
 
@@ -84,6 +86,7 @@ export class TimetablesController {
     @Body() body: ITimetable.AddLectureDto,
   ): Promise<ITimetable.Response> {
     const timeTable = await this.timetablesService.removeLectureFromTimetable(timetableId, body)
+    // @Todo : Message(LECTURE_NUM_PEOPLE) 보내기
     return toJsonTimetable(timeTable)
   }
 

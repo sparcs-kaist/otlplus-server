@@ -11,7 +11,7 @@ export namespace EPlanners {
 
       export const Extended = {
         include: {
-          subject_course: ECourse.Details,
+          subject_course: ECourse.Extended,
         },
       } satisfies Prisma.planner_futureplanneritemDefaultArgs
       export type Extended = Prisma.planner_futureplanneritemGetPayload<typeof Extended>
@@ -42,7 +42,7 @@ export namespace EPlanners {
           subject_lecture: {
             include: {
               ...ELecture.Details.include,
-              course: ECourse.Details,
+              course: ECourse.Extended,
             },
           },
         },

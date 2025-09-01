@@ -51,9 +51,9 @@ export class SyncSchedule {
       await this.syncExamTime(year, semester)
       await this.syncClassTime(year, semester)
       await this.syncTakenLecture(year, semester)
-      await this.syncDegree()
-      await this.syncMajor()
     }
+    await this.syncDegree()
+    await this.syncMajor()
   }
 
   @Cron(CronExpression.EVERY_HOUR, {
@@ -67,7 +67,7 @@ export class SyncSchedule {
       const lectures = await this.scholarApiClient.getLectureType(y, s)
       const charges = await this.scholarApiClient.getChargeType(y, s)
       const syncResultDetails: SyncResultDetails = await this.syncService.syncScholarDB({
-        year: s,
+        year: y,
         semester: s,
         lectures,
         charges,
@@ -173,10 +173,19 @@ export class SyncSchedule {
   @Cron(CronExpression.EVERY_WEEKEND, {
     name: 'syncBestReviews',
     timeZone: 'Asia/Seoul',
-    disabled: true,
+    disabled: false,
   })
   async updateReviews() {
     await this.syncService.updateBestReviews()
+  }
+
+  @Cron(CronExpression.EVERY_WEEKEND, {
+    name: 'syncRepresentativeLectures',
+    timeZone: 'Asia/Seoul',
+    disabled: false,
+  })
+  async updateRepresentativeLectures() {
+    await this.syncService.updateRepresentativeLectures()
   }
 
   private async determineTargetSemesters(year?: number, semester?: number, interval?: number) {
@@ -190,6 +199,6 @@ export class SyncSchedule {
     if (interval) {
       return (await this.syncService.getSemesters(interval)).map((s) => [s.year, s.semester])
     }
-    return (await this.syncService.getSemesters(3)).map((s) => [s.year, s.semester])
+    return (await this.syncService.getSemesters(1)).map((s) => [s.year, s.semester])
   }
 }

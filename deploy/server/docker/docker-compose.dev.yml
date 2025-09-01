@@ -4,11 +4,13 @@ services:
   redis-cache:
     image: redis:7.2-alpine
     container_name: redis-otl
+    ports:
+      - '6379:6379'
     expose:
       - '6379'
     volumes:
-      - ./redis.conf:/usr/local/etc/redis/redis.conf
-      - ./redis-data:/data
+      - ../redis/redis.conf:/usr/local/etc/redis/redis.conf
+      - ../redis/redis-data:/data
     env_file:
       - ../../../env/.env.dev
     restart: always
@@ -38,10 +40,11 @@ services:
     tty: true
     ports:
       - '8000:8000'
+      - '9209:9209'
     expose:
       - '8000'
     volumes:
       - '/etc/timezone:/etc/timezone:ro'
-      - './apps/server/logs:/var/www/otlplus-server/apps/logs'
+      - '../../../apps/server/logs:/var/www/otlplus-server/logs'
     working_dir: /var/www/otlplus-server
     command: pm2-runtime start ecosystem.config.js --only @otl/server-nest  --node-args="max-old-space-size=40920"

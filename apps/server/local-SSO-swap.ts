@@ -1,3 +1,4 @@
+import { PrismaMariaDb } from '@prisma/adapter-mariadb'
 import { PrismaClient, session_userprofile } from '@prisma/client'
 import { prompt } from 'enquirer'
 import * as readline from 'readline'
@@ -7,8 +8,8 @@ import settings from './src/settings'
 // readline.Interface 인스턴스 생성
 class PrismaClientMock extends PrismaClient {
   constructor() {
-    const ormOption = settings().ormconfig()
-    super(ormOption)
+    const adapter = new PrismaMariaDb(settings().ormconfig())
+    super({ adapter })
   }
 }
 

@@ -9,7 +9,7 @@ import {
 import { Transactional } from '@nestjs-cls/transactional'
 import { IPlanner } from '@otl/server-nest/common/interfaces'
 import { toJsonArbitraryItem, toJsonFutureItem } from '@otl/server-nest/common/serializer/planner.item.serializer'
-import { toJsonPlanner } from '@otl/server-nest/common/serializer/planner.serializer'
+import { toJsonPlanner, toJsonPlannerDetails } from '@otl/server-nest/common/serializer/planner.serializer'
 import { session_userprofile } from '@prisma/client'
 
 import { EPlanners } from '@otl/prisma-client'
@@ -35,7 +35,22 @@ export class PlannersService {
 
   public async getPlannerByUser(query: IPlanner.QueryDto, user: session_userprofile) {
     const queryResult = await this.plannerRepository.getPlannerByUser(query, user)
-    return queryResult.map(toJsonPlanner)
+    const result = await Promise.all(
+      queryResult.map(async (planner) => {
+        const futureItems = planner.planner_futureplanneritem
+        const courses = futureItems.map((item) => item.subject_course)
+        const courseRepresentativeLectureIdMap = new Map(
+          courses.map((c) => [c.representative_lecture_id, c.id] as const),
+        )
+        const representativeLectureIds = courses.map((c) => c.representative_lecture_id)
+        const lectures = await this.lectureRepository.getLecturesByIds(representativeLectureIds)
+        const futureItemsRepresentativeLectureMap = new Map(
+          lectures.map((l) => [courseRepresentativeLectureIdMap.get(l.id), l]),
+        )
+        return toJsonPlannerDetails(planner, futureItemsRepresentativeLectureMap)
+      }),
+    )
+    return result
   }
 
   async getRelatedPlanner(user: session_userprofile) {
@@ -70,24 +85,37 @@ export class PlannersService {
       )
     }
 
-    const takenTargetItems = await this.plannerRepository.getTakenPlannerItemByIds(body.taken_items_to_copy)
-    await this.plannerRepository.createTakenPlannerItem(
-      planner.id,
-      takenTargetItems?.map((item) => ({ lectureId: item.lecture_id, isExcluded: item.is_excluded })) || [],
-    )
-
-    const futureTargetItems = await this.plannerRepository.getFuturePlannerItemById(body.future_items_to_copy)
-    await this.plannerRepository.createFuturePlannerItem(planner.id, futureTargetItems || [])
-
-    const targetItems = await this.plannerRepository.getArbitraryPlannerItemById(body.arbitrary_items_to_copy)
-    await this.plannerRepository.createArbitraryPlannerItem(planner.id, targetItems || [])
+    await Promise.all([
+      (async () => {
+        const takenTargetItems = await this.plannerRepository.getTakenPlannerItemByIds(body.taken_items_to_copy)
+        await this.plannerRepository.createTakenPlannerItem(
+          planner.id,
+          takenTargetItems?.map((item) => ({ lectureId: item.lecture_id, isExcluded: item.is_excluded })) || [],
+        )
+      })(),
+      (async () => {
+        const futureTargetItems = await this.plannerRepository.getFuturePlannerItemById(body.future_items_to_copy)
+        await this.plannerRepository.createFuturePlannerItem(planner.id, futureTargetItems || [])
+      })(),
+      (async () => {
+        const targetItems = await this.plannerRepository.getArbitraryPlannerItemById(body.arbitrary_items_to_copy)
+        await this.plannerRepository.createArbitraryPlannerItem(planner.id, targetItems || [])
+      })(),
+    ])
 
     const newPlanner = await this.plannerRepository.getPlannerById(user, planner.id)
     if (!newPlanner) {
       throw new NotFoundException()
     }
-
-    return toJsonPlanner(newPlanner)
+    const futureItems = newPlanner.planner_futureplanneritem
+    const courses = futureItems.map((item) => item.subject_course)
+    const courseRepresentativeLectureIdMap = new Map(courses.map((c) => [c.representative_lecture_id, c.id] as const))
+    const representativeLectureIds = courses.map((c) => c.representative_lecture_id)
+    const lectures = await this.lectureRepository.getLecturesByIds(representativeLectureIds)
+    const futureItemsRepresentativeLectureMap = new Map(
+      lectures.map((l) => [courseRepresentativeLectureIdMap.get(l.id), l]),
+    )
+    return toJsonPlannerDetails(newPlanner, futureItemsRepresentativeLectureMap)
   }
 
   @Transactional()
@@ -153,8 +181,15 @@ export class PlannersService {
     if (!planner) {
       throw new NotFoundException()
     }
-
-    return toJsonPlanner(planner)
+    const futureItems = planner.planner_futureplanneritem
+    const courses = futureItems.map((item) => item.subject_course)
+    const courseRepresentativeLectureIdMap = new Map(courses.map((c) => [c.representative_lecture_id, c.id] as const))
+    const representativeLectureIds = courses.map((c) => c.representative_lecture_id)
+    const lectures = await this.lectureRepository.getLecturesByIds(representativeLectureIds)
+    const futureItemsRepresentativeLectureMap = new Map(
+      lectures.map((l) => [courseRepresentativeLectureIdMap.get(l.id), l]),
+    )
+    return toJsonPlannerDetails(planner, futureItemsRepresentativeLectureMap)
   }
 
   @Transactional()
@@ -179,12 +214,14 @@ export class PlannersService {
       semester,
       courseId,
     )
-    return toJsonFutureItem(item)
+    const representativeLectureId = item.subject_course.representative_lecture_id
+    const lectures = await this.lectureRepository.getLecturesByIds([representativeLectureId])
+    return toJsonFutureItem(item, lectures[0])
   }
 
   @Transactional()
-  public async reorderPlanner(plannerId: number, order: number, user: session_userprofile): Promise<IPlanner.Detail> {
-    const planner = await this.plannerRepository.getPlannerById(user, plannerId)
+  public async reorderPlanner(plannerId: number, order: number, user: session_userprofile): Promise<IPlanner.Response> {
+    const planner = await this.plannerRepository.getBasicPlannerById(plannerId)
 
     if (!planner) {
       throw new NotFoundException()
