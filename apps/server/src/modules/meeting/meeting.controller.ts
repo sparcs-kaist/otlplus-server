@@ -1,6 +1,4 @@
-import {
-  BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Put,
-} from '@nestjs/common'
+import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Put } from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator'
 import { IMeeting } from '@otl/server-nest/common/interfaces'
@@ -78,7 +76,21 @@ export class MeetingController {
   }
 
   @Get('/groups')
-  async getMeetingGroupSummaries(@GetUser() user: session_userprofile) {
+  async getMeetingGroupSummaries(@GetUser() user: session_userprofile): Promise<IMeeting.GroupSummary[]> {
     return this.meetingService.getMeetingGroupSummaries(user)
+  }
+
+  @Public()
+  @Get('/groups/:groupId')
+  async getMeetingGroup(
+    @Param('groupId') groupId: string,
+    @GetUser() user: session_userprofile,
+    @Body() body: IMeeting.UserStudentIdDto,
+  ): Promise<IMeeting.GroupStatus> {
+    const userInfo = user ?? body.user?.studentNumber
+    if (!userInfo) {
+      throw new BadRequestException('User information is required')
+    }
+    return this.meetingService.getMeetingGroup(Number(groupId), userInfo)
   }
 }

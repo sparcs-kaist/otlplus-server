@@ -191,13 +191,17 @@ export class MeetingRepository {
     })
   }
 
-  async getMeetingGroup(groupId: number) {
-    return this.prisma.meeting_group.findUnique({
+  async getMeetingGroup(groupId: number): Promise<EMeeting.Group> {
+    const group = await this.prisma.meeting_group.findUnique({
       where: {
         id: groupId,
       },
       include: EMeeting.Group.include,
     })
+    if (!group) {
+      throw new NotFoundException('Group not found')
+    }
+    return group
   }
 
   async deleteMeetingGroup(groupId: number) {

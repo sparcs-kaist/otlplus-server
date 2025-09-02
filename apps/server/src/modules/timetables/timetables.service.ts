@@ -1,16 +1,20 @@
-import {
-  BadRequestException, HttpException, HttpStatus, Injectable,
-} from '@nestjs/common'
 import { Transactional } from '@nestjs-cls/transactional'
+import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { ITimetable } from '@otl/server-nest/common/interfaces'
 import { session_userprofile } from '@prisma/client'
 
 import {
-  LectureRepository, PrismaService, SemesterRepository, TimetableRepository,
+  LectureRepository,
+  MeetingRepository,
+  PersonalsRepository,
+  PrismaService,
+  SemesterRepository,
+  TimetableRepository,
 } from '@otl/prisma-client'
 import { orderFilter } from '@otl/prisma-client/common/util'
 import { ELecture } from '@otl/prisma-client/entities/ELecture'
 import { ETimetable } from '@otl/prisma-client/entities/ETimetable'
+import { toJsonLectureBasic } from '@otl/server-nest/common/serializer/lecture.serializer'
 
 @Injectable()
 export class TimetablesService {
@@ -19,12 +23,12 @@ export class TimetablesService {
     private readonly timetableRepository: TimetableRepository,
     private readonly lectureRepository: LectureRepository,
     private readonly semesterRepository: SemesterRepository,
+    private readonly personalRepository: PersonalsRepository,
+    private readonly meetingRepository: MeetingRepository,
   ) {}
 
   async getTimetables(query: ITimetable.QueryDto, user: session_userprofile) {
-    const {
-      year, semester, order, offset, limit,
-    } = query
+    const { year, semester, order, offset, limit } = query
 
     const orderBy = orderFilter(order)
     const paginationAndSorting = {
@@ -50,7 +54,7 @@ export class TimetablesService {
   async createTimetable(timeTableBody: ITimetable.CreateDto, user: session_userprofile) {
     const { year, semester } = timeTableBody
     if (!(await this.validateYearAndSemester(year, semester))) {
-      throw new BadRequestException('Wrong fields \'year\' and \'semester\' in request data')
+      throw new BadRequestException("Wrong fields 'year' and 'semester' in request data")
     }
 
     let arrangeOrder = 0
@@ -82,10 +86,10 @@ export class TimetablesService {
     const lecture = await this.lectureRepository.getLectureBasicById(lectureId)
     const timetable = await this.timetableRepository.getTimeTableBasicById(timeTableId)
     if (!lecture) {
-      throw new BadRequestException('Wrong field \\\'lecture\\\' in request data')
+      throw new BadRequestException("Wrong field \\'lecture\\' in request data")
     }
     if (!(lecture.year === timetable.year && lecture.semester === timetable.semester)) {
-      throw new BadRequestException('Wrong field \\\'lecture\\\' in request data')
+      throw new BadRequestException("Wrong field \\'lecture\\' in request data")
     }
     await this.timetableRepository.addLectureToTimetable(timeTableId, lectureId)
     return await this.timetableRepository.getTimeTableById(timeTableId)
@@ -97,10 +101,10 @@ export class TimetablesService {
     const lecture = await this.lectureRepository.getLectureBasicById(lectureId)
     const timetable = await this.timetableRepository.getTimeTableBasicById(timeTableId)
     if (!lecture) {
-      throw new BadRequestException('Wrong field \\\'lecture\\\' in request data')
+      throw new BadRequestException("Wrong field \\'lecture\\' in request data")
     }
     if (!(lecture.year === timetable.year && lecture.semester === timetable.semester)) {
-      throw new BadRequestException('Wrong field \\\'lecture\\\' in request data')
+      throw new BadRequestException("Wrong field \\'lecture\\' in request data")
     }
     await this.timetableRepository.removeLectureFromTimetable(timeTableId, lectureId)
     return await this.timetableRepository.getTimeTableById(timeTableId)
@@ -118,7 +122,9 @@ export class TimetablesService {
         arrange_order: timeTable.arrange_order - 1,
       }))
     return await Promise.all(
-      timeTablesToBeUpdated.map(async (updateElem) => this.timetableRepository.updateOrder(updateElem.id, updateElem.arrange_order)),
+      timeTablesToBeUpdated.map(async (updateElem) =>
+        this.timetableRepository.updateOrder(updateElem.id, updateElem.arrange_order),
+      ),
     )
   }
 
@@ -142,21 +148,22 @@ export class TimetablesService {
       throw new BadRequestException('Wrong field arrange_order in request')
     }
 
-    let timeTablesToBeUpdated: { id: number, arrange_order: number }[] = []
+    let timeTablesToBeUpdated: { id: number; arrange_order: number }[] = []
     if (targetArrangeOrder < targetTimetable.arrange_order) {
       timeTablesToBeUpdated = relatedTimeTables
         .filter(
-          (timeTable) => timeTable.arrange_order >= targetArrangeOrder && timeTable.arrange_order < targetTimetable.arrange_order,
+          (timeTable) =>
+            timeTable.arrange_order >= targetArrangeOrder && timeTable.arrange_order < targetTimetable.arrange_order,
         )
         .map((timeTable) => ({
           id: timeTable.id,
           arrange_order: timeTable.arrange_order + 1,
         }))
-    }
-    else if (targetArrangeOrder > targetTimetable.arrange_order) {
+    } else if (targetArrangeOrder > targetTimetable.arrange_order) {
       timeTablesToBeUpdated = relatedTimeTables
         .filter(
-          (timeTable) => timeTable.arrange_order <= targetArrangeOrder && timeTable.arrange_order > targetTimetable.arrange_order,
+          (timeTable) =>
+            timeTable.arrange_order <= targetArrangeOrder && timeTable.arrange_order > targetTimetable.arrange_order,
         )
         .map((timeTable) => ({
           id: timeTable.id,
@@ -165,7 +172,9 @@ export class TimetablesService {
     }
 
     await Promise.all(
-      timeTablesToBeUpdated.map(async (timetable) => this.timetableRepository.updateOrder(timetable.id, timetable.arrange_order)),
+      timeTablesToBeUpdated.map(async (timetable) =>
+        this.timetableRepository.updateOrder(timetable.id, timetable.arrange_order),
+      ),
     )
     const updatedTimeTable = await this.timetableRepository.updateOrder(targetTimetable.id, targetArrangeOrder)
     return updatedTimeTable
@@ -199,5 +208,31 @@ export class TimetablesService {
     }
 
     return timetableDetails.map((detail) => detail.subject_lecture)
+  }
+
+  public async getTimeTableSummary(semester: number, year: number, timetableId?: number): Promise<ITimetable.Summary> {
+    const timetable = await this.timetableRepository.getTimeTableById(timetableId)
+    const personals = await this.personalRepository.findPersonalBlocksForTimetable(semester, year, timetable.id)
+
+    return {
+      id: timetable.id,
+      year: timetable.year,
+      semester: timetable.semester,
+      arrange_order: timetable.arrange_order,
+      lectures: timetable.timetable_timetable_lectures.map((lecture) => toJsonLectureBasic(lecture.subject_lecture)),
+      personals: timetable.personals,
+      meetings: timetable.meetings,
+    }
+  }
+
+  public async getTimeTableNew(userId: number): Promise<ITimetable.Response2> {
+    const timetable = await this.timetableRepository.getTimeTableById(userId)
+    return {
+      id: timetable.id,
+      lectures: timetable.timetable_timetable_lectures.map((lecture) => toJsonLectureBasic(lecture.subject_lecture)),
+      personals: timetable.personals,
+      meetings: timetable.meetings,
+      arrange_order: timetable.arrange_order,
+    }
   }
 }

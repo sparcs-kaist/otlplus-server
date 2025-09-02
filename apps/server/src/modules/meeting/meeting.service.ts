@@ -5,7 +5,7 @@ import { session_userprofile } from '@prisma/client'
 
 import { TimeBlock } from '@otl/common/enum/time'
 
-import { MeetingRepository, UserRepository } from '@otl/prisma-client'
+import { MeetingRepository, TimetableRepository, UserRepository } from '@otl/prisma-client'
 import { EMeeting } from '@otl/prisma-client/entities/EMeeting'
 
 @Injectable()
@@ -13,6 +13,7 @@ export class MeetingService {
   constructor(
     private readonly meetingRepository: MeetingRepository,
     private readonly userRepository: UserRepository,
+    private readonly timetableRepository: TimetableRepository,
   ) {}
 
   async createMeetingGroup(user: session_userprofile, group: IMeeting.GroupCreateDto): Promise<IMeeting.Group> {
@@ -40,7 +41,7 @@ export class MeetingService {
   }
 
   async postMeetingGroupMember(
-    user: session_userprofile | { name: string, student_id: string },
+    user: session_userprofile | { name: string; student_id: string },
     groupId: number,
   ): Promise<IMeeting.GroupMemberCreateResponse> {
     const group = await this.meetingRepository.getMeetingGroup(groupId)
@@ -50,16 +51,14 @@ export class MeetingService {
     if (group.members.some((member) => member.student_number === user.student_id)) {
       if ('user_id' in user && group.members.find((member) => member.user_id === user.user_id)?.user_id === null) {
         await this.meetingRepository.updateMemberUserId(groupId, user.id, user.student_id, user.name_kor)
-      }
-      else {
+      } else {
         throw new ForbiddenException('You are already a member of this group')
       }
     }
     let member
     if ('user_id' in user) {
       member = await this.meetingRepository.createMember(groupId, user.user_id, user.student_id, user.name_kor)
-    }
-    else {
+    } else {
       member = await this.meetingRepository.createMember(groupId, null, user.student_id, user.name)
     }
     return {
@@ -153,6 +152,25 @@ export class MeetingService {
     }))
   }
 
+  async getMeetingGroup(groupId: number, user: session_userprofile | string): Promise<IMeeting.GroupStatus> {
+    const userInfo = typeof user === 'string' ? await this.userRepository.findByStudentId(user) : user
+
+    const group = await this.meetingRepository.getMeetingGroup(groupId)
+
+    const timetable = await this.timetableRepository.getTimetableSummary(userInfo.id)
+    const meetingGroup = this.makeEMeetingGroupToIMeetingGroup(group)
+    return {
+      id: meetingGroup.id,
+      name: meetingGroup.title,
+      begin: meetingGroup.begin,
+      maxMember: meetingGroup.max_member,
+      currentMember: meetingGroup.members,
+      schedule: meetingGroup.schedule,
+      timetable,
+      isLeader: group.leader_user_id === userInfo.id,
+    }
+  }
+
   // Private Methods
 
   private async checkGroupLeader(user: session_userprofile, groupId: number) {
@@ -196,8 +214,7 @@ export class MeetingService {
         for (const member of members) {
           if (member.available_timeBlock.find((timeblock) => timeblock.timeIndex === i)) {
             schedule[schedule.length - 1].available_members.push(member)
-          }
-          else {
+          } else {
             schedule[schedule.length - 1].unavailable_members.push(member)
           }
         }
@@ -236,12 +253,16 @@ export class MeetingService {
       description: result.description,
       color: result.color,
       timeBlocks: result.timeblocks.map((timeblock) => {
-        const available_members = result.meeting_group.members.filter((member) => member.timeblocks.some(
-          (tb) => tb.day === timeblock.day && tb.time_index === timeblock.time_index && tb.is_available,
-        ))
-        const unavailable_members = result.meeting_group.members.filter((member) => member.timeblocks.some(
-          (tb) => tb.day === timeblock.day && tb.time_index === timeblock.time_index && !tb.is_available,
-        ))
+        const available_members = result.meeting_group.members.filter((member) =>
+          member.timeblocks.some(
+            (tb) => tb.day === timeblock.day && tb.time_index === timeblock.time_index && tb.is_available,
+          ),
+        )
+        const unavailable_members = result.meeting_group.members.filter((member) =>
+          member.timeblocks.some(
+            (tb) => tb.day === timeblock.day && tb.time_index === timeblock.time_index && !tb.is_available,
+          ),
+        )
         return {
           day: makeDBtoTimeBlockDay(timeblock.day, timeblock.weekday),
           timeIndex: timeblock.time_index,

@@ -159,4 +159,20 @@ export class TimetableRepository {
       include: ETimetable.WithLectureClasstimes.include,
     })
   }
+
+  async getTimetableNew(timetable: { semester: number; year: number } | { id: number }) {
+    if ('id' in timetable) {
+      return this.prisma.timetable_timetable.findUniqueOrThrow({
+        where: { id: timetable.id },
+      })
+    }
+
+    return this.prisma.timetable_timetable.findUniqueOrThrow({
+      where: {
+        semester: timetable.semester,
+        year: timetable.year,
+        id: timetable.id,
+      },
+    })
+  }
 }

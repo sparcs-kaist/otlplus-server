@@ -114,11 +114,22 @@ export class PersonalsRepository {
     return personalBlock
   }
 
-  async findPersonalBlocksForTimetable(semester: number, year: number): Promise<EPersonal.Basic[]> {
+  /**
+   * @param semester 학기
+   * @param year 학년
+   * @param timetableId 타임테이블 id, 없으면 기본 시간표
+   * @returns 타임테이블에 속한 개인 블록 목록
+   */
+  async findPersonalBlocksForTimetable(
+    semester: number,
+    year: number,
+    timetableId?: number,
+  ): Promise<EPersonal.Basic[]> {
     const personalBlocks = await this.prisma.personal_block.findMany({
       where: {
         semester,
         year,
+        timetable_id: timetableId ?? null,
       },
       include: EPersonal.Basic.include,
     })

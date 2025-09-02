@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { Prisma, subject_semester } from '@prisma/client'
 
 import { PrismaService } from '@otl/prisma-client/prisma.service'
+import { ESemester } from '../entities'
 
 @Injectable()
 export class SemesterRepository {
@@ -52,6 +53,16 @@ export class SemesterRepository {
           year,
           semester,
         },
+      },
+    })
+  }
+
+  async findSemesterByDate(date: Date): Promise<ESemester.Basic> {
+    // TODO: index 추가 필요
+    return this.prisma.subject_semester.findFirstOrThrow({
+      where: {
+        beginning: { lte: date },
+        end: { gte: date },
       },
     })
   }

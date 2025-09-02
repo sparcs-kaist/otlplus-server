@@ -1,7 +1,5 @@
 import { Type } from 'class-transformer'
-import {
-  IsArray, IsInt, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, ValidateNested,
-} from 'class-validator'
+import { IsArray, IsInt, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, ValidateNested } from 'class-validator'
 
 import { SemesterEnum, TimeBlock, TimeBlockDay } from '@otl/common/enum/time'
 
@@ -77,6 +75,17 @@ export namespace IMeeting {
     currentMember: number
     max_members: number
     has_result: boolean // 결과가 있는 지 없는 지
+  }
+
+  export interface GroupStatus {
+    id: number
+    name: string
+    begin: number // 8시부터 0
+    maxMember: number
+    currentMember: IMeeting.Member[]
+    timetable?: ITimetable.Summary // 로그인 되어 있을 때만 반환,
+    schedule: IMeeting.Schedule[]
+    isLeader: boolean
   }
 
   export class GroupCreateDto {
@@ -193,5 +202,17 @@ export namespace IMeeting {
     @IsOptional()
     @IsString()
     studentNumber?: string
+  }
+
+  class InnerUserDto {
+    @IsString()
+    studentNumber!: string
+  }
+
+  export class UserStudentIdDto {
+    @IsOptional()
+    @ValidateNested()
+    @Type(() => InnerUserDto)
+    user?: InnerUserDto
   }
 }

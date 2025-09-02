@@ -1,7 +1,5 @@
 import { Transform, Type } from 'class-transformer'
-import {
-  IsArray, IsNumber, IsOptional, IsString,
-} from 'class-validator'
+import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator'
 
 import { ILecture } from './ILecture'
 import { IMeeting } from './IMeeting'
@@ -31,8 +29,18 @@ export namespace ITimetable {
     arrange_order: number
   }
 
+  export interface Response2 {
+    id?: number
+    year: number
+    semester: number
+    lectures: ILecture.Detail2[]
+    personals: IPersonal.Block[]
+    meetings: IMeeting.Result[]
+    arrange_order: number
+  }
+
   export interface Summary {
-    id: number | null // null 이면 학사시간표
+    id?: number // null 이면 학사시간표
     year: number
     semester: number
     arrange_order: number // 학사시간표이면 0

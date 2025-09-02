@@ -9,7 +9,7 @@ import { SemesterRepository } from '@otl/prisma-client/repositories'
 export class SemestersService {
   constructor(private readonly semesterRepository: SemesterRepository) {}
 
-  async getSemesters(order: ISemester.QueryDto) {
+  async getSemesters(order: ISemester.QueryDto): Promise<ISemester.Response[]> {
     const orderBy = orderFilter(order.order)
     const semesters = await this.semesterRepository.getSemesters({
       orderBy,
@@ -22,5 +22,26 @@ export class SemestersService {
 
     const seasonName = seasons[semester.semester - 1]
     return `${semester.year} ${seasonName}`
+  }
+
+  async getSemesterByDate(date?: Date): Promise<ISemester.Response> {
+    const now = date ?? new Date()
+    const semester = await this.semesterRepository.findSemesterByDate(now)
+    return semester
+  }
+
+  async getSemesterWeek(
+    date?: Date,
+    semesterInfo?: ISemester.Response,
+  ): Promise<{
+    semester: ISemester.Response
+    week: number // 1주차 ~ 16주차
+  }> {
+    const now = date ?? new Date()
+    const semester = semesterInfo ?? (await this.semesterRepository.findSemesterByDate(now))
+    const oneWeek = 1000 * 60 * 60 * 24 * 7
+    const nowTime = now.getTime()
+    const semesterWeek = Math.floor((nowTime - semester.beginning.getTime()) / oneWeek) + 1
+    return { semester, week: semesterWeek }
   }
 }
