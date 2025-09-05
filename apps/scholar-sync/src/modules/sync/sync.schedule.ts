@@ -56,7 +56,7 @@ export class SyncSchedule {
     await this.syncMajor()
   }
 
-  @Cron(CronExpression.EVERY_HOUR, {
+  @Cron('0 */3 * * *', {
     name: 'syncScholarDB',
     timeZone: 'Asia/Seoul',
     disabled: true,
