@@ -27,7 +27,7 @@ export class SyncSchedule {
     console.log(this.logFileDir)
   }
 
-  @Cron(CronExpression.EVERY_HOUR, {
+  @Cron(CronExpression.EVERY_3_HOURS, {
     name: 'syncAll',
     timeZone: 'Asia/Seoul',
   })
@@ -56,7 +56,7 @@ export class SyncSchedule {
     await this.syncMajor()
   }
 
-  @Cron(CronExpression.EVERY_HOUR, {
+  @Cron(CronExpression.EVERY_3_HOURS, {
     name: 'syncScholarDB',
     timeZone: 'Asia/Seoul',
     disabled: true,
@@ -81,7 +81,7 @@ export class SyncSchedule {
     }
   }
 
-  @Cron(CronExpression.EVERY_HOUR, {
+  @Cron(CronExpression.EVERY_3_HOURS, {
     name: 'syncExamTime',
     timeZone: 'Asia/Seoul',
     disabled: true,
@@ -100,7 +100,7 @@ export class SyncSchedule {
     }
   }
 
-  @Cron(CronExpression.EVERY_HOUR, {
+  @Cron(CronExpression.EVERY_3_HOURS, {
     name: 'syncClassTime',
     timeZone: 'Asia/Seoul',
     disabled: true,
@@ -119,7 +119,7 @@ export class SyncSchedule {
     }
   }
 
-  @Cron(CronExpression.EVERY_HOUR, {
+  @Cron(CronExpression.EVERY_3_HOURS, {
     name: 'syncTakenLecture',
     timeZone: 'Asia/Seoul',
     disabled: true,
@@ -138,7 +138,7 @@ export class SyncSchedule {
     }
   }
 
-  @Cron(CronExpression.EVERY_HOUR, {
+  @Cron(CronExpression.EVERY_3_HOURS, {
     name: 'syncDegree',
     timeZone: 'Asia/Seoul',
     disabled: true,
@@ -154,7 +154,7 @@ export class SyncSchedule {
     )
   }
 
-  @Cron(CronExpression.EVERY_HOUR, {
+  @Cron(CronExpression.EVERY_3_HOURS, {
     name: 'syncMajor',
     timeZone: 'Asia/Seoul',
     disabled: true,
