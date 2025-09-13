@@ -109,6 +109,14 @@ export class AuthController {
     return profile
   }
 
+  // session/info의 단순화된 버전 : review_writable_lectures, my_timetable_lectures, reviews,
+  // 와 같은 필요 없는 필드를 제거하여 simple하게 사용 가능하도록 한 버전이다.
+  @Get('me')
+  async getMe(@GetUser() user: session_userprofile): Promise<IUser.SimpleProfile> {
+    const profile = await this.userService.getSimpleProfile(user)
+    return profile
+  }
+
   @Public()
   @Get('/')
   async home(@Req() req: IAuth.Request, @Res() res: IAuth.Response): Promise<void> {

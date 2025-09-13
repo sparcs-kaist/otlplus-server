@@ -69,6 +69,18 @@ export namespace IUser {
     reviews: IReview.Basic[]
   }
 
+  export interface SimpleProfile {
+    id: number
+    email: string
+    student_id: string
+    firstName: string
+    lastName: string
+    department: IDepartment.Basic | null
+    majors: IDepartment.Basic[]
+    departments: IDepartment.Basic[]
+    favorite_departments: IDepartment.Basic[]
+  }
+
   export class TokenDto {
     @IsNotEmpty()
     token!: string
