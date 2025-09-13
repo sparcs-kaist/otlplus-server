@@ -97,6 +97,14 @@ export class UserService {
     }
   }
 
+  public async getTakenLectureBySemester(
+    user: session_userprofile,
+    year: number,
+    semester: number,
+  ): Promise<ELecture.Details[]> {
+    return this.lectureRepository.getTakenLecturesBySemester(user.id, year, semester)
+  }
+
   async getUserTakenCourses(
     query: IUser.TakenCoursesQueryDto,
     user: session_userprofile,

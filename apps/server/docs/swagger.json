@@ -240,6 +240,44 @@
         }
       }
     },
+    "/session/{year}/{semester}/taken-lectures": {
+      "get": {
+        "summary": "AuthController.getTakenLecturesBySemester",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/{ subject_department: { name: string; id: number; code: string; num_id: string; name_en: string | null; visible: boolean; }; subject_classtime: { id: number; type: string; day: number; begin: Date; end: Date; building_id: string | null; building_full_name: string | null; building_full_name_en: string | null; room_name: string | null; unit_time: number | null; lecture_id: number | null; }[]; subject_examtime: { id: number; day: number; begin: Date; end: Date; lecture_id: number; }[]; subject_lecture_professors: ({ professor: { id: number; grade_sum: number; load_sum: number; speech_sum: number; grade: number; load: number; speech: number; review_total_weight: number; professor_id: number; professor_name: string; professor_name_en: string | null; major: string; }; } & { id: number; lecture_id: number; professor_id: number; })[]; } & { id: number; code: string; old_code: string; new_code: string; year: number; semester: number; department_id: number; class_no: string; title: string; title_en: string; type: string; type_en: string; audience: number; credit: number; num_classes: number; num_labs: number; credit_au: number; limit: number; num_people: number | null; is_english: boolean; deleted: boolean; course_id: number; grade_sum: number; load_sum: number; speech_sum: number; grade: number; load: number; speech: number; review_total_weight: number; class_title: string | null; class_title_en: string | null; common_title: string | null; common_title_en: string | null; title_no_space: string; title_en_no_space: string; level: string | null; }"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "year",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "semester",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
     "/session": {
       "get": {
         "summary": "AuthController.home",
@@ -2208,7 +2246,7 @@
         "security": []
       }
     },
-    "/api/users/{user_id}/taken-courses": {
+    "/api/users/{userId}/taken-courses": {
       "get": {
         "summary": "UserController.getUserTakenCourses",
         "responses": {
@@ -2246,7 +2284,7 @@
         ]
       }
     },
-    "/api/users/{user_id}/liked-reviews": {
+    "/api/users/{userId}/liked-reviews": {
       "get": {
         "summary": "UserController.getUserLikedReviews",
         "responses": {

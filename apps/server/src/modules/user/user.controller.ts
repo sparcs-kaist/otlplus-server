@@ -11,22 +11,23 @@ import { UserService } from './user.service'
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Get(':user_id/taken-courses')
+  @Get(':userId/taken-courses')
   async getUserTakenCourses(
     @Query() query: IUser.TakenCoursesQueryDto,
-    @Param('user_id') userId: number,
+    @Param('userId') userId: number,
     @GetUser() user: session_userprofile,
   ): Promise<ICourse.DetailWithIsRead[]> {
+    console.log('DBG userId=', userId, typeof userId, 'session.user.id=', user?.id, typeof user?.id)
     if (userId === user.id) {
       return await this.userService.getUserTakenCourses(query, user)
     }
     throw new HttpException('Can\'t find user', 401)
   }
 
-  @Get(':user_id/liked-reviews')
+  @Get(':userId/liked-reviews')
   async getUserLikedReviews(
     @Query() query: IUser.ReviewLikedQueryDto,
-    @Param('user_id') userId: number,
+    @Param('userId') userId: number,
     @GetUser() user: session_userprofile,
   ): Promise<IReview.WithLiked[]> {
     if (userId === user.id) {

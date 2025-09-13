@@ -1,5 +1,5 @@
 import {
-  Body, Controller, Get, Post, Query, Req, Res, Session,
+  Body, Controller, Get, Param, Post, Query, Req, Res, Session,
 } from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator'
@@ -7,7 +7,7 @@ import { IAuth, IUser } from '@otl/server-nest/common/interfaces'
 import settings from '@otl/server-nest/settings'
 import { session_userprofile } from '@prisma/client'
 
-import { ESSOUser } from '@otl/prisma-client/entities'
+import { ELecture, ESSOUser } from '@otl/prisma-client/entities'
 
 import { UserService } from '../user/user.service'
 import { AuthService } from './auth.service'
@@ -115,6 +115,16 @@ export class AuthController {
   async getMe(@GetUser() user: session_userprofile): Promise<IUser.SimpleProfile> {
     const profile = await this.userService.getSimpleProfile(user)
     return profile
+  }
+
+  // year와 semester로 해당 학기의 수강 내역을 가져오는 함수
+  @Get('/:year/:semester/taken-lectures')
+  async getTakenLecturesBySemester(
+    @Param('year') year: number,
+    @Param('semester') semester: number,
+    @GetUser() user: session_userprofile,
+  ): Promise<ELecture.Details[]> {
+    return this.userService.getTakenLectureBySemester(user, year, semester)
   }
 
   @Public()
