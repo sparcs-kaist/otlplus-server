@@ -223,6 +223,23 @@
         }
       }
     },
+    "/session/me": {
+      "get": {
+        "summary": "AuthController.getMe",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IUser.SimpleProfile"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/session": {
       "get": {
         "summary": "AuthController.home",
@@ -826,7 +843,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/notification/domain/notification\").NotificationRequest"
+                  "$ref": "#/components/schemas/import(\"C:/Users/sjsh1/Sparcs_Otl/api_fix/otlplus-server/apps/server/src/modules/notification/domain/notification\").NotificationRequest"
                 }
               }
             }
@@ -844,7 +861,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/notification/domain/notification\").FCMNotificationRequest"
+                  "$ref": "#/components/schemas/import(\"C:/Users/sjsh1/Sparcs_Otl/api_fix/otlplus-server/apps/server/src/modules/notification/domain/notification\").FCMNotificationRequest"
                 }
               }
             }
@@ -871,7 +888,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/notification/domain/notification\").UserNotification"
+                  "$ref": "#/components/schemas/import(\"C:/Users/sjsh1/Sparcs_Otl/api_fix/otlplus-server/apps/server/src/modules/notification/domain/notification\").UserNotification"
                 }
               }
             }
@@ -900,7 +917,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/agreement/domain/UserAgreement\").Agreement"
+                    "$ref": "#/components/schemas/import(\"C:/Users/sjsh1/Sparcs_Otl/api_fix/otlplus-server/apps/server/src/modules/agreement/domain/UserAgreement\").Agreement"
                   }
                 }
               }
@@ -918,7 +935,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/notification/domain/notification\").Notification"
+                  "$ref": "#/components/schemas/import(\"C:/Users/sjsh1/Sparcs_Otl/api_fix/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
                 }
               }
             }
@@ -943,7 +960,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/notification/domain/notification\").Notification"
+                  "$ref": "#/components/schemas/import(\"C:/Users/sjsh1/Sparcs_Otl/api_fix/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
                 }
               }
             }
@@ -995,7 +1012,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/notification/domain/notification\").Notification"
+                    "$ref": "#/components/schemas/import(\"C:/Users/sjsh1/Sparcs_Otl/api_fix/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
                   }
                 }
               }
@@ -1018,7 +1035,7 @@
                       "type": "null"
                     },
                     {
-                      "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/notification/domain/notification\").Notification"
+                      "$ref": "#/components/schemas/import(\"C:/Users/sjsh1/Sparcs_Otl/api_fix/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
                     }
                   ]
                 }
@@ -1315,7 +1332,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/IPlanner.Detail"
+                  "$ref": "#/components/schemas/IPlanner.Response"
                 }
               }
             }
@@ -1632,6 +1649,24 @@
             }
           }
         ]
+      }
+    },
+    "/api/semesters/current": {
+      "get": {
+        "summary": "SemestersController.getCurrentSemester",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ISemester.Response"
+                }
+              }
+            }
+          }
+        },
+        "security": []
       }
     },
     "/session/department-options": {
@@ -3208,7 +3243,14 @@
             "type": "number"
           },
           "course": {
-            "$ref": "#/components/schemas/ICourse.Basic"
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number"
+              }
+            },
+            "required": ["id"],
+            "additionalProperties": false
           },
           "lecture": {
             "$ref": "#/components/schemas/ILecture.Basic"
@@ -3842,6 +3884,207 @@
           "room_name",
           "unit_time",
           "lecture_id"
+        ],
+        "additionalProperties": false
+      },
+      "ILecture.Minimal": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "code": {
+            "type": "string"
+          },
+          "old_old_code": {
+            "type": "string"
+          },
+          "old_code": {
+            "type": "string"
+          },
+          "year": {
+            "type": "number"
+          },
+          "semester": {
+            "type": "number"
+          },
+          "course": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number"
+              }
+            },
+            "required": ["id"],
+            "additionalProperties": false
+          },
+          "department": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number"
+              }
+            },
+            "required": ["id"],
+            "additionalProperties": false
+          },
+          "class_no": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "title_en": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "type_en": {
+            "type": "string"
+          },
+          "audience": {
+            "type": "number"
+          },
+          "credit": {
+            "type": "number"
+          },
+          "title_en_no_space": {
+            "type": "string"
+          },
+          "title_no_space": {
+            "type": "string"
+          },
+          "num_classes": {
+            "type": "number"
+          },
+          "num_labs": {
+            "type": "number"
+          },
+          "credit_au": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "num_people": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "is_english": {
+            "type": "boolean"
+          },
+          "deleted": {
+            "type": "boolean"
+          },
+          "course_id": {
+            "type": "number"
+          },
+          "grade_sum": {
+            "type": "number"
+          },
+          "load_sum": {
+            "type": "number"
+          },
+          "speech_sum": {
+            "type": "number"
+          },
+          "grade": {
+            "type": "number"
+          },
+          "load": {
+            "type": "number"
+          },
+          "speech": {
+            "type": "number"
+          },
+          "review_total_weight": {
+            "type": "number"
+          },
+          "class_title": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "class_title_en": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "common_title": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "common_title_en": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "old_old_code",
+          "old_code",
+          "year",
+          "semester",
+          "course",
+          "department",
+          "class_no",
+          "title",
+          "title_en",
+          "type",
+          "type_en",
+          "audience",
+          "credit",
+          "title_en_no_space",
+          "title_no_space",
+          "num_classes",
+          "num_labs",
+          "credit_au",
+          "limit",
+          "num_people",
+          "is_english",
+          "deleted",
+          "course_id",
+          "grade_sum",
+          "load_sum",
+          "speech_sum",
+          "grade",
+          "load",
+          "speech",
+          "review_total_weight",
+          "class_title",
+          "class_title_en",
+          "common_title",
+          "common_title_en"
         ],
         "additionalProperties": false
       },
@@ -4633,6 +4876,7 @@
       "IPlanner.QueryDto": {
         "properties": {
           "order": {
+            "$ref": "#/components/schemas/Array",
             "items": {
               "type": "string"
             },
@@ -4812,6 +5056,97 @@
         "type": "object",
         "required": ["start_year", "end_year", "general_track", "major_track", "additional_tracks"]
       },
+      "IPlanner.Response": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "start_year": {
+            "type": "number"
+          },
+          "end_year": {
+            "type": "number"
+          },
+          "general_track": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IPlanner.ITrack.General"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "major_track": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IPlanner.ITrack.Major"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "additional_tracks": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/IPlanner.ITrack.Additional"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "taken_items": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/IPlanner.IItem.Taken"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "future_items": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/IPlanner.IItem.Future"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "arbitrary_items": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/IPlanner.IItem.Arbitrary"
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "arrange_order": {
+            "type": "number"
+          }
+        },
+        "required": ["id", "start_year", "end_year", "arrange_order"],
+        "additionalProperties": false
+      },
       "IRate.Basic": {
         "type": "object",
         "properties": {
@@ -4860,7 +5195,14 @@
             "type": "number"
           },
           "course": {
-            "$ref": "#/components/schemas/ICourse.Basic"
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number"
+              }
+            },
+            "required": ["id"],
+            "additionalProperties": false
           },
           "lecture": {
             "$ref": "#/components/schemas/ILecture.Basic"
@@ -4986,6 +5328,7 @@
       "IReview.LectureReviewsQueryDto": {
         "properties": {
           "order": {
+            "$ref": "#/components/schemas/Array",
             "items": {
               "type": "string"
             },
@@ -5015,6 +5358,7 @@
             "type": "string"
           },
           "order": {
+            "$ref": "#/components/schemas/Array",
             "items": {
               "type": "string"
             },
@@ -5032,8 +5376,8 @@
       "IReview.CreateDto": {
         "properties": {
           "content": {
-            "minLength": 1,
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           },
           "lecture": {
             "minLength": 1,
@@ -5064,8 +5408,8 @@
       "IReview.UpdateDto": {
         "properties": {
           "content": {
-            "minLength": 1,
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           },
           "grade": {
             "maximum": 5,
@@ -5092,6 +5436,7 @@
       "ISemester.QueryDto": {
         "properties": {
           "order": {
+            "$ref": "#/components/schemas/Array",
             "items": {},
             "type": "array"
           }
@@ -6015,6 +6360,9 @@
             "enum": [1, 2, 3, 4]
           },
           "classtimes": {
+            "items": {
+              "$ref": "#/components/schemas/Array"
+            },
             "type": "array"
           }
         },
@@ -6031,6 +6379,9 @@
             "enum": [1, 2, 3, 4]
           },
           "attend": {
+            "items": {
+              "$ref": "#/components/schemas/Array"
+            },
             "type": "array"
           }
         },
@@ -6047,6 +6398,9 @@
             "enum": [1, 2, 3, 4]
           },
           "examtimes": {
+            "items": {
+              "$ref": "#/components/schemas/Array"
+            },
             "type": "array"
           }
         },
@@ -6062,8 +6416,12 @@
             "type": "number",
             "enum": [1, 2, 3, 4]
           },
-          "lectures": {},
-          "charges": {}
+          "lectures": {
+            "$ref": "#/components/schemas/Array"
+          },
+          "charges": {
+            "$ref": "#/components/schemas/Array"
+          }
         },
         "type": "object",
         "required": ["year", "semester", "lectures", "charges"]
@@ -6106,7 +6464,8 @@
             "items": {
               "type": "string"
             },
-            "type": "array"
+            "type": "array",
+            "$ref": "#/components/schemas/Array"
           },
           "offset": {
             "type": "number"
@@ -6156,6 +6515,7 @@
       "IUser.TakenCoursesQueryDto": {
         "properties": {
           "order": {
+            "$ref": "#/components/schemas/Array",
             "items": {
               "type": "string"
             },
@@ -6167,6 +6527,7 @@
       "IUser.ReviewLikedQueryDto": {
         "properties": {
           "order": {
+            "$ref": "#/components/schemas/Array",
             "items": {
               "type": "string"
             },
@@ -6358,6 +6719,66 @@
           "review_writable_lectures",
           "my_timetable_lectures",
           "reviews"
+        ],
+        "additionalProperties": false
+      },
+      "IUser.SimpleProfile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "email": {
+            "type": "string"
+          },
+          "student_id": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "department": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IDepartment.Basic"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "majors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IDepartment.Basic"
+            }
+          },
+          "departments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IDepartment.Basic"
+            }
+          },
+          "favorite_departments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IDepartment.Basic"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "student_id",
+          "firstName",
+          "lastName",
+          "department",
+          "majors",
+          "departments",
+          "favorite_departments"
         ],
         "additionalProperties": false
       },
