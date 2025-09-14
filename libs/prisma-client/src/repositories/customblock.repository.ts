@@ -12,7 +12,14 @@ export class CustomblockRepository {
     private readonly prismaRead: PrismaReadService,
   ) {}
 
-  // timetable에 custom block 추가하기
+  // 커스텀 블록 생성
+  async createCustomblock(data: ECustomblock.CreateInput): Promise<ECustomblock.Basic> {
+    return this.prisma.block_custom_blocks.create({
+      data,
+    })
+  }
+
+  // timetable에 custom block mapping 추가하기
   async addCustomblockToTimetable(timeTableId: number, customblockId: number) {
     return this.prisma.timetable_timetable_customblocks.create({
       data: {

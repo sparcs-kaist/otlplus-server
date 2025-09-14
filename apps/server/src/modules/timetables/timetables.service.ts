@@ -1,14 +1,23 @@
 import {
-  BadRequestException, HttpException, HttpStatus, Inject, Injectable,
+  BadRequestException,
+  ForbiddenException,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common'
 import { Transactional } from '@nestjs-cls/transactional'
 import { ITimetable } from '@otl/server-nest/common/interfaces'
+import { ICustomblock } from '@otl/server-nest/common/interfaces/ICustomblock'
 import { TIMETABLE_MQ, TimetableMQ } from '@otl/server-nest/modules/timetables/domain/out/TimetableMQ'
 import { session_userprofile } from '@prisma/client'
 
 import logger from '@otl/common/logger/logger'
 
-import { LectureRepository, SemesterRepository, TimetableRepository } from '@otl/prisma-client'
+import {
+  CustomblockRepository, LectureRepository, SemesterRepository, TimetableRepository,
+} from '@otl/prisma-client'
 import { orderFilter } from '@otl/prisma-client/common/util'
 import { ELecture } from '@otl/prisma-client/entities/ELecture'
 import { ETimetable } from '@otl/prisma-client/entities/ETimetable'
@@ -19,6 +28,7 @@ export class TimetablesService {
     private readonly timetableRepository: TimetableRepository,
     private readonly lectureRepository: LectureRepository,
     private readonly semesterRepository: SemesterRepository,
+    private readonly customblockRepository: CustomblockRepository,
     @Inject(TIMETABLE_MQ)
     private readonly timetableMQ: TimetableMQ,
   ) {}
@@ -118,6 +128,57 @@ export class TimetablesService {
       logger.error('Failed to publish lecture num update', error)
     })
     return await this.timetableRepository.getTimeTableById(timeTableId)
+  }
+
+  // 공통: 내 시간표인지 검증 (없으면 404, 소유자 아니면 403)
+  private async TimetableValidation(user: session_userprofile, timetableId: number) {
+    const timetable = await this.timetableRepository.getTimeTableBasicById(timetableId)
+    if (!timetable) {
+      throw new NotFoundException('No such timetable')
+    }
+    if (timetable.user_id !== user.id) {
+      throw new ForbiddenException('User is not owner of timetable')
+    }
+    return timetable
+  }
+
+  // 커스텀 블록 관련 Service 로직
+  @Transactional()
+  async addCustomblockToTimetable(timetableId: number, body: ICustomblock.CreateDto, user: session_userprofile) {
+    await this.TimetableValidation(user, timetableId)
+    const customBlock = await this.customblockRepository.createCustomblock({
+      block_name: body.block_name,
+      place: body.place,
+      day: body.day,
+      begin: body.begin,
+      end: body.end,
+    })
+    // 시간표에 매핑 추가
+    await this.customblockRepository.addCustomblockToTimetable(timetableId, customBlock.id)
+    return customBlock
+  }
+
+  @Transactional()
+  async getCustomblockList(timetableId: number, user: session_userprofile) {
+    await this.TimetableValidation(user, timetableId)
+    return this.customblockRepository.getCustomblocksList(timetableId)
+  }
+
+  @Transactional()
+  async updateCustomblock(
+    timetableId: number,
+    customblockId: number,
+    body: ICustomblock.UpdateDto,
+    user: session_userprofile,
+  ) {
+    await this.TimetableValidation(user, timetableId)
+    return this.customblockRepository.updateCustomblock(customblockId, body)
+  }
+
+  @Transactional()
+  async removeCustomblockFromTimetable(timetableId: number, customblockId: number, user: session_userprofile) {
+    await this.TimetableValidation(user, timetableId)
+    await this.customblockRepository.removeCustomblockFromTimetable(timetableId, customblockId)
   }
 
   @Transactional()
