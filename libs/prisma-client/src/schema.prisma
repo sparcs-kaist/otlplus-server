@@ -5,8 +5,8 @@ generator client {
 
 datasource db {
   provider          = "mysql"
-  url               = env("DATABASE_URL")
-  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+  url               = "mysql://otl:supersecret@localhost:33306/otldb"
+  shadowDatabaseUrl = "mysql://otl:supersecret@localhost:33306/shadow_otlplus"
 }
 
 model auth_group {
@@ -311,6 +311,13 @@ model session_userprofile {
 
   @@index([department_id], map: "session_userprofile_department_id_fkey")
   @@index([student_id], map: "session_userprofile_student_id_index")
+}
+
+model sid_uid_map {
+  uid Int
+  sid Int
+
+  @@id([uid, sid])
 }
 
 model session_userprofile_device {

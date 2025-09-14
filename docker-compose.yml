@@ -5,10 +5,15 @@ services:
     container_name: otlplus-server-nest-prod
     platform: linux/amd64
     env_file:
-      - apps/server/env/.env.prod
+      - env/.env.local
     environment:
-      - NODE_ENV=prod
+      - NODE_ENV=local
       - DOCKER_DEPLOY=true
+      - RABBITMQ_URI=amqp://otlplus:password@rabbitmq:5672
+      - AMQP_URL=amqp://otlplus:password@rabbitmq:5672
+      - DATABASE_URL=mysql://otl:supersecret@mariadb:3306/otldb
+      - PRISMA_DATABASE_URL=mysql://otl:supersecret@mariadb:3306/otldb
+      - PRISMA_READ_URL=
     build:
       context: .
       dockerfile: ./deploy/server/docker/Dockerfile.server
@@ -19,5 +24,67 @@ services:
       - '58000:8000'
     volumes:
       - '/etc/timezone:/etc/timezone:ro'
-    working_dir: /var/www/otlplus-server/apps/server
+      - './env/.env.runtime:/var/www/otlplus-server/env/.env.local:ro'
+    working_dir: /var/www/otlplus-server
     command: pm2-runtime start ecosystem.config.js --only @otl/server-nest  --node-args="max-old-space-size=40920"
+
+  redis-MQ:
+    image: redis:7.2-alpine
+    container_name: redis-otl
+    ports:
+      - '6379:6379'
+    env_file:
+      - env/.env.local
+    volumes:
+      - ./redis-data:/data
+    command:
+      - /bin/sh
+      - -c
+      # - Double dollars, so that the variable is not expanded by Docker Compose
+      # - Surround by quotes, so that the shell does not split the password
+      # - The ${variable:?message} syntax causes shell to exit with a non-zero
+      #   code and print a message, when the variable is not set or empty
+      - redis-server --requirepass "$${REDIS_PASSWORD:?REDIS_PASSWORD variable is not set}"
+
+  rabbitmq:
+    build:
+      dockerfile: Dockerfile
+    container_name: otlplus-rabbitmq
+    env_file:
+      - env/.env.local
+    ports:
+      - '5672:5672' # AMQP 프로토콜 (앱들이 사용하는 포트)
+      - '15672:15672' # 관리 콘솔 (웹 UI) 포트
+      - '15692:15692' # Prometheus exporter 포트
+    environment:
+      RABBITMQ_DEFAULT_USER: otlplus
+      RABBITMQ_DEFAULT_PASS: password
+      RABBITMQ_URI: amqp://otlplus:password@rabbitmq:5672
+      AMQP_URL: amqp://otlplus:password@rabbitmq:5672
+      RABBITMQ_USER: otlplus
+      RABBITMQ_PASS: password
+      RABBITMQ_PASSWORD: password
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+    volumes:
+      - ./rabbitmq-data:/var/lib/rabbitmq
+    restart: unless-stopped
+
+  mariadb:
+    image: mariadb:10.11
+    container_name: mariadb-local
+    environment:
+      - MARIADB_ROOT_PASSWORD=secret
+      - MARIADB_DATABASE=otldb
+      - MARIADB_USER=otl
+      - MARIADB_PASSWORD=supersecret
+    ports:
+      - '33306:3306' # 충돌나면 "33306:3306"
+    volumes:
+      - ./mariadb-data:/var/lib/mysql
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', '127.0.0.1', '-u', 'otl', '-psupersecret']
+      interval: 5s
+      timeout: 3s
+      retries: 30

@@ -1,14 +1,11 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common'
 import { PrismaMariaDb } from '@prisma/adapter-mariadb'
 import { PrismaClient } from '@prisma/client'
-import * as mariadb from 'mariadb'
+import type { PoolConfig } from 'mariadb' // 타입만 사용
 
 @Injectable()
 export class PrismaReadService extends PrismaClient implements OnModuleInit {
-  constructor(
-    @Inject('ORM_OPTIONS') ormOption: mariadb.PoolConfig,
-    @Inject('ORM_READ_OPTIONS') ormReadOption?: mariadb.PoolConfig,
-  ) {
+  constructor(@Inject('ORM_OPTIONS') ormOption: PoolConfig, @Inject('ORM_READ_OPTIONS') ormReadOption?: PoolConfig) {
     let adapter
     if (ormReadOption) {
       adapter = new PrismaMariaDb(ormReadOption)
