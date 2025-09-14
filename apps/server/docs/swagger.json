@@ -2162,6 +2162,146 @@
         }
       }
     },
+    "/api/users/{userId}/timetables/{timetableId}/custom-blocks": {
+      "get": {
+        "summary": "TimetablesController.getCustomblocks",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ICustomblock.ListResponse"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "timetableId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      },
+      "post": {
+        "summary": "TimetablesController.addCustomblock",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ICustomblock.CreateResponse"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "timetableId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ICustomblock.CreateDto"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/{userId}/timetables/{timetableId}/custom-blocks/{customblockId}": {
+      "patch": {
+        "summary": "TimetablesController.updateCustomblock",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ICustomblock.Basic"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "timetableId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customblockId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ICustomblock.UpdateDto"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "TimetablesController.removeCustomblock",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ICustomblock.DeleteDto"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "timetableId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customblockId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
     "/api/users/{userId}/timetables/{timetableId}/reorder": {
       "post": {
         "summary": "TimetablesController.reorderTimetable",
@@ -3071,6 +3211,107 @@
         },
         "type": "object"
       },
+      "hhmmToUTCDateStrict": {
+        "$comment": "(value: unknown) => Date | unknown",
+        "type": "object",
+        "properties": {
+          "namedArgs": {
+            "type": "object",
+            "properties": {
+              "value": {}
+            },
+            "required": ["value"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "ICustomblock.Basic": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "block_name": {
+            "type": "string"
+          },
+          "place": {
+            "type": "string"
+          },
+          "day": {
+            "type": "number"
+          },
+          "begin": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": ["id", "block_name", "place", "day", "begin", "end"],
+        "additionalProperties": false
+      },
+      "ICustomblock.CreateDto": {
+        "properties": {
+          "block_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "place": {
+            "type": "string",
+            "minLength": 1
+          },
+          "day": {
+            "type": "string",
+            "minLength": 1
+          },
+          "begin": {
+            "oneOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "format": "date-time",
+                "type": "string"
+              }
+            ],
+            "minLength": 1,
+            "type": "string"
+          },
+          "end": {
+            "oneOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "format": "date-time",
+                "type": "string"
+              }
+            ],
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["block_name", "place", "day", "begin", "end"]
+      },
+      "ICustomblock.CreateResponse": {},
+      "ICustomblock.ListResponse": {},
+      "ICustomblock.UpdateDto": {
+        "properties": {
+          "block_name": {
+            "type": "string"
+          },
+          "place": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ICustomblock.DeleteDto": {},
       "IDevice.RegisterDeviceDto": {
         "properties": {
           "deviceToken": {

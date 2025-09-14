@@ -1,13 +1,36 @@
 import {
-  Body, Controller, Delete, Get, Param, Post, Query,
+  Body, Controller, Delete, Get, Param, Patch, Post, Query,
 } from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { ITimetable } from '@otl/server-nest/common/interfaces'
+import { ICustomblock } from '@otl/server-nest/common/interfaces/ICustomblock'
 import { toJsonTimetable } from '@otl/server-nest/common/serializer/timetable.serializer'
 import { session_userprofile } from '@prisma/client'
 
 import { LecturesService } from '../lectures/lectures.service'
 import { TimetablesService } from './timetables.service'
+
+// Format input to HH:mm (UTC). Accepts Date or string (HH:mm[:ss] or ISO).
+function toHHmm(input: unknown): string {
+  // If Date and valid
+  if (input instanceof Date && !Number.isNaN(input.getTime())) {
+    const hh = input.getUTCHours().toString().padStart(2, '0')
+    const mm = input.getUTCMinutes().toString().padStart(2, '0')
+    return `${hh}:${mm}`
+  }
+  // If string like HH:mm or HH:mm:ss
+  if (typeof input === 'string') {
+    const s = input.trim()
+    const m = /^(\d{2}):(\d{2})(?::\d{2})?$/.exec(s)
+    if (m) return `${m[1]}:${m[2]}`
+    const d = new Date(s)
+    if (!Number.isNaN(d.getTime())) return toHHmm(d)
+  }
+  // Fallback to 00:00 to avoid NaN:NaN in responses
+
+  console.warn('[custom-blocks] toHHmm fallback for input:', input)
+  return '00:00'
+}
 
 @Controller('/api/users/:userId/timetables')
 export class TimetablesController {
@@ -77,20 +100,56 @@ export class TimetablesController {
   }
 
   // custom block 관련 API
-  /*
-  //특정 timetable의 custom block 목록 조회
+  // 특정 timetable의 custom block 목록 조회
   @Get('/:timetableId/custom-blocks')
-  async()
+  async getCustomblocks(
+    @Param('timetableId') timetableId: number,
+    @GetUser() user: session_userprofile,
+  ): Promise<ICustomblock.ListResponse> {
+    const items = await this.timetablesService.getCustomblockList(timetableId, user)
+    const custom_blocks = items.map((it) => ({
+      id: it.id,
+      block_name: it.block_name,
+      place: it.place,
+      day: it.day,
+      begin: toHHmm(it.begin),
+      end: toHHmm(it.end),
+    }))
+    return { custom_blocks }
+  }
 
-  //특정 timetalbe에 custom block 추가하기
+  // 특정 timetable에 custom block 추가하기
   @Post('/:timetableId/custom-blocks')
+  async addCustomblock(
+    @Param('timetableId') timetableId: number,
+    @Body() body: ICustomblock.CreateDto,
+    @GetUser() user: session_userprofile,
+  ): Promise<ICustomblock.CreateResponse> {
+    const created = await this.timetablesService.addCustomblockToTimetable(timetableId, body, user)
+    return { id: created.id }
+  }
 
-  //특정 custom block 수정하기 (place, block_name)
-  @Patch('/:timetableId/custom-blocks')
+  // 특정 custom block 수정하기 (place, block_name)
+  @Patch('/:timetableId/custom-blocks/:customblockId')
+  async updateCustomblock(
+    @Param('timetableId') timetableId: number,
+    @Param('customblockId') customblockId: number,
+    @Body() body: ICustomblock.UpdateDto,
+    @GetUser() user: session_userprofile,
+  ): Promise<ICustomblock.Basic> {
+    return this.timetablesService.updateCustomblock(timetableId, customblockId, body, user)
+  }
 
-  //특정 custom block 삭제하기
-  @Delete('/:timetableId/custom-blocks')
-  */
+  // 특정 custom block 삭제하기
+  @Delete('/:timetableId/custom-blocks/:customblockId')
+  async removeCustomblock(
+    @Param('timetableId') timetableId: number,
+    @Param('customblockId') customblockId: number,
+    @GetUser() user: session_userprofile,
+  ): Promise<ICustomblock.DeleteDto> {
+    await this.timetablesService.removeCustomblockFromTimetable(timetableId, customblockId, user)
+    return { id: customblockId }
+  }
 
   @Post('/:timetableId/reorder')
   async reorderTimetable(
