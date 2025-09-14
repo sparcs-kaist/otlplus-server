@@ -17,7 +17,6 @@ export class UserController {
     @Param('userId') userId: number,
     @GetUser() user: session_userprofile,
   ): Promise<ICourse.DetailWithIsRead[]> {
-    console.log('DBG userId=', userId, typeof userId, 'session.user.id=', user?.id, typeof user?.id)
     if (userId === user.id) {
       return await this.userService.getUserTakenCourses(query, user)
     }
