@@ -76,6 +76,22 @@ export class TimetablesController {
     return toJsonTimetable(timeTable)
   }
 
+  // custom block 관련 API
+  /*
+  //특정 timetable의 custom block 목록 조회
+  @Get('/:timetableId/custom-blocks')
+  async()
+
+  //특정 timetalbe에 custom block 추가하기
+  @Post('/:timetableId/custom-blocks')
+
+  //특정 custom block 수정하기 (place, block_name)
+  @Patch('/:timetableId/custom-blocks')
+
+  //특정 custom block 삭제하기
+  @Delete('/:timetableId/custom-blocks')
+  */
+
   @Post('/:timetableId/reorder')
   async reorderTimetable(
     /**
