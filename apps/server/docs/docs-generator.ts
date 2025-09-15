@@ -18,9 +18,7 @@ project.addSourceFilesAtPaths(resolve(__dirname, '../../../../../apps/server/src
 const sourceFiles = project.getSourceFiles('/**/*.controller.ts')
 
 function hasParameterDecorator(parameter: any, decoratorName: string) {
-  return parameter
-    .getDecorators()
-    .some((decorator: { getName: () => string }) => decorator.getName() === decoratorName)
+  return parameter.getDecorators().some((decorator: { getName: () => string }) => decorator.getName() === decoratorName)
 }
 
 function isInterfaceImport(importPath: string, namedImports: string[]): boolean {

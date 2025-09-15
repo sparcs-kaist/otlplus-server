@@ -299,20 +299,35 @@ model session_userprofile {
   session_userprofile_majors            session_userprofile_majors[]
   session_userprofile_minors            session_userprofile_minors[]
   session_userprofile_specialized_major session_userprofile_specialized_major[]
+<<<<<<< HEAD:apps/server/src/prisma/schema.prisma
+  session_userprofile_fcm_token         session_userprofile_fcm_token[]
+=======
   session_userprofile_device            session_userprofile_device[]
+>>>>>>> main:libs/prisma-client/src/schema.prisma
   taken_lectures                        session_userprofile_taken_lectures[]
   subject_courseuser                    subject_courseuser[]
   support_rate                          support_rate[]
   timetable_timetable                   timetable_timetable[]
   timetable_wishlist                    timetable_wishlist?
+<<<<<<< HEAD:apps/server/src/prisma/schema.prisma
+  session_userprofile_term              session_userprofile_term[]
+=======
   session_userprofile_notification      session_userprofile_notification[]
   session_userprofile_agreement         session_userprofile_agreement[]
   session_userprofile_notification_hist session_userprofile_notification_history[]
+>>>>>>> main:libs/prisma-client/src/schema.prisma
 
   @@index([department_id], map: "session_userprofile_department_id_fkey")
   @@index([student_id], map: "session_userprofile_student_id_index")
 }
 
+<<<<<<< HEAD:apps/server/src/prisma/schema.prisma
+model session_userprofile_fcm_token {
+  id             Int                 @id @default(autoincrement())
+  userprofile_id Int
+  token          String              @db.VarChar(255)
+  userprofile    session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
+=======
 model session_userprofile_device {
   id              Int                 @id @default(autoincrement())
   userprofile_id  Int
@@ -322,11 +337,36 @@ model session_userprofile_device {
   deviceOsVersion String?             @db.VarChar(255)
   appVersion      String?             @db.VarChar(255)
   userprofile     session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
+>>>>>>> main:libs/prisma-client/src/schema.prisma
 
   @@unique([userprofile_id, token], map: "session_fcm_token_userprofile_id_token_uniq")
   @@index([token], map: "session_fcm_token_token_index")
 }
 
+<<<<<<< HEAD:apps/server/src/prisma/schema.prisma
+model session_userprofile_term {
+  id             Int                 @id @default(autoincrement())
+  userprofile_id Int
+  term_id        Int
+  userprofile    session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
+  term           session_term        @relation(fields: [term_id], references: [id], onUpdate: Restrict)
+  created_at     DateTime            @default(now()) @db.DateTime(0)
+  updated_at     DateTime            @default(now()) @db.DateTime(0)
+  is_agreed      Boolean             @default(false)
+
+  @@unique([userprofile_id, term_id], map: "session_userprofile_term_userprofile_id_term_id_uniq")
+  @@index([term_id], map: "session_userprofile_term_term_id_fkey")
+}
+
+model session_term {
+  id                        Int                        @id @default(autoincrement())
+  term_name                 String                     @db.VarChar(200)
+  term_content              String                     @db.Text
+  is_required               Boolean                    @default(false)
+  created_at                DateTime                   @default(now()) @db.DateTime(0)
+  updated_at                DateTime                   @default(now()) @db.DateTime(0)
+  session_userprofile_terms session_userprofile_term[]
+=======
 model session_userprofile_agreement {
   id               Int                 @id @default(autoincrement())
   userprofile_id   Int
@@ -392,6 +432,7 @@ model session_userprofile_notification_history {
   noti                notification        @relation(fields: [notification_id], references: [id], onUpdate: Restrict)
   created_at          DateTime            @default(now()) @db.DateTime(0)
   read_at             DateTime?           @db.DateTime(0)
+>>>>>>> main:libs/prisma-client/src/schema.prisma
 }
 
 model session_userprofile_favorite_departments {
@@ -1014,6 +1055,46 @@ model paper {
   xml_link         String?          @db.VarChar(255)
   pdf_link         String?          @db.VarChar(300)
   professor        paper_professor? @relation(fields: [professor_id], references: [id], onUpdate: Restrict)
+}
+
+model paper_prof_to_subject_prof {
+  id                   Int               @id @default(autoincrement())
+  subject_professor_id Int
+  paper_professor_id   Int
+  subject_professor    subject_professor @relation(fields: [subject_professor_id], references: [id], onUpdate: Restrict)
+  paper_professor      paper_professor   @relation(fields: [paper_professor_id], references: [id], onUpdate: Restrict)
+}
+
+model paper_professor_department {
+  id                    Int                @id @default(autoincrement())
+  paper_professor_id    Int
+  paper_professor       paper_professor    @relation(fields: [paper_professor_id], references: [id], onUpdate: Restrict)
+  subject_department_id Int
+  subject_department    subject_department @relation(fields: [subject_department_id], references: [id], onUpdate: Restrict)
+}
+
+model paper_professor {
+  id                         Int                          @id @default(autoincrement())
+  professor_name             String?                      @db.VarChar(255)
+  professor_name_en          String?                      @db.VarChar(255)
+  papers                     paper[]
+  prof_names_to_prof_link    paper_prof_to_subject_prof[]
+  paper_professor_department paper_professor_department[]
+}
+
+model paper {
+  id             Int              @id @default(autoincrement())
+  professor_id   Int?
+  professor_name String           @db.VarChar(255)
+  title          String?          @db.VarChar(300)
+  abstract       String?          @db.Text
+  keywords       String?          @db.Text
+  category       String?          @db.VarChar(100)
+  doi            String?          @db.VarChar(100)
+  pdf_link       String?          @db.VarChar(255)
+  xml_link       String?          @db.VarChar(255)
+  url            String?          @db.VarChar(255)
+  professor      paper_professor? @relation(fields: [professor_id], references: [id], onUpdate: Restrict)
 }
 
 enum SyncType {
