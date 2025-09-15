@@ -1,0 +1,24 @@
+version: '3.4'
+
+services:
+  back:
+    container_name: otlplus-server-consumer-nest-prod
+    platform: linux/amd64
+    env_file:
+      - ../../../env/.env.prod
+    environment:
+      - NODE_ENV=prod
+      - DOCKER_DEPLOY=true
+    build:
+      context: ../../..
+      dockerfile: ./deploy/server-consumer/docker/Dockerfile.server
+    image: otlplus-server-consumer-nest-prod
+    restart: always
+    tty: true
+    ports:
+      - '53000:3000'
+    volumes:
+      - '/etc/timezone:/etc/timezone:ro'
+      - '../../../apps/server-consumer/logs:/var/www/otlplus-server-consumer/logs'
+    working_dir: /var/www/otlplus-server-consumer
+    command: pm2-runtime start ecosystem.config.js --only @otl/server-consumer-nest  --node-args="max-old-space-size=40920"

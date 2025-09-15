@@ -1,7 +1,9 @@
-import { Module } from '@nestjs/common';
-import { PrismaModule } from '@src/prisma/prisma.module';
-import { LecturesController } from './lectures.controller';
-import { LecturesService } from './lectures.service';
+import { Module } from '@nestjs/common'
+
+import { PrismaModule } from '@otl/prisma-client/prisma.module'
+
+import { LecturesController } from './lectures.controller'
+import { LecturesService } from './lectures.service'
 
 @Module({
   imports: [PrismaModule],

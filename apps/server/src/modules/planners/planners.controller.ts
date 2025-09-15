@@ -1,15 +1,22 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UnauthorizedException } from '@nestjs/common';
-import { session_userprofile } from '@prisma/client';
-import { GetUser } from '@src/common/decorators/get-user.decorator';
-import { IPlanner } from '@otl/api-interface/src/interfaces/IPlanner';
-import { PlannersService } from './planners.service';
-import { PlannerPipe } from '@src/common/pipe/planner.pipe';
-import { toJsonPlanner } from '@src/common/serializer/planner.serializer';
-import { toJsonPlannerItem } from '@src/common/serializer/planner.item.serializer';
+import {
+  Body, Controller, Delete, Get, Param, Patch, Post, Query, UnauthorizedException,
+} from '@nestjs/common'
+import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
+import { IPlanner } from '@otl/server-nest/common/interfaces'
+import { PlannerPipe } from '@otl/server-nest/common/pipe/planner.pipe'
+import { toJsonPlannerItem } from '@otl/server-nest/common/serializer/planner.item.serializer'
+import { toJsonPlannerDetails } from '@otl/server-nest/common/serializer/planner.serializer'
+import { CoursesService } from '@otl/server-nest/modules/courses/courses.service'
+import { session_userprofile } from '@prisma/client'
+
+import { PlannersService } from './planners.service'
 
 @Controller('api/users/:id/planners')
 export class PlannersController {
-  constructor(private readonly plannersService: PlannersService) {}
+  constructor(
+    private readonly plannersService: PlannersService,
+    private readonly courseService: CoursesService,
+  ) {}
 
   @Get()
   async getPlanners(
@@ -18,10 +25,9 @@ export class PlannersController {
     @GetUser() user: session_userprofile,
   ): Promise<IPlanner.Detail[]> {
     if (id !== user.id) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException()
     }
-    const planners = await this.plannersService.getPlannerByUser(query, user);
-    return planners;
+    return await this.plannersService.getPlannerByUser(query, user)
   }
 
   @Patch(':plannerId')
@@ -31,16 +37,19 @@ export class PlannersController {
     @GetUser() user: session_userprofile,
   ): Promise<IPlanner.Detail> {
     if (planner.should_update_taken_semesters) {
-      await this.plannersService.updateTakenLectures(user, plannerId, planner.start_year, planner.end_year);
+      await this.plannersService.updateTakenLectures(user, plannerId, planner.start_year, planner.end_year)
     }
-    const updatedPlanner = await this.plannersService.updatePlanner(plannerId, planner, user);
-    return toJsonPlanner(updatedPlanner);
+    const updatedPlanner = await this.plannersService.updatePlanner(plannerId, planner, user)
+    const futureItems = updatedPlanner.planner_futureplanneritem
+    const courseIds = futureItems.map((item) => item.course_id)
+    const futureItemsRepresentativeLectureMap = await this.courseService.getRepresentativeLectureByCourseIds(courseIds)
+    return toJsonPlannerDetails(updatedPlanner, futureItemsRepresentativeLectureMap)
   }
 
   @Delete(':plannerId')
-  async deletePlanner(@Param('plannerId', PlannerPipe) plannerId: number, @GetUser() user: session_userprofile) {
-    await this.plannersService.deletePlanner(plannerId);
-    return { message: 'Planner deleted' };
+  async deletePlanner(@Param('plannerId', PlannerPipe) plannerId: number, @GetUser() _user: session_userprofile) {
+    await this.plannersService.deletePlanner(plannerId)
+    return { message: 'Planner deleted' }
   }
 
   @Post()
@@ -50,10 +59,10 @@ export class PlannersController {
     @GetUser() user: session_userprofile,
   ): Promise<IPlanner.Detail> {
     if (id !== user.id) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException()
     }
-    const newPlanner = await this.plannersService.postPlanner(planner, user);
-    return newPlanner;
+    const newPlanner = await this.plannersService.postPlanner(planner, user)
+    return newPlanner
   }
 
   @Post(':plannerId/add-arbitrary-item')
@@ -64,10 +73,10 @@ export class PlannersController {
     @Body() item: IPlanner.AddArbitraryItemDto,
     @GetUser() user: session_userprofile,
   ): Promise<IPlanner.IItem.Arbitrary> {
-    if (id !== user.id) throw new UnauthorizedException();
+    if (id !== user.id) throw new UnauthorizedException()
 
-    const newPlanner = await this.plannersService.addArbitraryItem(plannerId, item, user);
-    return newPlanner;
+    const newPlanner = await this.plannersService.addArbitraryItem(plannerId, item, user)
+    return newPlanner
   }
 
   @Post(':plannerId/remove-item')
@@ -76,7 +85,7 @@ export class PlannersController {
     @Param('plannerId') plannerId: number,
     @GetUser() user: session_userprofile,
   ): Promise<IPlanner.Detail> {
-    return await this.plannersService.removePlannerItem(plannerId, removeItem, user);
+    return await this.plannersService.removePlannerItem(plannerId, removeItem, user)
   }
 
   @Post(':plannerId/add-future-item')
@@ -87,15 +96,15 @@ export class PlannersController {
     @GetUser() user: session_userprofile,
   ): Promise<IPlanner.IItem.Future> {
     if (userId !== user.id) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException()
     }
     const futureItem = await this.plannersService.createFuturePlannerItem(
       plannerId,
       item.year,
       item.semester,
       item.course,
-    );
-    return futureItem;
+    )
+    return futureItem
   }
 
   @Post(':plannerId/reorder')
@@ -103,8 +112,8 @@ export class PlannersController {
     @Body() reorder: IPlanner.ReorderBodyDto,
     @Param('plannerId') plannerId: number,
     @GetUser() user: session_userprofile,
-  ): Promise<IPlanner.Detail> {
-    return await this.plannersService.reorderPlanner(plannerId, reorder.arrange_order, user);
+  ): Promise<IPlanner.Response> {
+    return await this.plannersService.reorderPlanner(plannerId, reorder.arrange_order, user)
   }
 
   @Post(':plannerId/update-item')
@@ -115,10 +124,10 @@ export class PlannersController {
     @Body() updateItemDto: IPlanner.UpdateItemBodyDto,
   ): Promise<IPlanner.IItem.IMutate> {
     if (userId !== user.id) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException()
     }
 
-    const updatedItem = await this.plannersService.updatePlannerItem(plannerId, updateItemDto);
-    return toJsonPlannerItem(updatedItem, updateItemDto.item_type);
+    const updatedItem = await this.plannersService.updatePlannerItem(plannerId, updateItemDto)
+    return toJsonPlannerItem(updatedItem, updateItemDto.item_type)
   }
 }

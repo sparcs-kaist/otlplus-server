@@ -1,0 +1,94 @@
+{
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/server/src",
+  "monorepo": true,
+  "root": "apps/server",
+  "compilerOptions": {
+    "tsConfigPath": "apps/server/tsconfig.app.json",
+    "plugins": ["@nestjs/swagger/plugin"],
+    "assets": [
+      {
+        "include": "apps/server/docs/swagger.json",
+        "outDir": "dist/apps/server/apps/server/docs"
+      }
+    ]
+  },
+  "projects": {
+    "server": {
+      "type": "application",
+      "root": "apps/server",
+      "sourceRoot": "apps/server/src",
+      "entryFile": "bootstrap/bootstrap",
+      "compilerOptions": {
+        "tsConfigPath": "apps/server/tsconfig.app.json",
+        "plugins": ["@nestjs/swagger/plugin"]
+      }
+    },
+    "scholar-sync": {
+      "type": "application",
+      "root": "apps/scholar-sync",
+      "sourceRoot": "apps/scholar-sync/src",
+      "entryFile": "bootstrap/bootstrap",
+      "compilerOptions": {
+        "tsConfigPath": "apps/scholar-sync/tsconfig.app.json",
+        "plugins": ["@nestjs/swagger/plugin"]
+      }
+    },
+    "notification-consumer": {
+      "type": "application",
+      "root": "apps/notification-consumer/src",
+      "sourceRoot": "apps/notification-consumer/src",
+      "entryFile": "bootstrap/bootstrap",
+      "compilerOptions": {
+        "tsConfigPath": "apps/notification-consumer/tsconfig.app.json",
+        "plugins": ["@nestjs/swagger/plugin"]
+      }
+    },
+    "server-consumer": {
+      "type": "application",
+      "root": "apps/server-consumer/src",
+      "sourceRoot": "apps/server-consumer/src",
+      "entryFile": "bootstrap/bootstrap",
+      "compilerOptions": {
+        "tsConfigPath": "apps/server-consumer/tsconfig.app.json",
+        "plugins": ["@nestjs/swagger/plugin"]
+      }
+    },
+    "prisma-client": {
+      "type": "library",
+      "root": "libs/prisma-client",
+      "sourceRoot": "libs/prisma-client/src",
+      "entryFile": "index",
+      "compilerOptions": {
+        "tsConfigPath": "libs/prisma-client/tsconfig.lib.json"
+      }
+    },
+    "common": {
+      "type": "library",
+      "root": "libs/common",
+      "entryFile": "index",
+      "sourceRoot": "libs/common/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/common/tsconfig.lib.json"
+      }
+    },
+    "rmq": {
+      "type": "library",
+      "root": "libs/rmq",
+      "sourceRoot": "libs/rmq/src",
+      "entryFile": "index",
+      "compilerOptions": {
+        "tsConfigPath": "libs/rmq/tsconfig.lib.json"
+      }
+    },
+    "redis": {
+      "type": "library",
+      "root": "libs/redis",
+      "sourceRoot": "libs/redis/src",
+      "entryFile": "index",
+      "compilerOptions": {
+        "tsConfigPath": "libs/redis/tsconfig.lib.json"
+      }
+    }
+  }
+}

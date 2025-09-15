@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.app.json", // ← 방금 보여 준 파일
+  "compilerOptions": {
+    "module": "ESNext", // ESM 모드
+    "target": "ES2021", // 그대로 유지
+    "outDir": "../../dist/docs", // 아무 곳이나 OK
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "NodeNext" // ESM import 경로 추적
+  },
+  "include": ["openapi-generator.ts"]
+}

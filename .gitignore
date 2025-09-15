@@ -5,6 +5,7 @@
 
 #
 /env/*
+/secrets/*
 apps/server/env/*
 apps/scholar-sync/env/*
 apps/noti-server/env/*
@@ -45,4 +46,21 @@ lerna-debug.log*
 
 apps/server/volumes
 volumes
-.clinic
+
+# redis
+.docker/redis/redis-data
+.docker/redis-scheduler/redis-data/*
+deploy/server/redis/redis-data
+.docker/redis-scheduler/redis-data
+
+# rabbitmq
+.docker/rabbitmq/rabbitmq-data/*
+
+#firebase secrets
+secrets/*
+web-test/*
+
+## logs
+apps/server/logs/*
+# Sentry Config File
+.sentryclirc

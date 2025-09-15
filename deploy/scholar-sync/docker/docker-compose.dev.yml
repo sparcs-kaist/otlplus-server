@@ -5,14 +5,14 @@ services:
     container_name: otlplus-scholar-sync-nest-dev
     platform: linux/amd64
     env_file:
-      - ../../../apps/scholar-sync/env/.env.dev
+      - ../../../env/.env.dev
     environment:
       - NODE_ENV=dev
       - DOCKER_DEPLOY=true
     build:
       context: ../../..
       dockerfile: ./deploy/scholar-sync/docker/Dockerfile.server
-    image: otlplus-server-nest-dev
+    image: otlplus-scholar-sync-nest-dev
     restart: always
     tty: true
     ports:
@@ -22,5 +22,5 @@ services:
     volumes:
       - '/etc/timezone:/etc/timezone:ro'
       - '../../../apps/scholar-sync/logs:/var/www/otlplus/apps/scholar-sync/logs'
-    working_dir: /var/www/otlplus/apps/scholar-sync
-    command: node dist/src/bootstrap/bootstrap.js
+    working_dir: /var/www/otlplus
+    command: node dist/apps/scholar-sync/apps/scholar-sync/src/bootstrap/bootstrap.js

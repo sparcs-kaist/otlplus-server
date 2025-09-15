@@ -1,30 +1,64 @@
-import { ValidationPipe, VersioningType } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
-import cookieParser from 'cookie-parser';
-import csrf from 'csurf';
-import { json } from 'express';
-import session from 'express-session';
-import { AppModule } from '../app.module';
-import settings from '../settings';
-import { SwaggerModule } from '@nestjs/swagger';
-// import { AuthGuard, MockAuthGuard } from '../../common/guards/auth.guard'
-import morgan from 'morgan';
-import * as v8 from 'node:v8';
+import { HttpException, ValidationPipe, VersioningType } from '@nestjs/common'
+import { NestFactory } from '@nestjs/core'
+import * as Sentry from '@sentry/nestjs'
+import cookieParser from 'cookie-parser'
+import csrf from 'csurf'
+import { json } from 'express'
+import session from 'express-session'
+import fs from 'fs'
+import { join } from 'path'
+import * as swaggerUi from 'swagger-ui-express'
+
+import { AgreementType } from '@otl/common/enum/agreement'
+import { HttpExceptionFilter, UnexpectedExceptionFilter } from '@otl/common/exception/exception.filter'
+
+import { PrismaService } from '@otl/prisma-client'
+
+import { AppModule } from '../app.module'
+import settings from '../settings'
+
+function initializeDB(prismaService: PrismaService) {
+  const agreementTypes = Object.values(AgreementType)
+  Promise.all(
+    agreementTypes.map(async (type) => {
+      await prismaService.agreement.upsert({
+        where: { name: type },
+        update: {},
+        create: {
+          name: type,
+        },
+      })
+    }),
+  )
+    .then(() => {
+      console.log('DB initialized')
+    })
+    .catch((error) => {
+      console.error('Error initializing DB:', error)
+    })
+}
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  Sentry.init({
+    dsn: settings().getSentryConfig().dsn as string,
+    // Add Tracing by setting tracesSampleRate
+    // We recommend adjusting this value in production
+    tracesSampleRate: 1.0,
+  })
+
+  const app = await NestFactory.create(AppModule)
 
   app.enableVersioning({
     type: VersioningType.URI,
-  });
-  app.enableCors(settings().getCorsConfig());
+  })
+  app.enableCors(settings().getCorsConfig())
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       // forbidNonWhitelisted: true,
       transform: true,
     }),
-  );
+  )
 
   app.use(
     session({
@@ -32,51 +66,37 @@ async function bootstrap() {
       resave: false,
       saveUninitialized: false,
     }),
-  );
-  app.use(cookieParser());
+  )
+  app.use(cookieParser())
   app.use(
     '/',
     csrf({
       cookie: { key: 'csrftoken' },
       ignoreMethods: ['GET', 'HEAD', 'OPTIONS', 'DELETE', 'PATCH', 'PUT', 'POST'],
     }),
-  );
-  // Logs requests
-  app.use(
-    morgan(':method :url OS/:req[client-os] Ver/:req[client-api-version]', {
-      // https://github.com/expressjs/morgan#immediate
-      immediate: true,
-      stream: {
-        write: (message) => {
-          console.info(message.trim());
+  )
+  const swaggerJsonPath = join(__dirname, '..', '..', 'docs', 'swagger.json')
+  const swaggerDocument = JSON.parse(fs.readFileSync(swaggerJsonPath, 'utf-8'))
+  if (process.env.NODE_ENV !== 'prod') {
+    app.use(
+      '/api/docs',
+      swaggerUi.serve,
+      swaggerUi.setup(swaggerDocument, {
+        swaggerOptions: {
+          withCredentials: true,
         },
-      },
-    }),
-  );
+      }),
+    )
+  }
 
-  // Logs responses
-  // app.use(
-  //   morgan(':method :url :status :res[content-length] :response-time ms', {
-  //     stream: {
-  //       write: (message) => {
-  //         // console.log(formatMemoryUsage())
-  //         console.info(message.trim());
-  //       },
-  //     },
-  //   }),
-  // );
-
-  const document = SwaggerModule.createDocument(app, settings().getSwaggerConfig());
-  SwaggerModule.setup('docs', app, document);
-
-  app.use('/api/sync', json({ limit: '50mb' }));
-  app.use(json({ limit: '100kb' }));
-  console.log(v8.getHeapStatistics().heap_size_limit / 1024 / 1024);
-
-  app.enableShutdownHooks();
-  return app.listen(8000);
+  app.use('/api/sync', json({ limit: '50mb' }))
+  app.use(json({ limit: '100kb' }))
+  app.useGlobalFilters(new UnexpectedExceptionFilter(), new HttpExceptionFilter<HttpException>())
+  initializeDB(app.get(PrismaService))
+  app.enableShutdownHooks()
+  return app.listen(8000)
 }
 
 bootstrap()
   .then(() => console.log('Nest Ready'))
-  .catch((error) => console.log(error));
+  .catch((error) => console.log(error))
