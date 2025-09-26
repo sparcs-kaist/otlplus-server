@@ -41,39 +41,23 @@ export class CustomblockRepository {
     })
   }
 
-  // timetable에 있는 custom block 목록 가져오기 (TIME을 문자열 HH:mm으로 직접 반환)
-  async getCustomblocksList(timeTableId: number): Promise<
-    Array<{
-      id: number
-      block_name: string
-      place: string
-      day: number
-      begin: string
-      end: string
-    }>
-  > {
-    const rows = await this.prismaRead.$queryRaw<
-      Array<{
-        id: number
-        block_name: string
-        place: string
-        day: number
-        begin: string
-        end: string
-      }>
-    >`\
-      SELECT b.id,
-             b.block_name,
-             b.place,
-             b.day,
-             TIME_FORMAT(b.begin, '%H:%i') AS begin,
-             TIME_FORMAT(b.end,   '%H:%i') AS end
-        FROM block_custom_blocks AS b
-        JOIN timetable_timetable_customblocks AS ttc
-          ON ttc.custom_block_id = b.id
-       WHERE ttc.timetable_id = ${timeTableId}
-    `
-    return rows
+  // timetable에 있는 custom block 목록 가져오기
+  async getCustomblocksList(timeTableId: number): Promise<ECustomblock.Basic[]> {
+    return this.prismaRead.block_custom_blocks.findMany({
+      where: {
+        timetable_timetable_customblocks: {
+          some: { timetable_id: timeTableId },
+        },
+      },
+      select: {
+        id: true,
+        block_name: true,
+        place: true,
+        day: true,
+        begin: true,
+        end: true,
+      },
+    })
   }
 
   // block_name과 string만 업데이트

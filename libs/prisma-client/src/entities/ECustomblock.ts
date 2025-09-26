@@ -5,8 +5,8 @@ export namespace ECustomblock {
     block_name: string
     place: string
     day: number
-    begin: Date
-    end: Date
+    begin: number // 00시부터 경과 분 (예: 780 = 13:00)
+    end: number // 00시부터 경과 분 (예: 810 = 13:30)
   }
 
   // Helper input shapes for service/repo methods (pair with ICustomblock DTOs)

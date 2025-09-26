@@ -1,18 +1,7 @@
-import { Transform, Type } from 'class-transformer'
+import { Type } from 'class-transformer'
 import {
-  IsDate, IsInt, IsNotEmpty, IsOptional, IsString,
+  IsInt, IsNotEmpty, IsOptional, IsString, Max, Min,
 } from 'class-validator'
-
-// HH:mm 문자열을 UTC 기준 Date(1970-01-01 HH:mm:00)로 변환
-// HH:mm 형식을 바로 쓸 수 없어 앞에 기본 날짜 붙이기
-function hhmmToUTCDateStrict(value: unknown): Date | unknown {
-  if (value instanceof Date) return value
-  if (typeof value !== 'string') return value
-  const m = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(value.trim())
-  if (!m) return value
-  const [, hh, mm] = m
-  return new Date(Date.UTC(1970, 0, 1, Number(hh), Number(mm), 0))
-}
 
 export namespace ICustomblock {
   export interface Basic {
@@ -20,18 +9,8 @@ export namespace ICustomblock {
     block_name: string
     place: string
     day: number
-    begin: Date
-    end: Date
-  }
-
-  // View model for responses where times should be strings (HH:mm)
-  export interface BasicView {
-    id: number
-    block_name: string
-    place: string
-    day: number
-    begin: string // e.g., "21:00"
-    end: string // e.g., "21:30"
+    begin: number // 00시부터 경과 분 (예: 780 = 13:00)
+    end: number // 00시부터 경과 분 (예: 810 = 13:30)
   }
 
   export class CreateDto {
@@ -50,14 +29,16 @@ export namespace ICustomblock {
     day!: number
 
     @IsNotEmpty()
-    @Transform(({ value }) => hhmmToUTCDateStrict(value))
-    @IsDate()
-    begin!: Date
+    @IsInt()
+    @Min(0) // 00:00 = 0분
+    @Max(1439) // 23:59 = 1439분
+    begin!: number
 
     @IsNotEmpty()
-    @Transform(({ value }) => hhmmToUTCDateStrict(value))
-    @IsDate()
-    end!: Date
+    @IsInt()
+    @Min(0) // 00:00 = 0분
+    @Max(1439) // 23:59 = 1439분
+    end!: number
   }
 
   export class CreateResponse {
@@ -66,7 +47,7 @@ export namespace ICustomblock {
 
   // GET 목록 응답 래퍼
   export class ListResponse {
-    custom_blocks!: ICustomblock.BasicView[]
+    custom_blocks!: ICustomblock.Basic[]
   }
 
   export class UpdateDto {

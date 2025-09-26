@@ -10,27 +10,7 @@ import { session_userprofile } from '@prisma/client'
 import { LecturesService } from '../lectures/lectures.service'
 import { TimetablesService } from './timetables.service'
 
-// Format input to HH:mm (UTC). Accepts Date or string (HH:mm[:ss] or ISO).
-function toHHmm(input: unknown): string {
-  // If Date and valid
-  if (input instanceof Date && !Number.isNaN(input.getTime())) {
-    const hh = input.getUTCHours().toString().padStart(2, '0')
-    const mm = input.getUTCMinutes().toString().padStart(2, '0')
-    return `${hh}:${mm}`
-  }
-  // If string like HH:mm or HH:mm:ss
-  if (typeof input === 'string') {
-    const s = input.trim()
-    const m = /^(\d{2}):(\d{2})(?::\d{2})?$/.exec(s)
-    if (m) return `${m[1]}:${m[2]}`
-    const d = new Date(s)
-    if (!Number.isNaN(d.getTime())) return toHHmm(d)
-  }
-  // Fallback to 00:00 to avoid NaN:NaN in responses
-
-  console.warn('[custom-blocks] toHHmm fallback for input:', input)
-  return '00:00'
-}
+// toHHmm function removed - now using integer minutes directly (e.g., 780 = 13:00)
 
 @Controller('/api/users/:userId/timetables')
 export class TimetablesController {
@@ -106,15 +86,7 @@ export class TimetablesController {
     @Param('timetableId') timetableId: number,
     @GetUser() user: session_userprofile,
   ): Promise<ICustomblock.ListResponse> {
-    const items = await this.timetablesService.getCustomblockList(timetableId, user)
-    const custom_blocks = items.map((it) => ({
-      id: it.id,
-      block_name: it.block_name,
-      place: it.place,
-      day: it.day,
-      begin: toHHmm(it.begin),
-      end: toHHmm(it.end),
-    }))
+    const custom_blocks = await this.timetablesService.getCustomblockList(timetableId, user)
     return { custom_blocks }
   }
 

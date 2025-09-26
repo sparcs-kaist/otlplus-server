@@ -83,8 +83,8 @@ model block_custom_blocks {
   block_name                       String                             @db.VarChar(255)
   place                            String                             @db.VarChar(255)
   day                              Int
-  begin                            DateTime                           @db.Time(0)
-  end                              DateTime                           @db.Time(0)
+  begin                            Int // 00시부터 경과 분 (예: 780 = 13:00)
+  end                              Int // 00시부터 경과 분 (예: 810 = 13:30)
   timetable_timetable_customblocks timetable_timetable_customblocks[]
 }
 
