@@ -6,6 +6,8 @@ import { AuthService } from '@otl/server-nest/modules/auth/auth.service'
 import settings from '@otl/server-nest/settings'
 import { Request, Response } from 'express'
 
+type TokenPayload = { sid?: string, uid?: string | number, [k: string]: any }
+
 @Injectable()
 export class JwtHeaderCommand implements AuthCommand {
   private readonly jwtConfig = settings().getJwtConfig()
@@ -25,11 +27,14 @@ export class JwtHeaderCommand implements AuthCommand {
 
     try {
       if (!accessToken) throw new Error('jwt expired')
-      const payload = await this.verifyToken(accessToken)
-      const user = await this.getUserFromPayload(payload.sid)
+      const payload = (await this.verifyToken(accessToken)) as TokenPayload
+      const user = await this.getUserFromPayload(payload)
 
-      request.user = user
-      return this.setAuthenticated(prevResult)
+      if (user) {
+        request.user = user
+        return this.setAuthenticated(prevResult)
+      }
+      return prevResult
     }
     catch (e: any) {
       if (e.message === 'jwt expired' && refreshToken) {
@@ -46,10 +51,15 @@ export class JwtHeaderCommand implements AuthCommand {
     })
   }
 
-  private async getUserFromPayload(sid: string) {
-    const user = await this.authService.findBySid(sid)
-    if (!user) throw new NotFoundException('user is not found')
-    return user
+  private async getUserFromPayload(payload: TokenPayload) {
+    if (payload?.sid) {
+      return this.authService.findBySid(payload.sid)
+    }
+    if (payload?.uid != null) {
+      // 숫자/문자 모두 허용
+      return this.authService.findByUid(String(payload.uid))
+    }
+    throw new NotFoundException('Neither sid nor uid found in JWT payload')
   }
 
   private async handleRefreshToken(
@@ -59,8 +69,8 @@ export class JwtHeaderCommand implements AuthCommand {
     result: AuthResult,
   ): Promise<AuthResult> {
     try {
-      const payload = await this.verifyToken(refreshToken)
-      const user = await this.getUserFromPayload(payload.sid)
+      const payload = (await this.verifyToken(refreshToken)) as TokenPayload
+      const user = await this.getUserFromPayload(payload)
 
       // if (user.refresh_token && (await bcrypt.compare(refreshToken, user.refresh_token))) {
       //   const { accessToken: newAccessToken, ...accessTokenOptions } = this.authService.getCookieWithAccessToken(
@@ -75,16 +85,22 @@ export class JwtHeaderCommand implements AuthCommand {
       //   request.user = user
       //   return this.setAuthenticated(result)
       // }
-      const { accessToken: newAccessToken, ...accessTokenOptions } = this.authService.getCookieWithAccessToken(
-        payload.sid,
-      )
-      const { refreshToken: newRefreshToken, ...refreshTokenOptions } = this.authService.getCookieWithRefreshToken(
-        payload.sid,
-      )
+      const subjectSid = payload.sid ?? (await this.authService.findSidByUid(String(payload.uid))) ?? user?.sid // user 객체에 sid가 있으면 활용
+
+      if (!subjectSid) {
+        // uid만 있는 사용자인데 아직 sid 매핑이 없다면, 쿠키 재발급 없이 통과(또는 회원가입 흐름으로 유도)
+        return result
+      }
+
+      const { accessToken: newAccessToken, ...accessTokenOptions } = this.authService.getCookieWithAccessToken(subjectSid)
+      const { refreshToken: newRefreshToken, ...refreshTokenOptions } = this.authService.getCookieWithRefreshToken(subjectSid)
       response.cookie('accessToken', newAccessToken, accessTokenOptions)
       response.cookie('refreshToken', newRefreshToken, refreshTokenOptions)
-      request.user = user
-      return this.setAuthenticated(result)
+      if (user) {
+        request.user = user
+        return this.setAuthenticated(result)
+      }
+      return result
     }
     catch {
       return result

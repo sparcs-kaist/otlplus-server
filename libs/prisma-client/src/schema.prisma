@@ -314,8 +314,8 @@ model session_userprofile {
 }
 
 model sid_uid_map {
-  uid Int
-  sid Int
+  uid String
+  sid String
 
   @@id([uid, sid])
 }
