@@ -27,7 +27,7 @@ export class JwtCookieCommand implements AuthCommand {
 
     try {
       if (!accessToken) throw new Error('jwt expired')
-      const payload = await this.verifyToken(accessToken)
+      const payload = await this.verifyTokenFlexible(accessToken)
       const user = await this.getUserFromPayload(payload)
 
       if (user) {
@@ -44,11 +44,17 @@ export class JwtCookieCommand implements AuthCommand {
     }
   }
 
-  private async verifyToken(token: string): Promise<{ sid: string }> {
-    return this.jwtService.verifyAsync(token, {
-      secret: this.jwtConfig.secret,
-      ignoreExpiration: false,
-    })
+  // ✅ 헤더 버전과 동일: HS 우선, 실패 시 외부 토큰 검증
+  private async verifyTokenFlexible(token: string): Promise<TokenPayload> {
+    try {
+      return await this.jwtService.verifyAsync<TokenPayload>(token, {
+        secret: this.jwtConfig.secret,
+        ignoreExpiration: false,
+      })
+    }
+    catch {
+      return await this.authService.verifyOneAppJwt<TokenPayload>(token, { allowExpired: false })
+    }
   }
 
   private async getUserFromPayload(payload: TokenPayload) {
@@ -69,7 +75,7 @@ export class JwtCookieCommand implements AuthCommand {
     result: AuthResult,
   ): Promise<AuthResult> {
     try {
-      const payload = (await this.verifyToken(refreshToken)) as TokenPayload
+      const payload = await this.verifyTokenFlexible(refreshToken)
       const user = await this.getUserFromPayload(payload)
 
       // if (user.refresh_token && (await bcrypt.compare(refreshToken, user.refresh_token))) {

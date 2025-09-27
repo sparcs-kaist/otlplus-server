@@ -146,7 +146,7 @@ export class AuthController {
     })
     if (!ignoreExp && headerPayload.exp && now > headerPayload.exp) {
       res.status(401)
-      return { isRegistered: false, mes: 'Authorization token expired' }
+      return { isRegistered: false, mes: 'Authorization token expired', exp: headerPayload.exp }
     }
 
     // 3) sso_info 검증
@@ -159,7 +159,7 @@ export class AuthController {
     })
     if (!ignoreExp && ssoPayload.exp && now > ssoPayload.exp) {
       res.status(401)
-      return { isRegistered: false, mes: 'sso_info token expired' }
+      return { isRegistered: false, mes: 'sso_info token expired', exp: ssoPayload.exp }
     }
 
     // 4) uid 동일성

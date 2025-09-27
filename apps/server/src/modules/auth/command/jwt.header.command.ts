@@ -27,7 +27,7 @@ export class JwtHeaderCommand implements AuthCommand {
 
     try {
       if (!accessToken) throw new Error('jwt expired')
-      const payload = (await this.verifyToken(accessToken)) as TokenPayload
+      const payload = await this.verifyTokenFlexible(accessToken)
       const user = await this.getUserFromPayload(payload)
 
       if (user) {
@@ -44,11 +44,18 @@ export class JwtHeaderCommand implements AuthCommand {
     }
   }
 
-  private async verifyToken(token: string): Promise<{ sid: string }> {
-    return this.jwtService.verifyAsync(token, {
-      secret: this.jwtConfig.secret,
-      ignoreExpiration: false,
-    })
+  private async verifyTokenFlexible(token: string): Promise<TokenPayload> {
+    try {
+      return await this.jwtService.verifyAsync<TokenPayload>(token, {
+        secret: this.jwtConfig.secret,
+        ignoreExpiration: false,
+      })
+    }
+    catch {
+      // 외부(원앱 등) 토큰: RS 알고리즘/다른 secret일 수 있음
+      // verifyOneAppJwt는 prod에선 기본적으로 decode 폴백 꺼짐(서비스 정책 반영)
+      return await this.authService.verifyOneAppJwt<TokenPayload>(token, { allowExpired: false })
+    }
   }
 
   private async getUserFromPayload(payload: TokenPayload) {
@@ -69,7 +76,7 @@ export class JwtHeaderCommand implements AuthCommand {
     result: AuthResult,
   ): Promise<AuthResult> {
     try {
-      const payload = (await this.verifyToken(refreshToken)) as TokenPayload
+      const payload = await this.verifyTokenFlexible(refreshToken)
       const user = await this.getUserFromPayload(payload)
 
       // if (user.refresh_token && (await bcrypt.compare(refreshToken, user.refresh_token))) {
