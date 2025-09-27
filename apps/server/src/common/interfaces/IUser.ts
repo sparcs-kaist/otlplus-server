@@ -11,6 +11,9 @@ import {
 } from 'class-validator'
 
 export namespace IUser {
+  export interface sso_info_OneApp {
+    sso_info: string
+  }
   export class TakenCoursesQueryDto {
     @IsOptional()
     @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
