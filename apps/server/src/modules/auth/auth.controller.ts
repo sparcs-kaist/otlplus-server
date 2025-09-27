@@ -2,7 +2,7 @@ import {
   Body, Controller, Get, Post, Query, Req, Res, Session,
 } from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
-import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator'
+import { Public, Public as PublicForGuard } from '@otl/server-nest/common/decorators/skip-auth.decorator'
 import { IAuth, IUser } from '@otl/server-nest/common/interfaces'
 import settings from '@otl/server-nest/settings'
 import { session_userprofile } from '@prisma/client'
@@ -95,7 +95,7 @@ export class AuthController {
     response.redirect(next_url)
   }
 
-  @Public()
+  @PublicForGuard()
   @Post('register-oneapp')
   async registerOneApp(
     @Body() body: IUser.sso_info_OneApp,
@@ -146,7 +146,7 @@ export class AuthController {
     })
     if (!ignoreExp && headerPayload.exp && now > headerPayload.exp) {
       res.status(401)
-      return { isRegistered: false, mes: 'Authorization token expired', exp: headerPayload.exp }
+      return { isRegistered: false, mes: 'Authorization token expired' }
     }
 
     // 3) sso_info 검증
@@ -159,7 +159,7 @@ export class AuthController {
     })
     if (!ignoreExp && ssoPayload.exp && now > ssoPayload.exp) {
       res.status(401)
-      return { isRegistered: false, mes: 'sso_info token expired', exp: ssoPayload.exp }
+      return { isRegistered: false, mes: 'sso_info token expired' }
     }
 
     // 4) uid 동일성
