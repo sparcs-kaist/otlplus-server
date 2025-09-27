@@ -2,7 +2,7 @@ import {
   Body, Controller, Get, Post, Query, Req, Res, Session,
 } from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
-import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator'
+import { Public, Public as PublicForGuard } from '@otl/server-nest/common/decorators/skip-auth.decorator'
 import { IAuth, IUser } from '@otl/server-nest/common/interfaces'
 import settings from '@otl/server-nest/settings'
 import { session_userprofile } from '@prisma/client'
@@ -95,7 +95,7 @@ export class AuthController {
     response.redirect(next_url)
   }
 
-  @Public()
+  @PublicForGuard()
   @Post('register-oneapp')
   async registerOneApp(
     @Body() body: IUser.sso_info_OneApp,
