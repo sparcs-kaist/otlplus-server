@@ -2,6 +2,7 @@ import {
   Inject, Injectable, NotFoundException, UnauthorizedException,
 } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
+import { IAuth } from '@otl/server-nest/common/interfaces'
 import { AGREEMENT_IN_PUBLIC_PORT } from '@otl/server-nest/modules/agreement/domain/agreement.in.port'
 import { AgreementInPublicPort } from '@otl/server-nest/modules/agreement/domain/agreement.in.public.port'
 import { UserNotificationCreate } from '@otl/server-nest/modules/notification/domain/notification'
@@ -14,32 +15,10 @@ import * as jsonwebtoken from 'jsonwebtoken'
 import { AgreementType } from '@otl/common/enum/agreement'
 
 import { ESSOUser } from '@otl/prisma-client/entities/ESSOUser'
-import { PrismaService } from '@otl/prisma-client/prisma.service'
 import { UserRepository } from '@otl/prisma-client/repositories'
 import { NotificationPrismaRepository } from '@otl/prisma-client/repositories/notification.repository'
 
 import { SyncTakenLectureService } from '../sync/syncTakenLecture.service'
-
-// SSO 토큰(payload)에서 들어올 수 있는 필드들의 예시 타입
-type SsoPayload = {
-  uid: string
-  email?: string | null
-  first_name?: string | null
-  last_name?: string | null
-  kaist_id?: string | null
-  kaist_info?: any | null
-  kaist_v2_info?: any
-  iat?: number
-  exp?: number
-  iss?: string
-  // … 기타 필드는 무시
-}
-
-type ExtractedIdentity = {
-  sid?: string
-  uid?: string
-  payload?: any
-}
 
 @Injectable()
 export class AuthService {
@@ -52,7 +31,6 @@ export class AuthService {
     private readonly notificationRepository: NotificationPrismaRepository,
     @Inject(AGREEMENT_IN_PUBLIC_PORT)
     private readonly agreementService: AgreementInPublicPort,
-    private readonly prisma: PrismaService,
   ) {}
 
   public async findBySid(sid: string) {
@@ -68,23 +46,11 @@ export class AuthService {
   }
 
   async findSidByUid(uid: string): Promise<string | null> {
-    const map = await this.prisma.session_userprofile.findFirst({ where: { uid } })
-    return map?.sid ?? null
+    const sid = await this.userRepository.findSidByUid(uid)
+    return sid
   }
 
-  verifyJwt<T extends object = any>(token: string, opts?: { ignoreExpiration?: boolean }): T {
-    try {
-      return this.jwtService.verify<T>(token, {
-        ignoreExpiration: !!opts?.ignoreExpiration, // ★ exp 무시 가능
-      })
-    }
-    catch {
-      // 만료/서명오류를 구분하고 싶으면 메시지 분기해도 됨
-      throw new UnauthorizedException('Invalid token')
-    }
-  }
-
-  async createOrMergeUserFromSsoInfo(sso: SsoPayload): Promise<session_userprofile> {
+  async CreateUserFromSsoInfo(sso: IAuth.SsoPayload): Promise<session_userprofile> {
     // oneapp에서 사용
     const { uid } = sso
     if (!uid) throw new UnauthorizedException('Missing uid in sso_info payload')
@@ -385,7 +351,7 @@ export class AuthService {
     return request.cookies?.[type]
   }
 
-  public extractSidUidFromToken(token: string, opts?: { allowExpired?: boolean }): ExtractedIdentity {
+  public extractSidUidFromToken(token: string, opts?: { allowExpired?: boolean }): IAuth.ExtractedIdentity {
     if (!token) throw new UnauthorizedException('Missing token')
     const raw = token.startsWith('Bearer ') ? token.slice(7) : token
 
@@ -432,7 +398,7 @@ export class AuthService {
    * 요청에서 토큰을 찾아 sid/uid 추출
    * 우선순위: Authorization 헤더(=access) → accessToken 쿠키 → refreshToken 헤더/쿠키
    */
-  public resolveSidUidFromRequest(req: Request, opts?: { allowExpired?: boolean }): ExtractedIdentity {
+  public resolveSidUidFromRequest(req: Request, opts?: { allowExpired?: boolean }): IAuth.ExtractedIdentity {
     // 1) Authorization: Bearer xxx
     const authHeader = req.headers.authorization
     if (authHeader && authHeader.startsWith('Bearer ')) {

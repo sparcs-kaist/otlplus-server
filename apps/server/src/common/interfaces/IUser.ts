@@ -11,7 +11,7 @@ import {
 } from 'class-validator'
 
 export namespace IUser {
-  export interface sso_info_OneApp {
+  export interface SsoInfoOneApp {
     sso_info: string
   }
 

@@ -6,14 +6,16 @@ import { AuthService } from '@otl/server-nest/modules/auth/auth.service'
 import settings from '@otl/server-nest/settings'
 import { Request, Response } from 'express'
 
+type OneAppPayload = { uid: string | number }
+
 @Injectable()
-export class JwtHeaderCommand implements AuthCommand {
+export class OneAppHeaderCommand implements AuthCommand {
   private readonly jwtConfig = settings().getJwtConfig()
 
   constructor(
     private reflector: Reflector,
     private authService: AuthService,
-    private jwtService: JwtService,
+    private jwtService: JwtService, // 형식 유지(미사용)
   ) {}
 
   public async next(context: ExecutionContext, prevResult: AuthResult): Promise<AuthResult> {
@@ -25,8 +27,8 @@ export class JwtHeaderCommand implements AuthCommand {
 
     try {
       if (!accessToken) throw new Error('jwt expired')
-      const payload = await this.verifyToken(accessToken)
-      const user = await this.getUserFromPayload(payload.sid)
+      const payload = await this.verifyToken(accessToken) // OneApp 토큰 검증
+      const user = await this.getUserFromPayload(payload.uid)
 
       request.user = user
       return this.setAuthenticated(prevResult)
@@ -39,15 +41,13 @@ export class JwtHeaderCommand implements AuthCommand {
     }
   }
 
-  private async verifyToken(token: string): Promise<{ sid: string }> {
-    return this.jwtService.verifyAsync(token, {
-      secret: this.jwtConfig.secret,
-      ignoreExpiration: false,
-    })
+  private async verifyToken(token: string): Promise<OneAppPayload> {
+    // issuer/알고리즘이 다른 외부(OneApp) 토큰 검증
+    return this.authService.verifyOneAppJwt<OneAppPayload>(token, { allowExpired: false })
   }
 
-  private async getUserFromPayload(sid: string) {
-    const user = await this.authService.findBySid(sid)
+  private async getUserFromPayload(uid: string | number) {
+    const user = await this.authService.findByUid(String(uid))
     if (!user) throw new NotFoundException('user is not found')
     return user
   }
@@ -60,29 +60,19 @@ export class JwtHeaderCommand implements AuthCommand {
   ): Promise<AuthResult> {
     try {
       const payload = await this.verifyToken(refreshToken)
-      const user = await this.getUserFromPayload(payload.sid)
+      const user = await this.getUserFromPayload(payload.uid)
 
-      // if (user.refresh_token && (await bcrypt.compare(refreshToken, user.refresh_token))) {
-      //   const { accessToken: newAccessToken, ...accessTokenOptions } = this.authService.getCookieWithAccessToken(
-      //     payload.sid,
-      //   )
-      //
-      //   if (!response) {
-      //     throw new InternalServerErrorException('Response object not found in request context')
-      //   }
-      //
-      //   response.cookie('accessToken', newAccessToken, accessTokenOptions)
-      //   request.user = user
-      //   return this.setAuthenticated(result)
-      // }
-      const { accessToken: newAccessToken, ...accessTokenOptions } = this.authService.getCookieWithAccessToken(
-        payload.sid,
-      )
-      const { refreshToken: newRefreshToken, ...refreshTokenOptions } = this.authService.getCookieWithRefreshToken(
-        payload.sid,
-      )
-      response.cookie('accessToken', newAccessToken, accessTokenOptions)
-      response.cookie('refreshToken', newRefreshToken, refreshTokenOptions)
+      // 필요 시 우리 서비스 쿠키를 발급하려면 sid 매핑이 있어야 함.
+      // user 객체에 sid가 있다면 같은 형식으로 재발급
+      const sid: string | undefined = (user as any)?.sid
+      if (sid) {
+        const { accessToken: newAccessToken, ...accessTokenOptions } = this.authService.getCookieWithAccessToken(sid)
+        const { refreshToken: newRefreshToken, ...refreshTokenOptions } = this.authService.getCookieWithRefreshToken(sid)
+
+        response.cookie('accessToken', newAccessToken, accessTokenOptions)
+        response.cookie('refreshToken', newRefreshToken, refreshTokenOptions)
+      }
+
       request.user = user
       return this.setAuthenticated(result)
     }
@@ -107,7 +97,8 @@ export class JwtHeaderCommand implements AuthCommand {
       }
     }
     if (type === 'refreshToken') {
-      const refreshHeader = request.headers['X-REFRESH-TOKEN']
+      // 헤더 키 형식 동일 유지
+      const refreshHeader = request.headers['X-REFRESH-TOKEN'] as string | undefined
       if (typeof refreshHeader === 'string') {
         return refreshHeader
       }

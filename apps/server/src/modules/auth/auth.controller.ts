@@ -98,7 +98,7 @@ export class AuthController {
   @PublicForGuard()
   @Post('register-oneapp')
   async registerOneApp(
-    @Body() body: IUser.sso_info_OneApp,
+    @Body() body: IUser.SsoInfoOneApp,
     @Req() req: IAuth.Request,
     @Res({ passthrough: true }) res: IAuth.Response,
   ) {
@@ -114,34 +114,8 @@ export class AuthController {
     }
     const headerJwt = authorization
 
-    type OneAppHeaderPayload = {
-      oid: string
-      uid: string
-      type: string
-      iat?: number
-      exp?: number
-      iss?: string
-      aud?: string
-    }
-    type OneAppSsoPayload = {
-      uid: string
-      email?: string | null
-      first_name?: string | null
-      last_name?: string | null
-      kaist_id?: string | null
-      kaist_v2_info?: {
-        std_no?: string | null
-        std_dept_id?: string | number | null
-        std_status_kor?: string | null
-      } | null
-      iat?: number
-      exp?: number
-      iss?: string
-      aud?: string
-    }
-
     // 2) 헤더 토큰 검증
-    const headerPayload = await this.authService.verifyOneAppJwt<OneAppHeaderPayload>(headerJwt, {
+    const headerPayload = await this.authService.verifyOneAppJwt<IAuth.OneAppHeaderPayload>(headerJwt, {
       allowExpired: ignoreExp,
     })
     if (!ignoreExp && headerPayload.exp && now > headerPayload.exp) {
@@ -154,7 +128,7 @@ export class AuthController {
       res.status(401)
       return { isRegistered: false, mes: 'Missing sso_info' }
     }
-    const ssoPayload = await this.authService.verifyOneAppJwt<OneAppSsoPayload>(body.sso_info, {
+    const ssoPayload = await this.authService.verifyOneAppJwt<IAuth.OneAppSsoPayload>(body.sso_info, {
       allowExpired: ignoreExp,
     })
     if (!ignoreExp && ssoPayload.exp && now > ssoPayload.exp) {
@@ -177,7 +151,7 @@ export class AuthController {
     }
 
     // 5) 멱등 생성/갱신 (지금은 "새로 생성"만 일어남)
-    const user = await this.authService.createOrMergeUserFromSsoInfo(ssoPayload)
+    const user = await this.authService.CreateUserFromSsoInfo(ssoPayload)
     res.status(200)
     return { isRegistered: true, uid: user.uid }
   }
