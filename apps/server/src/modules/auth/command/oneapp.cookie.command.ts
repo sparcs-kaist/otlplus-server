@@ -6,8 +6,10 @@ import { AuthService } from '@otl/server-nest/modules/auth/auth.service'
 import settings from '@otl/server-nest/settings'
 import { Request, Response } from 'express'
 
+type OneAppPayload = { uid: string | number }
+
 @Injectable()
-export class JwtCookieCommand implements AuthCommand {
+export class OneAppCookieCommand implements AuthCommand {
   private readonly jwtConfig = settings().getJwtConfig()
 
   constructor(
@@ -25,8 +27,8 @@ export class JwtCookieCommand implements AuthCommand {
 
     try {
       if (!accessToken) throw new Error('jwt expired')
-      const payload = await this.verifyToken(accessToken)
-      const user = await this.getUserFromPayload(payload.sid)
+      const payload = await this.verifyToken(accessToken) // OneApp 토큰 검증
+      const user = await this.getUserFromPayload(payload.uid)
 
       request.user = user
       return this.setAuthenticated(prevResult)
@@ -39,15 +41,12 @@ export class JwtCookieCommand implements AuthCommand {
     }
   }
 
-  private async verifyToken(token: string): Promise<{ sid: string }> {
-    return this.jwtService.verifyAsync(token, {
-      secret: this.jwtConfig.secret,
-      ignoreExpiration: false,
-    })
+  private async verifyToken(token: string): Promise<OneAppPayload> {
+    return this.authService.verifyOneAppJwt<OneAppPayload>(token, { allowExpired: false })
   }
 
-  private async getUserFromPayload(sid: string) {
-    const user = await this.authService.findBySid(sid)
+  private async getUserFromPayload(uid: string | number) {
+    const user = await this.authService.findByUid(String(uid))
     if (!user) throw new NotFoundException('user is not found')
     return user
   }
@@ -60,27 +59,16 @@ export class JwtCookieCommand implements AuthCommand {
   ): Promise<AuthResult> {
     try {
       const payload = await this.verifyToken(refreshToken)
-      const user = await this.getUserFromPayload(payload.sid)
+      const user = await this.getUserFromPayload(payload.uid)
 
-      // if (user.refresh_token && (await bcrypt.compare(refreshToken, user.refresh_token))) {
-      //   const { accessToken: newAccessToken, ...accessTokenOptions } = this.authService.getCookieWithAccessToken(
-      //     payload.sid,
-      //   )
-      //
-      //   if (!response) {
-      //     throw new InternalServerErrorException('Response object not found in request context')
-      //   }
-      //
-      //   response.cookie('accessToken', newAccessToken, accessTokenOptions)
-      //   request.user = user
-      //   return this.setAuthenticated(result)
-      // }
-      const { accessToken: newAccessToken, ...accessTokenOptions } = this.authService.getCookieWithAccessToken(
-        payload.sid,
-      )
-      const { refreshToken: newRefreshToken, ...refreshTokenOptions } = this.authService.getCookieWithRefreshToken(
-        payload.sid,
-      )
+      // 우리 서비스 쿠키 재발급에는 sid가 필요 → user.sid 또는 매핑에서 조회
+      const sid = (user as any)?.sid ?? (await this.authService.findSidByUid(String(payload.uid)))
+
+      if (!sid) return result
+
+      const { accessToken: newAccessToken, ...accessTokenOptions } = this.authService.getCookieWithAccessToken(sid)
+      const { refreshToken: newRefreshToken, ...refreshTokenOptions } = this.authService.getCookieWithRefreshToken(sid)
+
       response.cookie('accessToken', newAccessToken, accessTokenOptions)
       response.cookie('refreshToken', newRefreshToken, refreshTokenOptions)
       request.user = user

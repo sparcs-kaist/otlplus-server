@@ -88,4 +88,10 @@ export class UserRepository {
       },
     })
   }
+
+  async findSidByUid(uid: string | null): Promise<string | null> {
+    if (!uid) return null
+    const map = await this.prisma.session_userprofile.findFirst({ where: { uid } })
+    return map?.sid ?? null
+  }
 }

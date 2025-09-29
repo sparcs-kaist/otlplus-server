@@ -11,9 +11,10 @@ import {
 } from 'class-validator'
 
 export namespace IUser {
-  export interface sso_info_OneApp {
+  export interface SsoInfoOneApp {
     sso_info: string
   }
+
   export class TakenCoursesQueryDto {
     @IsOptional()
     @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
@@ -70,18 +71,6 @@ export namespace IUser {
     review_writable_lectures: ILecture.Detail[]
     my_timetable_lectures: ILecture.Detail[]
     reviews: IReview.Basic[]
-  }
-
-  export interface SimpleProfile {
-    id: number
-    email: string
-    student_id: string
-    firstName: string
-    lastName: string
-    department: IDepartment.Basic | null
-    majors: IDepartment.Basic[]
-    departments: IDepartment.Basic[]
-    favorite_departments: IDepartment.Basic[]
   }
 
   export class TokenDto {
