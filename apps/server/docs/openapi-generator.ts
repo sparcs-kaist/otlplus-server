@@ -9,6 +9,7 @@ import { createGenerator, SchemaGenerator } from 'ts-json-schema-generator'
 import {
   Decorator, Project, SourceFile, SyntaxKind,
 } from 'ts-morph'
+import { pathToFileURL } from 'url' // ✅ 추가
 
 /** 간단 path normalize */
 function normalizePath(p: string) {
@@ -163,7 +164,7 @@ async function main() {
       }
     }
     const classes = modules.flatMap((m) => m.getClasses())
-    const mod = await import(filePath)
+    const mod = await import(pathToFileURL(filePath).href) // ✅ 파일 경로 → file:// URL
     for (const classDec of classes) {
       const className = classDec.getName()
       if (!className) continue

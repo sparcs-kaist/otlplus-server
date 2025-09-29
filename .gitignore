@@ -63,3 +63,18 @@ web-test/*
 apps/server/logs/*
 # Sentry Config File
 .sentryclirc
+
+.env.bak
+.libsprisma-clientsrcmigrations0_baselinemigration.sql  
+Dockerfile
+apps/server/ecosystem.config.js
+dump.sql
+dump_import.sql
+dump_mariadb.sql
+dump_mariadb_genfix.sql
+footer.sql
+header.sql
+inspect.json
+mariadb-data
+rabbitmq-data
+redis-data

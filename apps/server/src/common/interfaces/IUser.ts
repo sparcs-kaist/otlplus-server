@@ -11,6 +11,10 @@ import {
 } from 'class-validator'
 
 export namespace IUser {
+  export interface SsoInfoOneApp {
+    sso_info: string
+  }
+
   export class TakenCoursesQueryDto {
     @IsOptional()
     @Transform(({ value }) => (typeof value === 'string' ? [value] : value))

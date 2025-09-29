@@ -1,6 +1,8 @@
 export class User {
   id!: number
 
+  uid!: string
+
   sid!: string
 
   language!: string
