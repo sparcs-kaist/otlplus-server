@@ -82,4 +82,16 @@ export namespace IUser {
     accessToken: string
     refreshToken: string
   }
+
+  export interface SimpleProfile {
+    id: number
+    email: string
+    student_id: string
+    firstName: string
+    lastName: string
+    department: IDepartment.Basic | null
+    majors: IDepartment.Basic[]
+    departments: IDepartment.Basic[]
+    favorite_departments: IDepartment.Basic[]
+  }
 }
