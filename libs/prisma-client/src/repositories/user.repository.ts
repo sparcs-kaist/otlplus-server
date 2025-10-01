@@ -19,13 +19,19 @@ export class UserRepository {
     })
   }
 
+  async findByUid(uid: string) {
+    return this.prisma.session_userprofile.findFirst({
+      where: { uid },
+    })
+  }
+
   async createUser(user: Prisma.session_userprofileCreateInput): Promise<session_userprofile> {
     return this.prisma.session_userprofile.create({
       data: user,
     })
   }
 
-  async updateUser(userId: number, data: any): Promise<session_userprofile> {
+  async updateUser(userId: number, data: Prisma.session_userprofileUpdateInput): Promise<session_userprofile> {
     return this.prisma.session_userprofile.update({
       where: { id: userId },
       data,
@@ -81,5 +87,11 @@ export class UserRepository {
         student_id: studentId.toString(),
       },
     })
+  }
+
+  async findSidByUid(uid: string | null): Promise<string | null> {
+    if (!uid) return null
+    const map = await this.prisma.session_userprofile.findFirst({ where: { uid } })
+    return map?.sid ?? null
   }
 }
