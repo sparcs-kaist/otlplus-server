@@ -74,6 +74,37 @@ export class UserService {
     }
   }
 
+  public async getSimpleProfile(user: session_userprofile): Promise<IUser.SimpleProfile> {
+    const [department, favorite_departments, majors, minors, specializedMajors] = await Promise.all([
+      this.departmentRepository.getDepartmentOfUser(user),
+      this.departmentRepository.getFavoriteDepartments(user),
+      this.departmentRepository.getMajors(user),
+      this.departmentRepository.getMinors(user),
+      this.departmentRepository.getSpecializedMajors(user),
+    ])
+    const departments = [...majors, ...minors, ...specializedMajors, ...favorite_departments]
+
+    return {
+      id: user.id,
+      email: user.email ?? '',
+      student_id: user.student_id,
+      firstName: user.first_name,
+      lastName: user.last_name,
+      department: department ? toJsonDepartment(department) : null,
+      majors: majors.map((major) => toJsonDepartment(major)),
+      departments: departments.map((d) => toJsonDepartment(d)),
+      favorite_departments: favorite_departments.map((d) => toJsonDepartment(d)),
+    }
+  }
+
+  public async getTakenLectureBySemester(
+    user: session_userprofile,
+    year: number,
+    semester: number,
+  ): Promise<ELecture.Details[]> {
+    return this.lectureRepository.getTakenLecturesBySemester(user.id, year, semester)
+  }
+
   async getUserTakenCourses(
     query: IUser.TakenCoursesQueryDto,
     user: session_userprofile,

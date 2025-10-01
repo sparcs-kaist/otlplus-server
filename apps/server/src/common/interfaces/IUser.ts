@@ -11,6 +11,10 @@ import {
 } from 'class-validator'
 
 export namespace IUser {
+  export interface SsoInfoOneApp {
+    sso_info: string
+  }
+
   export class TakenCoursesQueryDto {
     @IsOptional()
     @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
@@ -77,5 +81,17 @@ export namespace IUser {
   export interface TokenResponse {
     accessToken: string
     refreshToken: string
+  }
+
+  export interface SimpleProfile {
+    id: number
+    email: string
+    student_id: string
+    firstName: string
+    lastName: string
+    department: IDepartment.Basic | null
+    majors: IDepartment.Basic[]
+    departments: IDepartment.Basic[]
+    favorite_departments: IDepartment.Basic[]
   }
 }

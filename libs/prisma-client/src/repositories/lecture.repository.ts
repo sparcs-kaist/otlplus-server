@@ -181,6 +181,27 @@ export class LectureRepository implements ServerConsumerLectureRepository {
     return lectures
   }
 
+  // year, semester 필터링 버전 + userId 만으로 조회
+  async getTakenLecturesBySemester(userId: number, year: number, semester: number): Promise<ELecture.Details[]> {
+    const lectures = (
+      await this.prismaRead.session_userprofile_taken_lectures.findMany({
+        where: {
+          userprofile_id: userId,
+          lecture: {
+            year,
+            semester,
+          },
+        },
+        include: {
+          lecture: {
+            include: ELecture.Details.include,
+          },
+        },
+      })
+    ).map((takenLecture) => takenLecture.lecture)
+    return lectures
+  }
+
   public semesterFilter(year?: number, semester?: number): object | null {
     if (!year && !semester) {
       return null

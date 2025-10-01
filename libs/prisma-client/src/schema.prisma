@@ -78,6 +78,16 @@ model auth_user_user_permissions {
   @@index([permission_id], map: "auth_user_u_permission_id_384b62483d7071f0_fk_auth_permission_id")
 }
 
+model block_custom_blocks {
+  id                               Int                                @id @default(autoincrement())
+  block_name                       String                             @db.VarChar(255)
+  place                            String                             @db.VarChar(255)
+  day                              Int
+  begin                            Int // 00시부터 경과 분 (예: 780 = 13:00)
+  end                              Int // 00시부터 경과 분 (예: 810 = 13:30)
+  timetable_timetable_customblocks timetable_timetable_customblocks[]
+}
+
 model django_admin_log {
   id                  Int                  @id @default(autoincrement())
   action_time         DateTime             @db.DateTime(0)
@@ -311,6 +321,13 @@ model session_userprofile {
 
   @@index([department_id], map: "session_userprofile_department_id_fkey")
   @@index([student_id], map: "session_userprofile_student_id_index")
+}
+
+model sid_uid_map {
+  uid String
+  sid String
+
+  @@id([uid, sid])
 }
 
 model session_userprofile_device {
@@ -739,13 +756,14 @@ model timetable_oldtimetable_lectures {
 }
 
 model timetable_timetable {
-  id                           Int                            @id @default(autoincrement())
-  year                         Int?
-  semester                     Int?                           @db.SmallInt
-  user_id                      Int
-  arrange_order                Int                            @db.SmallInt
-  session_userprofile          session_userprofile            @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "timetable_timetable_user_id_0d214170_fk_session_userprofile_id")
-  timetable_timetable_lectures timetable_timetable_lectures[]
+  id                               Int                                @id @default(autoincrement())
+  year                             Int?
+  semester                         Int?                               @db.SmallInt
+  user_id                          Int
+  arrange_order                    Int                                @db.SmallInt
+  session_userprofile              session_userprofile                @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "timetable_timetable_user_id_0d214170_fk_session_userprofile_id")
+  timetable_timetable_lectures     timetable_timetable_lectures[]
+  timetable_timetable_customblocks timetable_timetable_customblocks[]
 
   @@index([arrange_order], map: "timetable_timetable_arrange_order_84c8935c")
   @@index([semester], map: "timetable_timetable_semester_d8ce5d37_uniq")
@@ -762,6 +780,17 @@ model timetable_timetable_lectures {
 
   @@unique([timetable_id, lecture_id], map: "timetable_timetable_lecture_timetable_id_57195f56_uniq")
   @@index([lecture_id], map: "timetable_timetable_le_lecture_id_79aa5f2e_fk_subject_lecture_id")
+}
+
+model timetable_timetable_customblocks {
+  id                  Int                 @id @default(autoincrement())
+  timetable_id        Int
+  custom_block_id     Int
+  block_custom_blocks block_custom_blocks @relation(fields: [custom_block_id], references: [id], onUpdate: Restrict, map: "fk_timetable_timetable_custom__block_custom_blocks")
+  timetable_timetable timetable_timetable @relation(fields: [timetable_id], references: [id], onUpdate: Restrict, map: "fk_timetable_timetable_custom__timetable_timetable")
+
+  @@unique([timetable_id, custom_block_id], map: "timetable_customblocks_mapping_uniq")
+  @@index([custom_block_id], map: "timetable_timetable_customblocks_custom_block_id_index")
 }
 
 model timetable_wishlist {
