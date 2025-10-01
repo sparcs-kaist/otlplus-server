@@ -157,6 +157,14 @@ export class TimetableRepository {
     })
   }
 
+  // todo: implement updateName
+  // async updateName(id: number, name: string): Promise<ETimetable.Basic> {
+  //   return this.prisma.timetable_timetable.update({
+  //     where: { id },
+  //     data: { name },
+  //   })
+  // }
+
   async getLecturesWithClassTimes(timetableId: number) {
     return this.prismaRead.timetable_timetable_lectures.findMany({
       where: { timetable_id: timetableId },
