@@ -67,6 +67,7 @@ const getJwtConfig = () => ({
     expiresIn: process.env.EXPIRES_IN,
     refreshExpiresIn: process.env.REFRESH_EXPIRES_IN,
   },
+  oneAppSecret: process.env.ONEAPP_JWT_SECRET,
 })
 
 const getSsoConfig = (): any => ({
