@@ -118,7 +118,7 @@ export class AuthService {
       allowDecodeFallback = process.env.NODE_ENV !== 'prod',
     }: { allowExpired?: boolean, allowDecodeFallback?: boolean } = {},
   ): Promise<T> {
-    const { secret } = settings().getJwtConfig()
+    const { oneAppSecret } = settings().getJwtConfig()
 
     // 1) alg 확인 (헤더만 먼저 디코드, verify 미수행)
     const decodedComplete = jsonwebtoken.decode(token, { complete: true }) as { header?: any } | null
@@ -127,7 +127,7 @@ export class AuthService {
     try {
       // 2) HS*면 secret로 바로 검증(전역 verifyOptions 무시)
       if (!alg || /^HS\d+$/i.test(alg)) {
-        return jsonwebtoken.verify(token, secret ?? '', {
+        return jsonwebtoken.verify(token, oneAppSecret ?? '', {
           ignoreExpiration: false, // 우선 정상 경로
           algorithms: ['HS256', 'HS384', 'HS512'],
         }) as unknown as T
@@ -142,7 +142,7 @@ export class AuthService {
       // 만료만 무시
       if (allowExpired && (e?.name === 'TokenExpiredError' || /expired|exp|jwt expired/i.test(e?.message))) {
         if (!alg || /^HS\d+$/i.test(alg)) {
-          return jsonwebtoken.verify(token, secret ?? '', {
+          return jsonwebtoken.verify(token, oneAppSecret ?? '', {
             ignoreExpiration: true,
             algorithms: ['HS256', 'HS384', 'HS512'],
           }) as unknown as T
