@@ -7,7 +7,7 @@ import { session_userprofile } from '@prisma/client'
 
 import { TimetablesServiceV2 } from './timetables.service'
 
-@Controller('api/users/:userId/timetables')
+@Controller('/api/users/:userId/timetables')
 export class TimetablesControllerV2 {
   constructor(private readonly timetablesService: TimetablesServiceV2) {}
 
@@ -17,7 +17,10 @@ export class TimetablesControllerV2 {
     @GetUser() user: session_userprofile,
     @Body() body: ITimetableV2.UpdateReqDto,
   ): Promise<ITimetableV2.UpdateResDto> {
-    if (user.id !== userId) {
+    // given userId is actually student id
+    if (user.student_id.toString() !== userId.toString()) {
+      console.log('user.student_id', user.student_id)
+      console.log('userId', userId)
       throw new UnauthorizedException('Current user does not match path userId')
     }
     return await this.timetablesService.updateTimetable(user, body)
