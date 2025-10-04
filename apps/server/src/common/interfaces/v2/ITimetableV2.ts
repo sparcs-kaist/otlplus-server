@@ -5,6 +5,8 @@ import {
   IsNumber, IsOptional, IsString, MaxLength, Min, MinLength,
 } from 'class-validator'
 
+export const TIMETABLE_MAX_LIMIT = 50
+
 export namespace ITimetableV2 {
   export class QueryDto {
     @IsString()
