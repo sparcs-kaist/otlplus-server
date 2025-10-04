@@ -754,6 +754,7 @@ model timetable_timetable {
   semester                         Int?                               @db.SmallInt
   user_id                          Int
   arrange_order                    Int                                @db.SmallInt
+  name                             String?                            @db.VarChar(255)
   session_userprofile              session_userprofile                @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "timetable_timetable_user_id_0d214170_fk_session_userprofile_id")
   timetable_timetable_lectures     timetable_timetable_lectures[]
   timetable_timetable_customblocks timetable_timetable_customblocks[]
@@ -762,6 +763,7 @@ model timetable_timetable {
   @@index([semester], map: "timetable_timetable_semester_d8ce5d37_uniq")
   @@index([user_id], map: "timetable_timetable_user_id_0d214170_fk_session_userprofile_id")
   @@index([year], map: "timetable_timetable_year_907cf59a_uniq")
+  @@index([user_id, name], map: "timetable_timetable_user_name_index")
 }
 
 model timetable_timetable_lectures {
