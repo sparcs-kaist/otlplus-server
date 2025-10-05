@@ -77,10 +77,10 @@ export class JwtHeaderCommand implements AuthCommand {
       //   return this.setAuthenticated(result)
       // }
       const { accessToken: newAccessToken, ...accessTokenOptions } = this.authService.getCookieWithAccessToken(
-        payload.sid,
+        payload.uid,
       )
       const { refreshToken: newRefreshToken, ...refreshTokenOptions } = this.authService.getCookieWithRefreshToken(
-        payload.sid,
+        payload.uid,
       )
       response.cookie('accessToken', newAccessToken, accessTokenOptions)
       response.cookie('refreshToken', newRefreshToken, refreshTokenOptions)
