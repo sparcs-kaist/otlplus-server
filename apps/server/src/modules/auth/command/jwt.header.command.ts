@@ -40,7 +40,7 @@ export class JwtHeaderCommand implements AuthCommand {
     }
   }
 
-  private async verifyToken(token: string): Promise<{ sid: string }> {
+  private async verifyToken(token: string): Promise<{ uid: string }> {
     return this.jwtService.verifyAsync(token, {
       secret: this.jwtConfig.secret,
       ignoreExpiration: false,
