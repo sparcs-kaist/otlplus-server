@@ -26,6 +26,7 @@ export class JwtHeaderCommand implements AuthCommand {
     try {
       if (!accessToken) throw new Error('jwt expired')
       const payload = await this.verifyToken(accessToken)
+      console.log("[one_app_login]", payload)
       const user = await this.getUserFromPayload(payload.sid)
 
       request.user = user
@@ -60,7 +61,6 @@ export class JwtHeaderCommand implements AuthCommand {
   ): Promise<AuthResult> {
     try {
       const payload = await this.verifyToken(refreshToken)
-      console.log("[one_app_login]", payload)
       const user = await this.getUserFromPayload(payload.sid)
 
       // if (user.refresh_token && (await bcrypt.compare(refreshToken, user.refresh_token))) {
