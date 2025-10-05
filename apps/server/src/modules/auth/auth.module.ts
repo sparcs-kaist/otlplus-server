@@ -5,6 +5,7 @@ import { AgreementModule } from '@otl/server-nest/modules/agreement/agreement.mo
 import { IsAdminCommand } from '@otl/server-nest/modules/auth/command/isAdmin.command'
 import { IsReviewProhibitedCommand } from '@otl/server-nest/modules/auth/command/isReviewProhibited.command'
 import { JwtHeaderCommand } from '@otl/server-nest/modules/auth/command/jwt.header.command'
+import { OneAppHeaderCommand } from '@otl/server-nest/modules/auth/command/oneapp.header.command'
 import { SidHeaderCommand } from '@otl/server-nest/modules/auth/command/sid.header.command'
 import { StudentIdHeaderCommand } from '@otl/server-nest/modules/auth/command/studentId.header.command'
 import { LecturesService } from '@otl/server-nest/modules/lectures/lectures.service'
@@ -48,6 +49,7 @@ import { JwtCookieStrategy } from './strategy/jwt-cookie.strategy'
     IsReviewProhibitedCommand,
     IsAdminCommand,
     AuthConfig,
+    OneAppHeaderCommand,
   ],
   exports: [AuthService, AuthConfig, AuthChain],
 })
