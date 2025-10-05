@@ -26,8 +26,7 @@ export class JwtHeaderCommand implements AuthCommand {
     try {
       if (!accessToken) throw new Error('jwt expired')
       const payload = await this.verifyToken(accessToken)
-      console.log("[one_app_login]", payload)
-      const user = await this.getUserFromPayload(payload.uid)
+      const user = await this.getUserFromPayload(payload.sid)
 
       request.user = user
       return this.setAuthenticated(prevResult)
@@ -40,15 +39,15 @@ export class JwtHeaderCommand implements AuthCommand {
     }
   }
 
-  private async verifyToken(token: string): Promise<{ uid: string }> {
+  private async verifyToken(token: string): Promise<{ sid: string }> {
     return this.jwtService.verifyAsync(token, {
       secret: this.jwtConfig.secret,
       ignoreExpiration: false,
     })
   }
 
-  private async getUserFromPayload(uid: string) {
-    const user = await this.authService.findByUid(uid)
+  private async getUserFromPayload(sid: string) {
+    const user = await this.authService.findBySid(sid)
     if (!user) throw new NotFoundException('user is not found')
     return user
   }
@@ -61,7 +60,7 @@ export class JwtHeaderCommand implements AuthCommand {
   ): Promise<AuthResult> {
     try {
       const payload = await this.verifyToken(refreshToken)
-      const user = await this.getUserFromPayload(payload.uid)
+      const user = await this.getUserFromPayload(payload.sid)
 
       // if (user.refresh_token && (await bcrypt.compare(refreshToken, user.refresh_token))) {
       //   const { accessToken: newAccessToken, ...accessTokenOptions } = this.authService.getCookieWithAccessToken(
@@ -77,10 +76,10 @@ export class JwtHeaderCommand implements AuthCommand {
       //   return this.setAuthenticated(result)
       // }
       const { accessToken: newAccessToken, ...accessTokenOptions } = this.authService.getCookieWithAccessToken(
-        payload.uid,
+        payload.sid,
       )
       const { refreshToken: newRefreshToken, ...refreshTokenOptions } = this.authService.getCookieWithRefreshToken(
-        payload.uid,
+        payload.sid,
       )
       response.cookie('accessToken', newAccessToken, accessTokenOptions)
       response.cookie('refreshToken', newRefreshToken, refreshTokenOptions)
