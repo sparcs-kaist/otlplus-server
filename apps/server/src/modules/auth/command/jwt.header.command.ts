@@ -27,7 +27,7 @@ export class JwtHeaderCommand implements AuthCommand {
       if (!accessToken) throw new Error('jwt expired')
       const payload = await this.verifyToken(accessToken)
       console.log("[one_app_login]", payload)
-      const user = await this.getUserFromPayload(payload.sid)
+      const user = await this.getUserFromPayload(payload.uid)
 
       request.user = user
       return this.setAuthenticated(prevResult)
@@ -47,8 +47,8 @@ export class JwtHeaderCommand implements AuthCommand {
     })
   }
 
-  private async getUserFromPayload(sid: string) {
-    const user = await this.authService.findBySid(sid)
+  private async getUserFromPayload(uid: string) {
+    const user = await this.authService.findByUid(uid)
     if (!user) throw new NotFoundException('user is not found')
     return user
   }
@@ -61,7 +61,7 @@ export class JwtHeaderCommand implements AuthCommand {
   ): Promise<AuthResult> {
     try {
       const payload = await this.verifyToken(refreshToken)
-      const user = await this.getUserFromPayload(payload.sid)
+      const user = await this.getUserFromPayload(payload.uid)
 
       // if (user.refresh_token && (await bcrypt.compare(refreshToken, user.refresh_token))) {
       //   const { accessToken: newAccessToken, ...accessTokenOptions } = this.authService.getCookieWithAccessToken(
