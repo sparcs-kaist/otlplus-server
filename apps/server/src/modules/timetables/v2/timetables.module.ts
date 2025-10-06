@@ -22,4 +22,4 @@ import { TimetablesServiceV2 } from './timetables.service'
   ],
   exports: [TimetablesServiceV2],
 })
-export class TimetablesModule {}
+export class TimetablesModuleV2 {}
