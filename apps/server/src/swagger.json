@@ -881,7 +881,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"C:/Users/sjsh1/Sparcs_Otl/api_fix/otlplus-server/apps/server/src/modules/notification/domain/notification\").NotificationRequest"
+                  "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/notification/domain/notification\").NotificationRequest"
                 }
               }
             }
@@ -899,7 +899,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"C:/Users/sjsh1/Sparcs_Otl/api_fix/otlplus-server/apps/server/src/modules/notification/domain/notification\").FCMNotificationRequest"
+                  "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/notification/domain/notification\").FCMNotificationRequest"
                 }
               }
             }
@@ -926,7 +926,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"C:/Users/sjsh1/Sparcs_Otl/api_fix/otlplus-server/apps/server/src/modules/notification/domain/notification\").UserNotification"
+                  "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/notification/domain/notification\").UserNotification"
                 }
               }
             }
@@ -955,7 +955,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/import(\"C:/Users/sjsh1/Sparcs_Otl/api_fix/otlplus-server/apps/server/src/modules/agreement/domain/UserAgreement\").Agreement"
+                    "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/agreement/domain/UserAgreement\").Agreement"
                   }
                 }
               }
@@ -973,7 +973,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"C:/Users/sjsh1/Sparcs_Otl/api_fix/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                  "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
                 }
               }
             }
@@ -998,7 +998,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"C:/Users/sjsh1/Sparcs_Otl/api_fix/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                  "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
                 }
               }
             }
@@ -1050,7 +1050,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/import(\"C:/Users/sjsh1/Sparcs_Otl/api_fix/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                    "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
                   }
                 }
               }
@@ -1073,7 +1073,7 @@
                       "type": "null"
                     },
                     {
-                      "$ref": "#/components/schemas/import(\"C:/Users/sjsh1/Sparcs_Otl/api_fix/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                      "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
                     }
                   ]
                 }
@@ -2562,6 +2562,36 @@
           }
         }
       }
+    },
+    "/api/v2/timetables": {
+      "get": {
+        "summary": "TimetablesControllerV2.getTimetables",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ITimetableV2.Response"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ITimetableV2.QueryDto"
+            }
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -3211,20 +3241,6 @@
         },
         "type": "object"
       },
-      "hhmmToUTCDateStrict": {
-        "$comment": "(value: unknown) => Date | unknown",
-        "type": "object",
-        "properties": {
-          "namedArgs": {
-            "type": "object",
-            "properties": {
-              "value": {}
-            },
-            "required": ["value"],
-            "additionalProperties": false
-          }
-        }
-      },
       "ICustomblock.Basic": {
         "type": "object",
         "properties": {
@@ -3241,12 +3257,10 @@
             "type": "number"
           },
           "begin": {
-            "type": "string",
-            "format": "date-time"
+            "type": "number"
           },
           "end": {
-            "type": "string",
-            "format": "date-time"
+            "type": "number"
           }
         },
         "required": ["id", "block_name", "place", "day", "begin", "end"],
@@ -3267,32 +3281,16 @@
             "minLength": 1
           },
           "begin": {
-            "oneOf": [
-              {
-                "format": "date",
-                "type": "string"
-              },
-              {
-                "format": "date-time",
-                "type": "string"
-              }
-            ],
-            "minLength": 1,
-            "type": "string"
+            "maximum": 1439,
+            "type": "string",
+            "minimum": 0,
+            "minLength": 1
           },
           "end": {
-            "oneOf": [
-              {
-                "format": "date",
-                "type": "string"
-              },
-              {
-                "format": "date-time",
-                "type": "string"
-              }
-            ],
-            "minLength": 1,
-            "type": "string"
+            "maximum": 1439,
+            "type": "string",
+            "minimum": 0,
+            "minLength": 1
           }
         },
         "type": "object",
@@ -5155,7 +5153,6 @@
       "IPlanner.QueryDto": {
         "properties": {
           "order": {
-            "$ref": "#/components/schemas/Array",
             "items": {
               "type": "string"
             },
@@ -5607,7 +5604,6 @@
       "IReview.LectureReviewsQueryDto": {
         "properties": {
           "order": {
-            "$ref": "#/components/schemas/Array",
             "items": {
               "type": "string"
             },
@@ -5637,7 +5633,6 @@
             "type": "string"
           },
           "order": {
-            "$ref": "#/components/schemas/Array",
             "items": {
               "type": "string"
             },
@@ -5655,8 +5650,8 @@
       "IReview.CreateDto": {
         "properties": {
           "content": {
-            "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "type": "string"
           },
           "lecture": {
             "minLength": 1,
@@ -5687,8 +5682,8 @@
       "IReview.UpdateDto": {
         "properties": {
           "content": {
-            "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "type": "string"
           },
           "grade": {
             "maximum": 5,
@@ -5715,7 +5710,6 @@
       "ISemester.QueryDto": {
         "properties": {
           "order": {
-            "$ref": "#/components/schemas/Array",
             "items": {},
             "type": "array"
           }
@@ -6639,9 +6633,6 @@
             "enum": [1, 2, 3, 4]
           },
           "classtimes": {
-            "items": {
-              "$ref": "#/components/schemas/Array"
-            },
             "type": "array"
           }
         },
@@ -6658,9 +6649,6 @@
             "enum": [1, 2, 3, 4]
           },
           "attend": {
-            "items": {
-              "$ref": "#/components/schemas/Array"
-            },
             "type": "array"
           }
         },
@@ -6677,9 +6665,6 @@
             "enum": [1, 2, 3, 4]
           },
           "examtimes": {
-            "items": {
-              "$ref": "#/components/schemas/Array"
-            },
             "type": "array"
           }
         },
@@ -6695,12 +6680,8 @@
             "type": "number",
             "enum": [1, 2, 3, 4]
           },
-          "lectures": {
-            "$ref": "#/components/schemas/Array"
-          },
-          "charges": {
-            "$ref": "#/components/schemas/Array"
-          }
+          "lectures": {},
+          "charges": {}
         },
         "type": "object",
         "required": ["year", "semester", "lectures", "charges"]
@@ -6743,8 +6724,7 @@
             "items": {
               "type": "string"
             },
-            "type": "array",
-            "$ref": "#/components/schemas/Array"
+            "type": "array"
           },
           "offset": {
             "type": "number"
@@ -6794,7 +6774,6 @@
       "IUser.TakenCoursesQueryDto": {
         "properties": {
           "order": {
-            "$ref": "#/components/schemas/Array",
             "items": {
               "type": "string"
             },
@@ -6806,7 +6785,6 @@
       "IUser.ReviewLikedQueryDto": {
         "properties": {
           "order": {
-            "$ref": "#/components/schemas/Array",
             "items": {
               "type": "string"
             },
@@ -7114,6 +7092,102 @@
         },
         "type": "object",
         "required": ["lecture"]
+      },
+      "ITimetableV2.QueryDto": {
+        "properties": {
+          "user_id": {
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["user_id"]
+      },
+      "ITimetableV2.UpdateReqDto": {
+        "properties": {
+          "timetableId": {
+            "type": "number"
+          },
+          "name": {
+            "maxLength": 255,
+            "type": "string",
+            "minLength": 1
+          },
+          "order": {
+            "minimum": 0,
+            "type": "number"
+          }
+        },
+        "type": "object",
+        "required": ["timetableId"]
+      },
+      "ITimetableV2.UpdateResDto": {
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["message"]
+      },
+      "ITimetableV2.TimetableResDto": {
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "number"
+          },
+          "year": {
+            "type": "number"
+          },
+          "semester": {
+            "type": "number"
+          },
+          "timeTableOrder": {
+            "type": "number"
+          }
+        },
+        "type": "object",
+        "required": ["id", "name", "userId", "year", "semester", "timeTableOrder"]
+      },
+      "ITimetableV2.Response": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "year": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "semester": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "timeTableOrder": {
+            "type": "number"
+          },
+          "userId": {
+            "type": "number"
+          }
+        },
+        "required": ["id", "year", "semester", "timeTableOrder", "userId"],
+        "additionalProperties": false
       }
     },
     "securitySchemes": {
