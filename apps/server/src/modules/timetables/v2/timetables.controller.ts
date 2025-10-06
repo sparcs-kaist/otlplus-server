@@ -1,4 +1,6 @@
-import { Controller, Get, Query } from '@nestjs/common'
+import {
+  Body, Controller, Get, Param, ParseIntPipe, Patch, Query, UnauthorizedException,
+} from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
 import { toJsonTimetableV2 } from '@otl/server-nest/common/serializer/v2/timetable.serializer'
@@ -17,5 +19,20 @@ export class TimetablesControllerV2 {
   ): Promise<ITimetableV2.Response[]> {
     const timeTableList = await this.timetablesService.getTimetables(query, user)
     return timeTableList.map((timeTable) => toJsonTimetableV2(timeTable))
+  }
+
+  @Patch()
+  async updateTimetable(
+    @Param('userId', ParseIntPipe) userId: number,
+    @GetUser() user: session_userprofile,
+    @Body() body: ITimetableV2.UpdateReqDto,
+  ): Promise<ITimetableV2.UpdateResDto> {
+    // given userId is actually student id
+    if (user.student_id.toString() !== userId.toString()) {
+      console.log('user.student_id', user.student_id)
+      console.log('userId', userId)
+      throw new UnauthorizedException('Current user does not match path userId')
+    }
+    return await this.timetablesService.updateTimetable(user, body)
   }
 }

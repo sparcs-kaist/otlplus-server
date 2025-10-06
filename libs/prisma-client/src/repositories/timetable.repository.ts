@@ -157,6 +157,14 @@ export class TimetableRepository {
     })
   }
 
+  async updateName(id: number, name: string): Promise<ETimetable.Basic> {
+    return this.prisma.timetable_timetable.update({
+      where: { id },
+      // trim name to remove leading and trailing spaces
+      data: { name: name.trim() },
+    })
+  }
+
   async getLecturesWithClassTimes(timetableId: number) {
     return this.prismaRead.timetable_timetable_lectures.findMany({
       where: { timetable_id: timetableId },
