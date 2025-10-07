@@ -12,6 +12,28 @@ export class TimetablesServiceV2 {
     return await this.timetableRepository.getTimetableBasics(user)
   }
 
+  async deleteTimetable(user: session_userprofile, body: ITimetableV2.DeleteReqDto) {
+    const { id } = body
+    // if timetableId is invalid, throw 400
+    if (id === undefined) {
+      throw new BadRequestException('Timetable ID is required')
+    }
+    const timetable = await this.timetableRepository.getTimeTableById(id)
+    // if timetable is not found, throw 400
+    if (!timetable) {
+      throw new BadRequestException('Timetable not found')
+    }
+    // if user is not owner of timetable, throw 401
+    if (timetable.user_id !== user.id) {
+      throw new UnauthorizedException('Current user does not match owner of requested timetable')
+    }
+    // delete timetable
+    await this.timetableRepository.deleteById(id)
+    return {
+      message: 'Timetable deleted successfully',
+    }
+  }
+
   // this updates name of timetable or order of timetable
   // at least one of name or order must be provided
   // throw 400 if neither is provided or timetableID is invalid
@@ -22,10 +44,10 @@ export class TimetablesServiceV2 {
     user: session_userprofile,
     body: ITimetableV2.UpdateReqDto,
   ): Promise<ITimetableV2.UpdateResDto> {
-    const { timetableId, name, order } = body
+    const { id, name, order } = body
     // do i need to handle if timetableId is invalid or leave it to runtime error -> sentry?
     // todo: check this
-    const timetable = await this.timetableRepository.getTimeTableById(timetableId)
+    const timetable = await this.timetableRepository.getTimeTableById(id)
     console.log('Found timetable:', timetable) // Debug log
     if (timetable.user_id !== user.id) {
       throw new UnauthorizedException('Current user does not match owner of requested timetable')
@@ -38,12 +60,12 @@ export class TimetablesServiceV2 {
     // todo: check this (assume 0-based for now)
     if (order !== undefined) {
       console.log('Updating order to:', order) // Debug log
-      await this.timetableRepository.updateOrder(timetableId, order)
+      await this.timetableRepository.updateOrder(id, order)
       console.log('Order update completed') // Debug log
     }
     if (name !== undefined) {
       console.log('Updating name to:', name) // Debug log
-      await this.timetableRepository.updateName(timetableId, name)
+      await this.timetableRepository.updateName(id, name)
       console.log('Name update completed') // Debug log
     }
     return {

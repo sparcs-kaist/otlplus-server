@@ -2591,6 +2591,31 @@
             }
           }
         ]
+      },
+      "patch": {
+        "summary": "TimetablesControllerV2.updateTimetable",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ITimetableV2.UpdateResDto"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ITimetableV2.UpdateReqDto"
+              }
+            }
+          }
+        }
       }
     }
   },
