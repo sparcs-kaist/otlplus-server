@@ -19,10 +19,7 @@ import { EReview } from '../entities/EReview'
 
 @Injectable()
 export class ReviewsRepository implements ServerConsumerReviewRepository {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly prismaRead: PrismaReadService,
-  ) {}
+  constructor(private readonly prisma: PrismaService, private readonly prismaRead: PrismaReadService) {}
 
   async findReviewByUser(user: session_userprofile): Promise<EReview.Details[]> {
     const reviews = await this.prisma.review_review.findMany({
@@ -147,6 +144,31 @@ export class ReviewsRepository implements ServerConsumerReviewRepository {
               professor_id: {
                 in: lecture.subject_lecture_professors.map((professor) => professor.professor_id),
               },
+            },
+          },
+        },
+      },
+      skip: offset,
+      take: limit,
+      orderBy: orderFilter(order),
+    })
+  }
+
+  public async getReviewsByCourseAndProfessor(
+    order: string[],
+    offset: number,
+    limit: number,
+    courseId: number,
+    professorId: number,
+  ): Promise<EReview.Details[]> {
+    return await this.prismaRead.review_review.findMany({
+      ...EReview.Details,
+      where: {
+        lecture: {
+          course_id: courseId,
+          subject_lecture_professors: {
+            some: {
+              professor_id: professorId,
             },
           },
         },
