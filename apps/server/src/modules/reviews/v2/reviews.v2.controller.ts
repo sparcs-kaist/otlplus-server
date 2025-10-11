@@ -1,5 +1,5 @@
 import {
-  Body, Controller, Get, HttpException, HttpStatus, Post, Query, Req,
+  Body, Controller, Get, HttpException, HttpStatus, Param, Patch, Post, Query, Req,
 } from '@nestjs/common'
 import { GetLanguage } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
@@ -47,5 +47,17 @@ export class ReviewsV2Controller {
 
     const result = await this.reviewsV2Service.createReviewV2(reviewBody, user)
     return { id: result.id }
+  }
+
+  @Patch('/:reviewId/liked')
+  async patchReviewLike(
+    @Param('reviewId') reviewId: number,
+    @Body() body: IReviewV2.PatchLikedDto,
+    @GetUser() user: session_userprofile,
+  ): Promise<number> {
+    if (reviewId !== body.reviewId) {
+      throw new HttpException('Path param and body id not match', HttpStatus.BAD_REQUEST)
+    }
+    return await this.reviewsV2Service.updateReviewLiked(body, user)
   }
 }
