@@ -104,4 +104,17 @@ export namespace IReviewV2 {
     @ApiProperty()
     id!: number
   }
+
+  export class PatchLikedDto {
+    @ApiProperty()
+    @IsNumber()
+    @IsNotEmpty()
+    reviewId!: number
+
+    @ApiProperty({ enum: ['like', 'unlike'] })
+    @IsString()
+    @IsNotEmpty()
+    @IsIn(['like', 'unlike'])
+    action!: 'like' | 'unlike'
+  }
 }
