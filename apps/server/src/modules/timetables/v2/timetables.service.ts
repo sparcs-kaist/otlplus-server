@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common'
 import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
-import { session_userprofile } from '@prisma/client'
+import { Prisma, session_userprofile } from '@prisma/client'
 
 import { TimetableRepository } from '@otl/prisma-client'
 
@@ -18,15 +18,25 @@ export class TimetablesServiceV2 {
     if (id === undefined) {
       throw new BadRequestException('Timetable ID is required')
     }
-    const timetable = await this.timetableRepository.getTimeTableById(id)
-    // if timetable is not found, throw 400
-    if (!timetable) {
-      throw new BadRequestException('Timetable not found')
+    try {
+      const timetable = await this.timetableRepository.getTimeTableById(id)
+      // if user is not owner of timetable, throw 401
+      if (timetable.user_id !== user.id) {
+        throw new UnauthorizedException('Current user does not match owner of requested timetable')
+      }
     }
-    // if user is not owner of timetable, throw 401
-    if (timetable.user_id !== user.id) {
-      throw new UnauthorizedException('Current user does not match owner of requested timetable')
+    catch (error) {
+      // catch prisma.timetable_timetable.findUniqueOrThrow() + not found, throw 400
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2025') {
+          throw new BadRequestException('TimetableID is invalid')
+        }
+      }
+      else {
+        throw error
+      }
     }
+
     // delete timetable
     await this.timetableRepository.deleteById(id)
     return {

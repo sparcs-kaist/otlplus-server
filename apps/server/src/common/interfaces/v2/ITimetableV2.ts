@@ -21,6 +21,7 @@ export namespace ITimetableV2 {
 
   export class DeleteReqDto {
     @IsNumber()
+    @Min(0)
     @Type(() => Number)
     id!: number
   }
