@@ -73,6 +73,15 @@ export namespace IUser {
     reviews: IReview.Basic[]
   }
 
+  export interface Info {
+    name: string
+    mail: string
+    studentNumber: number
+    degree: string
+    majorDepartments: IDepartment.v2Basic[]
+    interestedDepartments: IDepartment.v2Basic[]
+  }
+
   export class TokenDto {
     @IsNotEmpty()
     token!: string
