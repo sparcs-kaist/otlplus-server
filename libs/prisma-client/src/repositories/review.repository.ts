@@ -162,7 +162,6 @@ export class ReviewsRepository implements ServerConsumerReviewRepository {
     professorId: number,
   ): Promise<EReview.Details[]> {
     return await this.prismaRead.review_review.findMany({
-      ...EReview.Details,
       where: {
         lecture: {
           course_id: courseId,
@@ -173,6 +172,7 @@ export class ReviewsRepository implements ServerConsumerReviewRepository {
           },
         },
       },
+      include: EReview.Details.include,
       skip: offset,
       take: limit,
       orderBy: orderFilter(order),

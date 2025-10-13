@@ -2,8 +2,7 @@ import {
   HttpException, HttpStatus, Inject, Injectable,
 } from '@nestjs/common'
 import { Transactional } from '@nestjs-cls/transactional'
-import { IReview } from '@otl/server-nest/common/interfaces/IReview'
-import { IReviewV2 } from '@otl/server-nest/common/interfaces/v2/IReviewV2'
+import { IReviewV2 } from '@otl/server-nest/common/interfaces/v2'
 import { toJsonReviewV2 } from '@otl/server-nest/common/serializer/v2/review.v2.serializer'
 import { REVIEW_MQ, ReviewMQ } from '@otl/server-nest/modules/reviews/domain/out/ReviewMQ'
 import { session_userprofile } from '@prisma/client'
@@ -66,7 +65,7 @@ export class ReviewsV2Service {
 
     // 사용자가 작성한 리뷰 ID 찾기
     const myReviewId = user
-      ? reviewsWithLiked.filter((review) => review.professor.professor_id === user.id).map((review) => review.id)
+      ? reviewsWithLiked.filter((review) => review.professor.id === user.id).map((review) => review.id)
       : []
 
     return {
@@ -145,7 +144,7 @@ export class ReviewsV2Service {
     return this.reviewsRepository.getReviewsByIds(majorBestReviews.map((review) => review.review_id))
   }
 
-  private calculateAverage(reviews: IReview.Basic[], field: 'grade' | 'load' | 'speech'): number {
+  private calculateAverage(reviews: IReviewV2.Basic[], field: 'grade' | 'load' | 'speech'): number {
     if (reviews.length === 0) return 0
     const sum = reviews.reduce((acc, review) => acc + review[field], 0)
     return Math.round((sum / reviews.length) * 100) / 100 // 소수점 둘째 자리까지
