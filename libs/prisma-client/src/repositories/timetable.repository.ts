@@ -43,17 +43,17 @@ export class TimetableRepository {
 
   async getTimetableBasics(
     user: session_userprofile,
-    year: number,
-    semester: number,
-    paginationAndSorting: {
-      orderBy: Prisma.timetable_timetableOrderByWithRelationInput
+    year?: number,
+    semester?: number,
+    paginationAndSorting?: {
+      orderBy?: Prisma.timetable_timetableOrderByWithRelationInput
       skip?: number
       take?: number
     },
   ): Promise<ETimetable.Basic[]> {
-    const { skip } = paginationAndSorting
-    const { take } = paginationAndSorting
-    const { orderBy } = paginationAndSorting
+    const skip = paginationAndSorting?.skip
+    const take = paginationAndSorting?.take
+    const orderBy = paginationAndSorting?.orderBy
 
     return this.prisma.timetable_timetable.findMany({
       where: {

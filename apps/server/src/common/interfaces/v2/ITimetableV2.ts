@@ -2,7 +2,12 @@
 // import { ILecture } from '@otl/server-nest/common/interfaces/v2/ILecture'
 import { Type } from 'class-transformer'
 import {
-  IsNumber, IsOptional, IsString, MaxLength, Min, MinLength,
+  IsNumber,
+  IsOptional,
+  IsString,
+  MaxLength,
+  Min,
+  MinLength, // , IsArray
 } from 'class-validator'
 
 export const TIMETABLE_MAX_LIMIT = 50
@@ -14,10 +19,23 @@ export namespace ITimetableV2 {
     user_id?: string
   }
 
+  export class DeleteReqDto {
+    @IsNumber()
+    @Min(0)
+    @Type(() => Number)
+    id!: number
+  }
+
+  export class DeleteResDto {
+    @IsString()
+    @Type(() => String)
+    message!: string
+  }
+
   export class UpdateReqDto {
     @IsNumber()
     @Type(() => Number)
-    timetableId!: number
+    id!: number
 
     @IsString()
     @IsOptional()
@@ -37,6 +55,35 @@ export namespace ITimetableV2 {
     @IsString()
     @Type(() => String)
     message!: string
+  }
+
+  export class TimetableResDto {
+    @IsNumber()
+    @Type(() => Number)
+    id!: number
+
+    @IsString()
+    @Type(() => String)
+    name!: string
+
+    @IsNumber()
+    @Type(() => Number)
+    userId!: number
+
+    @IsNumber()
+    @Type(() => Number)
+    year!: number
+
+    @IsNumber()
+    @Type(() => Number)
+    semester!: number
+
+    @IsNumber()
+    @Type(() => Number)
+    timeTableOrder!: number
+    // todo: waiting for lecture
+    // @IsArray()
+    // lectures!: ILecture.Detail[]
   }
 
   export interface Response {
