@@ -81,7 +81,7 @@ export class TimetablesServiceV2 {
 
   // this updates name of timetable or order of timetable
   // at least one of name or order must be provided
-  // throw 400 if neither is provided or timetableID is invalid
+  // throw 400 if neither is provided or id is invalid
   // throw 401 if user is unauthorized (if user.id !== timetable.user_id)
   // return 200 if successful, no content
   @Transactional()
@@ -90,26 +90,89 @@ export class TimetablesServiceV2 {
     body: ITimetableV2.UpdateReqDto,
   ): Promise<ITimetableV2.UpdateResDto> {
     const { id, name, order } = body
-    // do i need to handle if timetableId is invalid or leave it to runtime error -> sentry?
-    // todo: check this
-    const timetable = await this.timetableRepository.getTimeTableById(id)
-    if (timetable.user_id !== user.id) {
-      throw new UnauthorizedException('Current user does not match owner of requested timetable')
+    try {
+      if (name === undefined && order === undefined) {
+        throw new BadRequestException('At least one of name or order must be provided')
+      }
+
+      const timetable = await this.timetableRepository.getTimeTableById(id)
+      if (timetable.user_id !== user.id) {
+        throw new UnauthorizedException('Current user does not match owner of requested timetable')
+      }
+
+      // Handle name update
+      if (name !== undefined) {
+        await this.timetableRepository.updateName(id, name)
+      }
+
+      // Handle order update (complex reordering logic)
+      if (order !== undefined) {
+        const targetArrangeOrder = order
+
+        // Early return if order hasn't changed
+        if (targetArrangeOrder === timetable.arrange_order) {
+          return {
+            message: 'Timetable updated successfully',
+          }
+        }
+
+        // Get all related timetables for validation and reordering
+        const relatedTimeTables = await this.timetableRepository.getTimetables(user, timetable.year, timetable.semester)
+
+        // Validate order bounds
+        if (targetArrangeOrder < 0 || targetArrangeOrder >= relatedTimeTables.length) {
+          throw new BadRequestException(
+            `Invalid arrange_order: must be between 0 and ${relatedTimeTables.length - 1}`,
+          )
+        }
+
+        // Calculate which timetables need to be updated
+        let timeTablesToBeUpdated: { id: number, arrange_order: number }[] = []
+
+        if (targetArrangeOrder < timetable.arrange_order) {
+          // Moving to earlier position: shift timetables between target and current position forward
+          timeTablesToBeUpdated = relatedTimeTables
+            .filter(
+              (timeTable) => timeTable.arrange_order >= targetArrangeOrder && timeTable.arrange_order < timetable.arrange_order,
+            )
+            .map((timeTable) => ({
+              id: timeTable.id,
+              arrange_order: timeTable.arrange_order + 1,
+            }))
+        }
+        else if (targetArrangeOrder > timetable.arrange_order) {
+          // Moving to later position: shift timetables between current and target position backward
+          timeTablesToBeUpdated = relatedTimeTables
+            .filter(
+              (timeTable) => timeTable.arrange_order <= targetArrangeOrder && timeTable.arrange_order > timetable.arrange_order,
+            )
+            .map((timeTable) => ({
+              id: timeTable.id,
+              arrange_order: timeTable.arrange_order - 1,
+            }))
+        }
+
+        // Update other timetables first
+        await Promise.all(
+          timeTablesToBeUpdated.map(async (timetableToUpdate) => this.timetableRepository.updateOrder(timetableToUpdate.id, timetableToUpdate.arrange_order)),
+        )
+
+        // Finally update the target timetable
+        await this.timetableRepository.updateOrder(id, targetArrangeOrder)
+      }
+
+      return {
+        message: 'Timetable updated successfully',
+      }
     }
-    if (name === undefined && order === undefined) {
-      throw new BadRequestException('At least one of name or order must be provided')
-    }
-    // separate update order and update name
-    // is order 0-based or 1-based?
-    // todo: check this (assume 0-based for now)
-    if (order !== undefined) {
-      await this.timetableRepository.updateOrder(id, order)
-    }
-    if (name !== undefined) {
-      await this.timetableRepository.updateName(id, name)
-    }
-    return {
-      message: 'Timetable updated successfully',
+    catch (error) {
+      // catch prisma.timetable_timetable.findUniqueOrThrow() + not found, throw 400
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2025') {
+          throw new BadRequestException('id of timetable is invalid')
+        }
+      }
+      throw error
     }
   }
 }
