@@ -1,28 +1,71 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common'
+import {
+  BadRequestException, Inject, Injectable, UnauthorizedException,
+} from '@nestjs/common'
+import { Transactional } from '@nestjs-cls/transactional'
 import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
+import { TIMETABLE_MQ, TimetableMQ } from '@otl/server-nest/modules/timetables/domain/out/TimetableMQ'
 import { Prisma, session_userprofile } from '@prisma/client'
+
+import logger from '@otl/common/logger/logger'
 
 import { TimetableRepository } from '@otl/prisma-client'
 
 @Injectable()
 export class TimetablesServiceV2 {
-  constructor(private readonly timetableRepository: TimetableRepository) {}
+  constructor(
+    private readonly timetableRepository: TimetableRepository,
+    @Inject(TIMETABLE_MQ)
+    private readonly timetableMQ: TimetableMQ,
+  ) {}
 
   async getTimetables(query: ITimetableV2.QueryDto, user: session_userprofile) {
     return await this.timetableRepository.getTimetableBasics(user)
   }
 
-  async deleteTimetable(user: session_userprofile, body: ITimetableV2.DeleteReqDto) {
+  @Transactional()
+  async deleteTimetable(
+    user: session_userprofile,
+    body: ITimetableV2.DeleteReqDto,
+  ): Promise<ITimetableV2.DeleteResDto> {
     const { id } = body
     // if timetableId is invalid, throw 400
     if (id === undefined) {
       throw new BadRequestException('Timetable ID is required')
     }
+
     try {
       const timetable = await this.timetableRepository.getTimeTableById(id)
       // if user is not owner of timetable, throw 401
       if (timetable.user_id !== user.id) {
         throw new UnauthorizedException('Current user does not match owner of requested timetable')
+      }
+
+      const { year, semester, arrange_order } = timetable
+      const lectureIds = await this.timetableRepository.getTimeTableLectures(id)
+
+      await this.timetableRepository.deleteById(id)
+
+      // update order of other timetables
+      const relatedTimeTables = await this.timetableRepository.getTimetables(user, year, semester)
+      const timeTablesToBeUpdated = relatedTimeTables
+        .filter((timeTable) => timeTable.arrange_order > arrange_order)
+        .map((timeTable) => ({
+          id: timeTable.id,
+          arrange_order: timeTable.arrange_order - 1,
+        }))
+      await Promise.all(
+        timeTablesToBeUpdated.map(async (updateElem) => this.timetableRepository.updateOrder(updateElem.id, updateElem.arrange_order)),
+      )
+
+      // update statistics
+      await Promise.all(lectureIds.map((lectureId) => this.timetableMQ.publishLectureNumUpdate(lectureId))).catch(
+        (error) => {
+          logger.error('Failed to publish lecture num update', error)
+        },
+      )
+
+      return {
+        message: 'Timetable deleted successfully',
       }
     }
     catch (error) {
@@ -32,15 +75,7 @@ export class TimetablesServiceV2 {
           throw new BadRequestException('TimetableID is invalid')
         }
       }
-      else {
-        throw error
-      }
-    }
-
-    // delete timetable
-    await this.timetableRepository.deleteById(id)
-    return {
-      message: 'Timetable deleted successfully',
+      throw error
     }
   }
 
