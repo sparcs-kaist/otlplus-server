@@ -22,7 +22,6 @@ export class TimetablesServiceV2 {
     // do i need to handle if timetableId is invalid or leave it to runtime error -> sentry?
     // todo: check this
     const timetable = await this.timetableRepository.getTimeTableById(timetableId)
-    console.log('Found timetable:', timetable) // Debug log
     if (timetable.user_id !== user.id) {
       throw new UnauthorizedException('Current user does not match owner of requested timetable')
     }
@@ -33,14 +32,10 @@ export class TimetablesServiceV2 {
     // is order 0-based or 1-based?
     // todo: check this (assume 0-based for now)
     if (order !== undefined) {
-      console.log('Updating order to:', order) // Debug log
       await this.timetableRepository.updateOrder(timetableId, order)
-      console.log('Order update completed') // Debug log
     }
     if (name !== undefined) {
-      console.log('Updating name to:', name) // Debug log
       await this.timetableRepository.updateName(timetableId, name)
-      console.log('Name update completed') // Debug log
     }
     return {
       message: 'Timetable updated successfully',
