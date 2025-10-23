@@ -1,5 +1,5 @@
 import {
-  Body, Controller, Get, Patch, Query,
+  Body, Controller, Delete, Get, Patch, Query,
 } from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
@@ -19,6 +19,14 @@ export class TimetablesControllerV2 {
   ): Promise<ITimetableV2.Response[]> {
     const timeTableList = await this.timetablesService.getTimetables(query, user)
     return timeTableList.map((timeTable) => toJsonTimetableV2(timeTable))
+  }
+
+  @Delete()
+  async deleteTimetable(
+    @GetUser() user: session_userprofile,
+    @Body() body: ITimetableV2.DeleteReqDto,
+  ): Promise<ITimetableV2.DeleteResDto> {
+    return await this.timetablesService.deleteTimetable(user, body)
   }
 
   @Patch()

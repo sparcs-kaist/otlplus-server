@@ -19,10 +19,23 @@ export namespace ITimetableV2 {
     user_id?: string
   }
 
+  export class DeleteReqDto {
+    @IsNumber()
+    @Min(0)
+    @Type(() => Number)
+    id!: number
+  }
+
+  export class DeleteResDto {
+    @IsString()
+    @Type(() => String)
+    message!: string
+  }
+
   export class UpdateReqDto {
     @IsNumber()
     @Type(() => Number)
-    timetableId!: number
+    id!: number
 
     @IsString()
     @IsOptional()
