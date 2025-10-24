@@ -3,17 +3,19 @@ import {
 } from '@nestjs/common'
 import { Transactional } from '@nestjs-cls/transactional'
 import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
+import { toJsonTimetableV2WithLectures } from '@otl/server-nest/common/serializer/v2/timetable.serializer'
 import { TIMETABLE_MQ, TimetableMQ } from '@otl/server-nest/modules/timetables/domain/out/TimetableMQ'
 import { Prisma, session_userprofile } from '@prisma/client'
 
 import logger from '@otl/common/logger/logger'
 
-import { TimetableRepository } from '@otl/prisma-client'
+import { LectureRepository, TimetableRepository } from '@otl/prisma-client'
 
 @Injectable()
 export class TimetablesServiceV2 {
   constructor(
     private readonly timetableRepository: TimetableRepository,
+    private readonly lectureRepository: LectureRepository,
     @Inject(TIMETABLE_MQ)
     private readonly timetableMQ: TimetableMQ,
   ) {}
@@ -121,9 +123,7 @@ export class TimetablesServiceV2 {
 
         // Validate order bounds
         if (targetArrangeOrder < 0 || targetArrangeOrder >= relatedTimeTables.length) {
-          throw new BadRequestException(
-            `Invalid arrange_order: must be between 0 and ${relatedTimeTables.length - 1}`,
-          )
+          throw new BadRequestException(`Invalid arrange_order: must be between 0 and ${relatedTimeTables.length - 1}`)
         }
 
         // Calculate which timetables need to be updated
@@ -174,5 +174,43 @@ export class TimetablesServiceV2 {
       }
       throw error
     }
+  }
+
+  @Transactional()
+  async getTimetable(id: number, user: session_userprofile, acceptLanguage?: string): Promise<ITimetableV2.GetResDto> {
+    try {
+      if (id === undefined) {
+        throw new BadRequestException('id of timetable is required')
+      }
+      const timetable = await this.timetableRepository.getTimeTableById(id)
+      if (timetable.user_id !== user.id) {
+        throw new UnauthorizedException('Current user does not match owner of requested timetable')
+      }
+
+      // Parse Accept-Language header if provided
+      const language = this.parseAcceptLanguage(acceptLanguage)
+      console.log('language', language)
+
+      return toJsonTimetableV2WithLectures(timetable, language)
+    }
+    catch (error) {
+      // catch prisma.timetable_timetable.findUniqueOrThrow() + not found, throw 400
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2025') {
+          throw new BadRequestException('id of timetable is invalid')
+        }
+      }
+      throw error
+    }
+  }
+
+  private parseAcceptLanguage(acceptLanguage?: string): string {
+    console.log('acceptLanguage', acceptLanguage)
+    if (!acceptLanguage) {
+      return 'kr' // default language
+    }
+
+    // Simple check: if header contains 'en', return 'en', otherwise 'kr'
+    return acceptLanguage.toLowerCase().includes('en') ? 'en' : 'kr'
   }
 }

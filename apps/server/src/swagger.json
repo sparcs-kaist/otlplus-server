@@ -2642,6 +2642,33 @@
           }
         }
       }
+    },
+    "/api/v2/timetables/{timetableId}": {
+      "get": {
+        "summary": "TimetablesControllerV2.getTimetable",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ITimetableV2.GetResDto"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "timetableId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -7198,29 +7225,193 @@
         "type": "object",
         "required": ["message"]
       },
-      "ITimetableV2.TimetableResDto": {
+      "ITimetableV2.GetResDto": {
         "properties": {
           "id": {
+            "minimum": 0,
             "type": "number"
           },
           "name": {
             "type": "string"
           },
           "userId": {
+            "minimum": 0,
             "type": "number"
           },
           "year": {
+            "minimum": 0,
             "type": "number"
           },
           "semester": {
-            "type": "number"
+            "maximum": 4,
+            "type": "number",
+            "minimum": 1
           },
-          "timeTableOrder": {
+          "timetableOrder": {
+            "minimum": 0,
             "type": "number"
           }
         },
         "type": "object",
-        "required": ["id", "name", "userId", "year", "semester", "timeTableOrder"]
+        "required": ["id", "name", "userId", "year", "semester", "timetableOrder"]
+      },
+      "ITimetableV2.LectureResDto": {
+        "properties": {
+          "id": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "courseId": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "classNo": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "department": {
+            "items": {},
+            "type": "array"
+          },
+          "type": {
+            "type": "string"
+          },
+          "limitPeople": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "numPeople": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "credit": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "creditAU": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "averageGrade": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "averageLoad": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "averageSpeech": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "isEnglish": {
+            "type": "boolean"
+          },
+          "professors": {
+            "items": {},
+            "type": "array"
+          },
+          "classes": {
+            "items": {},
+            "type": "array"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "courseId",
+          "classNo",
+          "name",
+          "department",
+          "type",
+          "limitPeople",
+          "numPeople",
+          "credit",
+          "creditAU",
+          "averageGrade",
+          "averageLoad",
+          "averageSpeech",
+          "isEnglish",
+          "professors",
+          "classes"
+        ]
+      },
+      "ITimetableV2.DepartmentResDto": {
+        "properties": {
+          "id": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["id", "name"]
+      },
+      "ITimetableV2.ProfessorResDto": {
+        "properties": {
+          "id": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["id", "name"]
+      },
+      "ITimetableV2.ClassResDto": {
+        "properties": {
+          "day": {
+            "maximum": 4,
+            "type": "number",
+            "minimum": 0
+          },
+          "begin": {
+            "maximum": 3000,
+            "type": "number",
+            "minimum": 0
+          },
+          "end": {
+            "maximum": 3000,
+            "type": "number",
+            "minimum": 0
+          },
+          "buildingCode": {
+            "type": "string"
+          },
+          "placeName": {
+            "type": "string"
+          },
+          "placeNameShort": {
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["day", "begin", "end", "buildingCode", "placeName", "placeNameShort"]
+      },
+      "ITimetableV2.ExamTimeResDto": {
+        "properties": {
+          "day": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "str": {
+            "type": "string"
+          },
+          "begin": {
+            "type": "number"
+          },
+          "end": {
+            "type": "number"
+          }
+        },
+        "type": "object",
+        "required": ["day", "str", "begin", "end"]
       },
       "ITimetableV2.Response": {
         "type": "object",

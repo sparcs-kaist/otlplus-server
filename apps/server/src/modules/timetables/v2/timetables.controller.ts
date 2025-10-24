@@ -1,5 +1,5 @@
 import {
-  Body, Controller, Delete, Get, Patch, Query,
+  Body, Controller, Delete, Get, Headers, Param, ParseIntPipe, Patch, Query,
 } from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
@@ -35,5 +35,14 @@ export class TimetablesControllerV2 {
     @Body() body: ITimetableV2.UpdateReqDto,
   ): Promise<ITimetableV2.UpdateResDto> {
     return await this.timetablesService.updateTimetable(user, body)
+  }
+
+  @Get('/:timetableId')
+  async getTimetable(
+    @Param('timetableId', ParseIntPipe) timetableId: number,
+    @GetUser() user: session_userprofile,
+    @Headers('Accept-Language') acceptLanguage: string,
+  ): Promise<ITimetableV2.GetResDto> {
+    return await this.timetablesService.getTimetable(timetableId, user, acceptLanguage)
   }
 }
