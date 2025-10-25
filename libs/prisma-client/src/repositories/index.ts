@@ -1,4 +1,5 @@
 export * from './course.repository'
+export * from './course.v2.repository'
 export * from './customblock.repository'
 export * from './department.repository'
 export * from './feeds.repository'

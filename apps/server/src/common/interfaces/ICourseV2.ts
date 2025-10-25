@@ -1,10 +1,10 @@
-import { IProfessor } from '@otl/server-nest/common/interfaces/IProfessor'
+import { IProfessorV2 } from '@otl/server-nest/common/interfaces/IProfessorV2'
 import { Transform } from 'class-transformer'
 import {
   IsArray, IsIn, IsNumber, IsOptional, IsString,
 } from 'class-validator'
 
-import { IDepartment } from './IDepartment'
+import { IDepartmentV2 } from './IDepartmentV2'
 
 type CourseOrderQuery = 'code' | 'popular' | 'studentCount'
 type language = 'kr' | 'en'
@@ -17,8 +17,8 @@ export namespace ICourseV2 {
     name: string // kr : title / en : title_en
     code: string // new_code
     type: string // kr, en 구분
-    department: IDepartment.Basic
-    professors: IProfessor.Basic[]
+    department: IDepartmentV2.Basic
+    professors: IProfessorV2.Basic[]
     summary: string
     open: boolean // 현재학기 개설 여부
     completed: boolean // 수강 여부 (authorized 안되어 있으면 false)

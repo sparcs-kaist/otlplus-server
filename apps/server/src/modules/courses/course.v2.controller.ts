@@ -4,14 +4,14 @@ import {
 } from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator'
-import { ICourse } from '@otl/server-nest/common/interfaces'
+import { ICourseV2 } from '@otl/server-nest/common/interfaces'
 import { session_userprofile } from '@prisma/client'
 
-import { CoursesService } from './courses.service'
+import { CoursesServiceV2 } from './courses.v2.service'
 
 @Controller('api/v2/courses')
 export class CourseV2Controller {
-  constructor(private readonly coursesService: CoursesService) {}
+  constructor(private readonly coursesService: CoursesServiceV2) {}
 
   private static cacheTTLFactory = (_context: ExecutionContext): number => {
     const now = new Date()
@@ -39,25 +39,22 @@ export class CourseV2Controller {
   @CacheTTL(CourseV2Controller.cacheTTLFactory)
   @UseInterceptors(CacheInterceptor)
   @Get()
-  async getCourses(
-    @Query() query: ICourse.Query,
-    @GetUser() user: session_userprofile,
-  ): Promise<ICourse.DetailWithIsRead[]> {
+  async getCourses(@Query() query: ICourseV2.Query, @GetUser() user: session_userprofile): Promise<ICourseV2.Basic[]> {
     const courses = await this.coursesService.getCourses(query, user)
     return courses
   }
 
   /* Todo : Course / get {id} v2 api
-    @Public()
-    @CacheTTL(CourseV2Controller.cacheTTLFactory)
-    @UseInterceptors(CacheInterceptor)
-    @Get(':id')
-    async getCourseById(
-        @Param('id', CourseIdPipe) id: number,
-        @GetUser() user: session_userprofile,
-    ): Promise<ICourse.DetailWithIsRead> {
-        if (Number.isNaN(id)) throw new BadRequestException('Invalid course id')
-        return await this.coursesService.getCourseById(id, user)
-    }
-    */
+      @Public()
+      @CacheTTL(CourseV2Controller.cacheTTLFactory)
+      @UseInterceptors(CacheInterceptor)
+      @Get(':id')
+      async getCourseById(
+          @Param('id', CourseIdPipe) id: number,
+          @GetUser() user: session_userprofile,
+      ): Promise<ICourse.DetailWithIsRead> {
+          if (Number.isNaN(id)) throw new BadRequestException('Invalid course id')
+          return await this.coursesService.getCourseById(id, user)
+      }
+      */
 }
