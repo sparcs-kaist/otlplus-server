@@ -59,17 +59,15 @@ export class ReviewsV2Service {
         reviews = await this.getDefaultReviews(reviewsParam, DEFAULT_ORDER, MAX_LIMIT)
     }
 
+    // 사용자가 작성한 리뷰 ID 찾기
+    const myReviewId = user ? reviews.filter((review) => review.writer_id === user.id).map((review) => review.id) : []
+
     const reviewsWithLiked = reviews.map((review) => toJsonReviewV2(review as EReview.Extended, user, language))
 
     // 평균 계산
     const averageGrade = this.calculateAverage(reviewsWithLiked, 'grade')
     const averageLoad = this.calculateAverage(reviewsWithLiked, 'load')
     const averageSpeech = this.calculateAverage(reviewsWithLiked, 'speech')
-
-    // 사용자가 작성한 리뷰 ID 찾기
-    const myReviewId = user
-      ? reviewsWithLiked.filter((review) => review.professor.id === user.id).map((review) => review.id)
-      : []
 
     return {
       reviews: reviewsWithLiked,
