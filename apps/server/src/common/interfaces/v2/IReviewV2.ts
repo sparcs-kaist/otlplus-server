@@ -5,6 +5,7 @@ import {
   IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min, Validate,
 } from 'class-validator'
 
+import { IDepartmentV2 } from './IDepartmentV2'
 import { IProfessorV2 } from './IProfessorV2'
 
 export namespace IReviewV2 {
@@ -30,41 +31,49 @@ export namespace IReviewV2 {
     averageLoad: number
     averageSpeech: number
     myReviewId: number[]
+    department: IDepartmentV2.Basic | null
   }
 
   export class QueryDto {
+    @ApiProperty()
     @IsOptional()
     @Type(() => Number)
     @IsNumber()
     /* 'default' 모드에서만 사용 */
     courseId?: number
 
+    @ApiProperty()
     @IsOptional()
     @Type(() => Number)
     @IsNumber()
     /* 'default' 모드에서만 사용 */
     professorId?: number
 
+    @ApiProperty()
     @IsString()
     @IsIn(['default', 'recent', 'hall-of-fame', 'popular-feed'])
     mode!: 'default' | 'recent' | 'hall-of-fame' | 'popular-feed'
 
+    @ApiProperty()
     @IsOptional()
     @Type(() => Number)
     @IsNumber()
     /* 'hall-of-fame' 모드에서만 사용 */
     year?: number
 
+    @ApiProperty()
     @IsOptional()
     @Type(() => Number)
     @IsNumber()
     /* 'hall-of-fame' 모드에서만 사용 */
     semester?: number
 
+    @ApiProperty()
     @Type(() => Number)
     @IsNumber()
     offset!: number
 
+    @ApiProperty()
     @Type(() => Number)
     @IsNumber()
     limit!: number

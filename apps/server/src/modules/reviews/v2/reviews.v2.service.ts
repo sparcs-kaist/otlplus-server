@@ -4,12 +4,14 @@ import {
 import { Transactional } from '@nestjs-cls/transactional'
 import { IReviewV2 } from '@otl/server-nest/common/interfaces/v2'
 import { toJsonReviewV2 } from '@otl/server-nest/common/serializer/v2/review.v2.serializer'
+import { UNDERGRADUATE_DEPARTMENTS } from '@otl/server-nest/modules/departments/departments.service'
 import { REVIEW_MQ, ReviewMQ } from '@otl/server-nest/modules/reviews/domain/out/ReviewMQ'
-import { session_userprofile } from '@prisma/client'
+import { review_review, session_userprofile, subject_department } from '@prisma/client'
 
 import logger from '@otl/common/logger/logger'
 import { getRandomChoice } from '@otl/common/utils/util'
 
+import { EReview } from '@otl/prisma-client'
 import {
   CourseRepository,
   DepartmentRepository,
@@ -30,13 +32,14 @@ export class ReviewsV2Service {
 
   async getReviewsV2(
     reviewsParam: IReviewV2.QueryDto,
-    user: session_userprofile,
+    user: session_userprofile | null,
     language: string = 'kr',
   ): Promise<IReviewV2.GetResponseDto> {
     const MAX_LIMIT = 50
     const DEFAULT_ORDER = ['-written_datetime', '-id']
 
-    let reviews: any[] = []
+    let reviews: review_review[] = []
+    let department: subject_department | null = null
 
     // 모드에 따른 리뷰 조회
     switch (reviewsParam.mode) {
@@ -50,13 +53,13 @@ export class ReviewsV2Service {
         reviews = await this.getHallOfFameReviews(reviewsParam, MAX_LIMIT)
         break
       case 'popular-feed':
-        reviews = await this.getPopularFeedReviews(reviewsParam, user, MAX_LIMIT)
+        ({ reviews, department } = await this.getPopularFeedReviews(reviewsParam, user, MAX_LIMIT))
         break
       default:
         reviews = await this.getDefaultReviews(reviewsParam, DEFAULT_ORDER, MAX_LIMIT)
     }
 
-    const reviewsWithLiked = reviews.map((review) => toJsonReviewV2(review, user, language))
+    const reviewsWithLiked = reviews.map((review) => toJsonReviewV2(review as EReview.Extended, user, language))
 
     // 평균 계산
     const averageGrade = this.calculateAverage(reviewsWithLiked, 'grade')
@@ -74,6 +77,7 @@ export class ReviewsV2Service {
       averageLoad,
       averageSpeech,
       myReviewId,
+      department,
     }
   }
 
@@ -132,16 +136,53 @@ export class ReviewsV2Service {
     )
   }
 
-  private async getPopularFeedReviews(reviewsParam: IReviewV2.QueryDto, user: session_userprofile, maxLimit: number) {
-    // 메인페이지 사랑받는 전공후기 - 사용자가 지정한 전공의 인기 후기를 반환
-    const departments = await this.departmentRepository.getRelatedDepartments(user)
+  private async getPopularFeedReviews(
+    reviewsParam: IReviewV2.QueryDto,
+    user: session_userprofile | null,
+    maxLimit: number,
+  ): Promise<{ reviews: review_review[], department: subject_department | null }> {
+    // randomly select between HSS or other departments
+    const isHSS = Math.random() < 0.2
+    if (isHSS) {
+      const humanityBestReviews = await this.reviewsRepository.getRandomNHumanityBestReviews(
+        reviewsParam.limit ?? maxLimit,
+      )
+      const reviews = await this.reviewsRepository.getReviewsByIds(
+        humanityBestReviews.map((review) => review.review_id),
+      )
+      return {
+        reviews,
+        department: null,
+      }
+    }
+    // 주요 전공을 선택하여 인기 후기를 반환
+    let departments: subject_department[]
+    if (user) {
+      // 로그인: 관심 전공
+      const relatedDepartments = await this.departmentRepository.getRelatedDepartments(user)
+      departments = relatedDepartments.filter((d) => UNDERGRADUATE_DEPARTMENTS.includes(d.code))
+    }
+    else {
+      const allDepartments = await this.departmentRepository.getAllDepartmentOptions([])
+      departments = allDepartments.filter((d) => UNDERGRADUATE_DEPARTMENTS.includes(d.code))
+    }
+
+    // 전공이 없는 경우 빈 배열 반환
+    if (!departments || departments.length === 0) {
+      return { reviews: [], department: null }
+    }
+
     // random select
     const selectedDepartment = getRandomChoice(departments)
     const majorBestReviews = await this.reviewsRepository.getRandomNMajorBestReviews(
       reviewsParam.limit ?? maxLimit,
       selectedDepartment,
     )
-    return this.reviewsRepository.getReviewsByIds(majorBestReviews.map((review) => review.review_id))
+    const reviews = await this.reviewsRepository.getReviewsByIds(majorBestReviews.map((review) => review.review_id))
+    return {
+      reviews,
+      department: selectedDepartment,
+    }
   }
 
   private calculateAverage(reviews: IReviewV2.Basic[], field: 'grade' | 'load' | 'speech'): number {
@@ -155,10 +196,7 @@ export class ReviewsV2Service {
   }
 
   @Transactional()
-  async createReviewV2(
-    reviewBody: IReviewV2.CreateDto,
-    user: session_userprofile,
-  ): Promise<IReviewV2.CreateResponseDto> {
+  async createReviewV2(reviewBody: IReviewV2.CreateDto, user: session_userprofile): Promise<EReview.Basic> {
     // 해당 강의가 존재하는지 확인
     const lecture = await this.lectureRepository.findLectureByYearSemesterAndProfessor(
       reviewBody.year,
@@ -202,6 +240,6 @@ export class ReviewsV2Service {
       logger.error(`Error while publishing review score update: ${e.message}`, e)
     })
 
-    return { id: review.id }
+    return review
   }
 }

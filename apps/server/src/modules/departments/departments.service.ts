@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common'
 import { EDepartment } from '@otl/prisma-client/entities'
 import { DepartmentRepository } from '@otl/prisma-client/repositories'
 
-const UNDERGRADUATE_DEPARTMENTS = [
+export const UNDERGRADUATE_DEPARTMENTS = [
   'CE',
   'MSB',
   'ME',

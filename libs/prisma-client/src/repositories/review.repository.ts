@@ -327,7 +327,7 @@ export class ReviewsRepository implements ServerConsumerReviewRepository {
     })
   }
 
-  public async getRandomNHumanityBestReviews(n: number): Promise<review_humanitybestreview> {
+  public async getRandomNHumanityBestReviews(n: number): Promise<review_humanitybestreview[]> {
     // Prisma does not support RAND() in ORDER BY.
     return await this.prisma.$queryRaw`
         SELECT *

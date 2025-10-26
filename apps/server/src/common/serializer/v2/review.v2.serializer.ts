@@ -5,7 +5,7 @@ import { EReview } from '@otl/prisma-client/entities'
 
 export const toJsonReviewV2 = (
   review: EReview.Extended,
-  user?: session_userprofile,
+  user?: session_userprofile | null,
   language: string = 'kr',
 ): IReviewV2.Basic => {
   let isLiked = false
