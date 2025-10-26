@@ -16,6 +16,7 @@ import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 import {
   CourseRepository,
+  CourseRepositoryV2,
   CustomblockRepository,
   DepartmentRepository,
   FeedsRepository,
@@ -65,6 +66,7 @@ export class PrismaModule implements OnModuleInit {
         NotificationPrismaRepository,
         ReviewMiddleware,
         CustomblockRepository,
+        CourseRepositoryV2,
       ],
       exports: [
         PrismaService,
@@ -84,6 +86,7 @@ export class PrismaModule implements OnModuleInit {
         NotificationPrismaRepository,
         SyncRepository,
         CustomblockRepository,
+        CourseRepositoryV2,
       ],
     }
   }

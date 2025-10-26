@@ -24,6 +24,31 @@ export namespace ICourseV2 {
     completed: boolean // 수강 여부 (authorized 안되어 있으면 false)
   }
 
+  export interface Detail {
+    id: number
+    name: string
+    code: string
+    type: string
+    department: IDepartmentV2.Basic
+    // 개설 이력
+    history: {
+      year: number
+      semester: number
+      professors: {
+        id: number
+        name: string
+        classNo: string // 분반
+      }[]
+      myProfessor: IProfessorV2.Basic[] // 본인이 수강한 학기의 경우, 수강한 분반의 교수님
+      // 한 lecture에 여러명의 교수님이 존재할 수 있음
+    }[]
+    summary: string
+    classDuration: number // 강의시간
+    expDuration: number // 실험시간
+    credit: number
+    creditAU: number
+  }
+
   export class Query {
     @IsOptional()
     @IsString()

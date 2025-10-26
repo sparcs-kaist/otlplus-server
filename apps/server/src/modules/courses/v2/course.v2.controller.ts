@@ -1,6 +1,6 @@
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager'
 import {
-  Controller, ExecutionContext, Get, Query, UseInterceptors,
+  BadRequestException, Controller, ExecutionContext, Get, Param, Query, UseInterceptors,
 } from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator'
@@ -44,17 +44,27 @@ export class CourseV2Controller {
     return courses
   }
 
-  /* Todo : Course / get {id} v2 api
-      @Public()
-      @CacheTTL(CourseV2Controller.cacheTTLFactory)
-      @UseInterceptors(CacheInterceptor)
-      @Get(':id')
-      async getCourseById(
-          @Param('id', CourseIdPipe) id: number,
-          @GetUser() user: session_userprofile,
-      ): Promise<ICourse.DetailWithIsRead> {
-          if (Number.isNaN(id)) throw new BadRequestException('Invalid course id')
-          return await this.coursesService.getCourseById(id, user)
+  @Public()
+  @CacheTTL(CourseV2Controller.cacheTTLFactory)
+  @UseInterceptors(CacheInterceptor)
+  @Get(':id')
+  async getCourseById(
+    @Param('id') id: number,
+    @GetUser() user: session_userprofile,
+    @Query('language') user_language: 'kr' | 'en' = 'kr',
+  ): Promise<ICourseV2.Detail> {
+    // 숫자 형식이 아닌 경우
+    if (Number.isNaN(id)) throw new BadRequestException('Invalid course id')
+    try {
+      return await this.coursesService.getCourseById(id, user, user_language)
+    }
+    catch (error) {
+      if (error === 'Invalid course id') {
+        throw new BadRequestException('Invalid course id') // 400
       }
-      */
+      else {
+        throw error // 기타 에러 : 500
+      }
+    }
+  }
 }

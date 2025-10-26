@@ -272,6 +272,24 @@ export class CourseRepositoryV2 {
     }
   }
 
+  // course 상세정보 가져오기 (id)
+  public async getCourseById(courseId: number): Promise<{
+    course: ECourseV2.CourseDetail | null
+    lectures: ECourseV2.CourseNestedLectures[]
+  }> {
+    const course = await this.prismaRead.subject_course.findUnique({
+      where: { id: courseId },
+      select: ECourseV2.CourseDetailArgs.select,
+    })
+
+    const lectures = await this.prismaRead.subject_lecture.findMany({
+      where: { course_id: courseId },
+      select: ECourseV2.courseNestedLecturesArgs.select,
+    })
+    return { course, lectures }
+  }
+
+  // @Todo : 성능 최적화를 하려 한다면 User가 들은 coruse, lecture 찾는 메서드 캐싱
   // 수강 여부 확인을 위해 수강한 course의 id list를 반환하는 메서드
   public async getTakenCourseIdsByUser(userId: number): Promise<number[]> {
     // user가 수강한 lecture의 id들
@@ -291,5 +309,23 @@ export class CourseRepositoryV2 {
       distinct: ['course_id'],
     })
     return takenCourses.map((tc) => tc.course_id)
+  }
+
+  // 특정 course에 대해서 user가 수강한 lecture 가져오기 (id만)
+  public async getTakenLectureIdsByUser(userId: number, courseId: number): Promise<number[]> {
+    // 1) 본인이 수강한 lecture 가져오기 : (lecture id, course_id)가져오기
+    const takenLectureIds = await this.prismaRead.session_userprofile_taken_lectures.findMany({
+      where: { userprofile_id: userId },
+      select: {
+        lecture_id: true,
+      },
+    })
+    // 2)  해당 course에 속한 lecture인지 필터링
+    const lecturesInCourse = await this.prismaRead.subject_lecture.findMany({
+      where: { course_id: courseId },
+      select: { id: true },
+    })
+    const lectureIdsInCourse = lecturesInCourse.map((lec) => lec.id)
+    return takenLectureIds.map((lt) => lt.lecture_id).filter((id) => lectureIdsInCourse.includes(id))
   }
 }
