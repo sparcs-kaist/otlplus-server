@@ -1,9 +1,10 @@
 import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
+import { toJsonClasstime } from '@otl/server-nest/common/serializer/classtime.serializer'
+import { toJsonExamtime } from '@otl/server-nest/common/serializer/examtime.serializer'
 
 import { getTimeNumeric } from '@otl/common/utils/util'
 
 import { ETimetable } from '@otl/prisma-client/entities'
-// TODO: this is temporary, need to be replaced with updated lecture serializer
 
 export const toJsonTimetableV2 = (timetable: ETimetable.Basic): ITimetableV2.Response => ({
   id: timetable.id,
@@ -26,7 +27,7 @@ export const toJsonTimetableV2WithLectures = (
 
   // TODO: this is temporary, need to be replaced with updated lecture serializer
   // this returns specified interface, which is not exactly the same as ILecture.Detail
-  // either ILectureV2.Detail or v2 serializer should be properly implmented from lecture side
+  // either ILectureV2.Detail or v2 serializer should be properly implemented from lecture side
   lectures: timetable.timetable_timetable_lectures.map((lecture) => ({
     id: lecture.subject_lecture.id,
     courseId: lecture.subject_lecture.course_id,
@@ -49,12 +50,9 @@ export const toJsonTimetableV2WithLectures = (
     numPeople: lecture.subject_lecture.num_people ?? 0,
     credit: lecture.subject_lecture.credit,
     creditAU: lecture.subject_lecture.credit_au,
-
-    // TODO: check what are these fields
     averageGrade: lecture.subject_lecture.grade,
     averageLoad: lecture.subject_lecture.load,
     averageSpeech: lecture.subject_lecture.speech,
-
     isEnglish: lecture.subject_lecture.is_english,
 
     professors: lecture.subject_lecture.subject_lecture_professors.map((professor) => ({
@@ -68,8 +66,10 @@ export const toJsonTimetableV2WithLectures = (
       end: getTimeNumeric(classtime.end),
       buildingCode: classtime.building_id,
       placeName: language === 'en' ? classtime.building_full_name_en : classtime.building_full_name,
-      // TODO: what is this field?
-      placeNameShort: language === 'en' ? classtime.building_full_name_en : classtime.building_full_name,
+      placeNameShort: (() => {
+        const temp = toJsonClasstime(classtime)
+        return language === 'en' ? temp.classroom_short_en : temp.classroom_short
+      })(),
     })) as ITimetableV2.ClassResDto[],
 
     // NOTE: implemented in server as array, but specified as single object in documentation
@@ -77,8 +77,18 @@ export const toJsonTimetableV2WithLectures = (
     examTime:
       lecture.subject_lecture.subject_examtime.map((examtime) => ({
         day: examtime.day,
-        // TODO: what is this field?
-        str: '',
+        // TODO: what is this field? -> "월요일 09:00 ~ 11:45"
+        str: (() => {
+          const temp = toJsonExamtime(examtime)
+          console.log(
+            'subject_lecture',
+            lecture.subject_lecture.subject_examtime.length > 0 ? 'examtime is not null' : 'examtime is null',
+          )
+          console.log('examtime', examtime)
+          console.log('temp', temp)
+          console.log('language', language)
+          return language === 'en' ? temp.str_en : temp.str
+        })(),
         begin: getTimeNumeric(examtime.begin, false),
         end: getTimeNumeric(examtime.end, false),
       }))[0] ?? null,
