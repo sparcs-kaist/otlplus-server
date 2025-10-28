@@ -84,27 +84,7 @@ export namespace IReviewV2 {
     @IsNumber()
     @IsNotEmpty()
     @Type(() => Number)
-    courseId!: number
-
-    @ApiProperty()
-    @IsNumber()
-    @IsNotEmpty()
-    @Type(() => Number)
-    professorId!: number
-
-    @ApiProperty()
-    @IsNumber()
-    @IsNotEmpty()
-    @Type(() => Number)
-    year!: number
-
-    @ApiProperty()
-    @IsNumber()
-    @IsNotEmpty()
-    @Min(1)
-    @Max(4)
-    @Type(() => Number)
-    semester!: number
+    lectureId!: number
 
     @ApiProperty()
     @IsString()
