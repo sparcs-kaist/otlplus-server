@@ -196,11 +196,7 @@ export class ReviewsV2Service {
   @Transactional()
   async createReviewV2(reviewBody: IReviewV2.CreateDto, user: session_userprofile): Promise<EReview.Basic> {
     // 해당 강의가 존재하는지 확인
-    const lecture = await this.lectureRepository.findLectureByYearSemesterAndProfessor(
-      reviewBody.year,
-      reviewBody.semester,
-      reviewBody.professorId,
-    )
+    const lecture = await this.lectureRepository.getLectureDetailById(reviewBody.lectureId)
 
     if (!lecture) {
       throw new HttpException('didn\'t take class or invalid params', HttpStatus.BAD_REQUEST)
@@ -216,7 +212,7 @@ export class ReviewsV2Service {
 
     // 후기 생성
     const review = await this.reviewsRepository.upsertReview(
-      reviewBody.courseId,
+      reviewBody.lectureId,
       lecture.id,
       reviewBody.content,
       reviewBody.grade,
