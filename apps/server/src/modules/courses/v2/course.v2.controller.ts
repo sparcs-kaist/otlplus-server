@@ -1,6 +1,5 @@
-import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager'
 import {
-  BadRequestException, Controller, ExecutionContext, Get, Param, Query, UseInterceptors,
+  BadRequestException, Controller, ExecutionContext, Get, Param, Query,
 } from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator'
@@ -35,28 +34,51 @@ export class CourseV2Controller {
     return ttlInMs
   }
 
-  @Public()
-  @CacheTTL(CourseV2Controller.cacheTTLFactory)
-  @UseInterceptors(CacheInterceptor)
+  // Note : 요구한 Spec이 Optional인데, OptionalUser 타입을 데커레이터만 이용해서 쓸 수 있는 방법이 없어서 API를 분리하였습니다.
   @Get()
   async getCourses(@Query() query: ICourseV2.Query, @GetUser() user: session_userprofile): Promise<ICourseV2.Basic[]> {
     const courses = await this.coursesService.getCourses(query, user)
     return courses
   }
 
+  @Get('/public')
   @Public()
-  @CacheTTL(CourseV2Controller.cacheTTLFactory)
-  @UseInterceptors(CacheInterceptor)
+  async getCoursesPublic(@Query() query: ICourseV2.Query): Promise<ICourseV2.Basic[]> {
+    const courses = await this.coursesService.getCourses(query, null)
+    return courses
+  }
+
   @Get(':id')
   async getCourseById(
     @Param('id') id: number,
     @GetUser() user: session_userprofile,
-    @Query('language') user_language: 'kr' | 'en' = 'kr',
+    @Query() query: ICourseV2.singleReadQuery,
   ): Promise<ICourseV2.Detail> {
     // 숫자 형식이 아닌 경우
     if (Number.isNaN(id)) throw new BadRequestException('Invalid course id')
     try {
-      return await this.coursesService.getCourseById(id, user, user_language)
+      return await this.coursesService.getCourseById(id, user, query.language)
+    }
+    catch (error) {
+      if (error === 'Invalid course id') {
+        throw new BadRequestException('Invalid course id') // 400
+      }
+      else {
+        throw error // 기타 에러 : 500
+      }
+    }
+  }
+
+  @Get(':id/public')
+  @Public()
+  async getCourseByIdPublic(
+    @Param('id') id: number,
+    @Query() query: ICourseV2.singleReadQuery,
+  ): Promise<ICourseV2.Detail> {
+    // 숫자 형식이 아닌 경우
+    if (Number.isNaN(id)) throw new BadRequestException('Invalid course id')
+    try {
+      return await this.coursesService.getCourseById(id, null, query.language)
     }
     catch (error) {
       if (error === 'Invalid course id') {

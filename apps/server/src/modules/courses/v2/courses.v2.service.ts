@@ -13,7 +13,7 @@ type courseHistory = {
   semester: number
   // 그 학기에 개설된 분반들
   classes: {
-    lecture_id: number
+    lectureId: number
     classNo: string
     // 각 분반의 담당 교수님(들)
     professors: IProfessorV2.Basic[]
@@ -22,19 +22,27 @@ type courseHistory = {
   myProfessors: IProfessorV2.Basic[]
 }
 
+const fallbackEmpty = (preferred?: string | null, fallback?: string | null) => (preferred ?? '').trim() || (fallback ?? '')
+
 function toICourseBasic(c: ECourseV2.BasicWithProfessors, lang: language, completed: boolean): ICourseV2.Basic {
   return {
     id: c.id,
-    name: lang === 'en' ? c.title_en : c.title,
+    name: lang === 'en' ? fallbackEmpty(c.title_en, c.title) : c.title,
     code: c.new_code,
-    type: lang === 'en' ? c.type_en : c.type,
+    type: lang === 'en' ? fallbackEmpty(c.type_en, c.type) : c.type,
     department: {
       id: c.subject_department.id,
-      name: lang === 'en' ? (c.subject_department.name_en ?? c.subject_department.name) : c.subject_department.name,
+      name:
+        lang === 'en'
+          ? fallbackEmpty(c.subject_department.name_en, c.subject_department.name)
+          : c.subject_department.name,
     },
     professors: c.subject_course_professors.map((p) => ({
       id: p.professor.id,
-      name: lang === 'en' ? (p.professor.professor_name_en ?? p.professor.professor_name) : p.professor.professor_name,
+      name:
+        lang === 'en'
+          ? fallbackEmpty(p.professor.professor_name_en, p.professor.professor_name)
+          : p.professor.professor_name,
     })),
     summary: c.summury, // @Todo : summary db 필드 오타 수정
     open: false, // TODO: 현재 학기 개설 여부 로직
@@ -49,7 +57,7 @@ export class CoursesServiceV2 {
     private readonly professorRepository: ProfessorRepositoryV2,
   ) {}
 
-  public async getCourses(query: ICourseV2.Query, user: session_userprofile): Promise<ICourseV2.Basic[]> {
+  public async getCourses(query: ICourseV2.Query, user: session_userprofile | null): Promise<ICourseV2.Basic[]> {
     const {
       department, type, level, keyword, term, order, offset, limit,
     } = query
@@ -74,7 +82,7 @@ export class CoursesServiceV2 {
   // detailed version
   public async getCourseById(
     courseId: number,
-    user: session_userprofile,
+    user: session_userprofile | null,
     user_language: language,
   ): Promise<ICourseV2.Detail> {
     const { course, lectures } = await this.courseRepository.getCourseById(courseId)
@@ -94,7 +102,7 @@ export class CoursesServiceV2 {
         // professor 테이블에서 이름 찾아서 가져오기
         const professor_obj = await Promise.all(
           lec.subject_lecture_professors.map(async (p) => {
-            const professor = await this.professorRepository.getProfessorById(p.id)
+            const professor = await this.professorRepository.getProfessorById(p.professor_id)
             if (!professor) {
               throw new Error('Unexpected Error')
             }
@@ -110,14 +118,14 @@ export class CoursesServiceV2 {
         const existing = Histories.find((h) => h.year === lec.year && h.semester === lec.semester)
         // year, semester가 이미 있는 경우 : 분반 (classNo)만 추가
         if (existing) {
-          existing.classes.push({ professors: professor_obj, classNo: lec.class_no, lecture_id: lec.id })
+          existing.classes.push({ professors: professor_obj, classNo: lec.class_no, lectureId: lec.id })
           // year, semester가 없는 경우 : 새로 추가
         }
         else {
           Histories.push({
             year: lec.year,
             semester: lec.semester,
-            classes: [{ professors: professor_obj, classNo: lec.class_no, lecture_id: lec.id }],
+            classes: [{ professors: professor_obj, classNo: lec.class_no, lectureId: lec.id }],
             myProfessors: [],
           })
         }
@@ -135,7 +143,7 @@ export class CoursesServiceV2 {
     // classes에 있는 lecture_id가 userTakenLectureIds에 포함되는지 확인해서 myProfessors 채우기
     Histories.forEach((history) => {
       history.classes.forEach((subclass) => {
-        if (userTakenLectureIds.includes(subclass.lecture_id)) {
+        if (userTakenLectureIds.includes(subclass.lectureId)) {
           history.myProfessors.push(...subclass.professors)
         }
       })
@@ -143,18 +151,18 @@ export class CoursesServiceV2 {
 
     return {
       id: course?.id,
-      name: user_language === 'en' ? course?.title_en : course?.title,
+      name: user_language === 'en' ? fallbackEmpty(course?.title_en, course?.title) : course?.title,
       code: course?.new_code,
-      type: user_language === 'en' ? course?.type_en : course?.type,
+      type: user_language === 'en' ? fallbackEmpty(course?.type_en, course?.type) : course?.type,
       department: {
         id: course?.subject_department.id,
         // db schema 상에서 name_en이 nullable : 없으면 한국어 이름 return 하도록
         name:
           user_language === 'en'
-            ? (course?.subject_department.name_en ?? course?.subject_department.name)
+            ? fallbackEmpty(course?.subject_department.name_en, course?.subject_department.name)
             : course?.subject_department.name,
       },
-      history: [], // todo
+      history: Histories,
       summary: course?.summury, // @Todo : 나중에 db 필드 summary로 바꾸기
       classDuration: lectures[0]?.num_classes,
       expDuration: lectures[0]?.num_labs,

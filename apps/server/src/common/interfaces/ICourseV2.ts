@@ -6,10 +6,10 @@ import {
 
 import { IDepartmentV2 } from './IDepartmentV2'
 
-type CourseOrderQuery = 'code' | 'popular' | 'studentCount'
+export type CourseOrderQuery = 'code' | 'popular' | 'studentCount'
 type language = 'kr' | 'en'
-type level = 'ALL' | '100' | '200' | '300' | '400' | '500' | '600' | '700' | '800' | '900'
-type CourseType = 'ALL' | 'BR' | 'BE' | 'MR' | 'ME' | 'MGC' | 'HSE' | 'GR' | 'EG' | 'OE' | 'ETC'
+export type level = 'ALL' | '100' | '200' | '300' | '400' | '500' | '600' | '700' | '800' | '900'
+export type CourseType = 'ALL' | 'BR' | 'BE' | 'MR' | 'ME' | 'MGC' | 'HSE' | 'GR' | 'EG' | 'OE' | 'ETC'
 
 export namespace ICourseV2 {
   export interface Basic {
@@ -34,12 +34,12 @@ export namespace ICourseV2 {
     history: {
       year: number
       semester: number
-      professors: {
-        id: number
-        name: string
+      classes: {
+        lectureId: number
         classNo: string // 분반
+        professors: IProfessorV2.Basic[] // 해당 분반의 교수님
       }[]
-      myProfessor: IProfessorV2.Basic[] // 본인이 수강한 학기의 경우, 수강한 분반의 교수님
+      myProfessors: IProfessorV2.Basic[] // 본인이 수강한 학기의 경우, 수강한 분반의 교수님
       // 한 lecture에 여러명의 교수님이 존재할 수 있음
     }[]
     summary: string
@@ -103,5 +103,12 @@ export namespace ICourseV2 {
     @IsNumber()
     @Transform(({ value }) => parseInt(value))
     limit?: number
+  }
+
+  export class singleReadQuery {
+    @IsOptional()
+    @IsString()
+    @IsIn(['kr', 'en'], { message: 'language must be \'kr\' or \'en\'' })
+    language: language = 'kr' // 기본값 kr
   }
 }

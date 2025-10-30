@@ -23,6 +23,7 @@ import {
   LectureRepository,
   NoticesRepository,
   PlannerRepository,
+  ProfessorRepositoryV2,
   ReviewsRepository,
   SemesterRepository,
   SyncRepository,
@@ -67,6 +68,7 @@ export class PrismaModule implements OnModuleInit {
         ReviewMiddleware,
         CustomblockRepository,
         CourseRepositoryV2,
+        ProfessorRepositoryV2,
       ],
       exports: [
         PrismaService,
@@ -87,6 +89,7 @@ export class PrismaModule implements OnModuleInit {
         SyncRepository,
         CustomblockRepository,
         CourseRepositoryV2,
+        ProfessorRepositoryV2,
       ],
     }
   }

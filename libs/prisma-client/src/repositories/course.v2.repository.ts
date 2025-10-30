@@ -312,6 +312,7 @@ export class CourseRepositoryV2 {
   }
 
   // 특정 course에 대해서 user가 수강한 lecture 가져오기 (id만)
+  // @Todo : LectureV2Repository로 옮기기
   public async getTakenLectureIdsByUser(userId: number, courseId: number): Promise<number[]> {
     // 1) 본인이 수강한 lecture 가져오기 : (lecture id, course_id)가져오기
     const takenLectureIds = await this.prismaRead.session_userprofile_taken_lectures.findMany({

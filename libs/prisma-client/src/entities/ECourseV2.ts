@@ -80,7 +80,7 @@ export namespace ECourseV2 {
     credit_au: true,
     subject_lecture_professors: {
       select: {
-        id: true,
+        professor_id: true,
       },
     },
   })
