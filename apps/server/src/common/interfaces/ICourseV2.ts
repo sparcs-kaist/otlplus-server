@@ -8,7 +8,6 @@ import {
 import { IDepartmentV2 } from './IDepartmentV2'
 
 export type CourseOrderQuery = 'code' | 'popular' | 'studentCount'
-type language = 'kr' | 'en'
 export type level = 'ALL' | '100' | '200' | '300' | '400' | '500' | '600' | '700' | '800' | '900'
 export type CourseType = 'ALL' | 'BR' | 'BE' | 'MR' | 'ME' | 'MGC' | 'HSE' | 'GR' | 'EG' | 'OE' | 'ETC'
 
@@ -51,11 +50,6 @@ export namespace ICourseV2 {
   }
 
   export class Query {
-    @IsOptional()
-    @IsString()
-    @IsIn(['kr', 'en'], { message: 'language must be \'kr\' or \'en\'' })
-    language: language = 'kr' // 기본값 kr
-
     @IsOptional()
     @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
     @IsArray()
@@ -121,12 +115,5 @@ export namespace ICourseV2 {
     @IsNumber()
     @Transform(({ value }) => parseInt(value))
     limit?: number
-  }
-
-  export class singleReadQuery {
-    @IsOptional()
-    @IsString()
-    @IsIn(['kr', 'en'], { message: 'language must be \'kr\' or \'en\'' })
-    language: language = 'kr' // 기본값 kr
   }
 }

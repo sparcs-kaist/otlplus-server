@@ -57,7 +57,11 @@ export class CoursesServiceV2 {
     private readonly professorRepository: ProfessorRepositoryV2,
   ) {}
 
-  public async getCourses(query: ICourseV2.Query, user: session_userprofile | null): Promise<ICourseV2.Basic[]> {
+  public async getCourses(
+    query: ICourseV2.Query,
+    user: session_userprofile | null,
+    lang: language,
+  ): Promise<ICourseV2.Basic[]> {
     const {
       department, type, level, keyword, term, order, offset, limit,
     } = query
@@ -71,7 +75,6 @@ export class CoursesServiceV2 {
       offset,
       limit,
     )
-    const lang: language = query.language === 'en' ? 'en' : 'kr'
 
     const userTakenCourseIds = !user ? [] : await this.courseRepository.getTakenCourseIdsByUser(user.id)
 
