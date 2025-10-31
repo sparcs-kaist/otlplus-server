@@ -2668,6 +2668,41 @@
             }
           }
         ]
+      },
+      "patch": {
+        "summary": "TimetablesControllerV2.updateTimetableLecture",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ITimetableV2.UpdateLectureResDto"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "timetableId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ITimetableV2.UpdateLectureReqDto"
+              }
+            }
+          }
+        }
       }
     }
   },
@@ -7412,6 +7447,29 @@
         },
         "type": "object",
         "required": ["id", "name", "userId", "year", "semester", "timetableOrder"]
+      },
+      "ITimetableV2.UpdateLectureReqDto": {
+        "properties": {
+          "lectureId": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "action": {
+            "type": "string",
+            "enum": ["add", "delete"]
+          }
+        },
+        "type": "object",
+        "required": ["lectureId", "action"]
+      },
+      "ITimetableV2.UpdateLectureResDto": {
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["message"]
       },
       "ITimetableV2.Response": {
         "type": "object",

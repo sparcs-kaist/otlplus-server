@@ -45,4 +45,13 @@ export class TimetablesControllerV2 {
   ): Promise<ITimetableV2.GetResDto> {
     return await this.timetablesService.getTimetable(timetableId, user, acceptLanguage)
   }
+
+  @Patch('/:timetableId')
+  async updateTimetableLecture(
+    @GetUser() user: session_userprofile,
+    @Param('timetableId', ParseIntPipe) timetableId: number,
+    @Body() body: ITimetableV2.UpdateLectureReqDto,
+  ): Promise<ITimetableV2.UpdateLectureResDto> {
+    return await this.timetablesService.updateTimetableLecture(user, body, timetableId)
+  }
 }

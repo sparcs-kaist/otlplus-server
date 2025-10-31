@@ -1,5 +1,5 @@
 import {
-  BadRequestException, Inject, Injectable, UnauthorizedException,
+  BadRequestException, ForbiddenException, Inject, Injectable, UnauthorizedException,
 } from '@nestjs/common'
 import { Transactional } from '@nestjs-cls/transactional'
 import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
@@ -212,5 +212,81 @@ export class TimetablesServiceV2 {
 
     // Simple check: if header contains 'en', return 'en', otherwise 'kr'
     return acceptLanguage.toLowerCase().includes('en') ? 'en' : 'kr'
+  }
+
+  @Transactional()
+  async updateTimetableLecture(
+    user: session_userprofile,
+    body: ITimetableV2.UpdateLectureReqDto,
+    timetableId: number,
+  ): Promise<ITimetableV2.UpdateLectureResDto> {
+    const { lectureId, action } = body
+    try {
+      if (lectureId === undefined) {
+        throw new BadRequestException('lectureId is required')
+      }
+      if (action === undefined) {
+        throw new BadRequestException('action is required')
+      }
+
+      // Fetch lecture first - catch invalid lectureId
+      let lecture
+      try {
+        lecture = await this.lectureRepository.getLectureBasicById(lectureId)
+      }
+      catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+          throw new BadRequestException('lectureId is invalid')
+        }
+        throw error
+      }
+
+      // Fetch timetable - catch invalid timetableId
+      let timetable
+      try {
+        timetable = await this.timetableRepository.getTimeTableById(timetableId)
+      }
+      catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+          throw new BadRequestException('timetableId is invalid')
+        }
+        throw error
+      }
+
+      if (lecture.year !== timetable.year || lecture.semester !== timetable.semester) {
+        throw new BadRequestException('lecture and timetable are not in the same year and semester')
+      }
+
+      // Check access - return 403 if user doesn't own timetable
+      if (timetable.user_id !== user.id) {
+        throw new ForbiddenException('Current user does not match owner of requested timetable')
+      }
+
+      if (action === 'add') {
+        await this.timetableRepository.addLectureToTimetable(timetable.id, lectureId)
+      }
+      else if (action === 'delete') {
+        await this.timetableRepository.removeLectureFromTimetable(timetable.id, lectureId)
+      }
+      await this.timetableMQ.publishLectureNumUpdate(lectureId).catch((error) => {
+        logger.error('Failed to publish lecture num update', error)
+      })
+      return {
+        message: 'Timetable lecture updated successfully',
+      }
+    }
+    catch (error) {
+      // Re-throw if it's already a HttpException (BadRequestException, ForbiddenException, etc.)
+      if (error instanceof BadRequestException || error instanceof ForbiddenException) {
+        throw error
+      }
+      // Catch any other Prisma errors
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2025') {
+          throw new BadRequestException('Either lectureId or timetableId is invalid')
+        }
+      }
+      throw error
+    }
   }
 }

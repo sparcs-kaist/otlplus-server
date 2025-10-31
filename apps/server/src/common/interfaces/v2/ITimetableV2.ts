@@ -2,6 +2,7 @@ import { Type } from 'class-transformer'
 import {
   IsArray,
   IsBoolean,
+  IsIn,
   IsNumber,
   IsOptional,
   IsString,
@@ -244,6 +245,24 @@ export namespace ITimetableV2 {
 
     // TODO: this is temporary, waiting for lecture
     lectures!: LectureResDto[]
+  }
+
+  export class UpdateLectureReqDto {
+    @IsNumber()
+    @Min(0)
+    @Type(() => Number)
+    lectureId!: number
+
+    @IsString()
+    @IsIn(['add', 'delete'])
+    @Type(() => String)
+    action!: 'add' | 'delete'
+  }
+
+  export class UpdateLectureResDto {
+    @IsString()
+    @Type(() => String)
+    message!: string
   }
 
   export interface Response {
