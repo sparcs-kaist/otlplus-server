@@ -1,5 +1,6 @@
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager'
 import {
-  BadRequestException, Controller, ExecutionContext, Get, Param, Query,
+  BadRequestException, Controller, ExecutionContext, Get, Param, Query, UseInterceptors,
 } from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator'
@@ -34,7 +35,8 @@ export class CourseV2Controller {
     return ttlInMs
   }
 
-  // Note : 요구한 Spec이 Optional인데, OptionalUser 타입을 데커레이터만 이용해서 쓸 수 있는 방법이 없어서 API를 분리하였습니다.
+  // Note : 요구한 Spec이 Optional인데, OptionalUser에서 캐싱 issue와
+  // Nest의 구조상 데커레이터로 처리가 어려워 api를 분리하였습니다.
   @Get()
   async getCourses(@Query() query: ICourseV2.Query, @GetUser() user: session_userprofile): Promise<ICourseV2.Basic[]> {
     const courses = await this.coursesService.getCourses(query, user)
@@ -42,6 +44,8 @@ export class CourseV2Controller {
   }
 
   @Get('/public')
+  @CacheTTL(CourseV2Controller.cacheTTLFactory)
+  @UseInterceptors(CacheInterceptor)
   @Public()
   async getCoursesPublic(@Query() query: ICourseV2.Query): Promise<ICourseV2.Basic[]> {
     const courses = await this.coursesService.getCourses(query, null)
@@ -70,6 +74,8 @@ export class CourseV2Controller {
   }
 
   @Get(':id/public')
+  @CacheTTL(CourseV2Controller.cacheTTLFactory)
+  @UseInterceptors(CacheInterceptor)
   @Public()
   async getCourseByIdPublic(
     @Param('id') id: number,

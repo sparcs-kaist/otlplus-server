@@ -64,15 +64,10 @@ export class LectureRepositoryV2 {
       levelFilter,
     ].filter((filter): filter is object => filter !== null)
     const queryResult = await this.prismaRead.subject_lecture.findMany({
-      include: {
-        subject_department: true,
-        subject_lecture_professors: { include: { professor: true } },
-        subject_classtime: true,
-        subject_examtime: true,
-      },
       where: {
         AND: filters,
       },
+      select: ELectureV2.BasicArgs.select,
       orderBy: [{ year: 'desc' }, { semester: 'desc' }, { old_code: 'asc' }, { class_no: 'asc' }],
       skip: offset ?? 0,
       take: limit ?? DEFAULT_LIMIT,
@@ -208,7 +203,6 @@ export class LectureRepositoryV2 {
       profByLecture.set(link.lecture_id, arr)
     }
 
-    // 4) ids 순서 보존, 튜플 생성
     return ids.map((id) => {
       const exam = etByLecture.get(id) ?? null
       return [id, ctByLecture.get(id) ?? [], exam as ELectureV2.ExamTime | null, profByLecture.get(id) ?? []]

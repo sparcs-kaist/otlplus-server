@@ -44,6 +44,16 @@ export namespace ILectureV2 {
     examTime: ILectureV2.ExamTime | null
   }
 
+  export interface courseWrapped {
+    courses: {
+      name: string
+      code: string
+      type: string
+      lectures: ILectureV2.Basic[]
+      completed: boolean
+    }[]
+  }
+
   export class getQuery {
     @IsOptional()
     @IsString()
