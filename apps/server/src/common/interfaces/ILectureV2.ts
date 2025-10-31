@@ -1,3 +1,4 @@
+import { ApiPropertyOptional } from '@nestjs/swagger'
 import { CourseOrderQuery, CourseType, level } from '@otl/server-nest/common/interfaces/ICourseV2'
 import { IDepartmentV2 } from '@otl/server-nest/common/interfaces/IDepartmentV2'
 import { IProfessorV2 } from '@otl/server-nest/common/interfaces/IProfessorV2'
@@ -35,9 +36,9 @@ export namespace ILectureV2 {
     numPeople: number
     credit: number
     creditAU: number
-    averageGrade: Float32Array
-    averageLoad: Float32Array
-    averageSpeech: Float32Array
+    averageGrade: number // float
+    averageLoad: number // float
+    averageSpeech: number // float
     isEnglish: boolean // 영어 강의 여부
     professors: IProfessorV2.Basic[]
     classes: ILectureV2.Classtime[]
@@ -69,9 +70,26 @@ export namespace ILectureV2 {
     type?: CourseType[]
 
     @IsOptional()
-    @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+    @Transform(({ value }) => {
+      if (Array.isArray(value)) return value.map(Number)
+      if (typeof value === 'string') {
+        try {
+          // JSON 문자열 형태일 때
+          if (value.startsWith('[') && value.endsWith(']')) {
+            return JSON.parse(value).map(Number)
+          }
+          // 콤마 구분일 때
+          return value.split(',').map(Number)
+        }
+        catch {
+          return [Number(value)]
+        }
+      }
+      return value
+    })
     @IsArray()
-    @IsString({ each: true })
+    @IsInt({ each: true })
+    @ApiPropertyOptional({ type: [Number], description: 'Department IDs' })
     department?: number[] // 각 department의 id
 
     @IsOptional()

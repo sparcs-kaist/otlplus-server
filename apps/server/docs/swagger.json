@@ -2734,7 +2734,7 @@
     },
     "/api/v2/lectures": {
       "get": {
-        "summary": "LecturesController.getLectures",
+        "summary": "LecturesControllerV2.getLectures",
         "responses": {
           "200": {
             "description": "OK",
@@ -2761,7 +2761,7 @@
     },
     "/api/v2/lectures/public": {
       "get": {
-        "summary": "LecturesController.getLecturesPublic",
+        "summary": "LecturesControllerV2.getLecturesPublic",
         "responses": {
           "200": {
             "description": "OK",
@@ -3618,7 +3618,7 @@
           },
           "department": {
             "items": {
-              "type": "string"
+              "type": "integer"
             },
             "type": "array"
           },
@@ -5229,97 +5229,13 @@
             "type": "number"
           },
           "averageGrade": {
-            "type": "object",
-            "properties": {
-              "BYTES_PER_ELEMENT": {
-                "type": "number"
-              },
-              "buffer": {
-                "type": "object",
-                "properties": {
-                  "byteLength": {
-                    "type": "number"
-                  }
-                },
-                "required": ["byteLength"],
-                "additionalProperties": false
-              },
-              "byteLength": {
-                "type": "number"
-              },
-              "byteOffset": {
-                "type": "number"
-              },
-              "length": {
-                "type": "number"
-              }
-            },
-            "required": ["BYTES_PER_ELEMENT", "buffer", "byteLength", "byteOffset", "length"],
-            "additionalProperties": {
-              "type": "number"
-            }
+            "type": "number"
           },
           "averageLoad": {
-            "type": "object",
-            "properties": {
-              "BYTES_PER_ELEMENT": {
-                "type": "number"
-              },
-              "buffer": {
-                "type": "object",
-                "properties": {
-                  "byteLength": {
-                    "type": "number"
-                  }
-                },
-                "required": ["byteLength"],
-                "additionalProperties": false
-              },
-              "byteLength": {
-                "type": "number"
-              },
-              "byteOffset": {
-                "type": "number"
-              },
-              "length": {
-                "type": "number"
-              }
-            },
-            "required": ["BYTES_PER_ELEMENT", "buffer", "byteLength", "byteOffset", "length"],
-            "additionalProperties": {
-              "type": "number"
-            }
+            "type": "number"
           },
           "averageSpeech": {
-            "type": "object",
-            "properties": {
-              "BYTES_PER_ELEMENT": {
-                "type": "number"
-              },
-              "buffer": {
-                "type": "object",
-                "properties": {
-                  "byteLength": {
-                    "type": "number"
-                  }
-                },
-                "required": ["byteLength"],
-                "additionalProperties": false
-              },
-              "byteLength": {
-                "type": "number"
-              },
-              "byteOffset": {
-                "type": "number"
-              },
-              "length": {
-                "type": "number"
-              }
-            },
-            "required": ["BYTES_PER_ELEMENT", "buffer", "byteLength", "byteOffset", "length"],
-            "additionalProperties": {
-              "type": "number"
-            }
+            "type": "number"
           },
           "isEnglish": {
             "type": "boolean"
@@ -5418,7 +5334,7 @@
           },
           "department": {
             "items": {
-              "type": "string"
+              "type": "integer"
             },
             "type": "array"
           },

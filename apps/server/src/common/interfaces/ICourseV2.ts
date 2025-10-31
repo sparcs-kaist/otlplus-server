@@ -1,7 +1,8 @@
+import { ApiPropertyOptional } from '@nestjs/swagger'
 import { IProfessorV2 } from '@otl/server-nest/common/interfaces/IProfessorV2'
 import { Transform } from 'class-transformer'
 import {
-  IsArray, IsIn, IsNumber, IsOptional, IsString,
+  IsArray, IsIn, IsInt, IsNumber, IsOptional, IsString,
 } from 'class-validator'
 
 import { IDepartmentV2 } from './IDepartmentV2'
@@ -65,9 +66,26 @@ export namespace ICourseV2 {
     type?: CourseType[]
 
     @IsOptional()
-    @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+    @Transform(({ value }) => {
+      if (Array.isArray(value)) return value.map(Number)
+      if (typeof value === 'string') {
+        try {
+          // JSON 문자열 형태일 때
+          if (value.startsWith('[') && value.endsWith(']')) {
+            return JSON.parse(value).map(Number)
+          }
+          // 콤마 구분일 때
+          return value.split(',').map(Number)
+        }
+        catch {
+          return [Number(value)]
+        }
+      }
+      return value
+    })
     @IsArray()
-    @IsString({ each: true })
+    @IsInt({ each: true })
+    @ApiPropertyOptional({ type: [Number], description: 'Department IDs' })
     department?: number[] // 각 department의 id
 
     @IsOptional()

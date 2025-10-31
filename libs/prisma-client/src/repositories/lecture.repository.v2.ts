@@ -143,8 +143,8 @@ export class LectureRepositoryV2 {
   }
 
   public datetimeConverter(time: number): Date {
-    const hour = Math.floor(time / 2) + 8
-    const minute = (time % 2) * 30
+    const hour = Math.floor(time / 60)
+    const minute = time % 60
 
     // 1970-01-01 날짜로 고정된 Date 객체 생성
     const date = new Date('1970-01-01T00:00:00.000Z')

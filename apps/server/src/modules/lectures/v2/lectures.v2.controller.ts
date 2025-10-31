@@ -10,7 +10,7 @@ import { session_userprofile } from '@prisma/client'
 import { LecturesServiceV2 } from './lectures.v2.service'
 
 @Controller('api/v2/lectures')
-export class LecturesController {
+export class LecturesControllerV2 {
   constructor(private readonly LectureService: LecturesServiceV2) {}
 
   private static cacheTTLFactory = (_context: ExecutionContext): number => {
@@ -44,7 +44,7 @@ export class LecturesController {
   }
 
   @Public()
-  @CacheTTL(LecturesController.cacheTTLFactory)
+  @CacheTTL(LecturesControllerV2.cacheTTLFactory)
   @UseInterceptors(CacheInterceptor)
   @Get('/public')
   async getLecturesPublic(@Query() query: ILectureV2.getQuery): Promise<ILectureV2.courseWrapped> {
