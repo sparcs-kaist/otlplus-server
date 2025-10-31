@@ -881,7 +881,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/home/aariprom/SPARCS/otlplus-server/apps/server/src/modules/notification/domain/notification\").NotificationRequest"
+                  "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/notification/domain/notification\").NotificationRequest"
                 }
               }
             }
@@ -899,7 +899,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/home/aariprom/SPARCS/otlplus-server/apps/server/src/modules/notification/domain/notification\").FCMNotificationRequest"
+                  "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/notification/domain/notification\").FCMNotificationRequest"
                 }
               }
             }
@@ -926,7 +926,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/home/aariprom/SPARCS/otlplus-server/apps/server/src/modules/notification/domain/notification\").UserNotification"
+                  "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/notification/domain/notification\").UserNotification"
                 }
               }
             }
@@ -955,7 +955,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/import(\"/home/aariprom/SPARCS/otlplus-server/apps/server/src/modules/agreement/domain/UserAgreement\").Agreement"
+                    "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/agreement/domain/UserAgreement\").Agreement"
                   }
                 }
               }
@@ -973,7 +973,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/home/aariprom/SPARCS/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                  "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
                 }
               }
             }
@@ -998,7 +998,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/home/aariprom/SPARCS/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                  "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
                 }
               }
             }
@@ -1050,7 +1050,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/import(\"/home/aariprom/SPARCS/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                    "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
                   }
                 }
               }
@@ -1073,7 +1073,7 @@
                       "type": "null"
                     },
                     {
-                      "$ref": "#/components/schemas/import(\"/home/aariprom/SPARCS/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                      "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
                     }
                   ]
                 }
@@ -7225,7 +7225,7 @@
         "type": "object",
         "required": ["message"]
       },
-      "ITimetableV2.GetResDto": {
+      "ITimetableV2.DepartmentResDto": {
         "properties": {
           "id": {
             "minimum": 0,
@@ -7233,27 +7233,72 @@
           },
           "name": {
             "type": "string"
-          },
-          "userId": {
+          }
+        },
+        "type": "object",
+        "required": ["id", "name"]
+      },
+      "ITimetableV2.ProfessorResDto": {
+        "properties": {
+          "id": {
             "minimum": 0,
             "type": "number"
           },
-          "year": {
-            "minimum": 0,
-            "type": "number"
-          },
-          "semester": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["id", "name"]
+      },
+      "ITimetableV2.ClassResDto": {
+        "properties": {
+          "day": {
             "maximum": 4,
             "type": "number",
-            "minimum": 1
+            "minimum": 0
           },
-          "timetableOrder": {
+          "begin": {
+            "maximum": 3000,
+            "type": "number",
+            "minimum": 0
+          },
+          "end": {
+            "maximum": 3000,
+            "type": "number",
+            "minimum": 0
+          },
+          "buildingCode": {
+            "type": "string"
+          },
+          "placeName": {
+            "type": "string"
+          },
+          "placeNameShort": {
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["day", "begin", "end", "buildingCode", "placeName", "placeNameShort"]
+      },
+      "ITimetableV2.ExamTimeResDto": {
+        "properties": {
+          "day": {
             "minimum": 0,
+            "type": "number"
+          },
+          "str": {
+            "type": "string"
+          },
+          "begin": {
+            "type": "number"
+          },
+          "end": {
             "type": "number"
           }
         },
         "type": "object",
-        "required": ["id", "name", "userId", "year", "semester", "timetableOrder"]
+        "required": ["day", "str", "begin", "end"]
       },
       "ITimetableV2.LectureResDto": {
         "properties": {
@@ -7338,7 +7383,7 @@
           "classes"
         ]
       },
-      "ITimetableV2.DepartmentResDto": {
+      "ITimetableV2.GetResDto": {
         "properties": {
           "id": {
             "minimum": 0,
@@ -7346,72 +7391,27 @@
           },
           "name": {
             "type": "string"
-          }
-        },
-        "type": "object",
-        "required": ["id", "name"]
-      },
-      "ITimetableV2.ProfessorResDto": {
-        "properties": {
-          "id": {
+          },
+          "userId": {
             "minimum": 0,
             "type": "number"
           },
-          "name": {
-            "type": "string"
-          }
-        },
-        "type": "object",
-        "required": ["id", "name"]
-      },
-      "ITimetableV2.ClassResDto": {
-        "properties": {
-          "day": {
+          "year": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "semester": {
             "maximum": 4,
             "type": "number",
-            "minimum": 0
+            "minimum": 1
           },
-          "begin": {
-            "maximum": 3000,
-            "type": "number",
-            "minimum": 0
-          },
-          "end": {
-            "maximum": 3000,
-            "type": "number",
-            "minimum": 0
-          },
-          "buildingCode": {
-            "type": "string"
-          },
-          "placeName": {
-            "type": "string"
-          },
-          "placeNameShort": {
-            "type": "string"
-          }
-        },
-        "type": "object",
-        "required": ["day", "begin", "end", "buildingCode", "placeName", "placeNameShort"]
-      },
-      "ITimetableV2.ExamTimeResDto": {
-        "properties": {
-          "day": {
+          "timetableOrder": {
             "minimum": 0,
             "type": "number"
-          },
-          "str": {
-            "type": "string"
-          },
-          "begin": {
-            "type": "number"
-          },
-          "end": {
-            "type": "number"
           }
         },
         "type": "object",
-        "required": ["day", "str", "begin", "end"]
+        "required": ["id", "name", "userId", "year", "semester", "timetableOrder"]
       },
       "ITimetableV2.Response": {
         "type": "object",
