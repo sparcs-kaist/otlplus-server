@@ -2684,14 +2684,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "query",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/ICourseV2.singleReadQuery"
-            }
           }
         ]
       }
@@ -2719,14 +2711,6 @@
             "required": true,
             "schema": {
               "type": "string"
-            }
-          },
-          {
-            "name": "query",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/ICourseV2.singleReadQuery"
             }
           }
         ]
@@ -3605,10 +3589,6 @@
       },
       "ICourseV2.Query": {
         "properties": {
-          "language": {
-            "type": "string",
-            "enum": ["kr", "en"]
-          },
           "type": {
             "items": {
               "type": "string",
@@ -3647,15 +3627,6 @@
           },
           "limit": {
             "type": "number"
-          }
-        },
-        "type": "object"
-      },
-      "ICourseV2.singleReadQuery": {
-        "properties": {
-          "language": {
-            "type": "string",
-            "enum": ["kr", "en"]
           }
         },
         "type": "object"

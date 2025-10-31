@@ -14,6 +14,7 @@ export class LecturesServiceV2 {
   public async getLectureByFilter(
     query: ILectureV2.getQuery,
     user: session_userprofile | null,
+    lang: 'kr' | 'en',
   ): Promise<ILectureV2.courseWrapped> {
     // Helpers
     const toMinutes = (v: unknown): number => {
@@ -29,12 +30,12 @@ export class LecturesServiceV2 {
     }
     const pad2 = (n: number) => (n < 10 ? `0${n}` : String(n))
     const mmToHHmm = (mins: number) => `${pad2(Math.floor(mins / 60))}:${pad2(mins % 60)}`
-    const prefer = (a?: string | null, b?: string | null) => (a ?? '').trim() || (b ?? '').trim() || ''
 
     // 1) Fetch lectures matching the filter
     const {
       keyword, type, department, level, year, semester, day, begin, end, order, limit, offset,
     } = query
+    const choose = (kr?: string | null, en?: string | null) => (lang === 'en' ? (en ?? '').trim() || (kr ?? '') : (kr ?? '').trim() || (en ?? ''))
     const lectures = await this.lectureRepository.filterByRequest(
       keyword,
       type as unknown as string[] | undefined,
@@ -100,7 +101,7 @@ export class LecturesServiceV2 {
         begin: toMinutes(ct.begin),
         end: toMinutes(ct.end),
         buildingCode: String(ct.building_id ?? ''),
-        buildingName: prefer(ct.building_full_name, ct.building_full_name_en),
+        buildingName: choose(ct.building_full_name, ct.building_full_name_en),
         roomName: ct.room_name ?? '',
       }))
 
@@ -116,20 +117,20 @@ export class LecturesServiceV2 {
 
       const professors = (meta?.professors ?? []).map((p: any) => ({
         id: p.id,
-        name: prefer(p.professor_name, p.professor_name_en),
+        name: choose(p.professor_name, p.professor_name_en),
       }))
 
       const basic: ILectureV2.Basic = {
         id: lec.id,
         courseId: lec.course_id,
         classNo: String(lec.class_no ?? ''),
-        name: prefer(lec.title, lec.title_en),
+        name: choose(lec.title, lec.title_en),
         code: courseCodeById.get(lec.course_id) ?? '',
         department: {
           id: lec.subject_department.id,
-          name: prefer(lec.subject_department.name, lec.subject_department.name_en),
+          name: choose(lec.subject_department.name, lec.subject_department.name_en),
         },
-        type: prefer(lec.type, lec.type_en),
+        type: choose(lec.type, lec.type_en),
         limitPeople: lec.limit ?? 0,
         numPeople: lec.num_people ?? 0,
         credit: lec.credit ?? 0,
@@ -146,9 +147,9 @@ export class LecturesServiceV2 {
       const courseId = lec.course_id
       if (!grouped.has(courseId)) {
         grouped.set(courseId, {
-          name: prefer(lec.title, lec.title_en),
+          name: choose(lec.title, lec.title_en),
           code: courseCodeById.get(courseId) ?? '',
-          type: prefer(lec.type, lec.type_en),
+          type: choose(lec.type, lec.type_en),
           lectures: [basic],
           completed: takenCourseIdSet.has(courseId),
         })
