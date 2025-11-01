@@ -20,7 +20,10 @@ export class TimetablesServiceV2 {
     private readonly timetableMQ: TimetableMQ,
   ) {}
 
-  async getTimetables(query: ITimetableV2.QueryDto, user: session_userprofile) {
+  async getTimetables(query: ITimetableV2.GetListQueryDto, user: session_userprofile) {
+    if (query.user_id !== user.id) {
+      throw new BadRequestException('Current user does not match user_id in query')
+    }
     return await this.timetableRepository.getTimetableBasics(user)
   }
 

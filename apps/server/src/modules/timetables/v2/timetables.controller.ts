@@ -14,7 +14,7 @@ export class TimetablesControllerV2 {
 
   @Get()
   async getTimetables(
-    @Query() query: ITimetableV2.QueryDto,
+    @Query() query: ITimetableV2.GetListQueryDto,
     @GetUser() user: session_userprofile,
   ): Promise<ITimetableV2.Response[]> {
     const timeTableList = await this.timetablesService.getTimetables(query, user)

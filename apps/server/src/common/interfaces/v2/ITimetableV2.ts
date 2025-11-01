@@ -16,10 +16,11 @@ import {
 export const TIMETABLE_MAX_LIMIT = 50
 
 export namespace ITimetableV2 {
-  export class QueryDto {
+  export class GetListQueryDto {
     @IsString()
-    @Type(() => String)
-    user_id?: string
+    @Min(0)
+    @Type(() => Number)
+    user_id!: number
   }
 
   export class DeleteReqDto {
