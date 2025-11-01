@@ -17,7 +17,7 @@ export const TIMETABLE_MAX_LIMIT = 50
 
 export namespace ITimetableV2 {
   export class GetListQueryDto {
-    @IsString()
+    @IsNumber()
     @Min(0)
     @Type(() => Number)
     user_id!: number

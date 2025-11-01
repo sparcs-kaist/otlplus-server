@@ -2587,7 +2587,7 @@
             "in": "query",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/ITimetableV2.QueryDto"
+              "$ref": "#/components/schemas/ITimetableV2.GetListQueryDto"
             }
           }
         ]
@@ -7230,10 +7230,11 @@
         "type": "object",
         "required": ["lecture"]
       },
-      "ITimetableV2.QueryDto": {
+      "ITimetableV2.GetListQueryDto": {
         "properties": {
           "user_id": {
-            "type": "string"
+            "minimum": 0,
+            "type": "number"
           }
         },
         "type": "object",
