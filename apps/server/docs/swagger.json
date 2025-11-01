@@ -881,7 +881,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/notification/domain/notification\").NotificationRequest"
+                  "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/notification/domain/notification\").NotificationRequest"
                 }
               }
             }
@@ -899,7 +899,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/notification/domain/notification\").FCMNotificationRequest"
+                  "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/notification/domain/notification\").FCMNotificationRequest"
                 }
               }
             }
@@ -926,7 +926,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/notification/domain/notification\").UserNotification"
+                  "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/notification/domain/notification\").UserNotification"
                 }
               }
             }
@@ -955,7 +955,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/agreement/domain/UserAgreement\").Agreement"
+                    "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/agreement/domain/UserAgreement\").Agreement"
                   }
                 }
               }
@@ -973,7 +973,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                  "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
                 }
               }
             }
@@ -998,7 +998,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                  "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
                 }
               }
             }
@@ -1050,7 +1050,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                    "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
                   }
                 }
               }
@@ -1073,7 +1073,7 @@
                       "type": "null"
                     },
                     {
-                      "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                      "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
                     }
                   ]
                 }
@@ -2591,6 +2591,31 @@
             }
           }
         ]
+      },
+      "post": {
+        "summary": "TimetablesControllerV2.createTimetable",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ITimetableV2.CreateResDto"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ITimetableV2.CreateReqDto"
+              }
+            }
+          }
+        }
       },
       "delete": {
         "summary": "TimetablesControllerV2.deleteTimetable",
@@ -7470,6 +7495,61 @@
         },
         "type": "object",
         "required": ["message"]
+      },
+      "ITimetableV2.CreateReqDto": {
+        "properties": {
+          "userId": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "year": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "semester": {
+            "maximum": 4,
+            "type": "number",
+            "minimum": 1
+          },
+          "lectureIds": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object",
+        "required": ["userId", "year", "semester", "lectureIds"]
+      },
+      "ITimetableV2.CreateResDto": {
+        "properties": {
+          "id": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "userId": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "year": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "semester": {
+            "maximum": 4,
+            "type": "number",
+            "minimum": 1
+          },
+          "timetableOrder": {
+            "minimum": 0,
+            "type": "number"
+          }
+        },
+        "type": "object",
+        "required": ["id", "name", "userId", "year", "semester", "timetableOrder"]
       },
       "ITimetableV2.Response": {
         "type": "object",

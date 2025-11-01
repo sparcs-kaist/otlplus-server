@@ -1,5 +1,5 @@
 import {
-  Body, Controller, Delete, Get, Headers, Param, ParseIntPipe, Patch, Query,
+  Body, Controller, Delete, Get, Headers, Param, ParseIntPipe, Patch, Post, Query,
 } from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
@@ -19,6 +19,15 @@ export class TimetablesControllerV2 {
   ): Promise<ITimetableV2.Response[]> {
     const timeTableList = await this.timetablesService.getTimetables(query, user)
     return timeTableList.map((timeTable) => toJsonTimetableV2(timeTable))
+  }
+
+  @Post()
+  async createTimetable(
+    @GetUser() user: session_userprofile,
+    @Body() body: ITimetableV2.CreateReqDto,
+    @Headers('Accept-Language') acceptLanguage: string,
+  ): Promise<ITimetableV2.CreateResDto> {
+    return await this.timetablesService.createTimetable(user, body, acceptLanguage)
   }
 
   @Delete()

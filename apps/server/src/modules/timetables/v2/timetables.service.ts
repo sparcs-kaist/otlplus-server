@@ -25,6 +25,50 @@ export class TimetablesServiceV2 {
   }
 
   @Transactional()
+  async createTimetable(
+    user: session_userprofile,
+    body: ITimetableV2.CreateReqDto,
+    acceptLanguage?: string,
+  ): Promise<ITimetableV2.CreateResDto> {
+    const {
+      userId, year, semester, lectureIds,
+    } = body
+
+    if (userId !== user.id) {
+      throw new BadRequestException('Current user does not match userId in POST request')
+    }
+
+    const relatedTimetables = await this.timetableRepository.getTimetableBasics(user, year, semester, {
+      orderBy: { arrange_order: 'asc' },
+    })
+    const arrangeOrder = relatedTimetables.length > 0 ? relatedTimetables[relatedTimetables.length - 1].arrange_order + 1 : 0
+
+    // Remove duplicate lecture IDs
+    const uniqueLectureIds = Array.from(new Set(lectureIds ?? []))
+    const lectures = uniqueLectureIds.length > 0 ? await this.lectureRepository.getLectureByIds(uniqueLectureIds) : []
+
+    // Save only lectures that match the year and semester with timetable
+    const filteredLectures = lectures.filter((lecture) => lecture.year === year && lecture.semester === semester)
+
+    const createdTimetable = await this.timetableRepository.createTimetable(
+      user,
+      year,
+      semester,
+      arrangeOrder,
+      filteredLectures,
+    )
+
+    await Promise.all(
+      filteredLectures.map(async (lecture) => this.timetableMQ.publishLectureNumUpdate(lecture.id)),
+    ).catch((error) => {
+      logger.error('Failed to publish lecture num update', error)
+    })
+
+    const language = this.parseAcceptLanguage(acceptLanguage)
+    return toJsonTimetableV2WithLectures(createdTimetable, language)
+  }
+
+  @Transactional()
   async deleteTimetable(
     user: session_userprofile,
     body: ITimetableV2.DeleteReqDto,

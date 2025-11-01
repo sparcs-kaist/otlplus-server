@@ -265,6 +265,30 @@ export namespace ITimetableV2 {
     message!: string
   }
 
+  export class CreateReqDto {
+    @IsNumber()
+    @Min(0)
+    @Type(() => Number)
+    userId!: number
+
+    @IsNumber()
+    @Min(0)
+    @Type(() => Number)
+    year!: number
+
+    @IsNumber()
+    @Min(1)
+    @Max(4)
+    @Type(() => Number)
+    semester!: number
+
+    @IsArray()
+    @IsNumber({}, { each: true })
+    lectureIds!: number[]
+  }
+
+  export class CreateResDto extends GetResDto {}
+
   export interface Response {
     id: number
     year: number | null
