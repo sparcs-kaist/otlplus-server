@@ -121,4 +121,38 @@ export namespace IReviewV2 {
     @ApiProperty({ type: Number })
     id!: number
   }
+
+  export class UpdateDto {
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    @Validate(StringStripLength)
+    content!: string
+
+    @ApiProperty()
+    @IsNumber()
+    @Min(0)
+    @Max(5)
+    @Type(() => Number)
+    grade!: number
+
+    @ApiProperty()
+    @IsNumber()
+    @Min(0)
+    @Max(5)
+    @Type(() => Number)
+    load!: number
+
+    @ApiProperty()
+    @IsNumber()
+    @Min(0)
+    @Max(5)
+    @Type(() => Number)
+    speech!: number
+  }
+
+  export class UpdateResponseDto {
+    @ApiProperty({ type: Number })
+    id!: number
+  }
 }
