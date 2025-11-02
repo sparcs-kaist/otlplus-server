@@ -918,7 +918,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").NotificationRequest"
+                  "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/notification/domain/notification\").NotificationRequest"
                 }
               }
             }
@@ -936,7 +936,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").FCMNotificationRequest"
+                  "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/notification/domain/notification\").FCMNotificationRequest"
                 }
               }
             }
@@ -963,7 +963,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").UserNotification"
+                  "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/notification/domain/notification\").UserNotification"
                 }
               }
             }
@@ -992,7 +992,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/agreement/domain/UserAgreement\").Agreement"
+                    "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/agreement/domain/UserAgreement\").Agreement"
                   }
                 }
               }
@@ -1010,7 +1010,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                  "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
                 }
               }
             }
@@ -1035,7 +1035,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                  "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
                 }
               }
             }
@@ -1087,7 +1087,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                    "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
                   }
                 }
               }
@@ -1110,7 +1110,7 @@
                       "type": "null"
                     },
                     {
-                      "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                      "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
                     }
                   ]
                 }
@@ -2658,6 +2658,116 @@
             }
           }
         }
+      }
+    },
+    "/api/v2/reviews/{reviewId}": {
+      "put": {
+        "summary": "ReviewsV2Controller.updateReviewV2",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IReviewV2.UpdateResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "reviewId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IReviewV2.UpdateDto"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/reviews/{reviewId}/liked": {
+      "patch": {
+        "summary": "ReviewsV2Controller.patchReviewLike",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IReviewV2.UpdateResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "reviewId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IReviewV2.PatchLikedDto"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/users/{userId}/reviews/liked": {
+      "get": {
+        "summary": "UserV2Controller.getUserLikedReviews",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "reviews": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/IReviewV2.Basic"
+                      }
+                    }
+                  },
+                  "required": ["reviews"]
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     }
   },
@@ -6037,9 +6147,6 @@
           "direction": {
             "type": "string",
             "enum": ["ltr", "rtl"]
-          },
-          "lang": {
-            "type": "string"
           }
         },
         "required": [
@@ -6066,8 +6173,7 @@
           "textBaseline",
           "textAlign",
           "canvas",
-          "direction",
-          "lang"
+          "direction"
         ],
         "additionalProperties": false
       },
@@ -7423,9 +7529,19 @@
             "items": {
               "type": "number"
             }
+          },
+          "department": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IDepartmentV2.Basic"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
-        "required": ["reviews", "averageGrade", "averageLoad", "averageSpeech", "myReviewId"],
+        "required": ["reviews", "averageGrade", "averageLoad", "averageSpeech", "myReviewId", "department"],
         "additionalProperties": false
       },
       "IReviewV2.QueryDto": {
@@ -7458,23 +7574,9 @@
       },
       "IReviewV2.CreateDto": {
         "properties": {
-          "courseId": {
+          "lectureId": {
             "minLength": 1,
             "type": "number"
-          },
-          "professorId": {
-            "minLength": 1,
-            "type": "number"
-          },
-          "year": {
-            "minLength": 1,
-            "type": "number"
-          },
-          "semester": {
-            "maximum": 4,
-            "type": "number",
-            "minimum": 1,
-            "minLength": 1
           },
           "content": {
             "minLength": 1,
@@ -7500,9 +7602,50 @@
           }
         },
         "type": "object",
-        "required": ["courseId", "professorId", "year", "semester", "content", "grade", "load", "speech"]
+        "required": ["lectureId", "content", "grade", "load", "speech"]
       },
-      "IReviewV2.CreateResponseDto": {}
+      "IReviewV2.CreateResponseDto": {},
+      "IReviewV2.UpdateDto": {
+        "properties": {
+          "content": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "grade": {
+            "maximum": 5,
+            "type": "number",
+            "minimum": 0
+          },
+          "load": {
+            "maximum": 5,
+            "type": "number",
+            "minimum": 0
+          },
+          "speech": {
+            "maximum": 5,
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "type": "object",
+        "required": ["content", "grade", "load", "speech"]
+      },
+      "IReviewV2.UpdateResponseDto": {},
+      "IReviewV2.PatchLikedDto": {
+        "properties": {
+          "reviewId": {
+            "minLength": 1,
+            "type": "number"
+          },
+          "action": {
+            "type": "string",
+            "enum": ["like", "unlike"],
+            "minLength": 1
+          }
+        },
+        "type": "object",
+        "required": ["reviewId", "action"]
+      }
     },
     "securitySchemes": {
       "jwtCookie": {
