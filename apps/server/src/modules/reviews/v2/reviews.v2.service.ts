@@ -274,4 +274,38 @@ export class ReviewsV2Service {
 
     return { id: updatedReview.id }
   }
+
+  @Transactional()
+  async updateReviewLiked(body: IReviewV2.PatchLikedDto, user: session_userprofile): Promise<number> {
+    const review = await this.reviewsRepository.getReviewById(body.reviewId)
+    if (!review) {
+      throw new HttpException('Can\'t find review', HttpStatus.BAD_REQUEST)
+    }
+
+    const alreadyLiked = await this.reviewsRepository.isLiked(body.reviewId, user.id)
+
+    // todo: 중복 요청 오류 처리할지 말지
+    switch (body.action) {
+      case 'like':
+        if (alreadyLiked) {
+          throw new HttpException('Requested for like, but already liked', HttpStatus.BAD_REQUEST)
+        }
+        await this.reviewsRepository.upsertReviewVote(body.reviewId, user.id)
+        break
+      case 'unlike':
+        if (!alreadyLiked) {
+          throw new HttpException('Requested for unlike, but not liked yet', HttpStatus.BAD_REQUEST)
+        }
+        await this.reviewsRepository.deleteReviewVote(body.reviewId, user.id)
+        break
+      default:
+        throw new HttpException(`Invalid action: ${body.action}`, HttpStatus.BAD_REQUEST)
+    }
+
+    await this.reviewMQ.publishReviewLikeUpdate(body.reviewId).catch((e) => {
+      logger.error(`Error while publishing review like update: ${e.message}`, e)
+    })
+
+    return 0
+  }
 }
