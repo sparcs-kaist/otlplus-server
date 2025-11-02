@@ -277,7 +277,10 @@ export class ReviewsV2Service {
   }
 
   @Transactional()
-  async updateReviewLiked(body: IReviewV2.PatchLikedDto, user: session_userprofile): Promise<number> {
+  async updateReviewLiked(
+    body: IReviewV2.PatchLikedDto,
+    user: session_userprofile,
+  ): Promise<IReviewV2.UpdateResponseDto> {
     const review = await this.reviewsRepository.getReviewById(body.reviewId)
     if (!review) {
       throw new HttpException('Can\'t find review', HttpStatus.BAD_REQUEST)
@@ -307,6 +310,6 @@ export class ReviewsV2Service {
       logger.error(`Error while publishing review like update: ${e.message}`, e)
     })
 
-    return 0
+    return { id: body.reviewId }
   }
 }

@@ -49,7 +49,7 @@ export class ReviewsV2Controller {
     return { id: result.id }
   }
 
-  @Put(':reviewId')
+  @Put('/:reviewId')
   async updateReviewV2(
     @Param('reviewId') reviewId: number,
     @Body() reviewBody: IReviewV2.UpdateDto,
@@ -67,7 +67,7 @@ export class ReviewsV2Controller {
     @Param('reviewId') reviewId: number,
     @Body() body: IReviewV2.PatchLikedDto,
     @GetUser() user: session_userprofile,
-  ): Promise<number> {
+  ): Promise<IReviewV2.UpdateResponseDto> {
     if (reviewId !== body.reviewId) {
       throw new HttpException('Path param and body id not match', HttpStatus.BAD_REQUEST)
     }
