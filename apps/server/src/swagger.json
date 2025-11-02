@@ -918,7 +918,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"C:/Users/sjsh1/Sparcs_Otl/api_fix/otlplus-server/apps/server/src/modules/notification/domain/notification\").NotificationRequest"
+                  "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/notification/domain/notification\").NotificationRequest"
                 }
               }
             }
@@ -936,7 +936,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"C:/Users/sjsh1/Sparcs_Otl/api_fix/otlplus-server/apps/server/src/modules/notification/domain/notification\").FCMNotificationRequest"
+                  "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/notification/domain/notification\").FCMNotificationRequest"
                 }
               }
             }
@@ -963,7 +963,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"C:/Users/sjsh1/Sparcs_Otl/api_fix/otlplus-server/apps/server/src/modules/notification/domain/notification\").UserNotification"
+                  "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/notification/domain/notification\").UserNotification"
                 }
               }
             }
@@ -992,7 +992,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/import(\"C:/Users/sjsh1/Sparcs_Otl/api_fix/otlplus-server/apps/server/src/modules/agreement/domain/UserAgreement\").Agreement"
+                    "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/agreement/domain/UserAgreement\").Agreement"
                   }
                 }
               }
@@ -1010,7 +1010,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"C:/Users/sjsh1/Sparcs_Otl/api_fix/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                  "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
                 }
               }
             }
@@ -1035,7 +1035,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"C:/Users/sjsh1/Sparcs_Otl/api_fix/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                  "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
                 }
               }
             }
@@ -1087,7 +1087,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/import(\"C:/Users/sjsh1/Sparcs_Otl/api_fix/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                    "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
                   }
                 }
               }
@@ -1110,7 +1110,7 @@
                       "type": "null"
                     },
                     {
-                      "$ref": "#/components/schemas/import(\"C:/Users/sjsh1/Sparcs_Otl/api_fix/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                      "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
                     }
                   ]
                 }
@@ -2600,9 +2600,9 @@
         }
       }
     },
-    "/api/v2/courses": {
+    "/api/v2/timetables": {
       "get": {
-        "summary": "CourseV2Controller.getCourses",
+        "summary": "TimetablesControllerV2.getTimetables",
         "responses": {
           "200": {
             "description": "OK",
@@ -2611,7 +2611,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/ICourseV2.Basic"
+                    "$ref": "#/components/schemas/ITimetableV2.Response"
                   }
                 }
               }
@@ -2624,53 +2624,97 @@
             "in": "query",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/ICourseV2.Query"
+              "$ref": "#/components/schemas/ITimetableV2.GetListQueryDto"
             }
           }
         ]
-      }
-    },
-    "/api/v2/courses/public": {
-      "get": {
-        "summary": "CourseV2Controller.getCoursesPublic",
+      },
+      "post": {
+        "summary": "TimetablesControllerV2.createTimetable",
         "responses": {
           "200": {
             "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ICourseV2.Basic"
-                  }
+                  "$ref": "#/components/schemas/ITimetableV2.CreateResDto"
                 }
               }
             }
           }
         },
-        "security": [],
-        "parameters": [
-          {
-            "name": "query",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/ICourseV2.Query"
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ITimetableV2.CreateReqDto"
+              }
             }
           }
-        ]
-      }
-    },
-    "/api/v2/courses/{id}": {
-      "get": {
-        "summary": "CourseV2Controller.getCourseById",
+        }
+      },
+      "delete": {
+        "summary": "TimetablesControllerV2.deleteTimetable",
         "responses": {
           "200": {
             "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ICourseV2.Detail"
+                  "$ref": "#/components/schemas/ITimetableV2.DeleteResDto"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ITimetableV2.DeleteReqDto"
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "TimetablesControllerV2.updateTimetable",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ITimetableV2.UpdateResDto"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ITimetableV2.UpdateReqDto"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/timetables/{timetableId}": {
+      "get": {
+        "summary": "TimetablesControllerV2.getTimetable",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ITimetableV2.GetResDto"
                 }
               }
             }
@@ -2678,7 +2722,7 @@
         },
         "parameters": [
           {
-            "name": "id",
+            "name": "timetableId",
             "in": "path",
             "required": true,
             "schema": {
@@ -2686,89 +2730,41 @@
             }
           }
         ]
-      }
-    },
-    "/api/v2/courses/{id}/public": {
-      "get": {
-        "summary": "CourseV2Controller.getCourseByIdPublic",
+      },
+      "patch": {
+        "summary": "TimetablesControllerV2.updateTimetableLecture",
         "responses": {
           "200": {
             "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ICourseV2.Detail"
+                  "$ref": "#/components/schemas/ITimetableV2.UpdateLectureResDto"
                 }
               }
             }
           }
         },
-        "security": [],
         "parameters": [
           {
-            "name": "id",
+            "name": "timetableId",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string"
             }
           }
-        ]
-      }
-    },
-    "/api/v2/lectures": {
-      "get": {
-        "summary": "LecturesControllerV2.getLectures",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ILectureV2.courseWrapped"
-                }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ITimetableV2.UpdateLectureReqDto"
               }
             }
           }
-        },
-        "parameters": [
-          {
-            "name": "query",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/ILectureV2.getQuery"
-            }
-          }
-        ]
-      }
-    },
-    "/api/v2/lectures/public": {
-      "get": {
-        "summary": "LecturesControllerV2.getLecturesPublic",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ILectureV2.courseWrapped"
-                }
-              }
-            }
-          }
-        },
-        "security": [],
-        "parameters": [
-          {
-            "name": "query",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/ILectureV2.getQuery"
-            }
-          }
-        ]
+        }
       }
     }
   },
@@ -3415,218 +3411,6 @@
             "maximum": 100,
             "type": "number",
             "minimum": 0
-          }
-        },
-        "type": "object"
-      },
-      "CourseOrderQuery": {
-        "type": "string",
-        "enum": ["code", "popular", "studentCount"]
-      },
-      "level": {
-        "type": "string",
-        "enum": ["ALL", "100", "200", "300", "400", "500", "600", "700", "800", "900"]
-      },
-      "CourseType": {
-        "type": "string",
-        "enum": ["ALL", "BR", "BE", "MR", "ME", "MGC", "HSE", "GR", "EG", "OE", "ETC"]
-      },
-      "ICourseV2.Basic": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "number"
-          },
-          "name": {
-            "type": "string"
-          },
-          "code": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
-          },
-          "department": {
-            "$ref": "#/components/schemas/IDepartmentV2.Basic"
-          },
-          "professors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/IProfessorV2.Basic"
-            }
-          },
-          "summary": {
-            "type": "string"
-          },
-          "open": {
-            "type": "boolean"
-          },
-          "completed": {
-            "type": "boolean"
-          }
-        },
-        "required": ["id", "name", "code", "type", "department", "professors", "summary", "open", "completed"],
-        "additionalProperties": false
-      },
-      "IDepartmentV2.Basic": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "number"
-          },
-          "name": {
-            "type": "string"
-          }
-        },
-        "required": ["id", "name"],
-        "additionalProperties": false
-      },
-      "IProfessorV2.Basic": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "number"
-          },
-          "name": {
-            "type": "string"
-          }
-        },
-        "required": ["id", "name"],
-        "additionalProperties": false
-      },
-      "ICourseV2.Detail": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "number"
-          },
-          "name": {
-            "type": "string"
-          },
-          "code": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
-          },
-          "department": {
-            "$ref": "#/components/schemas/IDepartmentV2.Basic"
-          },
-          "history": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "year": {
-                  "type": "number"
-                },
-                "semester": {
-                  "type": "number"
-                },
-                "classes": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "lectureId": {
-                        "type": "number"
-                      },
-                      "classNo": {
-                        "type": "string"
-                      },
-                      "professors": {
-                        "type": "array",
-                        "items": {
-                          "$ref": "#/components/schemas/IProfessorV2.Basic"
-                        }
-                      }
-                    },
-                    "required": ["lectureId", "classNo", "professors"],
-                    "additionalProperties": false
-                  }
-                },
-                "myProfessors": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/IProfessorV2.Basic"
-                  }
-                }
-              },
-              "required": ["year", "semester", "classes", "myProfessors"],
-              "additionalProperties": false
-            }
-          },
-          "summary": {
-            "type": "string"
-          },
-          "classDuration": {
-            "type": "number"
-          },
-          "expDuration": {
-            "type": "number"
-          },
-          "credit": {
-            "type": "number"
-          },
-          "creditAU": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "code",
-          "type",
-          "department",
-          "history",
-          "summary",
-          "classDuration",
-          "expDuration",
-          "credit",
-          "creditAU"
-        ],
-        "additionalProperties": false
-      },
-      "ICourseV2.Query": {
-        "properties": {
-          "type": {
-            "items": {
-              "type": "string",
-              "enum": ["ALL", "BR", "BE", "MR", "ME", "MGC", "HSE", "GR", "EG", "OE", "ETC"]
-            },
-            "type": "array"
-          },
-          "department": {
-            "items": {
-              "type": "integer"
-            },
-            "type": "array"
-          },
-          "level": {
-            "items": {
-              "type": "string",
-              "enum": ["ALL", "100", "200", "300", "400", "500", "600", "700", "800", "900"]
-            },
-            "type": "array"
-          },
-          "term": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "keyword": {
-            "type": "string"
-          },
-          "order": {
-            "type": "string",
-            "enum": ["code", "popular", "studentCount"]
-          },
-          "offset": {
-            "type": "number"
-          },
-          "limit": {
-            "type": "number"
           }
         },
         "type": "object"
@@ -7728,6 +7512,364 @@
         },
         "type": "object",
         "required": ["lecture"]
+      },
+      "ITimetableV2.GetListQueryDto": {
+        "properties": {
+          "user_id": {
+            "minimum": 0,
+            "type": "number"
+          }
+        },
+        "type": "object",
+        "required": ["user_id"]
+      },
+      "ITimetableV2.DeleteReqDto": {
+        "properties": {
+          "id": {
+            "minimum": 0,
+            "type": "number"
+          }
+        },
+        "type": "object",
+        "required": ["id"]
+      },
+      "ITimetableV2.DeleteResDto": {
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["message"]
+      },
+      "ITimetableV2.UpdateReqDto": {
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "maxLength": 255,
+            "type": "string",
+            "minLength": 1
+          },
+          "order": {
+            "minimum": 0,
+            "type": "number"
+          }
+        },
+        "type": "object",
+        "required": ["id"]
+      },
+      "ITimetableV2.UpdateResDto": {
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["message"]
+      },
+      "ITimetableV2.DepartmentResDto": {
+        "properties": {
+          "id": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["id", "name"]
+      },
+      "ITimetableV2.ProfessorResDto": {
+        "properties": {
+          "id": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["id", "name"]
+      },
+      "ITimetableV2.ClassResDto": {
+        "properties": {
+          "day": {
+            "maximum": 4,
+            "type": "number",
+            "minimum": 0
+          },
+          "begin": {
+            "maximum": 3000,
+            "type": "number",
+            "minimum": 0
+          },
+          "end": {
+            "maximum": 3000,
+            "type": "number",
+            "minimum": 0
+          },
+          "buildingCode": {
+            "type": "string"
+          },
+          "placeName": {
+            "type": "string"
+          },
+          "placeNameShort": {
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["day", "begin", "end", "buildingCode", "placeName", "placeNameShort"]
+      },
+      "ITimetableV2.ExamTimeResDto": {
+        "properties": {
+          "day": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "str": {
+            "type": "string"
+          },
+          "begin": {
+            "type": "number"
+          },
+          "end": {
+            "type": "number"
+          }
+        },
+        "type": "object",
+        "required": ["day", "str", "begin", "end"]
+      },
+      "ITimetableV2.LectureResDto": {
+        "properties": {
+          "id": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "courseId": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "classNo": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "department": {
+            "items": {},
+            "type": "array"
+          },
+          "type": {
+            "type": "string"
+          },
+          "limitPeople": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "numPeople": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "credit": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "creditAU": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "averageGrade": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "averageLoad": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "averageSpeech": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "isEnglish": {
+            "type": "boolean"
+          },
+          "professors": {
+            "items": {},
+            "type": "array"
+          },
+          "classes": {
+            "items": {},
+            "type": "array"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "courseId",
+          "classNo",
+          "name",
+          "department",
+          "type",
+          "limitPeople",
+          "numPeople",
+          "credit",
+          "creditAU",
+          "averageGrade",
+          "averageLoad",
+          "averageSpeech",
+          "isEnglish",
+          "professors",
+          "classes"
+        ]
+      },
+      "ITimetableV2.GetResDto": {
+        "properties": {
+          "id": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "userId": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "year": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "semester": {
+            "maximum": 4,
+            "type": "number",
+            "minimum": 1
+          },
+          "timetableOrder": {
+            "minimum": 0,
+            "type": "number"
+          }
+        },
+        "type": "object",
+        "required": ["id", "name", "userId", "year", "semester", "timetableOrder"]
+      },
+      "ITimetableV2.UpdateLectureReqDto": {
+        "properties": {
+          "lectureId": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "action": {
+            "type": "string",
+            "enum": ["add", "delete"]
+          }
+        },
+        "type": "object",
+        "required": ["lectureId", "action"]
+      },
+      "ITimetableV2.UpdateLectureResDto": {
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["message"]
+      },
+      "ITimetableV2.CreateReqDto": {
+        "properties": {
+          "userId": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "year": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "semester": {
+            "maximum": 4,
+            "type": "number",
+            "minimum": 1
+          },
+          "lectureIds": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object",
+        "required": ["userId", "year", "semester", "lectureIds"]
+      },
+      "ITimetableV2.CreateResDto": {
+        "properties": {
+          "id": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "userId": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "year": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "semester": {
+            "maximum": 4,
+            "type": "number",
+            "minimum": 1
+          },
+          "timetableOrder": {
+            "minimum": 0,
+            "type": "number"
+          }
+        },
+        "type": "object",
+        "required": ["id", "name", "userId", "year", "semester", "timetableOrder"]
+      },
+      "ITimetableV2.Response": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "year": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "semester": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "timeTableOrder": {
+            "type": "number"
+          },
+          "userId": {
+            "type": "number"
+          }
+        },
+        "required": ["id", "year", "semester", "timeTableOrder", "userId"],
+        "additionalProperties": false
       }
     },
     "securitySchemes": {
