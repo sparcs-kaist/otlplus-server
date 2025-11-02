@@ -1,4 +1,5 @@
 export * from './ECourse'
+export * from './ECourseV2'
 export * from './ECustomblock'
 export * from './EDepartment'
 export * from './EFeed'

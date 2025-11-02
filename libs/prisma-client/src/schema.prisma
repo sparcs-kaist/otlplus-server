@@ -323,6 +323,13 @@ model session_userprofile {
   @@index([student_id], map: "session_userprofile_student_id_index")
 }
 
+model sid_uid_map {
+  uid String
+  sid String
+
+  @@id([uid, sid])
+}
+
 model session_userprofile_device {
   id              Int                 @id @default(autoincrement())
   userprofile_id  Int
