@@ -918,7 +918,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/notification/domain/notification\").NotificationRequest"
+                  "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/notification/domain/notification\").NotificationRequest"
                 }
               }
             }
@@ -936,7 +936,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/notification/domain/notification\").FCMNotificationRequest"
+                  "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/notification/domain/notification\").FCMNotificationRequest"
                 }
               }
             }
@@ -963,7 +963,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/notification/domain/notification\").UserNotification"
+                  "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/notification/domain/notification\").UserNotification"
                 }
               }
             }
@@ -992,7 +992,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/agreement/domain/UserAgreement\").Agreement"
+                    "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/agreement/domain/UserAgreement\").Agreement"
                   }
                 }
               }
@@ -1010,7 +1010,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                  "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/notification/domain/notification\").Notification"
                 }
               }
             }
@@ -1035,7 +1035,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                  "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/notification/domain/notification\").Notification"
                 }
               }
             }
@@ -1087,7 +1087,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                    "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/notification/domain/notification\").Notification"
                   }
                 }
               }
@@ -1110,7 +1110,7 @@
                       "type": "null"
                     },
                     {
-                      "$ref": "#/components/schemas/import(\"/Users/panda/Desktop/develop/sparcs/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                      "$ref": "#/components/schemas/import(\"/Users/larrykwon/sparcs/nest/otl-nest/apps/server/src/modules/notification/domain/notification\").Notification"
                     }
                   ]
                 }
@@ -8017,17 +8017,20 @@
           "grade": {
             "maximum": 5,
             "type": "number",
-            "minimum": 0
+            "minimum": 0,
+            "minLength": 1
           },
           "load": {
             "maximum": 5,
             "type": "number",
-            "minimum": 0
+            "minimum": 0,
+            "minLength": 1
           },
           "speech": {
             "maximum": 5,
             "type": "number",
-            "minimum": 0
+            "minimum": 0,
+            "minLength": 1
           }
         },
         "type": "object",
