@@ -26,7 +26,7 @@ export class UserServiceV2 {
 
     // Calculate total likes from user's reviews
     // review.like is the count of likes received by the review
-    const totalLikesCount = writtenReviews.reduce((sum, review) => sum + review.like, 0)
+    const totalLikesCount = writtenReviews.reduce((sum, review) => sum + (review.like || 0), 0)
 
     // Serialize and group lectures
     return toJsonUserLecturesV2(takenLectures, reviewedLectureIds, totalLikesCount, language)
