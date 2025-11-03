@@ -1,5 +1,5 @@
 import {
-  IsArray, IsBoolean, IsEnum, IsNumber, IsString, Min, ValidateNested,
+  IsArray, IsBoolean, IsIn, IsNumber, IsString, Min, ValidateNested,
 } from 'class-validator'
 
 export namespace IUserV2 {
@@ -92,7 +92,7 @@ export namespace IUserV2 {
     @Min(0)
     lectureId!: number
 
-    @IsEnum(['add', 'delete'])
+    @IsIn(['add', 'delete'], { message: 'mode must be either "add" or "delete"' })
     mode!: 'add' | 'delete'
   }
 }
