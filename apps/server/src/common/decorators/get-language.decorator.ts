@@ -1,6 +1,6 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common'
 
-export const GetLanguage = createParamDecorator((_data, ctx: ExecutionContext): string => {
+export const GetLanguage = createParamDecorator((_data, ctx: ExecutionContext): 'en' | 'kr' => {
   const req = ctx.switchToHttp().getRequest()
   const acceptLanguageHeader = req.headers['accept-language']
 
@@ -10,9 +10,9 @@ export const GetLanguage = createParamDecorator((_data, ctx: ExecutionContext): 
 
   const languages = acceptLanguageHeader.split(',').map((langPart) => langPart.trim().split(';')[0].toLowerCase())
 
-  if (languages.some((lang) => lang.startsWith('ko'))) {
-    return 'kr'
+  if (languages.some((lang) => lang.startsWith('en'))) {
+    return 'en'
   }
 
-  return 'en'
+  return 'kr'
 })
