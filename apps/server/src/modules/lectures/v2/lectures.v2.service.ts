@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { Language } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { ILectureV2 } from '@otl/server-nest/common/interfaces'
 import { session_userprofile } from '@prisma/client'
 
@@ -14,7 +15,7 @@ export class LecturesServiceV2 {
   public async getLectureByFilter(
     query: ILectureV2.getQuery,
     user: session_userprofile | null,
-    lang: 'kr' | 'en',
+    language: Language,
   ): Promise<ILectureV2.courseWrapped> {
     // Helpers
     const toMinutes = (v: unknown): number => {
@@ -35,7 +36,7 @@ export class LecturesServiceV2 {
     const {
       keyword, type, department, level, year, semester, day, begin, end, order, limit, offset,
     } = query
-    const choose = (kr?: string | null, en?: string | null) => (lang === 'en' ? (en ?? '').trim() || (kr ?? '') : (kr ?? '').trim() || (en ?? ''))
+    const choose = (ko?: string | null, en?: string | null) => (language === 'en' ? (en ?? '').trim() || (ko ?? '') : (ko ?? '').trim() || (en ?? ''))
     const lectures = await this.lectureRepository.filterByRequest(
       keyword,
       type as unknown as string[] | undefined,

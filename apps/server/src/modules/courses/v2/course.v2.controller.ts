@@ -2,7 +2,7 @@ import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager'
 import {
   BadRequestException, Controller, ExecutionContext, Get, Param, Query, UseInterceptors,
 } from '@nestjs/common'
-import { GetLanguage } from '@otl/server-nest/common/decorators/get-language.decorator'
+import { GetLanguage, Language } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator'
 import { ICourseV2 } from '@otl/server-nest/common/interfaces'
@@ -42,7 +42,7 @@ export class CourseV2Controller {
   async getCourses(
     @Query() query: ICourseV2.Query,
     @GetUser() user: session_userprofile,
-    @GetLanguage() language: 'kr' | 'en',
+    @GetLanguage() language: Language,
   ): Promise<ICourseV2.Basic[]> {
     const courses = await this.coursesService.getCourses(query, user, language)
     return courses
@@ -54,7 +54,7 @@ export class CourseV2Controller {
   @Public()
   async getCoursesPublic(
     @Query() query: ICourseV2.Query,
-    @GetLanguage() language: 'kr' | 'en',
+    @GetLanguage() language: Language,
   ): Promise<ICourseV2.Basic[]> {
     const courses = await this.coursesService.getCourses(query, null, language)
     return courses
@@ -64,7 +64,7 @@ export class CourseV2Controller {
   async getCourseById(
     @Param('id') id: number,
     @GetUser() user: session_userprofile,
-    @GetLanguage() language: 'kr' | 'en',
+    @GetLanguage() language: Language,
   ): Promise<ICourseV2.Detail> {
     // 숫자 형식이 아닌 경우
     if (Number.isNaN(id)) throw new BadRequestException('Invalid course id')
@@ -85,7 +85,7 @@ export class CourseV2Controller {
   @CacheTTL(CourseV2Controller.cacheTTLFactory)
   @UseInterceptors(CacheInterceptor)
   @Public()
-  async getCourseByIdPublic(@Param('id') id: number, @GetLanguage() language: 'kr' | 'en'): Promise<ICourseV2.Detail> {
+  async getCourseByIdPublic(@Param('id') id: number, @GetLanguage() language: Language): Promise<ICourseV2.Detail> {
     // 숫자 형식이 아닌 경우
     if (Number.isNaN(id)) throw new BadRequestException('Invalid course id')
     try {

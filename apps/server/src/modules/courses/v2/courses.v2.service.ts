@@ -6,7 +6,7 @@ import { ECourseV2 } from '@otl/prisma-client/entities'
 import { CourseRepositoryV2 } from '@otl/prisma-client/repositories'
 import { ProfessorRepositoryV2 } from '@otl/prisma-client/repositories/professor.repository.v2'
 
-type language = 'kr' | 'en'
+type language = 'ko' | 'en'
 
 type courseHistory = {
   year: number

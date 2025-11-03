@@ -33,7 +33,7 @@ export class ReviewsV2Service {
   async getReviewsV2(
     reviewsParam: IReviewV2.QueryDto,
     user: session_userprofile | null,
-    language: string = 'kr',
+    language: string = 'ko',
   ): Promise<IReviewV2.GetResponseDto> {
     const MAX_LIMIT = 50
     const DEFAULT_ORDER = ['-written_datetime', '-id']
