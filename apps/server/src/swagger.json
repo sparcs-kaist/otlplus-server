@@ -5073,6 +5073,242 @@
         "type": "object",
         "required": ["year", "semester", "keyword"]
       },
+      "ILectureV2.Classtime": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "number"
+          },
+          "begin": {
+            "type": "number"
+          },
+          "end": {
+            "type": "number"
+          },
+          "buildingCode": {
+            "type": "string"
+          },
+          "buildingName": {
+            "type": "string"
+          },
+          "roomName": {
+            "type": "string"
+          }
+        },
+        "required": ["day", "begin", "end", "buildingCode", "buildingName", "roomName"],
+        "additionalProperties": false
+      },
+      "ILectureV2.ExamTime": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "number"
+          },
+          "str": {
+            "type": "string"
+          },
+          "begin": {
+            "type": "number"
+          },
+          "end": {
+            "type": "number"
+          }
+        },
+        "required": ["day", "str", "begin", "end"],
+        "additionalProperties": false
+      },
+      "ILectureV2.Basic": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "courseId": {
+            "type": "number"
+          },
+          "classNo": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "department": {
+            "$ref": "#/components/schemas/IDepartmentV2.Basic"
+          },
+          "type": {
+            "type": "string"
+          },
+          "limitPeople": {
+            "type": "number"
+          },
+          "numPeople": {
+            "type": "number"
+          },
+          "credit": {
+            "type": "number"
+          },
+          "creditAU": {
+            "type": "number"
+          },
+          "averageGrade": {
+            "type": "number"
+          },
+          "averageLoad": {
+            "type": "number"
+          },
+          "averageSpeech": {
+            "type": "number"
+          },
+          "isEnglish": {
+            "type": "boolean"
+          },
+          "professors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IProfessorV2.Basic"
+            }
+          },
+          "classes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ILectureV2.Classtime"
+            }
+          },
+          "examTime": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ILectureV2.ExamTime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "courseId",
+          "classNo",
+          "name",
+          "code",
+          "department",
+          "type",
+          "limitPeople",
+          "numPeople",
+          "credit",
+          "creditAU",
+          "averageGrade",
+          "averageLoad",
+          "averageSpeech",
+          "isEnglish",
+          "professors",
+          "classes",
+          "examTime"
+        ],
+        "additionalProperties": false
+      },
+      "ILectureV2.courseWrapped": {
+        "type": "object",
+        "properties": {
+          "courses": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "code": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "lectures": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ILectureV2.Basic"
+                  }
+                },
+                "completed": {
+                  "type": "boolean"
+                }
+              },
+              "required": ["name", "code", "type", "lectures", "completed"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["courses"],
+        "additionalProperties": false
+      },
+      "ILectureV2.getQuery": {
+        "properties": {
+          "keyword": {
+            "type": "string"
+          },
+          "type": {
+            "items": {
+              "type": "string",
+              "enum": ["ALL", "BR", "BE", "MR", "ME", "MGC", "HSE", "GR", "EG", "OE", "ETC"]
+            },
+            "type": "array"
+          },
+          "department": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "level": {
+            "items": {
+              "type": "string",
+              "enum": ["ALL", "100", "200", "300", "400", "500", "600", "700", "800", "900"]
+            },
+            "type": "array"
+          },
+          "year": {
+            "maximum": 2100,
+            "type": "integer",
+            "minimum": 2000,
+            "not": {
+              "type": "null"
+            }
+          },
+          "semester": {
+            "maximum": 4,
+            "type": "integer",
+            "minimum": 1,
+            "not": {
+              "type": "null"
+            }
+          },
+          "day": {
+            "type": "number"
+          },
+          "begin": {
+            "type": "number"
+          },
+          "end": {
+            "type": "number"
+          },
+          "order": {
+            "type": "string",
+            "enum": ["code", "popular", "studentCount"]
+          },
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          }
+        },
+        "type": "object",
+        "required": ["year", "semester"]
+      },
       "INotice.Basic": {
         "type": "object",
         "properties": {
