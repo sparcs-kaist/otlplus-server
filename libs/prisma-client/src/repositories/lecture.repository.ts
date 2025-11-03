@@ -446,24 +446,4 @@ export class LectureRepository implements ServerConsumerLectureRepository {
       include: ELecture.Basic,
     })
   }
-
-  async findLectureByYearSemesterAndProfessor(
-    year: number,
-    semester: number,
-    professorId: number,
-  ): Promise<ELecture.Details | null> {
-    return this.prismaRead.subject_lecture.findFirst({
-      where: {
-        year,
-        semester,
-        subject_lecture_professors: {
-          some: {
-            professor_id: professorId,
-          },
-        },
-        deleted: false,
-      },
-      include: ELecture.Details.include,
-    })
-  }
 }

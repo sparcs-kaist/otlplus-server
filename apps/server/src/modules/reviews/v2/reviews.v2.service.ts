@@ -222,17 +222,18 @@ export class ReviewsV2Service {
     )
 
     // 통계 업데이트 메시지 발송
-    await Promise.all([
-      await this.reviewMQ.publishCourseScoreUpdate(review.course_id),
-      await Promise.all(
-        review.lecture.subject_lecture_professors.map(async (professor) => {
-          await this.reviewMQ.publishProfessorScoreUpdate(professor.id)
-        }),
-      ),
-      await this.reviewMQ.publishLectureScoreUpdate(review.lecture_id),
-    ]).catch((e) => {
-      logger.error(`Error while publishing review score update: ${e.message}`, e)
-    })
+    const tasks = [
+      this.reviewMQ.publishCourseScoreUpdate(review.course_id),
+      this.reviewMQ.publishLectureScoreUpdate(review.lecture_id),
+      ...review.lecture.subject_lecture_professors.map((professor) => this.reviewMQ.publishProfessorScoreUpdate(professor.id)),
+    ]
+
+    const results = await Promise.allSettled(tasks)
+    for (const r of results) {
+      if (r.status === 'rejected') {
+        logger.error(`Error while publishing review score update: ${r.reason?.message ?? r.reason}`, r.reason)
+      }
+    }
 
     return review
   }
