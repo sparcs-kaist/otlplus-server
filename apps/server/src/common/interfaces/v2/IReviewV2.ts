@@ -131,6 +131,7 @@ export namespace IReviewV2 {
 
     @ApiProperty()
     @IsNumber()
+    @IsNotEmpty()
     @Min(0)
     @Max(5)
     @Type(() => Number)
@@ -138,6 +139,7 @@ export namespace IReviewV2 {
 
     @ApiProperty()
     @IsNumber()
+    @IsNotEmpty()
     @Min(0)
     @Max(5)
     @Type(() => Number)
@@ -145,6 +147,7 @@ export namespace IReviewV2 {
 
     @ApiProperty()
     @IsNumber()
+    @IsNotEmpty()
     @Min(0)
     @Max(5)
     @Type(() => Number)
