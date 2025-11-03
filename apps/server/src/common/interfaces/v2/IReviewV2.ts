@@ -152,7 +152,9 @@ export namespace IReviewV2 {
   }
 
   export class UpdateResponseDto {
-    @ApiProperty({ type: Number })
+    @ApiProperty()
+    @IsNumber()
+    @IsNotEmpty()
     id!: number
   }
 

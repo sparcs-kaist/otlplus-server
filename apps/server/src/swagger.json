@@ -7797,7 +7797,16 @@
         "type": "object",
         "required": ["content", "grade", "load", "speech"]
       },
-      "IReviewV2.UpdateResponseDto": {},
+      "IReviewV2.UpdateResponseDto": {
+        "properties": {
+          "id": {
+            "minLength": 1,
+            "type": "number"
+          }
+        },
+        "type": "object",
+        "required": ["id"]
+      },
       "IReviewV2.PatchLikedDto": {
         "properties": {
           "reviewId": {
