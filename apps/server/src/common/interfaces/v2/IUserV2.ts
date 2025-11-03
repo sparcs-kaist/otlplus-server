@@ -1,5 +1,5 @@
 import {
-  IsArray, IsBoolean, IsNumber, IsString, Min, ValidateNested,
+  IsArray, IsBoolean, IsEnum, IsNumber, IsString, Min, ValidateNested,
 } from 'class-validator'
 
 export namespace IUserV2 {
@@ -65,5 +65,34 @@ export namespace IUserV2 {
     @IsArray()
     @ValidateNested({ each: true })
     lecturesWrap!: LecturesWrap[]
+  }
+
+  export interface WishlistLectureItem {
+    id: number
+    name: string
+    code: string
+    classNo: string
+    professors: ProfessorItem[]
+  }
+
+  export interface WishlistCourseItem {
+    name: string
+    code: string
+    type: string
+    completed: boolean
+    lectures: WishlistLectureItem[]
+  }
+
+  export interface WishlistResponse {
+    courses: WishlistCourseItem[]
+  }
+
+  export class UpdateWishlistDto {
+    @IsNumber()
+    @Min(0)
+    lectureId!: number
+
+    @IsEnum(['add', 'delete'])
+    mode!: 'add' | 'delete'
   }
 }
