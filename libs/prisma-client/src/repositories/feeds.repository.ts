@@ -14,10 +14,7 @@ import { EFeed } from '../entities/EFeed'
 
 @Injectable()
 export class FeedsRepository {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly prismaRead: PrismaReadService,
-  ) {}
+  constructor(private readonly prisma: PrismaService, private readonly prismaRead: PrismaReadService) {}
 
   public async getFamousHumanityReview(date: Date): Promise<EFeed.Details | null> {
     return await this.prismaRead.main_famoushumanityreviewdailyfeed.findFirst({
@@ -28,7 +25,7 @@ export class FeedsRepository {
     })
   }
 
-  public async createFamousHumanityReview(date: Date, humanityBestReviews: review_humanitybestreview) {
+  public async createFamousHumanityReview(date: Date, humanityBestReviews: review_humanitybestreview[]) {
     return await this.prisma.main_famoushumanityreviewdailyfeed.create({
       include: EFeed.FamousHumanityReviewDetails.include,
       data: {

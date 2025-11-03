@@ -9,10 +9,7 @@ import { ETimetable } from '../entities/ETimetable'
 
 @Injectable()
 export class TimetableRepository {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly prismaRead: PrismaReadService,
-  ) {}
+  constructor(private readonly prisma: PrismaService, private readonly prismaRead: PrismaReadService) {}
 
   async getTimetables(
     user: session_userprofile,

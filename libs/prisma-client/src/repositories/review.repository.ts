@@ -19,10 +19,7 @@ import { EReview } from '../entities/EReview'
 
 @Injectable()
 export class ReviewsRepository implements ServerConsumerReviewRepository {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly prismaRead: PrismaReadService,
-  ) {}
+  constructor(private readonly prisma: PrismaService, private readonly prismaRead: PrismaReadService) {}
 
   async findReviewByUser(user: session_userprofile): Promise<EReview.Details[]> {
     const reviews = await this.prisma.review_review.findMany({
@@ -151,6 +148,31 @@ export class ReviewsRepository implements ServerConsumerReviewRepository {
           },
         },
       },
+      skip: offset,
+      take: limit,
+      orderBy: orderFilter(order),
+    })
+  }
+
+  public async getReviewsByCourseAndProfessor(
+    order: string[],
+    offset: number,
+    limit: number,
+    courseId: number,
+    professorId: number,
+  ): Promise<EReview.Details[]> {
+    return await this.prismaRead.review_review.findMany({
+      where: {
+        lecture: {
+          course_id: courseId,
+          subject_lecture_professors: {
+            some: {
+              professor_id: professorId,
+            },
+          },
+        },
+      },
+      include: EReview.Details.include,
       skip: offset,
       take: limit,
       orderBy: orderFilter(order),
@@ -305,7 +327,7 @@ export class ReviewsRepository implements ServerConsumerReviewRepository {
     })
   }
 
-  public async getRandomNHumanityBestReviews(n: number): Promise<review_humanitybestreview> {
+  public async getRandomNHumanityBestReviews(n: number): Promise<review_humanitybestreview[]> {
     // Prisma does not support RAND() in ORDER BY.
     return await this.prisma.$queryRaw`
         SELECT *

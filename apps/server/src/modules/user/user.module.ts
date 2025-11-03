@@ -4,10 +4,12 @@ import { PrismaModule } from '@otl/prisma-client/prisma.module'
 
 import { UserController } from './user.controller'
 import { UserService } from './user.service'
+import { UserV2Controller } from './v2/user.v2.controller'
+import { UserV2Service } from './v2/user.v2.service'
 
 @Module({
   imports: [PrismaModule],
-  controllers: [UserController],
-  providers: [UserService],
+  controllers: [UserController, UserV2Controller],
+  providers: [UserService, UserV2Service],
 })
 export class UserModule {}
