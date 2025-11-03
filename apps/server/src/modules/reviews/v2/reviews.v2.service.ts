@@ -239,6 +239,44 @@ export class ReviewsV2Service {
   }
 
   @Transactional()
+  async updateReviewV2(
+    reviewId: number,
+    reviewBody: IReviewV2.UpdateDto,
+    user: session_userprofile,
+  ): Promise<IReviewV2.UpdateResponseDto> {
+    const review = await this.reviewsRepository.getReviewById(reviewId)
+    if (!review) {
+      throw new HttpException('Review not found', HttpStatus.NOT_FOUND)
+    }
+
+    if (review.writer_id !== user.id) {
+      throw new HttpException('Current user id is not matched with review writer id', HttpStatus.BAD_REQUEST)
+    }
+
+    if (review.is_deleted) {
+      throw new HttpException('Target review deleted by admin', HttpStatus.BAD_REQUEST)
+    }
+
+    const updatedReview = await this.reviewsRepository.updateReview(
+      review.id,
+      reviewBody.content,
+      reviewBody.grade,
+      reviewBody.load,
+      reviewBody.speech,
+    )
+
+    await Promise.all([
+      this.reviewMQ.publishCourseScoreUpdate(updatedReview.course_id),
+      this.reviewMQ.publishLectureScoreUpdate(updatedReview.lecture_id),
+      ...updatedReview.lecture.subject_lecture_professors.map((professor) => this.reviewMQ.publishProfessorScoreUpdate(professor.id)),
+    ]).catch((e) => {
+      logger.error(`Error while publishing review score update: ${e.message}`, e)
+    })
+
+    return { id: updatedReview.id }
+  }
+
+  @Transactional()
   async updateReviewLiked(body: IReviewV2.PatchLikedDto, user: session_userprofile): Promise<number> {
     const review = await this.reviewsRepository.getReviewById(body.reviewId)
     if (!review) {
