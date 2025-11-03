@@ -14,9 +14,9 @@ export type CourseType = 'ALL' | 'BR' | 'BE' | 'MR' | 'ME' | 'MGC' | 'HSE' | 'GR
 export namespace ICourseV2 {
   export interface Basic {
     id: number
-    name: string // kr : title / en : title_en
+    name: string // ko : title / en : title_en
     code: string // new_code
-    type: string // kr, en 구분
+    type: string // ko, en 구분
     department: IDepartmentV2.Basic
     professors: IProfessorV2.Basic[]
     summary: string

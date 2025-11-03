@@ -2,7 +2,7 @@ import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager'
 import {
   Controller, ExecutionContext, Get, Query, UseInterceptors,
 } from '@nestjs/common'
-import { GetLanguage } from '@otl/server-nest/common/decorators/get-language.decorator'
+import { GetLanguage, Language } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator'
 import { ILectureV2 } from '@otl/server-nest/common/interfaces'
@@ -40,7 +40,7 @@ export class LecturesControllerV2 {
   async getLectures(
     @Query() query: ILectureV2.getQuery,
     @GetUser() user: session_userprofile,
-    @GetLanguage() language: 'kr' | 'en',
+    @GetLanguage() language: Language,
   ): Promise<ILectureV2.courseWrapped> {
     return await this.LectureService.getLectureByFilter(query, user, language)
   }
@@ -51,7 +51,7 @@ export class LecturesControllerV2 {
   @Get('/public')
   async getLecturesPublic(
     @Query() query: ILectureV2.getQuery,
-    @GetLanguage() language: 'kr' | 'en',
+    @GetLanguage() language: Language,
   ): Promise<ILectureV2.courseWrapped> {
     return await this.LectureService.getLectureByFilter(query, null, language)
   }

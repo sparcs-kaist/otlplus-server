@@ -247,8 +247,8 @@ async function main() {
               name: 'accept-language',
               in: 'header',
               required: false,
-              schema: { type: 'string', enum: ['en', 'kr'] },
-              description: 'en/kr (기본: kr). 언어 헤더 파라미터',
+              schema: { type: 'string', enum: ['en', 'ko'] },
+              description: 'en/ko (기본: ko). 언어 헤더 파라미터',
             })
             return
           }

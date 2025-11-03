@@ -9,7 +9,7 @@ import { ReviewsRepository } from '@otl/prisma-client/repositories'
 export class UserV2Service {
   constructor(private readonly reviewsRepository: ReviewsRepository) {}
 
-  async getUserLikedReviews(user: session_userprofile, language: string = 'kr'): Promise<IReviewV2.Basic[]> {
+  async getUserLikedReviews(user: session_userprofile, language: string = 'ko'): Promise<IReviewV2.Basic[]> {
     const DEFAULT_ORDER = ['-written_datetime', '-id']
     const MAX_LIMIT = 100
     const likedRaw = await this.reviewsRepository.getLikedReviews(user.id, DEFAULT_ORDER, 0, MAX_LIMIT)

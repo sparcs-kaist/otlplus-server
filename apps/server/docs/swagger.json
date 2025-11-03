@@ -2638,9 +2638,9 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": ["en", "kr"]
+              "enum": ["en", "ko"]
             },
-            "description": "en/kr (기본: kr). 언어 헤더 파라미터"
+            "description": "en/ko (기본: ko). 언어 헤더 파라미터"
           }
         ]
       },
@@ -2950,9 +2950,9 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": ["en", "kr"]
+              "enum": ["en", "ko"]
             },
-            "description": "en/kr (기본: kr). 언어 헤더 파라미터"
+            "description": "en/ko (기본: ko). 언어 헤더 파라미터"
           }
         ]
       }
