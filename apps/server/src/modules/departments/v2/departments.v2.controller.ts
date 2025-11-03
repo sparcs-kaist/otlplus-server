@@ -11,12 +11,12 @@ export class DepartmentsController {
 
   @Get()
   @Public()
-  async getDepartmentOptions(): Promise<IDepartmentV2.Response> {
-    const departments = await this.departmentsService.getDepartmentOptions()
-    return {
-      undergraduate: departments.undergraduate.map((department) => toJsonDepartment(department)),
-      recent: departments.recent.map((department) => toJsonDepartment(department)),
-      other: departments.other.map((department) => toJsonDepartment(department)),
-    }
+  async getDepartmentOptions(): Promise<IDepartmentV2.Basic[][]> {
+    const { undergraduate, recent, other } = await this.departmentsService.getDepartmentOptions()
+    return [
+      undergraduate.map((e) => toJsonDepartment(e)),
+      recent.map((e) => toJsonDepartment(e)),
+      other.map((e) => toJsonDepartment(e)),
+    ]
   }
 }

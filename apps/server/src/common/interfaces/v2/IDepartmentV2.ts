@@ -3,9 +3,9 @@ export namespace IDepartmentV2 {
     id: number
     name: string
   }
+
   export interface Response {
-    undergraduate: Basic[]
-    recent: Basic[]
-    other: Basic[]
+    id: number
+    name: string
   }
 }
