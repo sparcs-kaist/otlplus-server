@@ -5,7 +5,7 @@ import {
 import { GetLanguage, Language } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator'
-import { ICourseV2 } from '@otl/server-nest/common/interfaces'
+import { ICourseV2 } from '@otl/server-nest/common/interfaces/v2'
 import { session_userprofile } from '@prisma/client'
 
 import { CoursesServiceV2 } from './courses.v2.service'
