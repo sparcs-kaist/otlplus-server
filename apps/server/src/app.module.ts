@@ -38,6 +38,7 @@ import { NoticesModule } from './modules/notices/notices.module'
 import { PlannersModule } from './modules/planners/planners.module'
 import { RatesModule } from './modules/rates/rates.module'
 import { ReviewsModule } from './modules/reviews/reviews.module'
+import { SchedulesModule } from './modules/schedules/schedules.module'
 import { SemestersModule } from './modules/semesters/semesters.module'
 import { SemestersModuleV2 } from './modules/semesters/v2/semesters.v2.module'
 import { SessionModule } from './modules/session/session.module'
@@ -85,6 +86,7 @@ async function createCacheStoreWithFallback(): Promise<Keyv> {
     LecturesModule,
     ReviewsModule,
     UserModule,
+    SchedulesModule,
     SemestersModule,
     SemestersModuleV2,
     TimetablesModule,

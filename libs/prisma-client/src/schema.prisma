@@ -397,6 +397,14 @@ model notification {
   @@unique([name], map: "notification_name_uniq")
 }
 
+model schedules {
+  id                        Int                                        @id @default(autoincrement())
+  year                      Int
+  from                      DateTime
+  to              DateTime
+  name                      String                                     @db.VarChar(255)
+}
+
 model session_userprofile_notification_history {
   id                  Int                 @id @default(autoincrement())
   userprofile_id      Int
