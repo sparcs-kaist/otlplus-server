@@ -44,12 +44,12 @@ export class PrismaReadService extends PrismaClient implements OnModuleInit {
 
   async onModuleInit() {
     await this.$connect()
-    // @ts-expect-error PrismaClient에서 정의되지 않은 이벤트 처리
-    this.$on('query', (e: any) => {
-      console.log(`[READ] Query: ${e.query}`)
-      console.log(`[READ] Params: ${e.params}`)
-      console.log(`[READ] Duration: ${e.duration}ms`)
-    })
+    // // @ts-ignore
+    // this.$on('query', (e:any) => {
+    //   console.log(`Query: ${e.query}`)
+    //   console.log(`Params: ${e.params}`)
+    //   console.log(`Duration: ${e.duration}ms`)
+    // })
     console.log('Prisma Read connected successfully')
     // const extendedClient = this.$extends(signalExtension)
     // Object.assign(this, extendedClient)
