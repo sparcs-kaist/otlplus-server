@@ -157,6 +157,31 @@ export class ReviewsRepository implements ServerConsumerReviewRepository {
     })
   }
 
+  public async getReviewsByCourseAndProfessor(
+    order: string[],
+    offset: number,
+    limit: number,
+    courseId: number,
+    professorId: number,
+  ): Promise<EReview.Details[]> {
+    return await this.prismaRead.review_review.findMany({
+      where: {
+        lecture: {
+          course_id: courseId,
+          subject_lecture_professors: {
+            some: {
+              professor_id: professorId,
+            },
+          },
+        },
+      },
+      include: EReview.Details.include,
+      skip: offset,
+      take: limit,
+      orderBy: orderFilter(order),
+    })
+  }
+
   async isLiked(reviewId: number, userId: number): Promise<boolean> {
     return !!(await this.prisma.review_reviewvote.findUnique({
       where: {
@@ -305,7 +330,7 @@ export class ReviewsRepository implements ServerConsumerReviewRepository {
     })
   }
 
-  public async getRandomNHumanityBestReviews(n: number): Promise<review_humanitybestreview> {
+  public async getRandomNHumanityBestReviews(n: number): Promise<review_humanitybestreview[]> {
     // Prisma does not support RAND() in ORDER BY.
     return await this.prisma.$queryRaw`
         SELECT *

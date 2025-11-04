@@ -44,6 +44,7 @@ import { SessionModule } from './modules/session/session.module'
 import { ShareModule } from './modules/share/share.module'
 import { StatusModule } from './modules/status/status.module'
 import { TimetablesModule } from './modules/timetables/timetables.module'
+import { TimetablesModuleV2 } from './modules/timetables/v2/timetables.module'
 import { TracksModule } from './modules/tracks/tracks.module'
 import { UserModule } from './modules/user/user.module'
 import { WishlistModule } from './modules/wishlist/wishlist.module'
@@ -87,6 +88,7 @@ async function createCacheStoreWithFallback(): Promise<Keyv> {
     SemestersModule,
     SemestersModuleV2,
     TimetablesModule,
+    TimetablesModuleV2,
     RatesModule,
     StatusModule,
     FeedsModule,

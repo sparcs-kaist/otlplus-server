@@ -43,17 +43,17 @@ export class TimetableRepository {
 
   async getTimetableBasics(
     user: session_userprofile,
-    year: number,
-    semester: number,
-    paginationAndSorting: {
-      orderBy: Prisma.timetable_timetableOrderByWithRelationInput
+    year?: number,
+    semester?: number,
+    paginationAndSorting?: {
+      orderBy?: Prisma.timetable_timetableOrderByWithRelationInput
       skip?: number
       take?: number
     },
   ): Promise<ETimetable.Basic[]> {
-    const { skip } = paginationAndSorting
-    const { take } = paginationAndSorting
-    const { orderBy } = paginationAndSorting
+    const skip = paginationAndSorting?.skip
+    const take = paginationAndSorting?.take
+    const orderBy = paginationAndSorting?.orderBy
 
     return this.prisma.timetable_timetable.findMany({
       where: {
@@ -154,6 +154,14 @@ export class TimetableRepository {
       data: {
         arrange_order,
       },
+    })
+  }
+
+  async updateName(id: number, name: string): Promise<ETimetable.Basic> {
+    return this.prisma.timetable_timetable.update({
+      where: { id },
+      // trim name to remove leading and trailing spaces
+      data: { name: name.trim() },
     })
   }
 

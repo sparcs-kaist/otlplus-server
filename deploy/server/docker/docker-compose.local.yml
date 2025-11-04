@@ -14,6 +14,11 @@ services:
     env_file:
       - ../../../env/.env.local
     restart: always
+    healthcheck:
+      test: ['CMD', 'redis-cli', '-a', '$${REDIS_PASSWORD}', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
     command:
       - /bin/sh
       - -c
@@ -22,31 +27,69 @@ services:
       # - The ${variable:?message} syntax causes shell to exit with a non-zero
       #   code and print a message, when the variable is not set or empty
       - redis-server --requirepass "$${REDIS_PASSWORD:?REDIS_PASSWORD variable is not set}"
-  back:
-    container_name: otlplus-server-nest-local
-    platform: linux/amd64
-    depends_on:
-      - redis-cache
-    env_file:
-      - ../../../env/.env.local
-    environment:
-      - NODE_ENV=local
-      - DOCKER_DEPLOY=true
-    build:
-      context: ../../..
-      dockerfile: ./deploy/server/docker/Dockerfile.server
-    image: otlplus-server-nest-local
-    restart: always
-    tty: true
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: rabbitmq-otl
     ports:
-      - '8000:8000'
-      - '9209:9209'
+      - '5672:5672'
+      - '15672:15672'
     expose:
-      - '8000'
-      - '9092'
+      - '5672'
+      - '15672'
+    environment:
+      - RABBITMQ_DEFAULT_USER=otlplus
+      - RABBITMQ_DEFAULT_PASS=password
     volumes:
-      - '/etc/timezone:/etc/timezone:ro'
-      - '../../../apps/server/logs:/var/www/otlplus-server/logs'
-    working_dir: /var/www/otlplus-server
-    command: pm2-runtime start ecosystem.config.js --only @otl/server-nest  --node-args="max-old-space-size=40920"
+      - rabbitmq-data:/var/lib/rabbitmq
+    restart: always
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    command: >
+      bash -c "
+        apt-get update && apt-get install -y curl &&
+        curl -L -o /opt/rabbitmq/plugins/rabbitmq_delayed_message_exchange-3.13.0.ez https://github.com/rabbitmq/rabbitmq-delayed-message-exchange/releases/download/v3.13.0/rabbitmq_delayed_message_exchange-3.13.0.ez &&
+        rabbitmq-plugins enable --offline rabbitmq_delayed_message_exchange &&
+        docker-entrypoint.sh rabbitmq-server
+      "
+
+  # back:
+  #   container_name: otlplus-server-nest-local
+  #   platform: linux/amd64
+  #   depends_on:
+  #     redis-cache:
+  #       condition: service_healthy
+  #     rabbitmq:
+  #       condition: service_healthy
+  #   env_file:
+  #     - ../../../env/.env.local
+  #   environment:
+  #     - NODE_ENV=local
+  #     - DOCKER_DEPLOY=true
+  #     - REDIS_URL=redis://redis-cache:6379
+  #     - REDIS_SCHEDULER_URL=redis://redis-cache:6379
+  #     - RABBITMQ_URL=amqp://otlplus:password@rabbitmq:5672
+  #   build:
+  #     context: ../../..
+  #     dockerfile: ./deploy/server/docker/Dockerfile.server
+  #   image: otlplus-server-nest-local
+  #   restart: always
+  #   tty: true
+  #   ports:
+  #     - "8000:8000"
+  #     - "9209:9209"
+  #   expose:
+  #     - "8000"
+  #     - "9092"
+  #   volumes:
+  #     - "/etc/timezone:/etc/timezone:ro"
+  #     - "../../../apps/server/logs:/var/www/otlplus-server/logs"
+  #   working_dir: /var/www/otlplus-server
+  #   command: pm2-runtime start ecosystem.config.js --only @otl/server-nest  --node-args="max-old-space-size=40920"
 #    command: node dist/apps/server/apps/server/src/bootstrap/bootstrap.js
+
+volumes:
+  rabbitmq-data:
