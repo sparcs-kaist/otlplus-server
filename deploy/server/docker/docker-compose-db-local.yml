@@ -3,7 +3,8 @@ version: '3.4'
 services:
   db:
     container_name: otlplus-server-db
-    image: mysql:8.0.36
+    image: mysql:8.0.36-debian
+    platform: linux/amd64
     restart: on-failure
     ports:
       - '${OTLPLUS_DB_PORT:-43306}:3306'
