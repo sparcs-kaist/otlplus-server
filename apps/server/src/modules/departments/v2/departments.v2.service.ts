@@ -43,7 +43,7 @@ const EXCLUDED_DEPARTMENTS = [
 ]
 
 @Injectable()
-export class DepartmentsService {
+export class DepartmentsServiceV2 {
   constructor(private readonly departmentRepository: DepartmentRepository) {}
 
   async getDepartmentOptions() {

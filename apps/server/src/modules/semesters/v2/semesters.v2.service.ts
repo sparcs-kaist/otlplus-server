@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common'
 import { SemesterRepository } from '@otl/prisma-client/repositories'
 
 @Injectable()
-export class SemestersService {
+export class SemestersServiceV2 {
   constructor(private readonly semesterRepository: SemesterRepository) {}
 
   async getSemesters() {
