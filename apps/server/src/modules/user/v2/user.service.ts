@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { Transactional } from '@nestjs-cls/transactional'
-import { ICourseV2, IUserV2 } from '@otl/server-nest/common/interfaces'
-import { IUserV2 as IUserV2Detailed } from '@otl/server-nest/common/interfaces/v2'
+import { ICourseV2 } from '@otl/server-nest/common/interfaces'
+import { IUserV2 } from '@otl/server-nest/common/interfaces/v2'
 import { IReviewV2 } from '@otl/server-nest/common/interfaces/v2/IReviewV2'
 import { toJsonReviewV2 } from '@otl/server-nest/common/serializer/v2/review.v2.serializer'
 import { toJsonUserLecturesV2, toJsonWishlistV2 } from '@otl/server-nest/common/serializer/v2/user.serializer'
@@ -37,7 +37,7 @@ export class UserServiceV2 {
     private readonly departmentRepository: DepartmentRepository,
   ) {}
 
-  async getUserLectures(user: session_userprofile, acceptLanguage?: string): Promise<IUserV2Detailed.LecturesResponse> {
+  async getUserLectures(user: session_userprofile, acceptLanguage?: string): Promise<IUserV2.LecturesResponse> {
     const language = this.parseAcceptLanguage(acceptLanguage)
 
     // Fetch data in parallel
@@ -57,7 +57,7 @@ export class UserServiceV2 {
     return toJsonUserLecturesV2(takenLectures, reviewedLectureIds, totalLikesCount, language)
   }
 
-  async getWishlist(user: session_userprofile, acceptLanguage?: string): Promise<IUserV2Detailed.WishlistResponse> {
+  async getWishlist(user: session_userprofile, acceptLanguage?: string): Promise<IUserV2.WishlistResponse> {
     const language = this.parseAcceptLanguage(acceptLanguage)
 
     // Fetch wishlist and taken lectures in parallel
@@ -83,7 +83,7 @@ export class UserServiceV2 {
   }
 
   @Transactional()
-  async updateWishlist(user: session_userprofile, body: IUserV2Detailed.UpdateWishlistDto): Promise<void> {
+  async updateWishlist(user: session_userprofile, body: IUserV2.UpdateWishlistDto): Promise<void> {
     const wishlist = await this.wishlistRepository.getOrCreateWishlist(user.id)
 
     // Verify lecture exists
