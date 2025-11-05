@@ -53,7 +53,9 @@ export class DepartmentsService {
       this.departmentRepository.getDepartmentCodesOfRecentLectures(yearThreshold),
     ])
 
-    if (recentDepartmentCodes.length === 0) console.error('recentDepartmentCodes is empty, which indicates something is wrong')
+    if (recentDepartmentCodes.length === 0) {
+      console.error('recentDepartmentCodes is empty, which indicates something is wrong')
+    }
 
     const result = {
       undergraduate: [] as EDepartment.Basic[],

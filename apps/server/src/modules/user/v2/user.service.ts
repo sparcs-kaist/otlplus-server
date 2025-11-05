@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common'
 import { ICourseV2, IUserV2 } from '@otl/server-nest/common/interfaces'
+import { IUserV2 as IUserV2Detailed } from '@otl/server-nest/common/interfaces/v2'
+import { IReviewV2 } from '@otl/server-nest/common/interfaces/v2/IReviewV2'
+import { toJsonReviewV2 } from '@otl/server-nest/common/serializer/v2/review.v2.serializer'
+import { toJsonUserLecturesV2 } from '@otl/server-nest/common/serializer/v2/user.serializer'
 import { session_userprofile } from '@prisma/client'
 
 import {
-  DepartmentRepository,
-  LectureRepository,
-  ReviewsRepository,
-  UserRepositoryV2,
-} from '@otl/prisma-client/repositories'
+  DepartmentRepository, LectureRepository, ReviewsRepository, UserRepositoryV2,
+} from '@otl/prisma-client'
 
 function toJsonDepartment(major: any): any {
   // Safely extract department info from the lecture/major object.
@@ -17,17 +18,38 @@ function toJsonDepartment(major: any): any {
     name: dept.name,
   }
 }
+
 @Injectable()
-export class userV2Service {
+export class UserServiceV2 {
   constructor(
-    private readonly userRepositoryV2: UserRepositoryV2,
     private readonly lectureRepository: LectureRepository,
+    private readonly reviewsRepository: ReviewsRepository,
+    private readonly userRepositoryV2: UserRepositoryV2,
     private readonly departmentRepository: DepartmentRepository,
-    private readonly reviewRepository: ReviewsRepository,
   ) {}
 
+  async getUserLectures(user: session_userprofile, acceptLanguage?: string): Promise<IUserV2Detailed.LecturesResponse> {
+    const language = this.parseAcceptLanguage(acceptLanguage)
+
+    // Fetch data in parallel
+    const [takenLectures, writtenReviews] = await Promise.all([
+      this.lectureRepository.getTakenLectures(user),
+      this.reviewsRepository.findReviewByUser(user),
+    ])
+
+    // Create Set of reviewed lecture IDs for O(1) lookup
+    const reviewedLectureIds = new Set(writtenReviews.map((review) => review.lecture_id))
+
+    // Calculate total likes from user's reviews
+    // review.like is the count of likes received by the review
+    const totalLikesCount = writtenReviews.reduce((sum, review) => sum + (review.like || 0), 0)
+
+    // Serialize and group lectures
+    return toJsonUserLecturesV2(takenLectures, reviewedLectureIds, totalLikesCount, language)
+  }
+
   async getUnreviewedRandomCourse(user: session_userprofile): Promise<ICourseV2.WritableReview | null> {
-    const WrittenReviews = await this.reviewRepository.findReviewByUser(user)
+    const WrittenReviews = await this.reviewsRepository.findReviewByUser(user)
     const TakenLectures = await this.lectureRepository.getTakenLectures(user)
     let UnreviewedLectures = TakenLectures
     for (const review of WrittenReviews) {
@@ -56,7 +78,7 @@ export class userV2Service {
     const name = `${user.first_name} ${user.last_name}`
     const mail = user.email || ''
     const studentNumber = parseInt(user.student_id)
-    const { degree } = user
+    const degree = (user as any).degree || null
     const [favoriteDepartments, majors] = await Promise.all([
       this.departmentRepository.getFavoriteDepartments(user),
       this.departmentRepository.getMajors(user),
@@ -74,5 +96,22 @@ export class userV2Service {
 
   async updateInterestedDepartments(user: session_userprofile, departments: number[]): Promise<void> {
     return this.userRepositoryV2.updateInterestedDepartments(user, departments)
+  }
+
+  async getUserLikedReviews(user: session_userprofile, language: string = 'ko'): Promise<IReviewV2.Basic[]> {
+    const DEFAULT_ORDER = ['-written_datetime', '-id']
+    const MAX_LIMIT = 100
+    const likedRaw = await this.reviewsRepository.getLikedReviews(user.id, DEFAULT_ORDER, 0, MAX_LIMIT)
+    return likedRaw.map((review) => toJsonReviewV2(review, null, language))
+  }
+
+  // TODO; 공통화 필요
+  private parseAcceptLanguage(acceptLanguage?: string): string {
+    if (!acceptLanguage) {
+      return 'kr'
+    }
+
+    // Simple check: if header contains 'en', return 'en', otherwise 'kr'
+    return acceptLanguage.toLowerCase().includes('en') ? 'en' : 'kr'
   }
 }

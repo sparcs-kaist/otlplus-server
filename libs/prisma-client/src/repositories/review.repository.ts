@@ -19,7 +19,10 @@ import { EReview } from '../entities/EReview'
 
 @Injectable()
 export class ReviewsRepository implements ServerConsumerReviewRepository {
-  constructor(private readonly prisma: PrismaService, private readonly prismaRead: PrismaReadService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly prismaRead: PrismaReadService,
+  ) {}
 
   async findReviewByUser(user: session_userprofile): Promise<EReview.Details[]> {
     const reviews = await this.prisma.review_review.findMany({
