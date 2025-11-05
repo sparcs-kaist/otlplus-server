@@ -8,13 +8,14 @@ import {
   HttpStatus,
   Param,
   ParseIntPipe,
+  Patch,
   Put,
   UnauthorizedException,
 } from '@nestjs/common'
 import { GetLanguage } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
-import { ICourseV2, IUserV2 } from '@otl/server-nest/common/interfaces'
-import { IUserV2 as IUserV2Detailed } from '@otl/server-nest/common/interfaces/v2'
+import { ICourseV2 } from '@otl/server-nest/common/interfaces'
+import { IUserV2 } from '@otl/server-nest/common/interfaces/v2'
 import { IReviewV2 } from '@otl/server-nest/common/interfaces/v2/IReviewV2'
 import { session_userprofile } from '@prisma/client'
 
@@ -63,12 +64,38 @@ export class UserControllerV2 {
     @Param('userId', ParseIntPipe) userId: number,
     @GetUser() user: session_userprofile,
     @Headers('Accept-Language') acceptLanguage: string,
-  ): Promise<IUserV2Detailed.LecturesResponse> {
+  ): Promise<IUserV2.LecturesResponse> {
     if (userId !== user.id) {
       throw new UnauthorizedException('Current user does not match userId')
     }
 
     return await this.userServiceV2.getUserLectures(user, acceptLanguage)
+  }
+
+  @Get(':userId/wishlist')
+  async getWishlist(
+    @Param('userId', ParseIntPipe) userId: number,
+    @GetUser() user: session_userprofile,
+    @Headers('Accept-Language') acceptLanguage: string,
+  ): Promise<IUserV2.WishlistResponse> {
+    if (userId !== user.id) {
+      throw new UnauthorizedException('Current user does not match userId')
+    }
+
+    return await this.userServiceV2.getWishlist(user, acceptLanguage)
+  }
+
+  @Patch(':userId/wishlist')
+  async updateWishlist(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Body() body: IUserV2.UpdateWishlistDto,
+    @GetUser() user: session_userprofile,
+  ): Promise<void> {
+    if (userId !== user.id) {
+      throw new UnauthorizedException('Current user does not match userId')
+    }
+
+    await this.userServiceV2.updateWishlist(user, body)
   }
 
   @Get(':userId/reviews/liked')

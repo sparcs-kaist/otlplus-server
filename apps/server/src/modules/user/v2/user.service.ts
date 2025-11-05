@@ -1,14 +1,21 @@
-import { Injectable } from '@nestjs/common'
-import { ICourseV2, IUserV2 } from '@otl/server-nest/common/interfaces'
-import { IUserV2 as IUserV2Detailed } from '@otl/server-nest/common/interfaces/v2'
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
+import { Transactional } from '@nestjs-cls/transactional'
+import { ICourseV2 } from '@otl/server-nest/common/interfaces'
+import { IUserV2 } from '@otl/server-nest/common/interfaces/v2'
 import { IReviewV2 } from '@otl/server-nest/common/interfaces/v2/IReviewV2'
 import { toJsonReviewV2 } from '@otl/server-nest/common/serializer/v2/review.v2.serializer'
-import { toJsonUserLecturesV2 } from '@otl/server-nest/common/serializer/v2/user.serializer'
+import { toJsonUserLecturesV2, toJsonWishlistV2 } from '@otl/server-nest/common/serializer/v2/user.serializer'
 import { session_userprofile } from '@prisma/client'
 
 import {
-  DepartmentRepository, LectureRepository, ReviewsRepository, UserRepositoryV2,
+  CourseRepository,
+  DepartmentRepository,
+  LectureRepository,
+  ReviewsRepository,
+  UserRepositoryV2,
+  WishlistRepository,
 } from '@otl/prisma-client'
+import { mapCourse } from '@otl/prisma-client/common/mapper/course'
 
 function toJsonDepartment(major: any): any {
   // Safely extract department info from the lecture/major object.
@@ -24,11 +31,13 @@ export class UserServiceV2 {
   constructor(
     private readonly lectureRepository: LectureRepository,
     private readonly reviewsRepository: ReviewsRepository,
+    private readonly wishlistRepository: WishlistRepository,
+    private readonly courseRepository: CourseRepository,
     private readonly userRepositoryV2: UserRepositoryV2,
     private readonly departmentRepository: DepartmentRepository,
   ) {}
 
-  async getUserLectures(user: session_userprofile, acceptLanguage?: string): Promise<IUserV2Detailed.LecturesResponse> {
+  async getUserLectures(user: session_userprofile, acceptLanguage?: string): Promise<IUserV2.LecturesResponse> {
     const language = this.parseAcceptLanguage(acceptLanguage)
 
     // Fetch data in parallel
@@ -46,6 +55,58 @@ export class UserServiceV2 {
 
     // Serialize and group lectures
     return toJsonUserLecturesV2(takenLectures, reviewedLectureIds, totalLikesCount, language)
+  }
+
+  async getWishlist(user: session_userprofile, acceptLanguage?: string): Promise<IUserV2.WishlistResponse> {
+    const language = this.parseAcceptLanguage(acceptLanguage)
+
+    // Fetch wishlist and taken lectures in parallel
+    const [wishlist, takenLectures] = await Promise.all([
+      this.wishlistRepository.getOrCreateWishlist(user.id),
+      this.lectureRepository.getTakenLectures(user),
+    ])
+
+    // Create Set of taken course IDs for O(1) lookup
+    const takenCourseIds = new Set(takenLectures.map((lecture) => lecture.course_id))
+
+    // Get unique course IDs from wishlist lectures
+    const courseIds = Array.from(
+      new Set(wishlist.timetable_wishlist_lectures.map((wl) => wl.subject_lecture.course_id)),
+    )
+
+    // Fetch course information in batch
+    const coursesRaw = await this.courseRepository.getCoursesByIds(courseIds)
+    const courseMap = new Map(coursesRaw.map((course) => [course.id, mapCourse(course)]))
+
+    // Serialize and group by course
+    return toJsonWishlistV2(wishlist, courseMap, takenCourseIds, language)
+  }
+
+  @Transactional()
+  async updateWishlist(user: session_userprofile, body: IUserV2.UpdateWishlistDto): Promise<void> {
+    const wishlist = await this.wishlistRepository.getOrCreateWishlist(user.id)
+
+    // Verify lecture exists
+    const lecture = await this.lectureRepository.getLectureDetailById(body.lectureId)
+    if (!lecture) {
+      throw new NotFoundException(`Lecture with id ${body.lectureId} does not exist`)
+    }
+
+    // Check if lecture is already in wishlist
+    const existingLecture = await this.wishlistRepository.getLectureInWishlist(wishlist.id, body.lectureId)
+
+    if (body.mode === 'add') {
+      if (existingLecture) {
+        throw new BadRequestException('Lecture already in wishlist')
+      }
+      await this.wishlistRepository.addLecture(wishlist.id, body.lectureId)
+    }
+    else if (body.mode === 'delete') {
+      if (!existingLecture) {
+        throw new BadRequestException('Lecture not in wishlist')
+      }
+      await this.wishlistRepository.removeLecture(wishlist.id, body.lectureId)
+    }
   }
 
   async getUnreviewedRandomCourse(user: session_userprofile): Promise<ICourseV2.WritableReview | null> {
