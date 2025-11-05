@@ -1,26 +1,32 @@
 import { Injectable } from '@nestjs/common'
-import { ICourse } from '@otl/server-nest/common/interfaces'
+import { ICourseV2, IUserV2 } from '@otl/server-nest/common/interfaces'
 import { session_userprofile } from '@prisma/client'
 
 import {
-  CourseRepository,
   DepartmentRepository,
   LectureRepository,
   ReviewsRepository,
-  UserRepository,
+  UserRepositoryV2,
 } from '@otl/prisma-client/repositories'
 
+function toJsonDepartment(major: any): any {
+  // Safely extract department info from the lecture/major object.
+  const dept = major
+  return {
+    id: dept.id,
+    name: dept.name,
+  }
+}
 @Injectable()
-export class v2UserService {
+export class userV2Service {
   constructor(
-    private readonly userRepository: UserRepository,
+    private readonly userRepositoryV2: UserRepositoryV2,
     private readonly lectureRepository: LectureRepository,
     private readonly departmentRepository: DepartmentRepository,
     private readonly reviewRepository: ReviewsRepository,
-    private readonly courseRepository: CourseRepository,
   ) {}
 
-  async getUnreviewedRandomCourse(user: session_userprofile): Promise<ICourse.WritableReview | null> {
+  async getUnreviewedRandomCourse(user: session_userprofile): Promise<ICourseV2.WritableReview | null> {
     const WrittenReviews = await this.reviewRepository.findReviewByUser(user)
     const TakenLectures = await this.lectureRepository.getTakenLectures(user)
     let UnreviewedLectures = TakenLectures
@@ -37,7 +43,7 @@ export class v2UserService {
       name: professor.professor.professor_name,
     }))
     return {
-      id: RandomUnreviewedLecture.id,
+      id: RandomUnreviewedLecture.course_id,
       name: RandomUnreviewedLecture.title,
       professor: professors_basic,
       year: RandomUnreviewedLecture.year,
@@ -45,33 +51,39 @@ export class v2UserService {
       totalRemainingCount: UnreviewedLectures.length,
     }
   }
-  /*
-  async getUserInfo(user: session_userprofile): Promise<IUser.Info | null> {
-    const name = user.first_name + ' ' + user.last_name
-    const mail = user.email
-    const studentNumber = parseInt(user.student_id, 10)
-    const degree = await this.userRepository.getUserDegree(user)
+
+  async getUserInfo(user: session_userprofile): Promise<IUserV2.Info | null> {
+    const name = `${user.first_name} ${user.last_name}`
+    const mail = user.email || ''
+    const studentNumber = parseInt(user.student_id)
+    const rawDegree = user.degree || 'null'
+    let degree: string | null = null
+    const degreeNum = rawDegree !== null ? Number(rawDegree) : null
+    if (degreeNum === 0) {
+      degree = '학사과정'
+    }
+    else if (degreeNum === 1) {
+      degree = '석사과정'
+    }
+    else if (degreeNum === 2) {
+      degree = '박사과정'
+    }
+    const [favoriteDepartments, majors] = await Promise.all([
+      this.departmentRepository.getFavoriteDepartments(user),
+      this.departmentRepository.getMajors(user),
+    ])
+
+    return {
+      name,
+      mail,
+      studentNumber,
+      degree,
+      majorDepartments: majors.map((major) => toJsonDepartment(major)),
+      interestedDepartments: favoriteDepartments.map((d) => toJsonDepartment(d)),
+    }
   }
 
-  public async getProfile(user: session_userprofile): Promise<IUser.Info | null> {
-      const [
-        favoriteDepartments,
-        majors,
-      ] = await Promise.all([
-        this.departmentRepository.getFavoriteDepartments(user),
-        this.lectureRepository.getTakenLectures(user),
-      ])
-
-      return {
-        id: user.id,
-        email: user.email ?? '',
-        student_id: user.student_id,
-        firstName: user.first_name,
-        lastName: user.last_name,
-        department: department ? toJsonDepartment(department) : null,
-        majors: majors.map((major) => toJsonDepartment(major)),
-        departments: departments.map((d) => toJsonDepartment(d)),
-        favorite_departments: favoriteDepartments.map((d) => toJsonDepartment(d)),
-      }
-    } */
+  async updateInterestedDepartments(user: session_userprofile, departments: number[]): Promise<void> {
+    return this.userRepositoryV2.updateInterestedDepartments(user, departments)
+  }
 }
