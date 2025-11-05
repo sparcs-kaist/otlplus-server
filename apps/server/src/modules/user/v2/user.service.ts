@@ -1,18 +1,34 @@
 import { Injectable } from '@nestjs/common'
-import { IUserV2 } from '@otl/server-nest/common/interfaces/v2'
+import { ICourseV2, IUserV2 } from '@otl/server-nest/common/interfaces'
+import { IUserV2 as IUserV2Detailed } from '@otl/server-nest/common/interfaces/v2'
+import { IReviewV2 } from '@otl/server-nest/common/interfaces/v2/IReviewV2'
+import { toJsonReviewV2 } from '@otl/server-nest/common/serializer/v2/review.v2.serializer'
 import { toJsonUserLecturesV2 } from '@otl/server-nest/common/serializer/v2/user.serializer'
 import { session_userprofile } from '@prisma/client'
 
-import { LectureRepository, ReviewsRepository } from '@otl/prisma-client'
+import {
+  DepartmentRepository, LectureRepository, ReviewsRepository, UserRepositoryV2,
+} from '@otl/prisma-client'
+
+function toJsonDepartment(major: any): any {
+  // Safely extract department info from the lecture/major object.
+  const dept = major
+  return {
+    id: dept.id,
+    name: dept.name,
+  }
+}
 
 @Injectable()
 export class UserServiceV2 {
   constructor(
     private readonly lectureRepository: LectureRepository,
     private readonly reviewsRepository: ReviewsRepository,
+    private readonly userRepositoryV2: UserRepositoryV2,
+    private readonly departmentRepository: DepartmentRepository,
   ) {}
 
-  async getUserLectures(user: session_userprofile, acceptLanguage?: string): Promise<IUserV2.LecturesResponse> {
+  async getUserLectures(user: session_userprofile, acceptLanguage?: string): Promise<IUserV2Detailed.LecturesResponse> {
     const language = this.parseAcceptLanguage(acceptLanguage)
 
     // Fetch data in parallel
@@ -30,6 +46,63 @@ export class UserServiceV2 {
 
     // Serialize and group lectures
     return toJsonUserLecturesV2(takenLectures, reviewedLectureIds, totalLikesCount, language)
+  }
+
+  async getUnreviewedRandomCourse(user: session_userprofile): Promise<ICourseV2.WritableReview | null> {
+    const WrittenReviews = await this.reviewsRepository.findReviewByUser(user)
+    const TakenLectures = await this.lectureRepository.getTakenLectures(user)
+    let UnreviewedLectures = TakenLectures
+    for (const review of WrittenReviews) {
+      UnreviewedLectures = UnreviewedLectures.filter((lecture) => lecture.id !== review.lecture_id)
+    }
+    if (UnreviewedLectures.length === 0) {
+      return null
+    }
+    const RandomUnreviewedLecture = UnreviewedLectures[Math.floor(Math.random() * UnreviewedLectures.length)]
+    const professsors = RandomUnreviewedLecture.subject_lecture_professors
+    const professors_basic = professsors.map((professor) => ({
+      id: professor.professor.professor_id,
+      name: professor.professor.professor_name,
+    }))
+    return {
+      id: RandomUnreviewedLecture.course_id,
+      name: RandomUnreviewedLecture.title,
+      professor: professors_basic,
+      year: RandomUnreviewedLecture.year,
+      semester: RandomUnreviewedLecture.semester,
+      totalRemainingCount: UnreviewedLectures.length,
+    }
+  }
+
+  async getUserInfo(user: session_userprofile): Promise<IUserV2.Info | null> {
+    const name = `${user.first_name} ${user.last_name}`
+    const mail = user.email || ''
+    const studentNumber = parseInt(user.student_id)
+    const degree = (user as any).degree || null
+    const [favoriteDepartments, majors] = await Promise.all([
+      this.departmentRepository.getFavoriteDepartments(user),
+      this.departmentRepository.getMajors(user),
+    ])
+
+    return {
+      name,
+      mail,
+      studentNumber,
+      degree,
+      majorDepartments: majors.map((major) => toJsonDepartment(major)),
+      interestedDepartments: favoriteDepartments.map((d) => toJsonDepartment(d)),
+    }
+  }
+
+  async updateInterestedDepartments(user: session_userprofile, departments: number[]): Promise<void> {
+    return this.userRepositoryV2.updateInterestedDepartments(user, departments)
+  }
+
+  async getUserLikedReviews(user: session_userprofile, language: string = 'ko'): Promise<IReviewV2.Basic[]> {
+    const DEFAULT_ORDER = ['-written_datetime', '-id']
+    const MAX_LIMIT = 100
+    const likedRaw = await this.reviewsRepository.getLikedReviews(user.id, DEFAULT_ORDER, 0, MAX_LIMIT)
+    return likedRaw.map((review) => toJsonReviewV2(review, null, language))
   }
 
   // TODO; 공통화 필요
