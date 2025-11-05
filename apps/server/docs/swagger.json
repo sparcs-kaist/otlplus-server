@@ -260,61 +260,6 @@
         }
       }
     },
-    "/session/me": {
-      "get": {
-        "summary": "AuthController.getMe",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/IUser.SimpleProfile"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/session/{year}/{semester}/taken-lectures": {
-      "get": {
-        "summary": "AuthController.getTakenLecturesBySemester",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/{ subject_department: { id: number; name: string; code: string; num_id: string; name_en: string | null; visible: boolean; }; subject_classtime: { id: number; type: string; day: number; begin: Date; end: Date; building_id: string | null; building_full_name: string | null; building_full_name_en: string | null; room_name: string | null; unit_time: number | null; lecture_id: number | null; }[]; subject_examtime: { id: number; day: number; begin: Date; end: Date; lecture_id: number; }[]; subject_lecture_professors: ({ professor: { id: number; grade_sum: number; load_sum: number; speech_sum: number; grade: number; load: number; speech: number; review_total_weight: number; professor_id: number; professor_name: string; professor_name_en: string | null; major: string; }; } & { id: number; lecture_id: number; professor_id: number; })[]; } & { id: number; department_id: number; code: string; old_code: string; new_code: string; year: number; semester: number; class_no: string; title: string; title_en: string; type: string; type_en: string; audience: number; credit: number; num_classes: number; num_labs: number; credit_au: number; limit: number; num_people: number | null; is_english: boolean; deleted: boolean; course_id: number; grade_sum: number; load_sum: number; speech_sum: number; grade: number; load: number; speech: number; review_total_weight: number; class_title: string | null; class_title_en: string | null; common_title: string | null; common_title_en: string | null; title_no_space: string; title_en_no_space: string; level: string | null; }"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "year",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "semester",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ]
-      }
-    },
     "/session": {
       "get": {
         "summary": "AuthController.home",
@@ -918,7 +863,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").NotificationRequest"
+                  "$ref": "#/components/schemas/import(\"/home/otlplus/otlplus-nest/apps/server/src/modules/notification/domain/notification\").NotificationRequest"
                 }
               }
             }
@@ -936,7 +881,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").FCMNotificationRequest"
+                  "$ref": "#/components/schemas/import(\"/home/otlplus/otlplus-nest/apps/server/src/modules/notification/domain/notification\").FCMNotificationRequest"
                 }
               }
             }
@@ -963,7 +908,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").UserNotification"
+                  "$ref": "#/components/schemas/import(\"/home/otlplus/otlplus-nest/apps/server/src/modules/notification/domain/notification\").UserNotification"
                 }
               }
             }
@@ -992,7 +937,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/agreement/domain/UserAgreement\").Agreement"
+                    "$ref": "#/components/schemas/import(\"/home/otlplus/otlplus-nest/apps/server/src/modules/agreement/domain/UserAgreement\").Agreement"
                   }
                 }
               }
@@ -1010,7 +955,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                  "$ref": "#/components/schemas/import(\"/home/otlplus/otlplus-nest/apps/server/src/modules/notification/domain/notification\").Notification"
                 }
               }
             }
@@ -1035,7 +980,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                  "$ref": "#/components/schemas/import(\"/home/otlplus/otlplus-nest/apps/server/src/modules/notification/domain/notification\").Notification"
                 }
               }
             }
@@ -1087,7 +1032,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                    "$ref": "#/components/schemas/import(\"/home/otlplus/otlplus-nest/apps/server/src/modules/notification/domain/notification\").Notification"
                   }
                 }
               }
@@ -1110,7 +1055,7 @@
                       "type": "null"
                     },
                     {
-                      "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                      "$ref": "#/components/schemas/import(\"/home/otlplus/otlplus-nest/apps/server/src/modules/notification/domain/notification\").Notification"
                     }
                   ]
                 }
@@ -2499,6 +2444,101 @@
         ]
       }
     },
+    "/api/v2/users/writable-review": {
+      "get": {
+        "summary": "v2UserController.getUserTakenCourses",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ICourseV2.WritableReview"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/users/{userId}/info": {
+      "get": {
+        "summary": "v2UserController.getUserInfo",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/components/schemas/IUserV2.Info"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v2/users/{userId}/interested-departments": {
+      "put": {
+        "summary": "v2UserController.updateInterestedDepartments",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/number[]"
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/users/{userId}/wishlist": {
       "get": {
         "summary": "WishlistController.getWishlist",
@@ -2598,6 +2638,237 @@
             }
           }
         }
+      }
+    },
+    "/api/v2/courses": {
+      "get": {
+        "summary": "CourseV2Controller.getCourses",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ICourseV2.Basic"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ICourseV2.Query"
+            }
+          },
+          {
+            "name": "accept-language",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["en", "ko"]
+            },
+            "description": "en/ko (기본: ko). 언어 헤더 파라미터"
+          }
+        ]
+      }
+    },
+    "/api/v2/courses/public": {
+      "get": {
+        "summary": "CourseV2Controller.getCoursesPublic",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ICourseV2.Basic"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ICourseV2.Query"
+            }
+          },
+          {
+            "name": "accept-language",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["en", "ko"]
+            },
+            "description": "en/ko (기본: ko). 언어 헤더 파라미터"
+          }
+        ]
+      }
+    },
+    "/api/v2/courses/{id}": {
+      "get": {
+        "summary": "CourseV2Controller.getCourseById",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ICourseV2.Detail"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "accept-language",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["en", "ko"]
+            },
+            "description": "en/ko (기본: ko). 언어 헤더 파라미터"
+          }
+        ]
+      }
+    },
+    "/api/v2/courses/{id}/public": {
+      "get": {
+        "summary": "CourseV2Controller.getCourseByIdPublic",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ICourseV2.Detail"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "accept-language",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["en", "ko"]
+            },
+            "description": "en/ko (기본: ko). 언어 헤더 파라미터"
+          }
+        ]
+      }
+    },
+    "/api/v2/lectures": {
+      "get": {
+        "summary": "LecturesControllerV2.getLectures",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ILectureV2.courseWrapped"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ILectureV2.getQuery"
+            }
+          },
+          {
+            "name": "accept-language",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["en", "ko"]
+            },
+            "description": "en/ko (기본: ko). 언어 헤더 파라미터"
+          }
+        ]
+      }
+    },
+    "/api/v2/lectures/public": {
+      "get": {
+        "summary": "LecturesControllerV2.getLecturesPublic",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ILectureV2.courseWrapped"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ILectureV2.getQuery"
+            }
+          },
+          {
+            "name": "accept-language",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["en", "ko"]
+            },
+            "description": "en/ko (기본: ko). 언어 헤더 파라미터"
+          }
+        ]
       }
     },
     "/api/v2/reviews": {
@@ -2787,6 +3058,18 @@
             }
           }
         },
+        "parameters": [
+          {
+            "name": "accept-language",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["en", "ko"]
+            },
+            "description": "en/ko (기본: ko). 언어 헤더 파라미터"
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -2872,6 +3155,16 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "accept-language",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["en", "ko"]
+            },
+            "description": "en/ko (기본: ko). 언어 헤더 파라미터"
           }
         ]
       },
@@ -3112,6 +3405,47 @@
         "required": ["id", "name", "name_en", "code"],
         "additionalProperties": false
       },
+      "ICourse.WritableReview": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "professor": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IProfessor.Simple"
+            }
+          },
+          "year": {
+            "type": "number"
+          },
+          "semester": {
+            "type": "number"
+          },
+          "totalRemainingCount": {
+            "type": "number"
+          }
+        },
+        "required": ["id", "name", "professor", "year", "semester", "totalRemainingCount"],
+        "additionalProperties": false
+      },
+      "IProfessor.Simple": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "name"],
+        "additionalProperties": false
+      },
       "ICourse.Detail": {
         "type": "object",
         "properties": {
@@ -3216,7 +3550,14 @@
             "type": "string"
           },
           "name_en": {
-            "type": "string"
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "professor_id": {
             "type": "number"
@@ -3605,6 +3946,246 @@
         },
         "type": "object"
       },
+      "CourseOrderQuery": {
+        "type": "string",
+        "enum": ["code", "popular", "studentCount"]
+      },
+      "level": {
+        "type": "string",
+        "enum": ["ALL", "100", "200", "300", "400", "500", "600", "700", "800", "900"]
+      },
+      "CourseType": {
+        "type": "string",
+        "enum": ["ALL", "BR", "BE", "MR", "ME", "MGC", "HSE", "GR", "EG", "OE", "ETC"]
+      },
+      "ICourseV2.Basic": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "department": {
+            "$ref": "#/components/schemas/IDepartmentV2.Basic"
+          },
+          "professors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IProfessorV2.Basic"
+            }
+          },
+          "summary": {
+            "type": "string"
+          },
+          "open": {
+            "type": "boolean"
+          },
+          "completed": {
+            "type": "boolean"
+          }
+        },
+        "required": ["id", "name", "code", "type", "department", "professors", "summary", "open", "completed"],
+        "additionalProperties": false
+      },
+      "IDepartmentV2.Basic": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "name"],
+        "additionalProperties": false
+      },
+      "IProfessorV2.Basic": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "name"],
+        "additionalProperties": false
+      },
+      "ICourseV2.Detail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "department": {
+            "$ref": "#/components/schemas/IDepartmentV2.Basic"
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "year": {
+                  "type": "number"
+                },
+                "semester": {
+                  "type": "number"
+                },
+                "classes": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "lectureId": {
+                        "type": "number"
+                      },
+                      "classNo": {
+                        "type": "string"
+                      },
+                      "professors": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/components/schemas/IProfessorV2.Basic"
+                        }
+                      }
+                    },
+                    "required": ["lectureId", "classNo", "professors"],
+                    "additionalProperties": false
+                  }
+                },
+                "myProfessors": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IProfessorV2.Basic"
+                  }
+                }
+              },
+              "required": ["year", "semester", "classes", "myProfessors"],
+              "additionalProperties": false
+            }
+          },
+          "summary": {
+            "type": "string"
+          },
+          "classDuration": {
+            "type": "number"
+          },
+          "expDuration": {
+            "type": "number"
+          },
+          "credit": {
+            "type": "number"
+          },
+          "creditAU": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "code",
+          "type",
+          "department",
+          "history",
+          "summary",
+          "classDuration",
+          "expDuration",
+          "credit",
+          "creditAU"
+        ],
+        "additionalProperties": false
+      },
+      "ICourseV2.Query": {
+        "properties": {
+          "type": {
+            "items": {
+              "type": "string",
+              "enum": ["ALL", "BR", "BE", "MR", "ME", "MGC", "HSE", "GR", "EG", "OE", "ETC"]
+            },
+            "type": "array"
+          },
+          "department": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "level": {
+            "items": {
+              "type": "string",
+              "enum": ["ALL", "100", "200", "300", "400", "500", "600", "700", "800", "900"]
+            },
+            "type": "array"
+          },
+          "term": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "keyword": {
+            "type": "string"
+          },
+          "order": {
+            "type": "string",
+            "enum": ["code", "popular", "studentCount"]
+          },
+          "offset": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "ICourseV2.WritableReview": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "professor": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IProfessorV2.Basic"
+            }
+          },
+          "year": {
+            "type": "number"
+          },
+          "semester": {
+            "type": "number"
+          },
+          "totalRemainingCount": {
+            "type": "number"
+          }
+        },
+        "required": ["id", "name", "professor", "year", "semester", "totalRemainingCount"],
+        "additionalProperties": false
+      },
       "ICustomblock.Basic": {
         "type": "object",
         "properties": {
@@ -3674,6 +4255,19 @@
         "type": "object"
       },
       "ICustomblock.DeleteDto": {},
+      "IDepartment.v2Basic": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "name"],
+        "additionalProperties": false
+      },
       "IDevice.RegisterDeviceDto": {
         "properties": {
           "deviceToken": {
@@ -5156,7 +5750,10 @@
             "type": "string"
           },
           "department": {
-            "$ref": "#/components/schemas/IDepartmentV2.Basic"
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IDepartmentV2.Basic"
+            }
           },
           "type": {
             "type": "string"
@@ -5194,7 +5791,7 @@
           "classes": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ILectureV2.Classtime"
+              "$ref": "#/components/schemas/ILectureV2.ClassTime"
             }
           },
           "examTime": {
@@ -6570,9 +7167,6 @@
           "direction": {
             "type": "string",
             "enum": ["ltr", "rtl"]
-          },
-          "lang": {
-            "type": "string"
           }
         },
         "required": [
@@ -6599,8 +7193,7 @@
           "textBaseline",
           "textAlign",
           "canvas",
-          "direction",
-          "lang"
+          "direction"
         ],
         "additionalProperties": false
       },
@@ -7593,6 +8186,37 @@
         ],
         "additionalProperties": false
       },
+      "IUser.Info": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "mail": {
+            "type": "string"
+          },
+          "studentNumber": {
+            "type": "number"
+          },
+          "degree": {
+            "type": "string"
+          },
+          "majorDepartments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IDepartment.v2Basic"
+            }
+          },
+          "interestedDepartments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IDepartment.v2Basic"
+            }
+          }
+        },
+        "required": ["name", "mail", "studentNumber", "degree", "majorDepartments", "interestedDepartments"],
+        "additionalProperties": false
+      },
       "IUser.TokenDto": {
         "properties": {
           "token": {
@@ -7676,6 +8300,345 @@
         ],
         "additionalProperties": false
       },
+      "IUserV2.SsoInfoOneApp": {
+        "type": "object",
+        "properties": {
+          "sso_info": {
+            "type": "string"
+          }
+        },
+        "required": ["sso_info"],
+        "additionalProperties": false
+      },
+      "IUserV2.TakenCoursesQueryDto": {
+        "properties": {
+          "order": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "IUserV2.ReviewLikedQueryDto": {
+        "properties": {
+          "order": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "IUserV2.Basic": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "user_id": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "student_id": {
+            "type": "string"
+          },
+          "sid": {
+            "type": "string"
+          },
+          "language": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "portal_check": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "department_id": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "email": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "date_joined": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "refresh_token": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "user_id",
+          "student_id",
+          "sid",
+          "language",
+          "portal_check",
+          "department_id",
+          "email",
+          "date_joined",
+          "first_name",
+          "last_name",
+          "refresh_token"
+        ],
+        "additionalProperties": false
+      },
+      "IUserV2.Profile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "email": {
+            "type": "string"
+          },
+          "student_id": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "department": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IDepartment.Basic"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "majors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IDepartment.Basic"
+            }
+          },
+          "departments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IDepartment.Basic"
+            }
+          },
+          "favorite_departments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IDepartment.Basic"
+            }
+          },
+          "review_writable_lectures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ILecture.Detail"
+            }
+          },
+          "my_timetable_lectures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ILecture.Detail"
+            }
+          },
+          "reviews": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IReview.Basic"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "student_id",
+          "firstName",
+          "lastName",
+          "department",
+          "majors",
+          "departments",
+          "favorite_departments",
+          "review_writable_lectures",
+          "my_timetable_lectures",
+          "reviews"
+        ],
+        "additionalProperties": false
+      },
+      "IUserV2.Info": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "mail": {
+            "type": "string"
+          },
+          "studentNumber": {
+            "type": "number"
+          },
+          "degree": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "majorDepartments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IDepartmentV2.Basic"
+            }
+          },
+          "interestedDepartments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IDepartmentV2.Basic"
+            }
+          }
+        },
+        "required": ["name", "mail", "studentNumber", "degree", "majorDepartments", "interestedDepartments"],
+        "additionalProperties": false
+      },
+      "IUserV2.TokenDto": {
+        "properties": {
+          "token": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": ["token"]
+      },
+      "IUserV2.TokenResponse": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "refreshToken": {
+            "type": "string"
+          }
+        },
+        "required": ["accessToken", "refreshToken"],
+        "additionalProperties": false
+      },
+      "IUserV2.SimpleProfile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "email": {
+            "type": "string"
+          },
+          "student_id": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "department": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IDepartmentV2.Basic"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "majors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IDepartmentV2.Basic"
+            }
+          },
+          "departments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IDepartmentV2.Basic"
+            }
+          },
+          "favorite_departments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IDepartmentV2.Basic"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "student_id",
+          "firstName",
+          "lastName",
+          "department",
+          "majors",
+          "departments",
+          "favorite_departments"
+        ],
+        "additionalProperties": false
+      },
       "IWishlist.WithLectures": {
         "type": "object",
         "properties": {
@@ -7707,19 +8670,6 @@
         "type": "object",
         "required": ["lecture"]
       },
-      "IDepartmentV2.Basic": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "number"
-          },
-          "name": {
-            "type": "string"
-          }
-        },
-        "required": ["id", "name"],
-        "additionalProperties": false
-      },
       "ILectureV2.ClassTime": {
         "type": "object",
         "properties": {
@@ -7743,134 +8693,6 @@
           }
         },
         "required": ["day", "begin", "end", "buildingCode", "placeName", "placeNameShort"],
-        "additionalProperties": false
-      },
-      "ILectureV2.ExamTime": {
-        "type": "object",
-        "properties": {
-          "day": {
-            "type": "number"
-          },
-          "str": {
-            "type": "string"
-          },
-          "begin": {
-            "type": "number"
-          },
-          "end": {
-            "type": "number"
-          }
-        },
-        "required": ["day", "str", "begin", "end"],
-        "additionalProperties": false
-      },
-      "ILectureV2.Basic": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "number"
-          },
-          "courseId": {
-            "type": "number"
-          },
-          "classNo": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "code": {
-            "type": "string"
-          },
-          "department": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/IDepartmentV2.Basic"
-            }
-          },
-          "type": {
-            "type": "string"
-          },
-          "limitPeople": {
-            "type": "number"
-          },
-          "numPeople": {
-            "type": "number"
-          },
-          "credit": {
-            "type": "number"
-          },
-          "creditAU": {
-            "type": "number"
-          },
-          "averageGrade": {
-            "type": "number"
-          },
-          "averageLoad": {
-            "type": "number"
-          },
-          "averageSpeech": {
-            "type": "number"
-          },
-          "isEnglish": {
-            "type": "boolean"
-          },
-          "professors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/IProfessorV2.Basic"
-            }
-          },
-          "classes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ILectureV2.ClassTime"
-            }
-          },
-          "examTime": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/ILectureV2.ExamTime"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "required": [
-          "id",
-          "courseId",
-          "classNo",
-          "name",
-          "code",
-          "department",
-          "type",
-          "limitPeople",
-          "numPeople",
-          "credit",
-          "creditAU",
-          "averageGrade",
-          "averageLoad",
-          "averageSpeech",
-          "isEnglish",
-          "professors",
-          "classes",
-          "examTime"
-        ],
-        "additionalProperties": false
-      },
-      "IProfessorV2.Basic": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "number"
-          },
-          "name": {
-            "type": "string"
-          }
-        },
-        "required": ["id", "name"],
         "additionalProperties": false
       },
       "IReviewV2.Basic": {

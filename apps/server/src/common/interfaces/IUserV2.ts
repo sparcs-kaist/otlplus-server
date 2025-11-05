@@ -10,7 +10,9 @@ import {
   IsArray, IsNotEmpty, IsNumber, IsOptional, IsString,
 } from 'class-validator'
 
-export namespace IUser {
+import { IDepartmentV2 } from './IDepartmentV2'
+
+export namespace IUserV2 {
   export interface SsoInfoOneApp {
     sso_info: string
   }
@@ -77,9 +79,9 @@ export namespace IUser {
     name: string
     mail: string
     studentNumber: number
-    degree: string
-    majorDepartments: IDepartment.v2Basic[]
-    interestedDepartments: IDepartment.v2Basic[]
+    degree: string | null
+    majorDepartments: IDepartmentV2.Basic[]
+    interestedDepartments: IDepartmentV2.Basic[]
   }
 
   export class TokenDto {
@@ -98,9 +100,9 @@ export namespace IUser {
     student_id: string
     firstName: string
     lastName: string
-    department: IDepartment.Basic | null
-    majors: IDepartment.Basic[]
-    departments: IDepartment.Basic[]
-    favorite_departments: IDepartment.Basic[]
+    department: IDepartmentV2.Basic | null
+    majors: IDepartmentV2.Basic[]
+    departments: IDepartmentV2.Basic[]
+    favorite_departments: IDepartmentV2.Basic[]
   }
 }
