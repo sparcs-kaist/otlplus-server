@@ -261,12 +261,7 @@ export class ShareService {
   }
 
   async createTimetableImage(query: IShare.TimetableImageQueryDto, user: session_userprofile): Promise<Buffer> {
-    const lectures = await this.timetablesService.getTimetableEntries(
-      query.timetable,
-      query.year,
-      query.semester,
-      user,
-    )
+    const lectures = await this.timetablesService.getTimetableEntries(query.timetable, query.year, query.semester, user)
     const timetableType = this.timetablesService.getTimetableType(lectures)
     const semesterObject = await this.semesterRepository.findSemester(query.year, query.semester)
 
@@ -275,7 +270,7 @@ export class ShareService {
     }
 
     const isEnglish = !!query.language && query.language.includes('en')
-    const semesterName = await this.semestersService.getSemesterName(semesterObject, isEnglish ? 'en' : 'kr')
+    const semesterName = await this.semestersService.getSemesterName(semesterObject, isEnglish ? 'en' : 'ko')
 
     const drawTimetableData = {
       lectures,
@@ -365,12 +360,7 @@ export class ShareService {
   }
 
   async createTimetableIcal(query: IShare.TimetableIcalQueryDto, user: session_userprofile): Promise<ICalCalendar> {
-    const lectures = await this.timetablesService.getTimetableEntries(
-      query.timetable,
-      query.year,
-      query.semester,
-      user,
-    )
+    const lectures = await this.timetablesService.getTimetableEntries(query.timetable, query.year, query.semester, user)
 
     if (!lectures || lectures.length === 0) {
       throw new HttpException('Timetable not found', HttpStatus.NOT_FOUND)
@@ -383,7 +373,7 @@ export class ShareService {
     }
 
     const isEnglish = !!query.language && query.language.includes('en')
-    const semesterName = await this.semestersService.getSemesterName(semesterObject, isEnglish ? 'en' : 'kr')
+    const semesterName = await this.semestersService.getSemesterName(semesterObject, isEnglish ? 'en' : 'ko')
 
     const timetableIcalData = {
       name: `[OTL] ${semesterName}`,

@@ -23,6 +23,15 @@ export namespace ICourse {
     num_labs: number
   }
 
+  export interface WritableReview {
+    id: number
+    name: string
+    professor: IProfessor.Simple[]
+    year: number
+    semester: number
+    totalRemainingCount: number
+  }
+
   export interface Detail extends Basic {
     related_courses_prior: Basic[]
     related_courses_posterior: Basic[]

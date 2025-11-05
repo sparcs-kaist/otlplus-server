@@ -44,6 +44,7 @@ import { StatusModule } from './modules/status/status.module'
 import { TimetablesModule } from './modules/timetables/timetables.module'
 import { TimetablesModuleV2 } from './modules/timetables/v2/timetables.module'
 import { TracksModule } from './modules/tracks/tracks.module'
+import { v2UserModule } from './modules/user.v2/user.v2.module'
 import { UserModule } from './modules/user/user.module'
 import { UserModuleV2 } from './modules/user/v2/user.module'
 import { WishlistModule } from './modules/wishlist/wishlist.module'
@@ -85,6 +86,7 @@ async function createCacheStoreWithFallback(): Promise<Keyv> {
     ReviewsModule,
     UserModule,
     UserModuleV2,
+    v2UserModule,
     SemestersModule,
     TimetablesModule,
     TimetablesModuleV2,

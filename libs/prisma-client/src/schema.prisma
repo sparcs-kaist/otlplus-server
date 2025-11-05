@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["queryCompiler", "driverAdapters"]
+  previewFeatures = ["driverAdapters", "queryCompiler"]
 }
 
 datasource db {
@@ -255,12 +255,12 @@ model review_review {
   written_datetime                           DateTime?                                    @db.DateTime(0)
   main_famoushumanityreviewdailyfeed_reviews main_famoushumanityreviewdailyfeed_reviews[]
   main_famousmajorreviewdailyfeed_reviews    main_famousmajorreviewdailyfeed_reviews[]
+  review_humanitybestreview                  review_humanitybestreview?
+  review_majorbestreview                     review_majorbestreview?
   course                                     subject_course                               @relation(fields: [course_id], references: [id])
   lecture                                    subject_lecture                              @relation(fields: [lecture_id], references: [id])
   writer                                     session_userprofile?                         @relation(fields: [writer_id], references: [id])
   review_reviewvote                          review_reviewvote[]
-  review_majorbestreview                     review_majorbestreview?                      @relation
-  review_humanitybestreview                  review_humanitybestreview?                   @relation
 
   @@unique([writer_id, lecture_id], map: "review_comment_writer_id_af700a5d_uniq")
   @@index([written_datetime], map: "review_comment_e5e30a4a")
@@ -285,11 +285,7 @@ model session_userprofile {
   id                                    Int                                        @id @default(autoincrement())
   user_id                               Int?                                       @unique(map: "session_userprofile_user_id_09dd6af1_uniq")
   student_id                            String                                     @db.VarChar(10)
-  uid                                   String?                                    @db.VarChar(30)
   sid                                   String                                     @db.VarChar(30)
-  last_login                            DateTime?                                  @db.DateTime(0)
-  kaist_id                              String?                                    @db.VarChar(30)
-  status                                String?                                    @db.VarChar(30)
   language                              String?                                    @db.VarChar(15)
   portal_check                          Int?                                       @default(0)
   department_id                         Int?
@@ -297,7 +293,12 @@ model session_userprofile {
   date_joined                           DateTime                                   @db.DateTime(0)
   first_name                            String                                     @db.VarChar(30)
   last_name                             String                                     @db.VarChar(150)
+  degree                                String?                                    @db.VarChar(100)
   refresh_token                         String?                                    @db.VarChar(255)
+  kaist_id                              String?                                    @db.VarChar(30)
+  last_login                            DateTime?                                  @db.DateTime(0)
+  status                                String?                                    @db.VarChar(30)
+  uid                                   String?                                    @db.VarChar(30)
   main_ratedailyuserfeed                main_ratedailyuserfeed[]
   main_relatedcoursedailyuserfeed       main_relatedcoursedailyuserfeed[]
   main_reviewwritedailyuserfeed         main_reviewwritedailyuserfeed[]
@@ -305,19 +306,19 @@ model session_userprofile {
   reviews                               review_review[]
   reviewvote                            review_reviewvote[]
   department                            subject_department?                        @relation(fields: [department_id], references: [id], onUpdate: Restrict)
+  session_userprofile_agreement         session_userprofile_agreement[]
+  session_userprofile_device            session_userprofile_device[]
   favorite_departments                  session_userprofile_favorite_departments[]
   session_userprofile_majors            session_userprofile_majors[]
   session_userprofile_minors            session_userprofile_minors[]
+  session_userprofile_notification      session_userprofile_notification[]
+  session_userprofile_notification_hist session_userprofile_notification_history[]
   session_userprofile_specialized_major session_userprofile_specialized_major[]
-  session_userprofile_device            session_userprofile_device[]
   taken_lectures                        session_userprofile_taken_lectures[]
   subject_courseuser                    subject_courseuser[]
   support_rate                          support_rate[]
   timetable_timetable                   timetable_timetable[]
   timetable_wishlist                    timetable_wishlist?
-  session_userprofile_notification      session_userprofile_notification[]
-  session_userprofile_agreement         session_userprofile_agreement[]
-  session_userprofile_notification_hist session_userprofile_notification_history[]
 
   @@index([department_id], map: "session_userprofile_department_id_fkey")
   @@index([student_id], map: "session_userprofile_student_id_index")
@@ -347,13 +348,13 @@ model session_userprofile_device {
 model session_userprofile_agreement {
   id               Int                 @id @default(autoincrement())
   userprofile_id   Int
-  userprofile      session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
   agreement_id     Int
-  agreement        agreement           @relation(fields: [agreement_id], references: [id], onUpdate: Restrict)
   agreement_status Boolean             @default(false)
   need_to_show     Boolean             @default(true)
   created_at       DateTime            @default(now()) @db.DateTime(0)
   updated_at       DateTime            @default(now()) @db.DateTime(0)
+  agreement        agreement           @relation(fields: [agreement_id], references: [id], onUpdate: Restrict)
+  userprofile      session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
 
   @@unique([userprofile_id, agreement_id], map: "session_userprofile_agreement_userprofile_id_agreement_id_uniq")
   @@index([agreement_id], map: "session_userprofile_agreement_agreement_id_fkey")
@@ -362,23 +363,21 @@ model session_userprofile_agreement {
 
 model agreement {
   id                            Int                             @id @default(autoincrement())
-  name                          AgreementType
-  session_userprofile_agreement session_userprofile_agreement[]
+  name                          AgreementType                   @unique(map: "session_userprofile_agreement_name_uniq")
   created_at                    DateTime                        @default(now()) @db.DateTime(0)
   updated_at                    DateTime                        @default(now()) @db.DateTime(0)
-
-  @@unique([name], map: "session_userprofile_agreement_name_uniq")
+  session_userprofile_agreement session_userprofile_agreement[]
 }
 
 model session_userprofile_notification {
   id              Int                 @id @default(autoincrement())
   userprofile_id  Int
   notification_id Int
-  userprofile     session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
-  noti            notification        @relation(fields: [notification_id], references: [id], onUpdate: Restrict)
   created_at      DateTime            @default(now()) @db.DateTime(0)
   updated_at      DateTime            @default(now()) @db.DateTime(0)
   is_active       Boolean             @default(false)
+  noti            notification        @relation(fields: [notification_id], references: [id], onUpdate: Restrict)
+  userprofile     session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
 
   @@unique([userprofile_id, notification_id], map: "session_userprofile_notification_id_uniq")
   @@index([notification_id], map: "session_userprofile_notification_notification_id_fkey")
@@ -386,15 +385,13 @@ model session_userprofile_notification {
 
 model notification {
   id                       Int                                        @id @default(autoincrement())
-  name                     String                                     @db.VarChar(200)
-  description              String                                     @db.LongText
-  agreementType            AgreementType
+  name                     String                                     @unique(map: "notification_name_uniq") @db.VarChar(200)
   created_at               DateTime                                   @default(now()) @db.DateTime(0)
   updated_at               DateTime                                   @default(now()) @db.DateTime(0)
+  agreementType            AgreementType
+  description              String                                     @db.LongText
   session_userprofile_noti session_userprofile_notification[]
   session_userprofile_hist session_userprofile_notification_history[]
-
-  @@unique([name], map: "notification_name_uniq")
 }
 
 model session_userprofile_notification_history {
@@ -402,13 +399,16 @@ model session_userprofile_notification_history {
   userprofile_id      Int
   notification_id     Int
   notification_req_id String              @db.LongText
-  content             String              @db.LongText
-  to                  String?             @db.LongText
-  fcm_id              String?             @db.LongText
-  userprofile         session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
-  noti                notification        @relation(fields: [notification_id], references: [id], onUpdate: Restrict)
   created_at          DateTime            @default(now()) @db.DateTime(0)
   read_at             DateTime?           @db.DateTime(0)
+  content             String              @db.LongText
+  fcm_id              String?             @db.LongText
+  to                  String?             @db.LongText
+  noti                notification        @relation(fields: [notification_id], references: [id], onUpdate: Restrict)
+  userprofile         session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
+
+  @@index([notification_id], map: "session_userprofile_notification_history_notification_id_fkey")
+  @@index([userprofile_id], map: "session_userprofile_notification_history_userprofile_id_fkey")
 }
 
 model session_userprofile_favorite_departments {
@@ -486,7 +486,6 @@ model subject_classtime {
 model subject_course {
   id                                                                                                               Int                                        @id @default(autoincrement())
   old_code                                                                                                         String                                     @db.VarChar(10)
-  new_code                                                                                                         String                                     @db.VarChar(20)
   department_id                                                                                                    Int
   type                                                                                                             String                                     @db.VarChar(30)
   type_en                                                                                                          String                                     @db.VarChar(60)
@@ -503,8 +502,9 @@ model subject_course {
   latest_written_datetime                                                                                          DateTime?                                  @db.DateTime(0)
   title_no_space                                                                                                   String                                     @default(dbgenerated()) @db.VarChar(100)
   title_en_no_space                                                                                                String                                     @default(dbgenerated()) @db.VarChar(200)
+  new_code                                                                                                         String                                     @db.VarChar(20)
   representative_lecture_id                                                                                        Int                                        @default(0)
-  level                                                                                                            String?                                    @default(dbgenerated("SUBSTRING(REGEXP_REPLACE(new_code, '[^0-9]', ''), 1, 1)")) @db.VarChar(20)
+  level                                                                                                            String?                                    @default(dbgenerated("(substr(regexp_replace(`new_code`,'[^0-9]',''),1,1))")) @db.VarChar(20)
   main_relatedcoursedailyuserfeed                                                                                  main_relatedcoursedailyuserfeed[]
   planner_futureplanneritem                                                                                        planner_futureplanneritem[]
   review                                                                                                           review_review[]
@@ -579,6 +579,7 @@ model subject_department {
   graduation_additionaltrack               graduation_additionaltrack[]
   graduation_majortrack                    graduation_majortrack[]
   main_famousmajorreviewdailyfeed          main_famousmajorreviewdailyfeed[]
+  paper_professor_department               paper_professor_department[]
   planner_arbitraryplanneritem             planner_arbitraryplanneritem[]
   session_userprofile                      session_userprofile[]
   session_userprofile_favorite_departments session_userprofile_favorite_departments[]
@@ -587,7 +588,6 @@ model subject_department {
   session_userprofile_specialized_major    session_userprofile_specialized_major[]
   subject_course                           subject_course[]
   subject_lecture                          subject_lecture[]
-  paper_professor_department               paper_professor_department[]
 }
 
 model subject_examtime {
@@ -605,7 +605,6 @@ model subject_lecture {
   id                              Int                                  @id @default(autoincrement())
   code                            String                               @db.VarChar(10)
   old_code                        String                               @db.VarChar(10)
-  new_code                        String                               @db.VarChar(20)
   year                            Int
   semester                        Int                                  @db.SmallInt
   department_id                   Int
@@ -637,6 +636,8 @@ model subject_lecture {
   common_title_en                 String?                              @db.VarChar(100)
   title_no_space                  String                               @default(dbgenerated()) @db.VarChar(100)
   title_en_no_space               String                               @default(dbgenerated()) @db.VarChar(200)
+  new_code                        String                               @db.VarChar(20)
+  level                           String?                              @default(dbgenerated("(substr(regexp_replace(`new_code`,'[^0-9]',''),1,1))")) @db.VarChar(20)
   main_reviewwritedailyuserfeed   main_reviewwritedailyuserfeed[]
   planner_takenplanneritem        planner_takenplanneritem[]
   review                          review_review[]
@@ -646,11 +647,10 @@ model subject_lecture {
   course                          subject_course                       @relation(fields: [course_id], references: [id], onUpdate: Restrict)
   subject_department              subject_department                   @relation(fields: [department_id], references: [id], onUpdate: Restrict)
   subject_lecture_professors      subject_lecture_professors[]
+  sync_taken_lectures             sync_taken_lectures[]
   timetable_oldtimetable_lectures timetable_oldtimetable_lectures[]
   timetable_timetable_lectures    timetable_timetable_lectures[]
   timetable_wishlist_lectures     timetable_wishlist_lectures[]
-  sync_taken_lectures             sync_taken_lectures[]
-  level                           String?                              @default(dbgenerated("SUBSTRING(REGEXP_REPLACE(new_code, '[^0-9]', ''), 1, 1)")) @db.VarChar(20)
 
   @@index([deleted], map: "subject_lecture_deleted_bedc6156_uniq")
   @@index([type_en], map: "subject_lecture_type_en_45ee2d3a_uniq")
@@ -663,6 +663,7 @@ model subject_lecture {
   @@index([year, semester, deleted], map: "subject_lecture_deleted_year_semester_index")
   @@index([semester, year, deleted, type_en, id], map: "subject_lecture_year_semester_deleted_type_en")
   @@index([year, semester, type_en, department_id, deleted], map: "subject_lecture_year_semester_deleted_type_en_department")
+  @@index([year, semester, deleted], map: "subject_lecture_year_semester_deleted_index")
 }
 
 model subject_lecture_professors {
@@ -689,9 +690,9 @@ model subject_professor {
   grade                      Float
   load                       Float
   speech                     Float
+  paper_prof_to_subject_prof paper_prof_to_subject_prof[]
   subject_course_professors  subject_course_professors[]
   subject_lecture_professors subject_lecture_professors[]
-  paper_prof_to_subject_prof paper_prof_to_subject_prof[]
 }
 
 model subject_semester {
@@ -765,7 +766,6 @@ model timetable_timetable {
   session_userprofile              session_userprofile                @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "timetable_timetable_user_id_0d214170_fk_session_userprofile_id")
   timetable_timetable_lectures     timetable_timetable_lectures[]
   timetable_timetable_customblocks timetable_timetable_customblocks[]
-
   @@index([arrange_order], map: "timetable_timetable_arrange_order_84c8935c")
   @@index([semester], map: "timetable_timetable_semester_d8ce5d37_uniq")
   @@index([user_id], map: "timetable_timetable_user_id_0d214170_fk_session_userprofile_id")
@@ -971,10 +971,11 @@ model sync_taken_lectures {
   semester        Int
   student_id      Int
   lecture_id      Int
-  subject_lecture subject_lecture @relation(fields: [lecture_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  subject_lecture subject_lecture @relation(fields: [lecture_id], references: [id], onDelete: Cascade)
 
   @@unique([student_id, lecture_id])
   @@index([year, semester])
+  @@index([lecture_id], map: "sync_taken_lectures_lecture_id_fkey")
 }
 
 model sync_history {
@@ -982,36 +983,42 @@ model sync_history {
   type      SyncType
   startTime DateTime  @default(now()) @db.DateTime(0)
   endTime   DateTime?
+  data      String?   @db.VarChar(500)
   year      Int?
   semester  Int?
-  data      String?   @db.VarChar(500)
 }
 
 model paper_prof_to_subject_prof {
   id                   Int               @id @default(autoincrement())
   subject_professor_id Int
   paper_professor_id   Int
-  subject_professor    subject_professor @relation(fields: [subject_professor_id], references: [id], onUpdate: Restrict)
   paper_professor      paper_professor   @relation(fields: [paper_professor_id], references: [id], onUpdate: Restrict)
+  subject_professor    subject_professor @relation(fields: [subject_professor_id], references: [id], onUpdate: Restrict)
+
+  @@index([paper_professor_id], map: "paper_prof_to_subject_prof_paper_professor_id_fkey")
+  @@index([subject_professor_id], map: "paper_prof_to_subject_prof_subject_professor_id_fkey")
 }
 
 model paper_professor_department {
   id                    Int                @id @default(autoincrement())
   paper_professor_id    Int
-  paper_professor       paper_professor    @relation(fields: [paper_professor_id], references: [id], onUpdate: Restrict)
   subject_department_id Int
+  paper_professor       paper_professor    @relation(fields: [paper_professor_id], references: [id], onUpdate: Restrict)
   subject_department    subject_department @relation(fields: [subject_department_id], references: [id], onUpdate: Restrict)
+
+  @@index([paper_professor_id], map: "paper_professor_department_paper_professor_id_fkey")
+  @@index([subject_department_id], map: "paper_professor_department_subject_department_id_fkey")
 }
 
 model paper_professor {
   id                         Int                          @id @default(autoincrement())
-  prof_name                  String?                      @db.VarChar(255)
   department                 String?                      @db.VarChar(60)
-  orcid_id                   String?                      @db.VarChar(20)
-  rid                        String?                      @db.VarChar(20)
-  lab_link                   String?                      @db.VarChar(255)
-  first_journal_title        String?                      @db.VarChar(255)
   first_conference_title     String?                      @db.VarChar(255)
+  first_journal_title        String?                      @db.VarChar(255)
+  lab_link                   String?                      @db.VarChar(255)
+  orcid_id                   String?                      @db.VarChar(20)
+  prof_name                  String?                      @db.VarChar(255)
+  rid                        String?                      @db.VarChar(20)
   papers                     paper[]
   prof_names_to_prof_link    paper_prof_to_subject_prof[]
   paper_professor_department paper_professor_department[]
@@ -1024,27 +1031,29 @@ model paper {
   abstract         String?          @db.Text
   keywords         String?          @db.Text
   doi              String?          @db.VarChar(100)
+  pdf_link         String?          @db.VarChar(300)
+  xml_link         String?          @db.VarChar(255)
+  aggregationType  String?          @db.VarChar(30)
+  article_number   String?          @db.VarChar(50)
+  cited_count      Float?
+  citedby_count    Float?
   coverDate        DateTime?        @db.Date
   coverDisplayDate String?          @db.VarChar(100)
-  publicationName  String?          @db.VarChar(500)
-  issn             String?          @db.VarChar(10)
-  source_id        Float?
-  eIssn            String?          @db.VarChar(10)
-  aggregationType  String?          @db.VarChar(30)
-  volume           String?          @db.VarChar(100)
-  issueIdentifier  String?          @db.VarChar(20)
-  article_number   String?          @db.VarChar(50)
-  pageRange        String?          @db.VarChar(20)
   description      String?          @db.Text
-  citedby_count    Float?
-  source_title     String?          @db.VarChar(255)
-  publish_year     Float?
-  publish_month    String?          @db.VarChar(8)
+  eIssn            String?          @db.VarChar(10)
+  issn             String?          @db.VarChar(10)
+  issueIdentifier  String?          @db.VarChar(20)
+  pageRange        String?          @db.VarChar(20)
   page_range       String?          @db.VarChar(20)
-  cited_count      Float?
-  xml_link         String?          @db.VarChar(255)
-  pdf_link         String?          @db.VarChar(300)
+  publicationName  String?          @db.VarChar(500)
+  publish_month    String?          @db.VarChar(8)
+  publish_year     Float?
+  source_id        Float?
+  source_title     String?          @db.VarChar(255)
+  volume           String?          @db.VarChar(100)
   professor        paper_professor? @relation(fields: [professor_id], references: [id], onUpdate: Restrict)
+
+  @@index([professor_id], map: "paper_professor_id_fkey")
 }
 
 enum SyncType {

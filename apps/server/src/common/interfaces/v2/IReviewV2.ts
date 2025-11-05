@@ -121,4 +121,56 @@ export namespace IReviewV2 {
     @ApiProperty({ type: Number })
     id!: number
   }
+
+  export class UpdateDto {
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    @Validate(StringStripLength)
+    content!: string
+
+    @ApiProperty()
+    @IsNumber()
+    @IsNotEmpty()
+    @Min(0)
+    @Max(5)
+    @Type(() => Number)
+    grade!: number
+
+    @ApiProperty()
+    @IsNumber()
+    @IsNotEmpty()
+    @Min(0)
+    @Max(5)
+    @Type(() => Number)
+    load!: number
+
+    @ApiProperty()
+    @IsNumber()
+    @IsNotEmpty()
+    @Min(0)
+    @Max(5)
+    @Type(() => Number)
+    speech!: number
+  }
+
+  export class UpdateResponseDto {
+    @ApiProperty()
+    @IsNumber()
+    @IsNotEmpty()
+    id!: number
+  }
+
+  export class PatchLikedDto {
+    @ApiProperty()
+    @IsNumber()
+    @IsNotEmpty()
+    reviewId!: number
+
+    @ApiProperty({ enum: ['like', 'unlike'] })
+    @IsString()
+    @IsNotEmpty()
+    @IsIn(['like', 'unlike'])
+    action!: 'like' | 'unlike'
+  }
 }
