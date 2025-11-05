@@ -56,18 +56,7 @@ export class userV2Service {
     const name = `${user.first_name} ${user.last_name}`
     const mail = user.email || ''
     const studentNumber = parseInt(user.student_id)
-    const rawDegree = user.degree || 'null'
-    let degree: string | null = null
-    const degreeNum = rawDegree !== null ? Number(rawDegree) : null
-    if (degreeNum === 0) {
-      degree = '학사과정'
-    }
-    else if (degreeNum === 1) {
-      degree = '석사과정'
-    }
-    else if (degreeNum === 2) {
-      degree = '박사과정'
-    }
+    const { degree } = user
     const [favoriteDepartments, majors] = await Promise.all([
       this.departmentRepository.getFavoriteDepartments(user),
       this.departmentRepository.getMajors(user),
