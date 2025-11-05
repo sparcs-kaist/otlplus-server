@@ -1,6 +1,7 @@
 import {
-  Body, Controller, Delete, Get, Headers, Param, ParseIntPipe, Patch, Post, Query,
+  Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query,
 } from '@nestjs/common'
+import { GetLanguage, Language } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
 import { toJsonTimetableV2 } from '@otl/server-nest/common/serializer/v2/timetable.serializer'
@@ -25,9 +26,9 @@ export class TimetablesControllerV2 {
   async createTimetable(
     @GetUser() user: session_userprofile,
     @Body() body: ITimetableV2.CreateReqDto,
-    @Headers('Accept-Language') acceptLanguage: string,
+    @GetLanguage() language: Language,
   ): Promise<ITimetableV2.CreateResDto> {
-    return await this.timetablesService.createTimetable(user, body, acceptLanguage)
+    return await this.timetablesService.createTimetable(user, body, language)
   }
 
   @Delete()
@@ -50,9 +51,9 @@ export class TimetablesControllerV2 {
   async getTimetable(
     @Param('timetableId', ParseIntPipe) timetableId: number,
     @GetUser() user: session_userprofile,
-    @Headers('Accept-Language') acceptLanguage: string,
+    @GetLanguage() language: Language,
   ): Promise<ITimetableV2.GetResDto> {
-    return await this.timetablesService.getTimetable(timetableId, user, acceptLanguage)
+    return await this.timetablesService.getTimetable(timetableId, user, language)
   }
 
   @Patch('/:timetableId')

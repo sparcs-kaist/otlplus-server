@@ -237,6 +237,21 @@ async function main() {
 
           if (!deco) return
           const dName = deco.getName().toLowerCase() // query, body, param
+
+          // === GetLanguage decorator detection ===
+          // NOTE: We check by decorator name directly ("GetLanguage").
+          // Also, ignore the normal process below and just inject header param.
+          if (deco.getName() === 'GetLanguage') {
+            // Inject accept-language header parameter if not already pushed
+            parameters.push({
+              name: 'accept-language',
+              in: 'header',
+              required: false,
+              schema: { type: 'string', enum: ['en', 'ko'] },
+              description: 'en/ko (기본: ko). 언어 헤더 파라미터',
+            })
+            return
+          }
           if (!['query', 'param', 'body'].includes(dName)) {
             return
           }

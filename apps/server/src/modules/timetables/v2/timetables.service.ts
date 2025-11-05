@@ -2,6 +2,7 @@ import {
   BadRequestException, ForbiddenException, Inject, Injectable, UnauthorizedException,
 } from '@nestjs/common'
 import { Transactional } from '@nestjs-cls/transactional'
+import { Language } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
 import { toJsonTimetableV2WithLectures } from '@otl/server-nest/common/serializer/v2/timetable.serializer'
 import { TIMETABLE_MQ, TimetableMQ } from '@otl/server-nest/modules/timetables/domain/out/TimetableMQ'
@@ -31,7 +32,7 @@ export class TimetablesServiceV2 {
   async createTimetable(
     user: session_userprofile,
     body: ITimetableV2.CreateReqDto,
-    acceptLanguage?: string,
+    language: Language,
   ): Promise<ITimetableV2.CreateResDto> {
     const {
       userId, year, semester, lectureIds,
@@ -67,7 +68,6 @@ export class TimetablesServiceV2 {
       logger.error('Failed to publish lecture num update', error)
     })
 
-    const language = this.parseAcceptLanguage(acceptLanguage)
     return toJsonTimetableV2WithLectures(createdTimetable, language)
   }
 
@@ -224,7 +224,7 @@ export class TimetablesServiceV2 {
   }
 
   @Transactional()
-  async getTimetable(id: number, user: session_userprofile, acceptLanguage?: string): Promise<ITimetableV2.GetResDto> {
+  async getTimetable(id: number, user: session_userprofile, language: Language): Promise<ITimetableV2.GetResDto> {
     try {
       if (id === undefined) {
         throw new BadRequestException('id of timetable is required')
@@ -233,10 +233,6 @@ export class TimetablesServiceV2 {
       if (timetable.user_id !== user.id) {
         throw new UnauthorizedException('Current user does not match owner of requested timetable')
       }
-
-      // Parse Accept-Language header if provided
-      const language = this.parseAcceptLanguage(acceptLanguage)
-      console.log('language', language)
 
       return toJsonTimetableV2WithLectures(timetable, language)
     }
@@ -249,16 +245,6 @@ export class TimetablesServiceV2 {
       }
       throw error
     }
-  }
-
-  private parseAcceptLanguage(acceptLanguage?: string): string {
-    console.log('acceptLanguage', acceptLanguage)
-    if (!acceptLanguage) {
-      return 'kr' // default language
-    }
-
-    // Simple check: if header contains 'en', return 'en', otherwise 'kr'
-    return acceptLanguage.toLowerCase().includes('en') ? 'en' : 'kr'
   }
 
   @Transactional()

@@ -33,7 +33,7 @@ export class ReviewsV2Service {
   async getReviewsV2(
     reviewsParam: IReviewV2.QueryDto,
     user: session_userprofile | null,
-    language: string = 'kr',
+    language: string = 'ko',
   ): Promise<IReviewV2.GetResponseDto> {
     const MAX_LIMIT = 50
     const DEFAULT_ORDER = ['-written_datetime', '-id']
@@ -236,5 +236,80 @@ export class ReviewsV2Service {
     }
 
     return review
+  }
+
+  @Transactional()
+  async updateReviewV2(
+    reviewId: number,
+    reviewBody: IReviewV2.UpdateDto,
+    user: session_userprofile,
+  ): Promise<IReviewV2.UpdateResponseDto> {
+    const review = await this.reviewsRepository.getReviewById(reviewId)
+    if (!review) {
+      throw new HttpException('Review not found', HttpStatus.NOT_FOUND)
+    }
+
+    if (review.writer_id !== user.id) {
+      throw new HttpException('Current user id is not matched with review writer id', HttpStatus.BAD_REQUEST)
+    }
+
+    if (review.is_deleted) {
+      throw new HttpException('Target review deleted by admin', HttpStatus.BAD_REQUEST)
+    }
+
+    const updatedReview = await this.reviewsRepository.updateReview(
+      review.id,
+      reviewBody.content,
+      reviewBody.grade,
+      reviewBody.load,
+      reviewBody.speech,
+    )
+
+    await Promise.all([
+      this.reviewMQ.publishCourseScoreUpdate(updatedReview.course_id),
+      this.reviewMQ.publishLectureScoreUpdate(updatedReview.lecture_id),
+      ...updatedReview.lecture.subject_lecture_professors.map((professor) => this.reviewMQ.publishProfessorScoreUpdate(professor.id)),
+    ]).catch((e) => {
+      logger.error(`Error while publishing review score update: ${e.message}`, e)
+    })
+
+    return { id: updatedReview.id }
+  }
+
+  @Transactional()
+  async updateReviewLiked(
+    body: IReviewV2.PatchLikedDto,
+    user: session_userprofile,
+  ): Promise<IReviewV2.UpdateResponseDto> {
+    const review = await this.reviewsRepository.getReviewById(body.reviewId)
+    if (!review) {
+      throw new HttpException('Can\'t find review', HttpStatus.BAD_REQUEST)
+    }
+
+    const alreadyLiked = await this.reviewsRepository.isLiked(body.reviewId, user.id)
+
+    // todo: 중복 요청 오류 처리할지 말지
+    switch (body.action) {
+      case 'like':
+        if (alreadyLiked) {
+          throw new HttpException('Requested for like, but already liked', HttpStatus.BAD_REQUEST)
+        }
+        await this.reviewsRepository.upsertReviewVote(body.reviewId, user.id)
+        break
+      case 'unlike':
+        if (!alreadyLiked) {
+          throw new HttpException('Requested for unlike, but not liked yet', HttpStatus.BAD_REQUEST)
+        }
+        await this.reviewsRepository.deleteReviewVote(body.reviewId, user.id)
+        break
+      default:
+        throw new HttpException(`Invalid action: ${body.action}`, HttpStatus.BAD_REQUEST)
+    }
+
+    await this.reviewMQ.publishReviewLikeUpdate(body.reviewId).catch((e) => {
+      logger.error(`Error while publishing review like update: ${e.message}`, e)
+    })
+
+    return { id: body.reviewId }
   }
 }

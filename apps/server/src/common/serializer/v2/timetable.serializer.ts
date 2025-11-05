@@ -1,3 +1,4 @@
+import { Language } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
 import { toJsonClasstime } from '@otl/server-nest/common/serializer/classtime.serializer'
 import { toJsonExamtime } from '@otl/server-nest/common/serializer/examtime.serializer'
@@ -16,7 +17,7 @@ export const toJsonTimetableV2 = (timetable: ETimetable.Basic): ITimetableV2.Res
 
 export const toJsonTimetableV2WithLectures = (
   timetable: ETimetable.Details,
-  language: string,
+  language: Language,
 ): ITimetableV2.GetResDto => ({
   id: timetable.id,
   name: timetable.name ?? '',
