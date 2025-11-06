@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { Transactional } from '@nestjs-cls/transactional'
-import { ICourseV2 } from '@otl/server-nest/common/interfaces'
-import { IUserV2 } from '@otl/server-nest/common/interfaces/v2'
+import { Language } from '@otl/server-nest/common/decorators/get-language.decorator'
+import { ICourseV2, IUserV2 } from '@otl/server-nest/common/interfaces/v2'
 import { IReviewV2 } from '@otl/server-nest/common/interfaces/v2/IReviewV2'
-import { toJsonReviewV2 } from '@otl/server-nest/common/serializer/v2/review.v2.serializer'
+import { toJsonReviewV2 } from '@otl/server-nest/common/serializer/v2/review.serializer'
 import { toJsonUserLecturesV2, toJsonWishlistV2 } from '@otl/server-nest/common/serializer/v2/user.serializer'
 import { session_userprofile } from '@prisma/client'
 
@@ -37,9 +37,7 @@ export class UserServiceV2 {
     private readonly departmentRepository: DepartmentRepository,
   ) {}
 
-  async getUserLectures(user: session_userprofile, acceptLanguage?: string): Promise<IUserV2.LecturesResponse> {
-    const language = this.parseAcceptLanguage(acceptLanguage)
-
+  async getUserLectures(user: session_userprofile, language: Language): Promise<IUserV2.LecturesResponse> {
     // Fetch data in parallel
     const [takenLectures, writtenReviews] = await Promise.all([
       this.lectureRepository.getTakenLectures(user),
@@ -57,9 +55,7 @@ export class UserServiceV2 {
     return toJsonUserLecturesV2(takenLectures, reviewedLectureIds, totalLikesCount, language)
   }
 
-  async getWishlist(user: session_userprofile, acceptLanguage?: string): Promise<IUserV2.WishlistResponse> {
-    const language = this.parseAcceptLanguage(acceptLanguage)
-
+  async getWishlist(user: session_userprofile, language: Language): Promise<IUserV2.WishlistResponse> {
     // Fetch wishlist and taken lectures in parallel
     const [wishlist, takenLectures] = await Promise.all([
       this.wishlistRepository.getOrCreateWishlist(user.id),
@@ -164,15 +160,5 @@ export class UserServiceV2 {
     const MAX_LIMIT = 100
     const likedRaw = await this.reviewsRepository.getLikedReviews(user.id, DEFAULT_ORDER, 0, MAX_LIMIT)
     return likedRaw.map((review) => toJsonReviewV2(review, null, language))
-  }
-
-  // TODO; 공통화 필요
-  private parseAcceptLanguage(acceptLanguage?: string): string {
-    if (!acceptLanguage) {
-      return 'kr'
-    }
-
-    // Simple check: if header contains 'en', return 'en', otherwise 'kr'
-    return acceptLanguage.toLowerCase().includes('en') ? 'en' : 'kr'
   }
 }

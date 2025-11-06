@@ -3,7 +3,6 @@ import {
   Body,
   Controller,
   Get,
-  Headers,
   HttpException,
   HttpStatus,
   Param,
@@ -12,10 +11,9 @@ import {
   Put,
   UnauthorizedException,
 } from '@nestjs/common'
-import { GetLanguage } from '@otl/server-nest/common/decorators/get-language.decorator'
+import { GetLanguage, Language } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
-import { ICourseV2 } from '@otl/server-nest/common/interfaces'
-import { IUserV2 } from '@otl/server-nest/common/interfaces/v2'
+import { ICourseV2, IUserV2 } from '@otl/server-nest/common/interfaces/v2'
 import { IReviewV2 } from '@otl/server-nest/common/interfaces/v2/IReviewV2'
 import { session_userprofile } from '@prisma/client'
 
@@ -63,26 +61,26 @@ export class UserControllerV2 {
   async getUserLectures(
     @Param('userId', ParseIntPipe) userId: number,
     @GetUser() user: session_userprofile,
-    @Headers('Accept-Language') acceptLanguage: string,
+    @GetLanguage() language: Language,
   ): Promise<IUserV2.LecturesResponse> {
     if (userId !== user.id) {
       throw new UnauthorizedException('Current user does not match userId')
     }
 
-    return await this.userServiceV2.getUserLectures(user, acceptLanguage)
+    return await this.userServiceV2.getUserLectures(user, language)
   }
 
   @Get(':userId/wishlist')
   async getWishlist(
     @Param('userId', ParseIntPipe) userId: number,
     @GetUser() user: session_userprofile,
-    @Headers('Accept-Language') acceptLanguage: string,
+    @GetLanguage() language: Language,
   ): Promise<IUserV2.WishlistResponse> {
     if (userId !== user.id) {
       throw new UnauthorizedException('Current user does not match userId')
     }
 
-    return await this.userServiceV2.getWishlist(user, acceptLanguage)
+    return await this.userServiceV2.getWishlist(user, language)
   }
 
   @Patch(':userId/wishlist')

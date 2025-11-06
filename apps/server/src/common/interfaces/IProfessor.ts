@@ -5,8 +5,4 @@ export namespace IProfessor {
     professor_id: number
     review_total_weight: number
   }
-  export interface Simple {
-    id: number
-    name: string
-  }
 }

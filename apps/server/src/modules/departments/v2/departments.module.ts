@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common'
 
 import { PrismaModule } from '@otl/prisma-client/prisma.module'
 
-import { DepartmentsControllerV2 } from './departments.v2.controller'
-import { DepartmentsServiceV2 } from './departments.v2.service'
+import { DepartmentsControllerV2 } from './departments.controller'
+import { DepartmentsServiceV2 } from './departments.service'
 
 @Module({
   imports: [PrismaModule],

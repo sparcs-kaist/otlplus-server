@@ -3,7 +3,7 @@ import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator'
 import { ISemester } from '@otl/server-nest/common/interfaces'
 import { toJsonSemester } from '@otl/server-nest/common/serializer/semester.serializer'
 
-import { SemestersServiceV2 } from './semesters.v2.service'
+import { SemestersServiceV2 } from './semesters.service'
 
 @Controller('api/v2/semesters')
 export class SemestersControllerV2 {

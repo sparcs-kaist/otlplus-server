@@ -267,13 +267,27 @@ async function main() {
             })
           }
           else if (dName === 'param') {
+            // Try to infer schema type from TS type or pipes like ParseIntPipe
+            const callExpr = deco.getCallExpression()
+            const decoArgs = callExpr ? callExpr.getArguments() : []
+            const hasParseIntPipe = decoArgs.some((arg) => arg.getText().includes('ParseIntPipe'))
+
+            let inferredType: any = { type: 'string' }
+            if (hasParseIntPipe) {
+              inferredType = { type: 'integer' }
+            }
+            else if (paramType.isNumber()) {
+              inferredType = { type: 'number' }
+            }
+            else if (paramType.isBoolean()) {
+              inferredType = { type: 'boolean' }
+            }
+
             parameters.push({
               name: param.getName(),
-              in: 'path', // query, param
+              in: 'path',
               required: !param.isOptional(),
-              schema: {
-                type: 'string',
-              },
+              schema: inferredType,
             })
           }
           else {

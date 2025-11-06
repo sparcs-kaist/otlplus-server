@@ -5,8 +5,4 @@ export namespace IDepartment {
     name_en: string
     code: string
   }
-  export interface v2Basic {
-    id: number
-    name: string
-  }
 }

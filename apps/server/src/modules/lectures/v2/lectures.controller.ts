@@ -8,7 +8,7 @@ import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator'
 import { ILectureV2 } from '@otl/server-nest/common/interfaces/v2'
 import { session_userprofile } from '@prisma/client'
 
-import { LecturesServiceV2 } from './lectures.v2.service'
+import { LecturesServiceV2 } from './lectures.service'
 
 @Controller('api/v2/lectures')
 export class LecturesControllerV2 {

@@ -1,6 +1,13 @@
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager'
 import {
-  BadRequestException, Controller, ExecutionContext, Get, Param, Query, UseInterceptors,
+  BadRequestException,
+  Controller,
+  ExecutionContext,
+  Get,
+  Param,
+  ParseIntPipe,
+  Query,
+  UseInterceptors,
 } from '@nestjs/common'
 import { GetLanguage, Language } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
@@ -8,10 +15,10 @@ import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator'
 import { ICourseV2 } from '@otl/server-nest/common/interfaces/v2'
 import { session_userprofile } from '@prisma/client'
 
-import { CoursesServiceV2 } from './courses.v2.service'
+import { CoursesServiceV2 } from './courses.service'
 
 @Controller('api/v2/courses')
-export class CourseV2Controller {
+export class CourseControllerV2 {
   constructor(private readonly coursesService: CoursesServiceV2) {}
 
   private static cacheTTLFactory = (_context: ExecutionContext): number => {
@@ -49,7 +56,7 @@ export class CourseV2Controller {
   }
 
   @Get('/public')
-  @CacheTTL(CourseV2Controller.cacheTTLFactory)
+  @CacheTTL(CourseControllerV2.cacheTTLFactory)
   @UseInterceptors(CacheInterceptor)
   @Public()
   async getCoursesPublic(
@@ -60,16 +67,14 @@ export class CourseV2Controller {
     return courses
   }
 
-  @Get(':id')
+  @Get(':courseId')
   async getCourseById(
-    @Param('id') id: number,
+    @Param('courseId', ParseIntPipe) courseId: number,
     @GetUser() user: session_userprofile,
     @GetLanguage() language: Language,
   ): Promise<ICourseV2.Detail> {
-    // 숫자 형식이 아닌 경우
-    if (Number.isNaN(id)) throw new BadRequestException('Invalid course id')
     try {
-      return await this.coursesService.getCourseById(id, user, language)
+      return await this.coursesService.getCourseById(courseId, user, language)
     }
     catch (error) {
       if (error === 'Invalid course id') {
@@ -81,15 +86,16 @@ export class CourseV2Controller {
     }
   }
 
-  @Get(':id/public')
-  @CacheTTL(CourseV2Controller.cacheTTLFactory)
+  @Get(':courseId/public')
+  @CacheTTL(CourseControllerV2.cacheTTLFactory)
   @UseInterceptors(CacheInterceptor)
   @Public()
-  async getCourseByIdPublic(@Param('id') id: number, @GetLanguage() language: Language): Promise<ICourseV2.Detail> {
-    // 숫자 형식이 아닌 경우
-    if (Number.isNaN(id)) throw new BadRequestException('Invalid course id')
+  async getCourseByIdPublic(
+    @Param('courseId', ParseIntPipe) courseId: number,
+    @GetLanguage() language: Language,
+  ): Promise<ICourseV2.Detail> {
     try {
-      return await this.coursesService.getCourseById(id, null, language)
+      return await this.coursesService.getCourseById(courseId, null, language)
     }
     catch (error) {
       if (error === 'Invalid course id') {
