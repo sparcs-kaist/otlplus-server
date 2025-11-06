@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client'
 import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 
+import { ELecture } from '../entities/ELecture'
 import { ELectureV2 } from '../entities/ELectureV2'
 import { EProfessorV2 } from '../entities/EProfessorV2'
 import { CourseRepositoryV2 } from './course.v2.repository'
@@ -207,5 +208,26 @@ export class LectureRepositoryV2 {
       const exam = etByLecture.get(id) ?? null
       return [id, ctByLecture.get(id) ?? [], exam as ELectureV2.ExamTime | null, profByLecture.get(id) ?? []]
     })
+  }
+
+  // year, semester 필터링 버전 + userId 만으로 조회
+  async getTakenLecturesBySemester(userId: number, year: number, semester: number): Promise<ELecture.Details[]> {
+    const lectures = (
+      await this.prismaRead.session_userprofile_taken_lectures.findMany({
+        where: {
+          userprofile_id: userId,
+          lecture: {
+            year,
+            semester,
+          },
+        },
+        include: {
+          lecture: {
+            include: ELecture.Details.include,
+          },
+        },
+      })
+    ).map((takenLecture) => takenLecture.lecture)
+    return lectures
   }
 }

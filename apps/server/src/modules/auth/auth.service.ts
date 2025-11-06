@@ -59,6 +59,18 @@ export class AuthService {
 
     // kaist_v2_info에서 기존 ssoLogin 규칙을 그대로 반영
     const v2 = sso.kaist_v2_info ?? null
+    const rawDegree = sso.kaist_v2_info?.std_prog_code ?? sso.kaist_info?.ku_acad_prog_code ?? null
+    let degree: string | null = null
+    const degreeNum = rawDegree !== null ? Number(rawDegree) : null
+    if (degreeNum === 0) {
+      degree = '학사과정'
+    }
+    else if (degreeNum === 1) {
+      degree = '석사과정'
+    }
+    else if (degreeNum === 2) {
+      degree = '박사과정'
+    }
     const studentId = (v2?.std_no ?? '') as string
     const departmentId = v2?.std_dept_id != null && v2?.std_dept_id !== '' ? Number(v2.std_dept_id) : undefined
     const status = (v2?.std_status_kor ?? null) as string | null
@@ -76,6 +88,7 @@ export class AuthService {
       last_login: new Date(),
       date_joined: new Date(),
       refresh_token: null,
+      degree,
       // 관계들은 생략(필요시 나중에 채움)
       // department는 스키마가 nullable/옵션이므로 값 있을 때만 설정
       ...(departmentId
@@ -102,6 +115,7 @@ export class AuthService {
       last_login: baseData.last_login,
       email: baseData.email,
       language: baseData.language,
+      degree: baseData.degree,
       // sid는 null 유지 (이 엔드포인트에서는 sid를 건드리지 않음)
       ...(departmentId ? { department: { connect: { id: departmentId } } } : {}), // 값이 없으면 부서 갱신 스킵
     }
@@ -178,6 +192,18 @@ export class AuthService {
 
     const salt = await bcrypt.genSalt(Number(process.env.saltRounds))
     const encryptedRefreshToken = await bcrypt.hash(refreshToken, salt)
+    const rawDegree = ssoProfile.kaist_v2_info?.std_prog_code ?? ssoProfile.kaist_info?.ku_acad_prog_code ?? null
+    let degree: string | null = null
+    const degreeNum = rawDegree !== null ? Number(rawDegree) : null
+    if (degreeNum === 0) {
+      degree = '학사과정'
+    }
+    else if (degreeNum === 1) {
+      degree = '석사과정'
+    }
+    else if (degreeNum === 2) {
+      degree = '박사과정'
+    }
 
     if (!user) {
       user = await this.createUser(
@@ -191,6 +217,7 @@ export class AuthService {
         status,
         kaist_id,
         encryptedRefreshToken,
+        degree,
       )
       await this.syncTakenLecturesService.repopulateTakenLectureForStudent(user.id)
     }
@@ -206,6 +233,7 @@ export class AuthService {
         kaist_id,
         last_login: new Date(),
         refresh_token: encryptedRefreshToken,
+        degree,
       }
       user = await this.updateUser(user.id, updateData)
       if (prev_student_id !== studentId) {
@@ -291,6 +319,7 @@ export class AuthService {
     status: string | null,
     kaistuid: string | null,
     refreshToken: string,
+    degree: string | null,
     lastLogin: Date = new Date(),
   ): Promise<session_userprofile> {
     const user = {
@@ -306,6 +335,7 @@ export class AuthService {
       status,
       kaist_id: kaistuid,
       refresh_token: refreshToken,
+      degree,
     }
     return await this.userRepository.createUser(user)
   }

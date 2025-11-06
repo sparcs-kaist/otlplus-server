@@ -7,10 +7,20 @@ import {
 } from '@otl/server-nest/common/interfaces/validators.decorator'
 import { Transform, Type } from 'class-transformer'
 import {
-  IsArray, IsNotEmpty, IsNumber, IsOptional, IsString,
+  IsArray,
+  IsBoolean,
+  IsIn,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+  ValidateNested,
 } from 'class-validator'
 
-export namespace IUser {
+import { IDepartmentV2 } from './IDepartmentV2'
+
+export namespace IUserV2 {
   export interface SsoInfoOneApp {
     sso_info: string
   }
@@ -77,9 +87,9 @@ export namespace IUser {
     name: string
     mail: string
     studentNumber: number
-    degree: string
-    majorDepartments: IDepartment.v2Basic[]
-    interestedDepartments: IDepartment.v2Basic[]
+    degree: string | null
+    majorDepartments: IDepartmentV2.Basic[]
+    interestedDepartments: IDepartmentV2.Basic[]
   }
 
   export class TokenDto {
@@ -98,9 +108,102 @@ export namespace IUser {
     student_id: string
     firstName: string
     lastName: string
-    department: IDepartment.Basic | null
-    majors: IDepartment.Basic[]
-    departments: IDepartment.Basic[]
-    favorite_departments: IDepartment.Basic[]
+    department: IDepartmentV2.Basic | null
+    majors: IDepartmentV2.Basic[]
+    departments: IDepartmentV2.Basic[]
+    favorite_departments: IDepartmentV2.Basic[]
+  }
+
+  export class ProfessorItem {
+    @IsNumber()
+    @Min(0)
+    id!: number
+
+    @IsString()
+    name!: string
+  }
+
+  export class LectureItem {
+    @IsString()
+    name!: string
+
+    @IsString()
+    code!: string
+
+    @IsNumber()
+    @Min(0)
+    courseId!: number
+
+    @IsNumber()
+    @Min(0)
+    lectureId!: number
+
+    @IsArray()
+    @ValidateNested({ each: true })
+    professors!: ProfessorItem[]
+
+    @IsBoolean()
+    written!: boolean
+  }
+
+  export class LecturesWrap {
+    @IsNumber()
+    @Min(0)
+    year!: number
+
+    @IsNumber()
+    @Min(1)
+    semester!: number
+
+    @IsArray()
+    @ValidateNested({ each: true })
+    lectures!: LectureItem[]
+  }
+
+  export class LecturesResponse {
+    @IsNumber()
+    @Min(0)
+    totalLecturesCount!: number
+
+    @IsNumber()
+    @Min(0)
+    reviewedLecturesCount!: number
+
+    @IsNumber()
+    @Min(0)
+    totalLikesCount!: number
+
+    @IsArray()
+    @ValidateNested({ each: true })
+    lecturesWrap!: LecturesWrap[]
+  }
+
+  export interface WishlistLectureItem {
+    id: number
+    name: string
+    code: string
+    classNo: string
+    professors: ProfessorItem[]
+  }
+
+  export interface WishlistCourseItem {
+    name: string
+    code: string
+    type: string
+    completed: boolean
+    lectures: WishlistLectureItem[]
+  }
+
+  export interface WishlistResponse {
+    courses: WishlistCourseItem[]
+  }
+
+  export class UpdateWishlistDto {
+    @IsNumber()
+    @Min(0)
+    lectureId!: number
+
+    @IsIn(['add', 'delete'], { message: 'mode must be either "add" or "delete"' })
+    mode!: 'add' | 'delete'
   }
 }

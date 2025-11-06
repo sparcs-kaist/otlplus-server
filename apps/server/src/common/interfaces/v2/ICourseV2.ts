@@ -116,4 +116,12 @@ export namespace ICourseV2 {
     @Transform(({ value }) => parseInt(value))
     limit?: number
   }
+  export interface WritableReview {
+    id: number
+    name: string
+    professor: IProfessorV2.Basic[]
+    year: number
+    semester: number
+    totalRemainingCount: number
+  }
 }
