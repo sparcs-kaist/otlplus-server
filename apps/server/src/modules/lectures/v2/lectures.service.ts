@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { Language } from '@otl/server-nest/common/decorators/get-language.decorator'
-import { ILectureV2 } from '@otl/server-nest/common/interfaces'
+import { ILectureV2 } from '@otl/server-nest/common/interfaces/v2'
 import { session_userprofile } from '@prisma/client'
 
 import { LectureRepositoryV2, PrismaService } from '@otl/prisma-client'

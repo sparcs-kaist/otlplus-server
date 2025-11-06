@@ -1,5 +1,16 @@
 import {
-  Body, Controller, Get, HttpException, HttpStatus, Param, Patch, Post, Put, Query, Req,
+  Body,
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Put,
+  Query,
+  Req,
 } from '@nestjs/common'
 import { GetLanguage } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
@@ -9,11 +20,11 @@ import { IReviewV2 } from '@otl/server-nest/common/interfaces/v2/IReviewV2'
 import { session_userprofile } from '@prisma/client'
 import { Request } from 'express'
 
-import { ReviewsV2Service } from './reviews.v2.service'
+import { ReviewsServiceV2 } from './reviews.service'
 
 @Controller('api/v2/reviews')
-export class ReviewsV2Controller {
-  constructor(private readonly reviewsV2Service: ReviewsV2Service) {}
+export class ReviewsControllerV2 {
+  constructor(private readonly reviewsV2Service: ReviewsServiceV2) {}
 
   @Public()
   @Get()
@@ -51,7 +62,7 @@ export class ReviewsV2Controller {
 
   @Put('/:reviewId')
   async updateReviewV2(
-    @Param('reviewId') reviewId: number,
+    @Param('reviewId', ParseIntPipe) reviewId: number,
     @Body() reviewBody: IReviewV2.UpdateDto,
     @GetUser() user: session_userprofile,
   ): Promise<IReviewV2.UpdateResponseDto> {
@@ -64,7 +75,7 @@ export class ReviewsV2Controller {
 
   @Patch('/:reviewId/liked')
   async patchReviewLike(
-    @Param('reviewId') reviewId: number,
+    @Param('reviewId', ParseIntPipe) reviewId: number,
     @Body() body: IReviewV2.PatchLikedDto,
     @GetUser() user: session_userprofile,
   ): Promise<IReviewV2.UpdateResponseDto> {

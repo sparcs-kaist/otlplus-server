@@ -31,13 +31,16 @@ import { JwtCookieGuard } from './modules/auth/guard/jwt-cookie.guard'
 import { MockAuthGuard } from './modules/auth/guard/mock-auth-guard'
 import { CoursesModule } from './modules/courses/courses.module'
 import { DepartmentsModule } from './modules/departments/departments.module'
+import { DepartmentsModuleV2 } from './modules/departments/v2/departments.module'
 import { FeedsModule } from './modules/feeds/feeds.module'
 import { LecturesModule } from './modules/lectures/lectures.module'
 import { NoticesModule } from './modules/notices/notices.module'
 import { PlannersModule } from './modules/planners/planners.module'
 import { RatesModule } from './modules/rates/rates.module'
 import { ReviewsModule } from './modules/reviews/reviews.module'
+import { SchedulesModule } from './modules/schedules/schedules.module'
 import { SemestersModule } from './modules/semesters/semesters.module'
+import { SemestersModuleV2 } from './modules/semesters/v2/semesters.module'
 import { SessionModule } from './modules/session/session.module'
 import { ShareModule } from './modules/share/share.module'
 import { StatusModule } from './modules/status/status.module'
@@ -83,7 +86,9 @@ async function createCacheStoreWithFallback(): Promise<Keyv> {
     LecturesModule,
     ReviewsModule,
     UserModule,
+    SchedulesModule,
     SemestersModule,
+    SemestersModuleV2,
     TimetablesModule,
     TimetablesModuleV2,
     RatesModule,
@@ -93,6 +98,7 @@ async function createCacheStoreWithFallback(): Promise<Keyv> {
     NoticesModule,
     SessionModule,
     DepartmentsModule,
+    DepartmentsModuleV2,
     PlannersModule,
     TracksModule,
     ShareModule,

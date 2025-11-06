@@ -3,4 +3,10 @@ export namespace IDepartmentV2 {
     id: number
     name: string
   }
+
+  export interface Detail {
+    id: number
+    name: string
+    code: string
+  }
 }

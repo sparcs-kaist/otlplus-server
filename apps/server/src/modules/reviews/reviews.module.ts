@@ -8,19 +8,19 @@ import { PrismaModule } from '@otl/prisma-client/prisma.module'
 import { UserService } from '../user/user.service'
 import { ReviewsController } from './reviews.controller'
 import { ReviewsService } from './reviews.service'
-import { ReviewsV2Controller } from './v2/reviews.v2.controller'
-import { ReviewsV2Service } from './v2/reviews.v2.service'
+import { ReviewsControllerV2 } from './v2/reviews.controller'
+import { ReviewsServiceV2 } from './v2/reviews.service'
 
 @Module({
   imports: [PrismaModule, RmqModule, RmqConnectionModule.register()],
-  controllers: [ReviewsController, ReviewsV2Controller],
+  controllers: [ReviewsController, ReviewsControllerV2],
   providers: [
     {
       provide: REVIEW_MQ,
       useClass: StatisticsUpdatePublisher,
     },
     ReviewsService,
-    ReviewsV2Service,
+    ReviewsServiceV2,
     UserService,
   ],
 })

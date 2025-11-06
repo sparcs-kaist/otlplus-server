@@ -1,11 +1,11 @@
 import { ApiPropertyOptional } from '@nestjs/swagger'
-import { IProfessorV2 } from '@otl/server-nest/common/interfaces/IProfessorV2'
 import { Transform } from 'class-transformer'
 import {
   IsArray, IsIn, IsInt, IsNumber, IsOptional, IsString,
 } from 'class-validator'
 
 import { IDepartmentV2 } from './IDepartmentV2'
+import { IProfessorV2 } from './IProfessorV2'
 
 export type CourseOrderQuery = 'code' | 'popular' | 'studentCount'
 export type level = 'ALL' | '100' | '200' | '300' | '400' | '500' | '600' | '700' | '800' | '900'

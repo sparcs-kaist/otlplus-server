@@ -1,3 +1,4 @@
+export * from './ICourseV2'
 export * from './IDepartmentV2'
 export * from './ILectureV2'
 export * from './IProfessorV2'

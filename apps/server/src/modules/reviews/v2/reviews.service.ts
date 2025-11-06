@@ -3,15 +3,14 @@ import {
 } from '@nestjs/common'
 import { Transactional } from '@nestjs-cls/transactional'
 import { IReviewV2 } from '@otl/server-nest/common/interfaces/v2'
-import { toJsonReviewV2 } from '@otl/server-nest/common/serializer/v2/review.v2.serializer'
+import { toJsonReviewV2 } from '@otl/server-nest/common/serializer/v2/review.serializer'
 import { UNDERGRADUATE_DEPARTMENTS } from '@otl/server-nest/modules/departments/departments.service'
 import { REVIEW_MQ, ReviewMQ } from '@otl/server-nest/modules/reviews/domain/out/ReviewMQ'
-import { review_review, session_userprofile, subject_department } from '@prisma/client'
 
 import logger from '@otl/common/logger/logger'
 import { getRandomChoice } from '@otl/common/utils/util'
 
-import { EReview } from '@otl/prisma-client'
+import { EDepartment, EReview, EUser } from '@otl/prisma-client'
 import {
   CourseRepository,
   DepartmentRepository,
@@ -20,7 +19,7 @@ import {
 } from '@otl/prisma-client/repositories'
 
 @Injectable()
-export class ReviewsV2Service {
+export class ReviewsServiceV2 {
   constructor(
     private readonly reviewsRepository: ReviewsRepository,
     private readonly lectureRepository: LectureRepository,
@@ -32,14 +31,14 @@ export class ReviewsV2Service {
 
   async getReviewsV2(
     reviewsParam: IReviewV2.QueryDto,
-    user: session_userprofile | null,
+    user: EUser.Basic | null,
     language: string = 'ko',
   ): Promise<IReviewV2.GetResponseDto> {
     const MAX_LIMIT = 50
     const DEFAULT_ORDER = ['-written_datetime', '-id']
 
-    let reviews: review_review[] = []
-    let department: subject_department | null = null
+    let reviews: EReview.Basic[] = []
+    let department: EDepartment.Basic | null = null
 
     // 모드에 따른 리뷰 조회
     switch (reviewsParam.mode) {
@@ -136,9 +135,9 @@ export class ReviewsV2Service {
 
   private async getPopularFeedReviews(
     reviewsParam: IReviewV2.QueryDto,
-    user: session_userprofile | null,
+    user: EUser.Basic | null,
     maxLimit: number,
-  ): Promise<{ reviews: review_review[], department: subject_department | null }> {
+  ): Promise<{ reviews: EReview.Basic[], department: EDepartment.Basic | null }> {
     // randomly select between HSS or other departments
     const isHSS = Math.random() < 0.2
     if (isHSS) {
@@ -154,7 +153,7 @@ export class ReviewsV2Service {
       }
     }
     // 주요 전공을 선택하여 인기 후기를 반환
-    let departments: subject_department[]
+    let departments: EDepartment.Basic[]
     if (user) {
       // 로그인: 관심 전공
       const relatedDepartments = await this.departmentRepository.getRelatedDepartments(user)
@@ -194,7 +193,7 @@ export class ReviewsV2Service {
   }
 
   @Transactional()
-  async createReviewV2(reviewBody: IReviewV2.CreateDto, user: session_userprofile): Promise<EReview.Basic> {
+  async createReviewV2(reviewBody: IReviewV2.CreateDto, user: EUser.Basic): Promise<EReview.Basic> {
     // 해당 강의가 존재하는지 확인
     const lecture = await this.lectureRepository.getLectureDetailById(reviewBody.lectureId)
 
@@ -242,7 +241,7 @@ export class ReviewsV2Service {
   async updateReviewV2(
     reviewId: number,
     reviewBody: IReviewV2.UpdateDto,
-    user: session_userprofile,
+    user: EUser.Basic,
   ): Promise<IReviewV2.UpdateResponseDto> {
     const review = await this.reviewsRepository.getReviewById(reviewId)
     if (!review) {
@@ -277,10 +276,7 @@ export class ReviewsV2Service {
   }
 
   @Transactional()
-  async updateReviewLiked(
-    body: IReviewV2.PatchLikedDto,
-    user: session_userprofile,
-  ): Promise<IReviewV2.UpdateResponseDto> {
+  async updateReviewLiked(body: IReviewV2.PatchLikedDto, user: EUser.Basic): Promise<IReviewV2.UpdateResponseDto> {
     const review = await this.reviewsRepository.getReviewById(body.reviewId)
     if (!review) {
       throw new HttpException('Can\'t find review', HttpStatus.BAD_REQUEST)

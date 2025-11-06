@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { ICourseV2, IProfessorV2 } from '@otl/server-nest/common/interfaces'
+import { ICourseV2, IProfessorV2 } from '@otl/server-nest/common/interfaces/v2'
 import { session_userprofile } from '@prisma/client'
 
 import { ECourseV2 } from '@otl/prisma-client/entities'
