@@ -12,12 +12,66 @@ export class SidHeaderCommand implements AuthCommand {
     private readonly authService: AuthService,
   ) {}
 
+  private isIpInRange(ip: string, cidr: string): boolean {
+    const [range, bits] = cidr.split('/')
+    const mask = ~(2 ** (32 - parseInt(bits)) - 1)
+
+    const ipToInt = (ip: string): number => {
+      return ip.split('.').reduce((int, oct) => (int << 8) + parseInt(oct, 10), 0) >>> 0
+    }
+
+    return (ipToInt(ip) & mask) === (ipToInt(range) & mask)
+  }
+
+  private getClientIp(request: Request): string {
+    // Check for common proxy headers
+    const xForwardedFor = request.headers['x-forwarded-for']
+    if (xForwardedFor) {
+      const ips = typeof xForwardedFor === 'string' ? xForwardedFor.split(',') : xForwardedFor
+      return ips[0].trim()
+    }
+
+    const xRealIp = request.headers['x-real-ip']
+    if (xRealIp && typeof xRealIp === 'string') {
+      return xRealIp.trim()
+    }
+
+    return request.ip || request.socket.remoteAddress || ''
+  }
+
   public async next(context: ExecutionContext, prevResult: AuthResult): Promise<AuthResult> {
     const request = context.switchToHttp().getRequest<Request>()
-    const sid = request.headers['x-auth-sid']
+    const sidHeader = request.headers['x-auth-sid']
 
-    if (typeof sid === 'string') {
-      const user = await this.authService.findBySid(sid)
+    if (typeof sidHeader !== 'string') {
+      return prevResult
+    }
+
+    try {
+      // Parse JSON from header
+      const sidData = JSON.parse(sidHeader)
+      const { studentNo, token } = sidData
+
+      if (!studentNo || !token) {
+        return prevResult
+      }
+
+      // Verify token
+      const expectedToken = process.env.SID_AUTH_TOKEN
+      if (!expectedToken || token !== expectedToken) {
+        return prevResult
+      }
+
+      // Verify IP range
+      const clientIp = this.getClientIp(request)
+      const allowedCidr = '210.117.237.0/24'
+
+      if (!this.isIpInRange(clientIp, allowedCidr)) {
+        return prevResult
+      }
+
+      // Authenticate user
+      const user = await this.authService.findBySid(studentNo)
       if (!user) {
         return prevResult
       }
@@ -28,8 +82,9 @@ export class SidHeaderCommand implements AuthCommand {
         authentication: true,
         authorization: true,
       }
+    } catch (error) {
+      // JSON parse error or other errors - return prevResult
+      return prevResult
     }
-
-    return prevResult
   }
 }
