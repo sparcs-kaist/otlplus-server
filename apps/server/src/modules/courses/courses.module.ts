@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common'
+import { ElasticsearchModule } from '@otl/elasticsearch-client'
+import settings from '@otl/server-nest/settings'
 
 import { PrismaModule } from '@otl/prisma-client/prisma.module'
 
@@ -8,7 +10,7 @@ import { CourseControllerV2 } from './v2/course.controller'
 import { CoursesServiceV2 } from './v2/courses.service'
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, ElasticsearchModule.register(settings().getElasticsearchConfig())],
   controllers: [CourseController, CourseControllerV2],
   providers: [CoursesService, CoursesServiceV2],
 })

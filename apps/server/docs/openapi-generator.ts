@@ -136,6 +136,12 @@ async function main() {
           in: 'header',
           name: 'X-AUTH-SID',
         },
+        elasticsearchApiKey: {
+          type: 'apiKey',
+          in: 'header',
+          name: 'x-elasticsearch-api-key',
+          description: 'Elasticsearch API Key for admin operations',
+        },
       },
     },
     security: [
@@ -145,6 +151,7 @@ async function main() {
         jwtHeaderAccessToken: [],
         jwtHeaderRefreshToken: [],
         sidHeader: [],
+        elasticsearchApiKey: [],
       },
     ],
   }

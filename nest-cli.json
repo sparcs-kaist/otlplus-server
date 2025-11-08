@@ -89,6 +89,15 @@
       "compilerOptions": {
         "tsConfigPath": "libs/redis/tsconfig.lib.json"
       }
+    },
+    "elasticsearch-client": {
+      "type": "library",
+      "root": "libs/elasticsearch-client",
+      "sourceRoot": "libs/elasticsearch-client/src",
+      "entryFile": "index",
+      "compilerOptions": {
+        "tsConfigPath": "libs/elasticsearch-client/tsconfig.lib.json"
+      }
     }
   }
 }

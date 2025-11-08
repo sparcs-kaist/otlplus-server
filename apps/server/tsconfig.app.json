@@ -28,6 +28,8 @@
       "@otl/rmq/*": ["../../libs/rmq/src/*"],
       "@otl/common": ["../../libs/common/src"],
       "@otl/common/*": ["../../libs/common/src/*"],
+      "@otl/elasticsearch-client": ["../../libs/elasticsearch-client/src"],
+      "@otl/elasticsearch-client/*": ["../../libs/elasticsearch-client/src/*"],
       "@otl/scholar-sync/domain": ["../../apps/scholar-sync/src/common/domain"],
       "@otl/scholar-sync/domain/*": ["../../apps/scholar-sync/src/common/domain/*"],
       "@otl/scholar-sync/clients/scholar/*": ["../../apps/scholar-sync/src/clients/scholar/*"],

@@ -32,6 +32,7 @@ import { MockAuthGuard } from './modules/auth/guard/mock-auth-guard'
 import { CoursesModule } from './modules/courses/courses.module'
 import { DepartmentsModule } from './modules/departments/departments.module'
 import { DepartmentsModuleV2 } from './modules/departments/v2/departments.module'
+import { ElasticsearchModule } from './modules/elasticsearch/elasticsearch.module'
 import { FeedsModule } from './modules/feeds/feeds.module'
 import { LecturesModule } from './modules/lectures/lectures.module'
 import { NoticesModule } from './modules/notices/notices.module'
@@ -106,6 +107,7 @@ async function createCacheStoreWithFallback(): Promise<Keyv> {
     ClientsModule,
     DeviceModule,
     NotificationModule,
+    ElasticsearchModule,
     ClsModule.forRoot({
       global: true,
       middleware: { mount: true },
