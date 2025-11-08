@@ -29,6 +29,8 @@
       "@otl/rmq/*": ["libs/rmq/src/*"],
       "@otl/redis": ["libs/redis/src"],
       "@otl/redis/*": ["libs/redis/src/*"],
+      "@otl/elasticsearch-client": ["libs/elasticsearch-client/src"],
+      "@otl/elasticsearch-client/*": ["libs/elasticsearch-client/src/*"],
       "@otl/server-nest/": ["apps/server/src"],
       "@otl/server-nest/*": ["apps/server/src/*"],
       "@otl/scholar-sync/": ["apps/scholar-sync/src"],

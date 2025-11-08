@@ -55,6 +55,9 @@ deploy/server/redis/redis-data
 # rabbitmq
 .docker/rabbitmq/rabbitmq-data/*
 
+# elasticsearch
+.docker/elasticsearch/elasticsearch-data/*
+
 #firebase secrets
 secrets/*
 web-test/*

@@ -8,6 +8,7 @@ import { StudentIdHeaderCommand } from '@otl/server-nest/modules/auth/command/st
 
 import { AuthChain } from './auth.chain'
 import { IpRangeCommand } from './command/ipRange.command'
+import { ElasticsearchApiKeyCommand } from './command/elasticsearchApiKey.command'
 import { IsPublicCommand } from './command/isPublic.command'
 import { JwtCookieCommand } from './command/jwt.cookie.command'
 import { SidCookieCommand } from './command/sid.cookie.command'
@@ -26,6 +27,7 @@ export class AuthConfig {
     private readonly studentHeaderCommand: StudentIdHeaderCommand,
     private readonly isPublicCommand: IsPublicCommand,
     private readonly syncApiKeyCommand: SyncApiKeyCommand,
+    private readonly elasticsearchApiKeyCommand: ElasticsearchApiKeyCommand,
     private readonly isReviewProhibitedCommand: IsReviewProhibitedCommand,
     private readonly isAdminCommand: IsAdminCommand,
     private readonly ipRangeCommand: IpRangeCommand,
@@ -47,6 +49,7 @@ export class AuthConfig {
     .register(this.sidCookieCommand)
     .register(this.jwtCookieCommand)
     .register(this.syncApiKeyCommand)
+    .register(this.elasticsearchApiKeyCommand)
     .register(this.isReviewProhibitedCommand)
     .register(this.isAdminCommand)
 
@@ -58,6 +61,7 @@ export class AuthConfig {
     .register(this.sidCookieCommand)
     .register(this.jwtCookieCommand)
     .register(this.syncApiKeyCommand)
+    .register(this.elasticsearchApiKeyCommand)
     .register(this.isReviewProhibitedCommand)
     .register(this.isAdminCommand)
     .register(this.oneappHeaderCommand)
@@ -69,6 +73,7 @@ export class AuthConfig {
     .register(this.jwtCookieCommand)
     .register(this.isPublicCommand)
     .register(this.syncApiKeyCommand)
+    .register(this.elasticsearchApiKeyCommand)
     .register(this.isReviewProhibitedCommand)
     .register(this.isAdminCommand)
     .register(this.oneappHeaderCommand)

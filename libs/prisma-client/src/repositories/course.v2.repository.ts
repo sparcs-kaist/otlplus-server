@@ -332,4 +332,47 @@ export class CourseRepositoryV2 {
     const lectureIdsInCourse = lecturesInCourse.map((lec) => lec.id)
     return takenLectureIds.map((lt) => lt.lecture_id).filter((id) => lectureIdsInCourse.includes(id))
   }
+
+  // Get courses by IDs (for Elasticsearch integration)
+  public async getCoursesByIds(ids: number[]): Promise<ECourseV2.BasicWithProfessors[]> {
+    if (ids.length === 0) {
+      return []
+    }
+    return await this.prismaRead.subject_course.findMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+      select: ECourseV2.BasicWithProfessorsArgs.select,
+    })
+  }
+
+  // Filter courses by term (courses that have lectures in recent years)
+  public async filterCoursesByTerm(
+    courses: ECourseV2.BasicWithProfessors[],
+    minYear: number,
+  ): Promise<ECourseV2.BasicWithProfessors[]> {
+    if (courses.length === 0) {
+      return []
+    }
+    const courseIds = courses.map((c) => c.id)
+    // Find courses that have lectures in the term period
+    const coursesWithLectures = await this.prismaRead.subject_lecture.findMany({
+      where: {
+        course_id: {
+          in: courseIds,
+        },
+        year: {
+          gte: minYear,
+        },
+      },
+      select: {
+        course_id: true,
+      },
+      distinct: ['course_id'],
+    })
+    const validCourseIds = new Set(coursesWithLectures.map((l) => l.course_id))
+    return courses.filter((c) => validCourseIds.has(c.id))
+  }
 }

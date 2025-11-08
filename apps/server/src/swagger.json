@@ -631,6 +631,29 @@
         }
       }
     },
+    "/api/elasticsearch/sync": {
+      "post": {
+        "summary": "ElasticsearchController.syncCourses",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["message"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/users/{userId}/feeds": {
       "get": {
         "summary": "FeedsController.getUserFeeds",
@@ -863,7 +886,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").NotificationRequest"
+                  "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/notification/domain/notification\").NotificationRequest"
                 }
               }
             }
@@ -881,7 +904,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").FCMNotificationRequest"
+                  "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/notification/domain/notification\").FCMNotificationRequest"
                 }
               }
             }
@@ -908,7 +931,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").UserNotification"
+                  "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/notification/domain/notification\").UserNotification"
                 }
               }
             }
@@ -937,7 +960,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/agreement/domain/UserAgreement\").Agreement"
+                    "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/agreement/domain/UserAgreement\").Agreement"
                   }
                 }
               }
@@ -955,7 +978,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                  "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
                 }
               }
             }
@@ -980,7 +1003,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                  "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
                 }
               }
             }
@@ -1032,7 +1055,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                    "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
                   }
                 }
               }
@@ -1055,7 +1078,7 @@
                       "type": "null"
                     },
                     {
-                      "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                      "$ref": "#/components/schemas/import(\"/home/jseok/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
                     }
                   ]
                 }
@@ -6839,9 +6862,6 @@
           "direction": {
             "type": "string",
             "enum": ["ltr", "rtl"]
-          },
-          "lang": {
-            "type": "string"
           }
         },
         "required": [
@@ -6868,8 +6888,7 @@
           "textBaseline",
           "textAlign",
           "canvas",
-          "direction",
-          "lang"
+          "direction"
         ],
         "additionalProperties": false
       },
@@ -9579,6 +9598,12 @@
         "type": "apiKey",
         "in": "header",
         "name": "X-SID-AUTH-TOKEN"
+      },
+      "elasticsearchApiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-elasticsearch-api-key",
+        "description": "Elasticsearch API Key for admin operations"
       }
     }
   },
@@ -9589,7 +9614,8 @@
       "jwtHeaderAccessToken": [],
       "jwtHeaderRefreshToken": [],
       "sidHeader": [],
-      "sidAuthToken": []
+      "sidAuthToken": [],
+      "elasticsearchApiKey": []
     }
   ]
 }

@@ -19,6 +19,7 @@ import { AuthConfig } from './auth.config'
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
 import { IpRangeCommand } from './command/ipRange.command'
+import { ElasticsearchApiKeyCommand } from './command/elasticsearchApiKey.command'
 import { IsPublicCommand } from './command/isPublic.command'
 import { JwtCookieCommand } from './command/jwt.cookie.command'
 import { SidCookieCommand } from './command/sid.cookie.command'
@@ -48,6 +49,7 @@ import { JwtCookieStrategy } from './strategy/jwt-cookie.strategy'
     JwtCookieCommand,
     SidCookieCommand,
     SyncApiKeyCommand,
+    ElasticsearchApiKeyCommand,
     IsReviewProhibitedCommand,
     IsAdminCommand,
     AuthConfig,

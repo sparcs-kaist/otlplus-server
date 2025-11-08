@@ -104,6 +104,19 @@ const sentryConfig = () => ({
   dsn: process.env.SENTRY_DSN,
 })
 
+const getElasticsearchConfig = () => ({
+  node: process.env.ELASTICSEARCH_NODE || 'http://localhost:9200',
+  auth:
+    process.env.ELASTICSEARCH_USERNAME && process.env.ELASTICSEARCH_PASSWORD
+      ? {
+        username: process.env.ELASTICSEARCH_USERNAME,
+        password: process.env.ELASTICSEARCH_PASSWORD,
+      }
+      : undefined,
+  tls: process.env.ELASTICSEARCH_TLS === 'true',
+  apiKey: process.env.ELASTICSEARCH_API_KEY,
+})
+
 export default () => ({
   ormconfig: () => getPrismaConnectConfig(),
   awsconfig: () => getAWSConfig(),
@@ -117,4 +130,5 @@ export default () => ({
   getSwaggerConfig: () => getSwaggerConfig(),
   getSwaggerStatsConfig: () => getSwaggerStatsConfig(),
   getSentryConfig: () => sentryConfig(),
+  getElasticsearchConfig: () => getElasticsearchConfig(),
 })

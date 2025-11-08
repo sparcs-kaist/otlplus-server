@@ -94,6 +94,7 @@
     "typescript": "^5.7.2"
   },
   "dependencies": {
+    "@elastic/elasticsearch": "^8.15.0",
     "@golevelup/nestjs-rabbitmq": "^5.7.0",
     "@keyv/redis": "^4.3.4",
     "@nestjs-cls/transactional": "^2.4.4",

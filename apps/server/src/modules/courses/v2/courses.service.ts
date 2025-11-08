@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { ElasticsearchService } from '@otl/elasticsearch-client'
 import { ICourseV2, IProfessorV2 } from '@otl/server-nest/common/interfaces/v2'
 import { session_userprofile } from '@prisma/client'
 
@@ -55,6 +56,7 @@ export class CoursesServiceV2 {
     private readonly courseRepository: CourseRepositoryV2,
     private readonly lectureRepository: LectureRepository,
     private readonly professorRepository: ProfessorRepositoryV2,
+    private readonly elasticsearchService: ElasticsearchService,
   ) {}
 
   public async getCourses(
@@ -65,16 +67,122 @@ export class CoursesServiceV2 {
     const {
       department, type, level, keyword, term, order, offset, limit,
     } = query
-    const { queryResult, totalCount } = await this.courseRepository.getCourses(
-      department,
-      type,
-      level,
-      keyword,
-      term,
-      order,
-      offset,
-      limit,
-    )
+    
+    let queryResult: ECourseV2.BasicWithProfessors[]
+    let totalCount: number
+
+    // Use Elasticsearch for keyword search, fallback to Prisma for non-keyword searches
+    if (keyword) {
+      try {
+        // todo: does this work properly?
+        const level_str = level ? level.map((l) => l.toString()) : undefined
+        const courseIds = await this.elasticsearchService.searchCourses({
+          keyword,
+          department,
+          type,
+          level: level_str,
+          term,
+          offset,
+          limit,
+        })
+
+        if (courseIds.length === 0) {
+          return {
+            courses: [],
+            totalCount: 0,
+          }
+        }
+
+        // Fetch full course data from Prisma using the IDs from Elasticsearch
+        // We need to fetch by IDs and then apply additional filters (like term filter)
+        // First, get courses by IDs
+        const coursesByIds = await this.courseRepository.getCoursesByIds(courseIds)
+
+        // Apply term filter if needed (filter courses that have lectures in recent years)
+        let filteredCourses = coursesByIds
+        if (term) {
+          const currentYear = new Date().getFullYear()
+          const minYear = currentYear - term
+          // Note: We need to check if courses have lectures in the term period
+          // For now, we'll fetch all and filter in memory, but this could be optimized
+          // by adding year info to the Elasticsearch index
+          filteredCourses = await this.courseRepository.filterCoursesByTerm(coursesByIds, minYear)
+        }
+
+        // Apply other filters (department, type, level) that might not be fully handled by ES
+        // These should already be filtered by ES, but we apply them again for safety
+        let finalCourses = filteredCourses
+        if (department && department.length > 0) {
+          finalCourses = finalCourses.filter((c) => department.includes(c.department_id))
+        }
+        if (type && type.length > 0 && !type.includes('ALL')) {
+          // Type filtering logic (simplified - should match ES logic)
+          const typeEnMap: Record<string, string> = {
+            GR: 'General Required',
+            MGC: 'Mandatory General Courses',
+            BE: 'Basic Elective',
+            BR: 'Basic Required',
+            EG: 'Elective(Graduate)',
+            HSE: 'Humanities & Social Elective',
+            OE: 'Other Elective',
+            ME: 'Major Elective',
+            MR: 'Major Required',
+          }
+          if (type.includes('ETC')) {
+            const selectedTypes = type.filter((t) => t !== 'ETC')
+            const excludedTypes = selectedTypes.map((t) => typeEnMap[t]).filter(Boolean)
+            finalCourses = finalCourses.filter((c) => !excludedTypes.includes(c.type_en || ''))
+          }
+          else {
+            const typeEnValues = type.map((t) => typeEnMap[t]).filter(Boolean)
+            finalCourses = finalCourses.filter((c) => typeEnValues.includes(c.type_en || ''))
+          }
+        }
+        if (level && level.length > 0) {
+          const levelDigits = level.map((l) => l.toString()[0])
+          finalCourses = finalCourses.filter((c) => levelDigits.includes(c.level || ''))
+        }
+
+        // Maintain order from Elasticsearch results
+        const orderedCourses = courseIds
+          .map((id: number) => finalCourses.find((c) => c.id === id))
+          .filter((c: ECourseV2.BasicWithProfessors | undefined): c is ECourseV2.BasicWithProfessors => c !== undefined)
+
+        queryResult = orderedCourses
+        totalCount = queryResult.length
+      }
+      catch (error) {
+        // Fallback to Prisma if Elasticsearch fails
+        console.error('Elasticsearch search failed, falling back to Prisma:', error)
+        const prismaResult = await this.courseRepository.getCourses(
+          department,
+          type,
+          level,
+          keyword,
+          term,
+          order,
+          offset,
+          limit,
+        )
+        queryResult = prismaResult.queryResult
+        totalCount = prismaResult.totalCount
+      }
+    }
+    else {
+      // No keyword, use Prisma directly
+      const prismaResult = await this.courseRepository.getCourses(
+        department,
+        type,
+        level,
+        keyword,
+        term,
+        order,
+        offset,
+        limit,
+      )
+      queryResult = prismaResult.queryResult
+      totalCount = prismaResult.totalCount
+    }
 
     const userTakenCourseIds = !user ? [] : await this.courseRepository.getTakenCourseIdsByUser(user.id)
 
