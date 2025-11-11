@@ -124,6 +124,11 @@ async function main() {
           in: 'header',
           name: 'X-AUTH-SID',
         },
+        sidAuthToken: {
+          type: 'apiKey',
+          in: 'header',
+          name: 'X-SID-AUTH-TOKEN',
+        },
       },
     },
     security: [
@@ -133,6 +138,7 @@ async function main() {
         jwtHeaderAccessToken: [],
         jwtHeaderRefreshToken: [],
         sidHeader: [],
+        sidAuthToken: [],
       },
     ],
   }
