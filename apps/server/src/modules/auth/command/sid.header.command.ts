@@ -14,12 +14,12 @@ export class SidHeaderCommand implements AuthCommand {
 
   private isIpInRange(ip: string, cidr: string): boolean {
     const [range, bits] = cidr.split('/')
+    // eslint-disable-next-line no-bitwise
     const mask = ~(2 ** (32 - parseInt(bits)) - 1)
 
-    const ipToInt = (ip: string): number => {
-      return ip.split('.').reduce((int, oct) => (int << 8) + parseInt(oct, 10), 0) >>> 0
-    }
+    const ipToInt = (ipAddr: string): number => ipAddr.split('.').reduce((int, oct) => (int << 8) + parseInt(oct), 0) >>> 0 // eslint-disable-line no-bitwise
 
+    // eslint-disable-next-line no-bitwise
     return (ipToInt(ip) & mask) === (ipToInt(range) & mask)
   }
 
@@ -82,7 +82,8 @@ export class SidHeaderCommand implements AuthCommand {
         authentication: true,
         authorization: true,
       }
-    } catch (error) {
+    }
+    catch (_error) {
       // JSON parse error or other errors - return prevResult
       return prevResult
     }
