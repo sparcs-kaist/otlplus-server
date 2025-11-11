@@ -7,8 +7,10 @@ import { SidHeaderCommand } from '@otl/server-nest/modules/auth/command/sid.head
 import { StudentIdHeaderCommand } from '@otl/server-nest/modules/auth/command/studentId.header.command'
 
 import { AuthChain } from './auth.chain'
+import { IpRangeCommand } from './command/ipRange.command'
 import { IsPublicCommand } from './command/isPublic.command'
 import { JwtCookieCommand } from './command/jwt.cookie.command'
+import { SidAuthTokenCommand } from './command/sidAuthToken.command'
 import { SidCookieCommand } from './command/sid.cookie.command'
 import { SyncApiKeyCommand } from './command/syncApiKey.command'
 
@@ -26,6 +28,8 @@ export class AuthConfig {
     private readonly syncApiKeyCommand: SyncApiKeyCommand,
     private readonly isReviewProhibitedCommand: IsReviewProhibitedCommand,
     private readonly isAdminCommand: IsAdminCommand,
+    private readonly ipRangeCommand: IpRangeCommand,
+    private readonly sidAuthTokenCommand: SidAuthTokenCommand,
   ) {}
 
   public async config(env: string) {
@@ -48,6 +52,8 @@ export class AuthConfig {
 
   private getDevGuardConfig = () => this.authChain
     .register(this.isPublicCommand)
+    .register(this.ipRangeCommand)
+    .register(this.sidAuthTokenCommand)
     .register(this.studentHeaderCommand)
     .register(this.jwtHeaderCommand)
     .register(this.sidHeaderCommand)

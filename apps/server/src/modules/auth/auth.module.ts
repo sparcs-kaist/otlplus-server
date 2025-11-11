@@ -18,8 +18,10 @@ import { AuthChain } from './auth.chain'
 import { AuthConfig } from './auth.config'
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
+import { IpRangeCommand } from './command/ipRange.command'
 import { IsPublicCommand } from './command/isPublic.command'
 import { JwtCookieCommand } from './command/jwt.cookie.command'
+import { SidAuthTokenCommand } from './command/sidAuthToken.command'
 import { SidCookieCommand } from './command/sid.cookie.command'
 import { SyncApiKeyCommand } from './command/syncApiKey.command'
 import { JwtCookieStrategy } from './strategy/jwt-cookie.strategy'
@@ -50,6 +52,8 @@ import { JwtCookieStrategy } from './strategy/jwt-cookie.strategy'
     IsAdminCommand,
     AuthConfig,
     OneAppHeaderCommand,
+    IpRangeCommand,
+    SidAuthTokenCommand,
   ],
   exports: [AuthService, AuthConfig, AuthChain],
 })
