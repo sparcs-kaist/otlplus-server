@@ -40,12 +40,14 @@ export class IpRangeCommand implements AuthCommand {
 
     // If IP is not in allowed range, block authentication
     if (!this.isIpInRange(clientIp, this.allowedCidr)) {
+      console.log(`IP ${clientIp} is outside the allowed range.`)
       return {
         ...prevResult,
         authentication: false,
         authorization: false,
       }
     }
+    console.log(`IP ${clientIp} is within the allowed range.`)
 
     return prevResult
   }

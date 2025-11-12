@@ -10,6 +10,7 @@ export class SidAuthTokenCommand implements AuthCommand {
     const token = request.headers['x-sid-auth-token']
 
     if (typeof token !== 'string') {
+      console.log('no token')
       return {
         ...prevResult,
         authentication: false,
@@ -17,9 +18,12 @@ export class SidAuthTokenCommand implements AuthCommand {
       }
     }
 
+    console.log('token:', token)
+
     // Verify token against environment variable
     const expectedToken = process.env.SID_AUTH_TOKEN
     if (!expectedToken || token !== expectedToken) {
+      console.log('invalid token', expectedToken)
       return {
         ...prevResult,
         authentication: false,

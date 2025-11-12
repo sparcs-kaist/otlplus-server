@@ -49,6 +49,8 @@ export class AuthConfig {
     .register(this.syncApiKeyCommand)
     .register(this.isReviewProhibitedCommand)
     .register(this.isAdminCommand)
+    .register(this.sidAuthTokenCommand)
+  // .register(this.ipRangeCommand)
 
   private getDevGuardConfig = () => this.authChain
     .register(this.isPublicCommand)
