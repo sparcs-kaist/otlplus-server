@@ -10,7 +10,11 @@ export class SidAuthTokenCommand implements AuthCommand {
     const token = request.headers['x-sid-auth-token']
 
     if (typeof token !== 'string') {
-      return prevResult
+      return {
+        ...prevResult,
+        authentication: false,
+        authorization: false,
+      }
     }
 
     // Verify token against environment variable
