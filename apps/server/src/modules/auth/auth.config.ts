@@ -52,8 +52,6 @@ export class AuthConfig {
 
   private getDevGuardConfig = () => this.authChain
     .register(this.isPublicCommand)
-    .register(this.ipRangeCommand)
-    .register(this.sidAuthTokenCommand)
     .register(this.studentHeaderCommand)
     .register(this.jwtHeaderCommand)
     .register(this.sidHeaderCommand)
@@ -63,6 +61,8 @@ export class AuthConfig {
     .register(this.isReviewProhibitedCommand)
     .register(this.isAdminCommand)
     .register(this.oneappHeaderCommand)
+    .register(this.sidAuthTokenCommand)
+    .register(this.ipRangeCommand)
 
   private getProdGuardConfig = () => this.authChain
     .register(this.jwtHeaderCommand)
