@@ -12,8 +12,7 @@ export class IpRangeCommand implements AuthCommand {
     // eslint-disable-next-line no-bitwise
     const mask = ~(2 ** (32 - parseInt(bits)) - 1)
 
-    const ipToInt = (ipAddr: string): number =>
-      ipAddr.split('.').reduce((int, oct) => (int << 8) + parseInt(oct), 0) >>> 0 // eslint-disable-line no-bitwise
+    const ipToInt = (ipAddr: string): number => ipAddr.split('.').reduce((int, oct) => (int << 8) + parseInt(oct), 0) >>> 0 // eslint-disable-line no-bitwise
 
     // eslint-disable-next-line no-bitwise
     return (ipToInt(ip) & mask) === (ipToInt(range) & mask)

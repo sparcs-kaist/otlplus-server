@@ -10,8 +10,8 @@ import { AuthChain } from './auth.chain'
 import { IpRangeCommand } from './command/ipRange.command'
 import { IsPublicCommand } from './command/isPublic.command'
 import { JwtCookieCommand } from './command/jwt.cookie.command'
-import { SidAuthTokenCommand } from './command/sidAuthToken.command'
 import { SidCookieCommand } from './command/sid.cookie.command'
+import { SidAuthTokenCommand } from './command/sidAuthToken.command'
 import { SyncApiKeyCommand } from './command/syncApiKey.command'
 
 @Injectable()
