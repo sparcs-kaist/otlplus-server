@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { ILecture, IReview } from '@otl/server-nest/common/interfaces'
 import { toJsonLectureDetail } from '@otl/server-nest/common/serializer/lecture.serializer'
 import { toJsonReview } from '@otl/server-nest/common/serializer/review.serializer'
@@ -24,6 +24,9 @@ export class LecturesService {
 
   public async getLectureById(id: number): Promise<ILecture.Detail> {
     const queryResult = await this.lectureRepository.getLectureDetailById(id)
+    if (!queryResult) {
+      throw new NotFoundException(`Lecture with id ${id} does not exist`)
+    }
     return toJsonLectureDetail(queryResult)
   }
 
@@ -67,6 +70,9 @@ export class LecturesService {
     const DEFAULT_ORDER = ['-written_datetime', '-id']
 
     const lecture = await this.lectureRepository.getLectureDetailById(lectureId)
+    if (!lecture) {
+      throw new NotFoundException(`Lecture with id ${lectureId} does not exist`)
+    }
     const reviews: EReview.Details[] = await this.reviewsRepository.getRelatedReviewsOfLecture(
       query.order ?? DEFAULT_ORDER,
       query.offset ?? 0,

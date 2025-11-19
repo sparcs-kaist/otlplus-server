@@ -212,7 +212,7 @@ export class ReviewsServiceV2 {
 
     // 후기 생성
     const review = await this.reviewsRepository.upsertReview(
-      reviewBody.lectureId,
+      lecture.course_id,
       lecture.id,
       reviewBody.content,
       reviewBody.grade,
