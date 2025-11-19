@@ -246,7 +246,13 @@ export class ReviewsRepository implements ServerConsumerReviewRepository {
       where: {
         writer_id_lecture_id: { writer_id: writerId, lecture_id: lectureId },
       },
-      update: {},
+      update: {
+        content,
+        grade,
+        load,
+        speech,
+        updated_datetime: new Date(),
+      },
       create: {
         course: { connect: { id: courseId } },
         lecture: { connect: { id: lectureId } },
