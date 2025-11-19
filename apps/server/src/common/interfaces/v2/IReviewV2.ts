@@ -13,7 +13,7 @@ export namespace IReviewV2 {
     id: number
     courseId: number
     courseName: string
-    professor: IProfessorV2.Basic
+    professors: IProfessorV2.Basic[]
     year: number
     semester: number // 1-4
     content: string
@@ -32,6 +32,7 @@ export namespace IReviewV2 {
     averageSpeech: number
     myReviewId: number[]
     department: IDepartmentV2.Basic | null
+    totalCount: number
   }
 
   export class QueryDto {
