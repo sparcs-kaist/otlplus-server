@@ -3,9 +3,11 @@ import { ElasticsearchModule as ElasticsearchClientModule } from '@otl/elasticse
 import settings from '@otl/server-nest/settings'
 
 import { ElasticsearchController } from './elasticsearch.controller'
+import { ElasticsearchSchedule } from './elasticsearch.schedule'
 
 @Module({
   imports: [ElasticsearchClientModule.register(settings().getElasticsearchConfig())],
   controllers: [ElasticsearchController],
+  providers: [ElasticsearchSchedule],
 })
 export class ElasticsearchModule {}
