@@ -426,4 +426,67 @@ export class AuthService {
 
     throw new UnauthorizedException('No token found in request')
   }
+
+  /**
+   * Generate a random API key
+   */
+  private generateApiKey(): string {
+    const randomBytes = require('crypto').randomBytes(32)
+    return randomBytes.toString('hex') // 64 characters
+  }
+
+  /**
+   * Create a new API key for a user
+   */
+  async createApiKey(userId: number, name?: string): Promise<{ id: number; key: string; name: string | null; created_at: Date }> {
+    const key = this.generateApiKey()
+    const apiKey = await this.userRepository.createApiKey({
+      userprofile_id: userId,
+      key,
+      name: name || null,
+      is_active: true,
+    })
+    return apiKey
+  }
+
+  /**
+   * Find user by API key
+   */
+  async findUserByApiKey(apiKey: string): Promise<session_userprofile | null> {
+    const keyRecord = await this.userRepository.findApiKey(apiKey)
+    if (!keyRecord || !keyRecord.is_active) {
+      return null
+    }
+
+    // Check if expired
+    if (keyRecord.expires_at && keyRecord.expires_at < new Date()) {
+      return null
+    }
+
+    // Update last used timestamp
+    await this.userRepository.updateApiKeyLastUsed(keyRecord.id)
+
+    return keyRecord.userprofile
+  }
+
+  /**
+   * List all API keys for a user
+   */
+  async listApiKeys(userId: number): Promise<Array<{ id: number; name: string | null; created_at: Date; last_used_at: Date | null; is_active: boolean }>> {
+    return this.userRepository.listApiKeys(userId)
+  }
+
+  /**
+   * Revoke (deactivate) an API key
+   */
+  async revokeApiKey(userId: number, keyId: number): Promise<void> {
+    await this.userRepository.revokeApiKey(userId, keyId)
+  }
+
+  /**
+   * Delete an API key
+   */
+  async deleteApiKey(userId: number, keyId: number): Promise<void> {
+    await this.userRepository.deleteApiKey(userId, keyId)
+  }
 }

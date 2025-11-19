@@ -134,11 +134,46 @@ Claude Desktop의 설정 파일에 다음과 같이 추가하세요:
 ```
 
 **API 토큰 발급 방법:**
+
+### 방법 1: API Key 발급 (권장)
+
+1. OTL Plus에 로그인한 상태에서 다음 명령어 실행:
+```bash
+curl -X POST https://otl.sparcs.org/session/api-keys \
+  -H "Cookie: accessToken=YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "My MCP Server"}'
+```
+
+2. 응답에서 `key` 값을 복사
+3. 위 설정의 `your_jwt_access_token_here` 부분에 API Key 붙여넣기
+
+### 방법 2: 액세스 토큰 사용 (임시)
+
 1. OTL Plus 웹사이트(https://otl.sparcs.org)에 로그인
 2. 브라우저 개발자 도구를 열고 (F12)
 3. Application/Storage > Cookies > https://otl.sparcs.org
 4. `accessToken` 쿠키 값을 복사
 5. 위 설정의 `your_jwt_access_token_here` 부분에 붙여넣기
+
+**참고:** API Key는 만료되지 않고 관리가 용이하므로 MCP 서버에는 API Key 사용을 권장합니다.
+
+### API Key 관리
+
+발급받은 API Key 목록 조회:
+```bash
+GET /session/api-keys
+```
+
+API Key 비활성화:
+```bash
+POST /session/api-keys/{keyId}/revoke
+```
+
+API Key 삭제:
+```bash
+DELETE /session/api-keys/{keyId}
+```
 
 또는 Claude와 대화 중에 `set_api_key` 도구를 사용하여 토큰을 설정할 수도 있습니다.
 

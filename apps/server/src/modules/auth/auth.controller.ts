@@ -234,4 +234,37 @@ export class AuthController {
 
     return res.redirect(`${webURL}/`)
   }
+
+  @Post('api-keys')
+  async createApiKey(
+    @GetUser() user: session_userprofile,
+    @Body() body: { name?: string },
+  ): Promise<{ id: number; key: string; name: string | null; created_at: Date }> {
+    return await this.authService.createApiKey(user.id, body.name)
+  }
+
+  @Get('api-keys')
+  async listApiKeys(
+    @GetUser() user: session_userprofile,
+  ): Promise<Array<{ id: number; name: string | null; created_at: Date; last_used_at: Date | null; is_active: boolean }>> {
+    return await this.authService.listApiKeys(user.id)
+  }
+
+  @Post('api-keys/:keyId/revoke')
+  async revokeApiKey(
+    @GetUser() user: session_userprofile,
+    @Param('keyId') keyId: number,
+  ): Promise<{ message: string }> {
+    await this.authService.revokeApiKey(user.id, keyId)
+    return { message: 'API key revoked successfully' }
+  }
+
+  @Delete('api-keys/:keyId')
+  async deleteApiKey(
+    @GetUser() user: session_userprofile,
+    @Param('keyId') keyId: number,
+  ): Promise<{ message: string }> {
+    await this.authService.deleteApiKey(user.id, keyId)
+    return { message: 'API key deleted successfully' }
+  }
 }
