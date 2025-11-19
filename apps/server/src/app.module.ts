@@ -4,6 +4,7 @@ import { Module } from '@nestjs/common'
 import { APP_GUARD, APP_INTERCEPTOR, DiscoveryModule } from '@nestjs/core'
 import { JwtService } from '@nestjs/jwt'
 import { ClientsModule } from '@nestjs/microservices'
+import { ScheduleModule } from '@nestjs/schedule'
 import { ClsPluginTransactional } from '@nestjs-cls/transactional'
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma'
 import { RmqModule } from '@otl/rmq/rmq.module'
@@ -82,6 +83,7 @@ async function createCacheStoreWithFallback(): Promise<Keyv> {
     PrismaModule.register(settings().ormconfig()),
     RmqModule,
     DiscoveryModule,
+    ScheduleModule.forRoot(),
     AuthModule,
     CoursesModule,
     LecturesModule,
