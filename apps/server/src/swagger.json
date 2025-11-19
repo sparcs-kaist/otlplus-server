@@ -8480,8 +8480,11 @@
           "courseName": {
             "type": "string"
           },
-          "professor": {
-            "$ref": "#/components/schemas/IProfessorV2.Basic"
+          "professors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IProfessorV2.Basic"
+            }
           },
           "year": {
             "type": "number"
@@ -8515,7 +8518,7 @@
           "id",
           "courseId",
           "courseName",
-          "professor",
+          "professors",
           "year",
           "semester",
           "content",
@@ -8561,9 +8564,20 @@
                 "type": "null"
               }
             ]
+          },
+          "totalCount": {
+            "type": "number"
           }
         },
-        "required": ["reviews", "averageGrade", "averageLoad", "averageSpeech", "myReviewId", "department"],
+        "required": [
+          "reviews",
+          "averageGrade",
+          "averageLoad",
+          "averageSpeech",
+          "myReviewId",
+          "department",
+          "totalCount"
+        ],
         "additionalProperties": false
       },
       "IReviewV2.QueryDto": {
@@ -9560,6 +9574,11 @@
         "type": "apiKey",
         "in": "header",
         "name": "X-AUTH-SID"
+      },
+      "sidAuthToken": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-SID-AUTH-TOKEN"
       }
     }
   },
@@ -9569,7 +9588,8 @@
       "sidCookie": [],
       "jwtHeaderAccessToken": [],
       "jwtHeaderRefreshToken": [],
-      "sidHeader": []
+      "sidHeader": [],
+      "sidAuthToken": []
     }
   ]
 }

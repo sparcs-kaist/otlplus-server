@@ -13,28 +13,19 @@ export const toJsonReviewV2 = (
     isLiked = !!review.review_reviewvote.find((reviewvote) => reviewvote.userprofile_id === user.id)
   }
 
-  // 첫 번째 교수 정보 추출
-  const professors = review.lecture.subject_lecture_professors.map((x) => x.professor)
-  const firstProfessor = professors[0]
-
-  const professor = firstProfessor
-    ? {
-      id: firstProfessor.professor_id,
-      name:
-          language.includes('en') && firstProfessor.professor_name_en
-            ? firstProfessor.professor_name_en
-            : firstProfessor.professor_name,
-    }
-    : {
-      id: 0,
-      name: 'Unknown',
-    }
+  const professors = review.lecture.subject_lecture_professors.map((x) => ({
+    id: x.professor.professor_id,
+    name:
+      language.includes('en') && x.professor.professor_name_en
+        ? x.professor.professor_name_en
+        : x.professor.professor_name,
+  }))
 
   return {
     id: review.id,
     courseId: review.course.id,
     courseName: language.includes('en') && review.course.title_en ? review.course.title_en : review.course.title,
-    professor,
+    professors,
     year: review.lecture.year,
     semester: review.lecture.semester,
     content: review.is_deleted ? '관리자에 의해 삭제된 코멘트입니다.' : review.content,

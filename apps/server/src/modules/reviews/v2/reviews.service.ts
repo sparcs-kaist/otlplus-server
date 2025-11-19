@@ -75,6 +75,7 @@ export class ReviewsServiceV2 {
       averageSpeech,
       myReviewId,
       department,
+      totalCount: reviewsWithLiked.length,
     }
   }
 
