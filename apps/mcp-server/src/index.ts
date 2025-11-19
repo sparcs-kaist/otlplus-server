@@ -11,8 +11,11 @@ import { z } from 'zod';
 import { OTLApiClient } from './api-client.js';
 import type { Course, Lecture, Review } from './types.js';
 
-// Initialize API client
-const apiClient = new OTLApiClient();
+// Initialize API client with optional access token from environment
+const apiClient = new OTLApiClient(
+  process.env.OTL_BASE_URL || 'https://otl.sparcs.org',
+  process.env.OTL_ACCESS_TOKEN
+);
 
 // Define available tools
 const TOOLS: Tool[] = [
@@ -164,6 +167,59 @@ const TOOLS: Tool[] = [
           default: 10,
         },
       },
+    },
+  },
+  {
+    name: 'set_api_key',
+    description: 'Set or update the API access token for authenticated requests. This token is required to access user-specific data like taken courses. You can get your access token by logging in to OTL Plus.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        access_token: {
+          type: 'string',
+          description: 'The JWT access token obtained from OTL Plus login',
+        },
+      },
+      required: ['access_token'],
+    },
+  },
+  {
+    name: 'get_user_profile',
+    description: 'Get the current authenticated user\'s profile information. Requires authentication via set_api_key.',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'get_my_taken_courses',
+    description: 'Get all courses that the authenticated user has taken. Requires authentication via set_api_key.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        limit: {
+          type: 'number',
+          description: 'Maximum number of courses to return (optional)',
+        },
+      },
+    },
+  },
+  {
+    name: 'get_taken_lectures_by_semester',
+    description: 'Get lectures that the authenticated user took in a specific semester. Requires authentication via set_api_key.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        year: {
+          type: 'number',
+          description: 'Academic year (e.g., 2024)',
+        },
+        semester: {
+          type: 'number',
+          description: 'Semester number (1: Spring, 2: Summer, 3: Fall, 4: Winter)',
+        },
+      },
+      required: ['year', 'semester'],
     },
   },
 ];
@@ -380,6 +436,61 @@ async function main() {
               {
                 type: 'text',
                 text: recommendation,
+              },
+            ],
+          };
+        }
+
+        case 'set_api_key': {
+          const token = args.access_token as string;
+          apiClient.setAccessToken(token);
+          return {
+            content: [
+              {
+                type: 'text',
+                text: 'API access token has been set successfully. You can now use authenticated features like viewing your taken courses.',
+              },
+            ],
+          };
+        }
+
+        case 'get_user_profile': {
+          const profile = await apiClient.getUserProfile();
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(profile, null, 2),
+              },
+            ],
+          };
+        }
+
+        case 'get_my_taken_courses': {
+          const profile = await apiClient.getUserProfile();
+          const courses = await apiClient.getUserTakenCourses(profile.id, {
+            limit: args.limit as number | undefined,
+          });
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(courses, null, 2),
+              },
+            ],
+          };
+        }
+
+        case 'get_taken_lectures_by_semester': {
+          const lectures = await apiClient.getTakenLecturesBySemester(
+            args.year as number,
+            args.semester as number
+          );
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(lectures, null, 2),
               },
             ],
           };

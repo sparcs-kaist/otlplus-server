@@ -6,23 +6,53 @@ import type {
   SearchCoursesParams,
   SearchLecturesParams,
   SearchReviewsParams,
+  UserProfile,
+  TakenCoursesParams,
+  TakenLecture,
 } from './types.js';
 
 /**
  * OTL Plus API Client
  * Provides read-only access to course, lecture, and review data
+ * Supports authentication with access token for user-specific data
  */
 export class OTLApiClient {
   private client: AxiosInstance;
+  private accessToken?: string;
 
-  constructor(baseURL: string = 'https://otl.sparcs.org') {
+  constructor(baseURL: string = 'https://otl.sparcs.org', accessToken?: string) {
+    this.accessToken = accessToken;
     this.client = axios.create({
       baseURL,
       timeout: 30000,
       headers: {
         'Content-Type': 'application/json',
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       },
     });
+  }
+
+  /**
+   * Set or update the access token for authenticated requests
+   */
+  setAccessToken(token: string): void {
+    this.accessToken = token;
+    this.client.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  }
+
+  /**
+   * Clear the access token
+   */
+  clearAccessToken(): void {
+    this.accessToken = undefined;
+    delete this.client.defaults.headers.common['Authorization'];
+  }
+
+  /**
+   * Check if client is authenticated
+   */
+  isAuthenticated(): boolean {
+    return !!this.accessToken;
   }
 
   /**
@@ -114,6 +144,39 @@ export class OTLApiClient {
     const response = await this.client.get<string | undefined>('/api/lectures/autocomplete', {
       params: { keyword },
     });
+    return response.data;
+  }
+
+  /**
+   * Get current user's profile (requires authentication)
+   */
+  async getUserProfile(): Promise<UserProfile> {
+    if (!this.isAuthenticated()) {
+      throw new Error('Authentication required. Please set access token first.');
+    }
+    const response = await this.client.get<UserProfile>('/session/me');
+    return response.data;
+  }
+
+  /**
+   * Get user's taken courses (requires authentication)
+   */
+  async getUserTakenCourses(userId: number, params: TakenCoursesParams = {}): Promise<Course[]> {
+    if (!this.isAuthenticated()) {
+      throw new Error('Authentication required. Please set access token first.');
+    }
+    const response = await this.client.get<Course[]>(`/api/users/${userId}/taken-courses`, { params });
+    return response.data;
+  }
+
+  /**
+   * Get user's taken lectures for a specific semester (requires authentication)
+   */
+  async getTakenLecturesBySemester(year: number, semester: number): Promise<TakenLecture[]> {
+    if (!this.isAuthenticated()) {
+      throw new Error('Authentication required. Please set access token first.');
+    }
+    const response = await this.client.get<TakenLecture[]>(`/session/${year}/${semester}/taken-lectures`);
     return response.data;
   }
 }

@@ -107,3 +107,23 @@ export interface SearchReviewsParams {
   limit?: number;
   offset?: number;
 }
+
+export interface UserProfile {
+  id: number;
+  email: string;
+  student_id: string;
+  firstName: string;
+  lastName: string;
+  majors?: Department[];
+  departments?: Department[];
+}
+
+export interface TakenCoursesParams {
+  order?: string[];
+  limit?: number;
+  offset?: number;
+}
+
+export interface TakenLecture extends Lecture {
+  // Taken lecture may include additional fields
+}
