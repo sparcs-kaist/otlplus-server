@@ -7,7 +7,7 @@ import { IAuth, IUser } from '@otl/server-nest/common/interfaces'
 import settings from '@otl/server-nest/settings'
 import { session_userprofile } from '@prisma/client'
 
-import { ELecture, ESSOUser } from '@otl/prisma-client/entities'
+import { ESSOUser } from '@otl/prisma-client/entities'
 
 import { UserService } from '../user/user.service'
 import { AuthService } from './auth.service'
@@ -43,7 +43,7 @@ export class AuthController {
       if (!picked) {
         throw new Error('No token found for extracting sid and uid')
       }
-      const { sid, uid } = this.authService.extractSidUidFromToken(picked)
+      const { sid, uid } = this.authService.extractSidUidFromToken(picked, { allowExpired: true })
       if (sid && uid) {
         return res.redirect(
           `${process.env.WEB_URL}/login/success#accessToken=${accessToken}&refreshToken=${refreshToken}`,
@@ -72,6 +72,7 @@ export class AuthController {
     @Res() response: IAuth.Response,
   ): Promise<void> {
     const ssoProfile: ESSOUser.SSOUser = await this.ssoClient.get_user_info(code)
+    // const studentDegree = req.session.ssoProfile?.kaist_v2_info?.std_status_kor
     const {
       accessToken, accessTokenOptions, refreshToken, refreshTokenOptions,
     } = await this.authService.ssoLogin(ssoProfile)
@@ -183,24 +184,6 @@ export class AuthController {
      */
     const profile = await this.userService.getProfile(user)
     return profile
-  }
-
-  // session/info의 단순화된 버전 : review_writable_lectures, my_timetable_lectures, reviews,
-  // 와 같은 필요 없는 필드를 제거하여 simple하게 사용 가능하도록 한 버전이다.
-  @Get('me')
-  async getMe(@GetUser() user: session_userprofile): Promise<IUser.SimpleProfile> {
-    const profile = await this.userService.getSimpleProfile(user)
-    return profile
-  }
-
-  // year와 semester로 해당 학기의 수강 내역을 가져오는 함수
-  @Get('/:year/:semester/taken-lectures')
-  async getTakenLecturesBySemester(
-    @Param('year') year: number,
-    @Param('semester') semester: number,
-    @GetUser() user: session_userprofile,
-  ): Promise<ELecture.Details[]> {
-    return this.userService.getTakenLectureBySemester(user, year, semester)
   }
 
   @Public()

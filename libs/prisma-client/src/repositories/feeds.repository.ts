@@ -28,7 +28,7 @@ export class FeedsRepository {
     })
   }
 
-  public async createFamousHumanityReview(date: Date, humanityBestReviews: review_humanitybestreview) {
+  public async createFamousHumanityReview(date: Date, humanityBestReviews: review_humanitybestreview[]) {
     return await this.prisma.main_famoushumanityreviewdailyfeed.create({
       include: EFeed.FamousHumanityReviewDetails.include,
       data: {

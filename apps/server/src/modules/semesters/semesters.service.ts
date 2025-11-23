@@ -41,7 +41,7 @@ export class SemestersService {
     return semesters
   }
 
-  public getSemesterName(semester: subject_semester, language: string = 'kr'): string {
+  public getSemesterName(semester: subject_semester, language: string = 'ko'): string {
     const seasons = language.includes('en') ? ['spring', 'summer', 'fall', 'winter'] : ['봄', '여름', '가을', '겨울']
 
     const seasonName = seasons[semester.semester - 1]
