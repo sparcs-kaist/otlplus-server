@@ -1,5 +1,5 @@
 import {
-  Body, Controller, Get, Param, Post, Query, Req, Res, Session,
+  Body, Controller, Delete, Get, Param, Post, Query, Req, Res, Session,
 } from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { Public, Public as PublicForGuard } from '@otl/server-nest/common/decorators/skip-auth.decorator'
@@ -239,14 +239,16 @@ export class AuthController {
   async createApiKey(
     @GetUser() user: session_userprofile,
     @Body() body: { name?: string },
-  ): Promise<{ id: number; key: string; name: string | null; created_at: Date }> {
+  ): Promise<{ id: number, key: string, name: string | null, created_at: Date }> {
     return await this.authService.createApiKey(user.id, body.name)
   }
 
   @Get('api-keys')
   async listApiKeys(
     @GetUser() user: session_userprofile,
-  ): Promise<Array<{ id: number; name: string | null; created_at: Date; last_used_at: Date | null; is_active: boolean }>> {
+  ): Promise<
+      Array<{ id: number, name: string | null, created_at: Date, last_used_at: Date | null, is_active: boolean }>
+    > {
     return await this.authService.listApiKeys(user.id)
   }
 

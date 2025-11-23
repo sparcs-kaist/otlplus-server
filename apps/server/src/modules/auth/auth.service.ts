@@ -11,6 +11,7 @@ import { Prisma, session_userprofile } from '@prisma/client'
 import * as bcrypt from 'bcrypt'
 import { Request } from 'express'
 import * as jsonwebtoken from 'jsonwebtoken'
+import * as crypto from 'node:crypto'
 
 import { AgreementType } from '@otl/common/enum/agreement'
 
@@ -431,14 +432,17 @@ export class AuthService {
    * Generate a random API key
    */
   private generateApiKey(): string {
-    const randomBytes = require('crypto').randomBytes(32)
+    const randomBytes = crypto.randomBytes(32)
     return randomBytes.toString('hex') // 64 characters
   }
 
   /**
    * Create a new API key for a user
    */
-  async createApiKey(userId: number, name?: string): Promise<{ id: number; key: string; name: string | null; created_at: Date }> {
+  async createApiKey(
+    userId: number,
+    name?: string,
+  ): Promise<{ id: number, key: string, name: string | null, created_at: Date }> {
     const key = this.generateApiKey()
     const apiKey = await this.userRepository.createApiKey({
       userprofile_id: userId,
@@ -472,7 +476,11 @@ export class AuthService {
   /**
    * List all API keys for a user
    */
-  async listApiKeys(userId: number): Promise<Array<{ id: number; name: string | null; created_at: Date; last_used_at: Date | null; is_active: boolean }>> {
+  async listApiKeys(
+    userId: number,
+  ): Promise<
+      Array<{ id: number, name: string | null, created_at: Date, last_used_at: Date | null, is_active: boolean }>
+    > {
     return this.userRepository.listApiKeys(userId)
   }
 
