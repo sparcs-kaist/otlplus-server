@@ -117,11 +117,8 @@ export namespace ICourseV2 {
     limit?: number
   }
   export interface WritableReview {
-    id: number
+    lectureId: number
     name: string
-    professor: IProfessorV2.Basic[]
-    year: number
-    semester: number
     totalRemainingCount: number
   }
 }

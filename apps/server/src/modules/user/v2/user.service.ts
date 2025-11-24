@@ -116,17 +116,9 @@ export class UserServiceV2 {
       return null
     }
     const RandomUnreviewedLecture = UnreviewedLectures[Math.floor(Math.random() * UnreviewedLectures.length)]
-    const professsors = RandomUnreviewedLecture.subject_lecture_professors
-    const professors_basic = professsors.map((professor) => ({
-      id: professor.professor.professor_id,
-      name: professor.professor.professor_name,
-    }))
     return {
-      id: RandomUnreviewedLecture.course_id,
+      lectureId: RandomUnreviewedLecture.id,
       name: RandomUnreviewedLecture.title,
-      professor: professors_basic,
-      year: RandomUnreviewedLecture.year,
-      semester: RandomUnreviewedLecture.semester,
       totalRemainingCount: UnreviewedLectures.length,
     }
   }
