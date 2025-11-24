@@ -1,5 +1,5 @@
 import {
-  Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query,
+  Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post,
 } from '@nestjs/common'
 import { GetLanguage, Language } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
@@ -14,11 +14,8 @@ export class TimetablesControllerV2 {
   constructor(private readonly timetablesService: TimetablesServiceV2) {}
 
   @Get()
-  async getTimetables(
-    @Query() query: ITimetableV2.GetListQueryDto,
-    @GetUser() user: session_userprofile,
-  ): Promise<ITimetableV2.Response> {
-    const timeTableList = await this.timetablesService.getTimetables(query, user)
+  async getTimetables(@GetUser() user: session_userprofile): Promise<ITimetableV2.Response> {
+    const timeTableList = await this.timetablesService.getTimetables(user)
     return { timetables: timeTableList.map((timeTable) => toJsonTimetableV2(timeTable)) }
   }
 
