@@ -290,11 +290,15 @@ export namespace ITimetableV2 {
 
   export class CreateResDto extends GetResDto {}
 
-  export interface Response {
+  export interface TimetableItem {
     id: number
     year: number | null
     semester: number | null
     timeTableOrder: number
     userId: number
+  }
+
+  export interface Response {
+    timetables: TimetableItem[]
   }
 }

@@ -17,9 +17,9 @@ export class TimetablesControllerV2 {
   async getTimetables(
     @Query() query: ITimetableV2.GetListQueryDto,
     @GetUser() user: session_userprofile,
-  ): Promise<ITimetableV2.Response[]> {
+  ): Promise<ITimetableV2.Response> {
     const timeTableList = await this.timetablesService.getTimetables(query, user)
-    return timeTableList.map((timeTable) => toJsonTimetableV2(timeTable))
+    return { timetables: timeTableList.map((timeTable) => toJsonTimetableV2(timeTable)) }
   }
 
   @Post()
