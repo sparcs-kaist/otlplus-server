@@ -12,8 +12,10 @@ export class DepartmentsControllerV2 {
 
   @Get()
   @Public()
-  async getDepartmentOptions(@GetLanguage() language: Language): Promise<IDepartmentV2.Basic[]> {
+  async getDepartmentOptions(@GetLanguage() language: Language): Promise<{ departments: IDepartmentV2.Basic[] }> {
     const { undergraduate, recent, other } = await this.departmentsService.getDepartmentOptions()
-    return [...undergraduate, ...recent, ...other].map((department) => toJsonDepartmentV2(department, language))
+    return {
+      departments: [...undergraduate, ...recent, ...other].map((department) => toJsonDepartmentV2(department, language)),
+    }
   }
 }
