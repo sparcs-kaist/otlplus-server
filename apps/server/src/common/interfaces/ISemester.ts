@@ -23,4 +23,8 @@ export namespace ISemester {
     gradePosting: Date | null
     courseDesciptionSubmission: Date | null
   }
+
+  export interface ResponseV2 {
+    semesters: Response[]
+  }
 }
