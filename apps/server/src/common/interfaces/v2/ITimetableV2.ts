@@ -16,13 +16,6 @@ import {
 export const TIMETABLE_MAX_LIMIT = 50
 
 export namespace ITimetableV2 {
-  export class GetListQueryDto {
-    @IsNumber()
-    @Min(0)
-    @Type(() => Number)
-    user_id!: number
-  }
-
   export class DeleteReqDto {
     @IsNumber()
     @Min(0)
@@ -290,11 +283,15 @@ export namespace ITimetableV2 {
 
   export class CreateResDto extends GetResDto {}
 
-  export interface Response {
+  export interface TimetableItem {
     id: number
+    name: string
     year: number | null
     semester: number | null
     timeTableOrder: number
-    userId: number
+  }
+
+  export interface Response {
+    timetables: TimetableItem[]
   }
 }

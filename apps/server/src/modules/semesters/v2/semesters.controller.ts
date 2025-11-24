@@ -11,8 +11,8 @@ export class SemestersControllerV2 {
 
   @Get()
   @Public()
-  async getSemesters(): Promise<ISemester.Response[]> {
+  async getSemesters(): Promise<ISemester.ResponseV2> {
     const semesters = await this.semestersService.getSemesters()
-    return semesters.map((semester) => toJsonSemester(semester))
+    return { semesters: semesters.map((semester) => toJsonSemester(semester)) }
   }
 }

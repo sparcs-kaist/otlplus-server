@@ -7,12 +7,12 @@ import { getTimeNumeric } from '@otl/common/utils/util'
 
 import { ETimetable } from '@otl/prisma-client/entities'
 
-export const toJsonTimetableV2 = (timetable: ETimetable.Basic): ITimetableV2.Response => ({
+export const toJsonTimetableV2 = (timetable: ETimetable.Basic): ITimetableV2.TimetableItem => ({
   id: timetable.id,
+  name: timetable.name ?? '',
   year: timetable.year,
   semester: timetable.semester,
   timeTableOrder: timetable.arrange_order,
-  userId: timetable.user_id,
 })
 
 export const toJsonTimetableV2WithLectures = (

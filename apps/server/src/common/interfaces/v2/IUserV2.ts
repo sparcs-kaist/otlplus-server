@@ -84,6 +84,7 @@ export namespace IUserV2 {
   }
 
   export interface Info {
+    id: number
     name: string
     mail: string
     studentNumber: number

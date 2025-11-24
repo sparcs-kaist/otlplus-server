@@ -9,4 +9,8 @@ export namespace IDepartmentV2 {
     name: string
     code: string
   }
+
+  export interface Response {
+    departments: Detail[]
+  }
 }
