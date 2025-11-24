@@ -132,6 +132,7 @@ export class UserServiceV2 {
   }
 
   async getUserInfo(user: session_userprofile): Promise<IUserV2.Info | null> {
+    const { id } = user
     const name = `${user.first_name} ${user.last_name}`
     const mail = user.email || ''
     const studentNumber = parseInt(user.student_id)
@@ -142,6 +143,7 @@ export class UserServiceV2 {
     ])
 
     return {
+      id,
       name,
       mail,
       studentNumber,

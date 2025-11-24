@@ -31,15 +31,9 @@ export class UserControllerV2 {
     throw new HttpException('Can\'t find user', 401)
   }
 
-  @Get(':userId/info')
-  async getUserInfo(
-    @GetUser() user: session_userprofile,
-    @Param('userId', ParseIntPipe) userId: number,
-  ): Promise<IUserV2.Info | null> {
-    if (userId === user.id) {
-      return this.userServiceV2.getUserInfo(user)
-    }
-    throw new HttpException('Invalid userId', 400)
+  @Get('info')
+  async getUserInfo(@GetUser() user: session_userprofile): Promise<IUserV2.Info | null> {
+    return this.userServiceV2.getUserInfo(user)
   }
 
   @Put(':userId/interested-departments')
