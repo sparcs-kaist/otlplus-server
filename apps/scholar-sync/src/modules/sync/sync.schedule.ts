@@ -30,8 +30,6 @@ export class SyncSchedule {
   @Cron(CronExpression.EVERY_3_HOURS, {
     name: 'syncAll',
     timeZone: 'Asia/Seoul',
-    // temp: rate limit 테스트를 위해 임시로 비활성화
-    disabled: true,
   })
   async syncAll(year?: number, semester?: number, interval?: number) {
     const semesters = await this.determineTargetSemesters(year, semester, interval)

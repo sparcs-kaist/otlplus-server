@@ -302,6 +302,7 @@ export class SyncRepository {
         student_id: studentId,
         lecture_id: lectureId,
       })),
+      skipDuplicates: true,
     })
   }
 
