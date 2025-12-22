@@ -24,9 +24,12 @@ export class UserControllerV2 {
   constructor(private readonly userServiceV2: UserServiceV2) {}
 
   @Get('writable-review')
-  async getUserTakenCourses(@GetUser() user: session_userprofile): Promise<ICourseV2.WritableReview | null> {
+  async getUserTakenCourses(
+    @GetUser() user: session_userprofile,
+    @GetLanguage() language: Language,
+  ): Promise<ICourseV2.WritableReview | null> {
     if (user) {
-      return this.userServiceV2.getUnreviewedRandomCourse(user)
+      return this.userServiceV2.getUnreviewedRandomCourse(user, language)
     }
     throw new HttpException('Can\'t find user', 401)
   }
