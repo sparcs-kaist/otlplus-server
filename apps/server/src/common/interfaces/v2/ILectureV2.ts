@@ -42,7 +42,7 @@ export namespace ILectureV2 {
     isEnglish: boolean // 영어 강의 여부
     professors: IProfessorV2.Basic[]
     classes: ILectureV2.Classtime[]
-    examTime: ILectureV2.ExamTime | null
+    examTimes: ILectureV2.ExamTime[]
   }
 
   export interface courseWrapped {
@@ -93,11 +93,11 @@ export namespace ILectureV2 {
     department?: number[] // 각 department의 id
 
     @IsOptional()
-    @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+    @Transform(({ value }) => (typeof value === 'number' ? [value] : value))
     @IsArray()
-    @IsIn(['ALL', '100', '200', '300', '400', '500', '600', '700', '800', '900'], {
+    @IsIn([100, 200, 300, 400, 500, 600, 700, 800, 900], {
       each: true,
-      message: 'level[] must be one of \'ALL\' or \'100\'..\'900\'',
+      message: 'level[] must be one of 100..900',
     })
     level?: level[]
 

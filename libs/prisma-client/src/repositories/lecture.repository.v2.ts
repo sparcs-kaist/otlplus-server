@@ -21,7 +21,7 @@ export class LectureRepositoryV2 {
     keyword: string | undefined,
     type: string[] | undefined,
     department: number[] | undefined,
-    level: string[] | undefined,
+    level: number[] | undefined,
     year: number, // year required
     semester: number, // semester required
     day: number | undefined,
@@ -158,7 +158,7 @@ export class LectureRepositoryV2 {
   // [id, classTimes, examTimes, professors] 세트를 return
   public async getLectureMetadataByIds(
     ids: number[],
-  ): Promise<Array<[number, ELectureV2.ClassTime[], ELectureV2.ExamTime | null, EProfessorV2.Basic[]]>> {
+  ): Promise<Array<[number, ELectureV2.ClassTime[], ELectureV2.ExamTime[], EProfessorV2.Basic[]]>> {
     if (!ids || ids.length === 0) return []
 
     const [classTimes, examTimes, professorLinks] = await Promise.all([
@@ -187,13 +187,16 @@ export class LectureRepositoryV2 {
       ctByLecture.set(ct.lecture_id, arr)
     }
 
-    // 2) examTimes: lecture_id -> ExamTime
-    const etByLecture = new Map<number, ELectureV2.ExamTime>()
+    // 2) examTimes: lecture_id -> ExamTime[]
+    const etByLecture = new Map<number, ELectureV2.ExamTime[]>()
     for (const et of examTimes as Array<ELectureV2.ExamTime & { lecture_id: number }>) {
-      const key = (et as any).lecture_id as number
-      if (!etByLecture.has(key)) {
-        etByLecture.set(key, et)
-      }
+      // const key = (et as any).lecture_id as number
+      // if (!etByLecture.has(key)) {
+      //   etByLecture.set(key, et)
+      // }
+      const arr = etByLecture.get(et.lecture_id) ?? []
+      arr.push(et)
+      etByLecture.set(et.lecture_id, arr)
     }
 
     // 3) professors: lecture_id -> ProfessorBasic[]
@@ -204,10 +207,7 @@ export class LectureRepositoryV2 {
       profByLecture.set(link.lecture_id, arr)
     }
 
-    return ids.map((id) => {
-      const exam = etByLecture.get(id) ?? null
-      return [id, ctByLecture.get(id) ?? [], exam as ELectureV2.ExamTime | null, profByLecture.get(id) ?? []]
-    })
+    return ids.map((id) => [id, ctByLecture.get(id) ?? [], etByLecture.get(id) ?? [], profByLecture.get(id) ?? []])
   }
 
   // year, semester 필터링 버전 + userId 만으로 조회

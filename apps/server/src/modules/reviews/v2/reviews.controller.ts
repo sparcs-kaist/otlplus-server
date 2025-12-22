@@ -37,10 +37,6 @@ export class ReviewsControllerV2 {
       throw new HttpException('default 모드에서는 courseId가 필요합니다', HttpStatus.BAD_REQUEST)
     }
 
-    if (reviewsParam.mode === 'hall-of-fame' && (!reviewsParam.year || !reviewsParam.semester)) {
-      throw new HttpException('hall-of-fame 모드에서는 year와 semester가 필요합니다', HttpStatus.BAD_REQUEST)
-    }
-
     const result = await this.reviewsV2Service.getReviewsV2(reviewsParam, user || null, language)
     return result
   }

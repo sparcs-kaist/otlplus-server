@@ -99,11 +99,11 @@ export namespace ITimetableV2 {
 
     @IsString()
     @Type(() => String)
-    placeName!: string
+    buildingName!: string
 
     @IsString()
     @Type(() => String)
-    placeNameShort!: string
+    roomName!: string
   }
 
   export class ExamTimeResDto {
@@ -203,7 +203,7 @@ export namespace ITimetableV2 {
     @Type(() => ClassResDto)
     classes!: ClassResDto[]
 
-    examTime!: ExamTimeResDto | null
+    examTimes!: ExamTimeResDto[]
   }
 
   export class GetResDto {
