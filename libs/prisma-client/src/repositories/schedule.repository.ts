@@ -12,7 +12,8 @@ export class ScheduleRepository {
     private readonly prismaRead: PrismaReadService,
   ) {}
 
-  async getSchedules(): Promise<ESchedules.Basic[]> {
-    return await this.prismaRead.schedules.findMany()
+  async getSchedules(): Promise<ESchedules.SchedulesResponse> {
+    const schedules = await this.prismaRead.schedules.findMany()
+    return { schedules }
   }
 }

@@ -53,13 +53,13 @@ export class CourseRepositoryV2 {
   public async getCourses(
     department: number[] | undefined,
     type: string[] | undefined,
-    level: string[] | undefined,
+    level: number[] | undefined,
     keyword: string | undefined,
     term: number | undefined,
     order: string | undefined,
     offset: number | undefined,
     limit: number | undefined,
-  ): Promise<ECourseV2.BasicWithProfessors[]> {
+  ): Promise<{ queryResult: ECourseV2.BasicWithProfessors[], totalCount: number }> {
     const DEFAULT_LIMIT = 150
     // const DEFAULT_ORDER = ['old_code'] satisfies (keyof ECourse.Details)[]
     const departmentFilter = this.departmentFilter(department)
@@ -81,13 +81,19 @@ export class CourseRepositoryV2 {
       take: limit ?? DEFAULT_LIMIT,
     })
 
+    const queryCountResult = await this.prismaRead.subject_course.count({
+      where: {
+        AND: filterList,
+      },
+    })
+
     // Apply Ordering and Offset
     // const orderedResult = applyOrder<ECourse.Details>(
     //   levelFilteredResult,
     //   (order as (keyof ECourse.Details)[]) ?? DEFAULT_ORDER,
     // )
     // return applyOffset<ECourse.Details>(orderedResult, offset ?? 0)
-    return queryResult
+    return { queryResult, totalCount: queryCountResult }
   }
 
   public departmentFilter(department_ids?: number[]): object | null {
@@ -132,7 +138,7 @@ export class CourseRepositoryV2 {
 
   public termFilter(term?: number): object | null {
     // 설정 없는 경우 all
-    if (!term) {
+    if (!term && term !== 0) {
       return null
     }
     const current_year = new Date().getFullYear()
@@ -248,21 +254,21 @@ export class CourseRepositoryV2 {
     }
   }
 
-  public levelFilter(levels?: string[]): object | null {
-    if (!levels || levels.includes('ALL')) {
+  public levelFilter(levels?: number[]): object | null {
+    if (!levels) {
       return null
     }
 
-    const levelDigits = levels.map((l) => l[0])
+    const levelDigits = levels.map((l) => l.toString()[0])
 
     // ETC일 경우: level이 선택된 levelDigit들에 **포함되지 않는** 값
-    if (levels.includes('ETC')) {
-      return {
-        level: {
-          notIn: levelDigits,
-        },
-      }
-    }
+    // if (levels.includes('ETC')) {
+    //   return {
+    //     level: {
+    //       notIn: levelDigits,
+    //     },
+    //   }
+    // }
 
     // 일반적인 in 조건
     return {
@@ -285,6 +291,7 @@ export class CourseRepositoryV2 {
     const lectures = await this.prismaRead.subject_lecture.findMany({
       where: { course_id: courseId },
       select: ECourseV2.courseNestedLecturesArgs.select,
+      orderBy: [{ year: 'desc' }, { semester: 'desc' }, { class_no: 'asc' }],
     })
     return { course, lectures }
   }

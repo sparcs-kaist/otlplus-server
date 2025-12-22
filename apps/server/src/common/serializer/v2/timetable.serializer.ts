@@ -1,6 +1,6 @@
 import { Language } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
-import { toJsonClasstime } from '@otl/server-nest/common/serializer/classtime.serializer'
+// import { toJsonClasstime } from '@otl/server-nest/common/serializer/classtime.serializer'
 import { toJsonExamtime } from '@otl/server-nest/common/serializer/examtime.serializer'
 
 import { getTimeNumeric } from '@otl/common/utils/util'
@@ -65,33 +65,31 @@ export const toJsonTimetableV2WithLectures = (
       day: classtime.day,
       begin: getTimeNumeric(classtime.begin),
       end: getTimeNumeric(classtime.end),
-      buildingCode: classtime.building_id,
-      placeName: language === 'en' ? classtime.building_full_name_en : classtime.building_full_name,
-      placeNameShort: (() => {
-        const temp = toJsonClasstime(classtime)
-        return language === 'en' ? temp.classroom_short_en : temp.classroom_short
-      })(),
+      buildingCode: classtime.building_id ?? '',
+      buildingName: language === 'en' ? classtime.building_full_name_en : classtime.building_full_name,
+      // placeNameShort: (() => {
+      //   const temp = toJsonClasstime(classtime)
+      //   return language === 'en' ? temp.classroom_short_en : temp.classroom_short
+      // })(),
+      roomName: classtime.room_name ?? '',
     })) as ITimetableV2.ClassResDto[],
 
-    // NOTE: implemented in server as array, but specified as single object in documentation
-    // this is a workaround to return single object
-    examTime:
-      lecture.subject_lecture.subject_examtime.map((examtime) => ({
-        day: examtime.day,
-        // TODO: what is this field? -> "월요일 09:00 ~ 11:45"
-        str: (() => {
-          const temp = toJsonExamtime(examtime)
-          console.log(
-            'subject_lecture',
-            lecture.subject_lecture.subject_examtime.length > 0 ? 'examtime is not null' : 'examtime is null',
-          )
-          console.log('examtime', examtime)
-          console.log('temp', temp)
-          console.log('language', language)
-          return language === 'en' ? temp.str_en : temp.str
-        })(),
-        begin: getTimeNumeric(examtime.begin, false),
-        end: getTimeNumeric(examtime.end, false),
-      }))[0] ?? null,
+    examTimes: lecture.subject_lecture.subject_examtime.map((examtime) => ({
+      day: examtime.day,
+      // TODO: what is this field? -> "월요일 09:00 ~ 11:45"
+      str: (() => {
+        const temp = toJsonExamtime(examtime)
+        console.log(
+          'subject_lecture',
+          lecture.subject_lecture.subject_examtime.length > 0 ? 'examtime is not null' : 'examtime is null',
+        )
+        console.log('examtime', examtime)
+        console.log('temp', temp)
+        console.log('language', language)
+        return language === 'en' ? temp.str_en : temp.str
+      })(),
+      begin: getTimeNumeric(examtime.begin, false),
+      end: getTimeNumeric(examtime.end, false),
+    })),
   })) as ITimetableV2.LectureResDto[],
 })

@@ -41,7 +41,7 @@ export class LecturesServiceV2 {
       keyword,
       type as unknown as string[] | undefined,
       department as unknown as number[] | undefined,
-      level as unknown as string[] | undefined,
+      level as unknown as number[] | undefined,
       year,
       semester,
       day,
@@ -59,9 +59,9 @@ export class LecturesServiceV2 {
     // 2) Fetch metadata (classTimes, examTime, professors)
     const lectureIds = lectures.map((l) => l.id)
     const metaTuples = await this.lectureRepository.getLectureMetadataByIds(lectureIds)
-    const metaById = new Map<number, { classTimes: any[], examTime: any | null, professors: any[] }>()
-    for (const [id, classTimes, examTime, professors] of metaTuples) {
-      metaById.set(id, { classTimes, examTime, professors })
+    const metaById = new Map<number, { classTimes: any[], examTimes: any[], professors: any[] }>()
+    for (const [id, classTimes, examTimes, professors] of metaTuples) {
+      metaById.set(id, { classTimes, examTimes, professors })
     }
 
     // 3) Fetch course codes for all involved courses
@@ -106,15 +106,12 @@ export class LecturesServiceV2 {
         roomName: ct.room_name ?? '',
       }))
 
-      const exam = meta?.examTime
-      const examTime = exam
-        ? ({
-          day: exam.day,
-          begin: toMinutes(exam.begin),
-          end: toMinutes(exam.end),
-          str: `${mmToHHmm(toMinutes(exam.begin))}~${mmToHHmm(toMinutes(exam.end))}`,
-        } as ILectureV2.ExamTime)
-        : null
+      const examTimes = (meta?.examTimes ?? []).map((exam: any) => ({
+        day: exam.day,
+        begin: toMinutes(exam.begin),
+        end: toMinutes(exam.end),
+        str: `${mmToHHmm(toMinutes(exam.begin))}~${mmToHHmm(toMinutes(exam.end))}`,
+      }))
 
       const professors = (meta?.professors ?? []).map((p: any) => ({
         id: p.id,
@@ -142,7 +139,7 @@ export class LecturesServiceV2 {
         isEnglish: Boolean(lec.is_english),
         professors,
         classes: classTimes,
-        examTime,
+        examTimes,
       }
 
       const courseId = lec.course_id

@@ -8,7 +8,7 @@ import { IDepartmentV2 } from './IDepartmentV2'
 import { IProfessorV2 } from './IProfessorV2'
 
 export type CourseOrderQuery = 'code' | 'popular' | 'studentCount'
-export type level = 'ALL' | '100' | '200' | '300' | '400' | '500' | '600' | '700' | '800' | '900'
+export type level = 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900
 export type CourseType = 'ALL' | 'BR' | 'BE' | 'MR' | 'ME' | 'MGC' | 'HSE' | 'GR' | 'EG' | 'OE' | 'ETC'
 
 export namespace ICourseV2 {
@@ -39,8 +39,7 @@ export namespace ICourseV2 {
         classNo: string // 분반
         professors: IProfessorV2.Basic[] // 해당 분반의 교수님
       }[]
-      myProfessors: IProfessorV2.Basic[] // 본인이 수강한 학기의 경우, 수강한 분반의 교수님
-      // 한 lecture에 여러명의 교수님이 존재할 수 있음
+      myLectureId: number | null // 내가 수강한 분반의 lectureId
     }[]
     summary: string
     classDuration: number // 강의시간
@@ -85,16 +84,14 @@ export namespace ICourseV2 {
     @IsOptional()
     @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
     @IsArray()
-    @IsIn(['ALL', '100', '200', '300', '400', '500', '600', '700', '800', '900'], {
+    @IsIn([100, 200, 300, 400, 500, 600, 700, 800, 900], {
       each: true,
-      message: 'level[] must be one of \'ALL\' or \'100\'..\'900\'',
+      message: 'level[] must be one of 100..900',
     })
     level?: level[]
 
     @IsOptional()
-    @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
-    @IsArray()
-    @IsString({ each: true })
+    @IsInt()
     term?: number // 과목 기간 (최근 n년 이내 검색)
 
     @IsOptional()
@@ -120,5 +117,10 @@ export namespace ICourseV2 {
     lectureId: number
     name: string
     totalRemainingCount: number
+  }
+
+  export interface GETCoursesResponse {
+    courses: Basic[]
+    totalCount: number
   }
 }

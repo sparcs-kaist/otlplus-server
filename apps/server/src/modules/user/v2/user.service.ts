@@ -105,7 +105,10 @@ export class UserServiceV2 {
     }
   }
 
-  async getUnreviewedRandomCourse(user: session_userprofile): Promise<ICourseV2.WritableReview | null> {
+  async getUnreviewedRandomCourse(
+    user: session_userprofile,
+    language: Language,
+  ): Promise<ICourseV2.WritableReview | null> {
     const WrittenReviews = await this.reviewsRepository.findReviewByUser(user)
     const TakenLectures = await this.lectureRepository.getTakenLectures(user)
     let UnreviewedLectures = TakenLectures
@@ -118,7 +121,7 @@ export class UserServiceV2 {
     const RandomUnreviewedLecture = UnreviewedLectures[Math.floor(Math.random() * UnreviewedLectures.length)]
     return {
       lectureId: RandomUnreviewedLecture.id,
-      name: RandomUnreviewedLecture.title,
+      name: language === 'en' ? RandomUnreviewedLecture.title_en : RandomUnreviewedLecture.title,
       totalRemainingCount: UnreviewedLectures.length,
     }
   }

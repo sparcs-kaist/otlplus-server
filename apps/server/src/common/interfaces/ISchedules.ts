@@ -5,4 +5,8 @@ export namespace ISchedules {
     to: Date
     name: string
   }
+
+  export interface SchedulesResponse {
+    schedules: Basic[]
+  }
 }

@@ -18,8 +18,7 @@ type courseHistory = {
     // 각 분반의 담당 교수님(들)
     professors: IProfessorV2.Basic[]
   }[]
-  // 내가 수강한 분반의 교수님(들)
-  myProfessors: IProfessorV2.Basic[]
+  myLectureId: number | null
 }
 
 const fallbackEmpty = (preferred?: string | null, fallback?: string | null) => (preferred ?? '').trim() || (fallback ?? '')
@@ -61,11 +60,11 @@ export class CoursesServiceV2 {
     query: ICourseV2.Query,
     user: session_userprofile | null,
     lang: language,
-  ): Promise<ICourseV2.Basic[]> {
+  ): Promise<ICourseV2.GETCoursesResponse> {
     const {
       department, type, level, keyword, term, order, offset, limit,
     } = query
-    const queryResult = await this.courseRepository.getCourses(
+    const { queryResult, totalCount } = await this.courseRepository.getCourses(
       department,
       type,
       level,
@@ -79,7 +78,10 @@ export class CoursesServiceV2 {
     const userTakenCourseIds = !user ? [] : await this.courseRepository.getTakenCourseIdsByUser(user.id)
 
     const localizedResult = queryResult.map((course) => toICourseBasic(course, lang, userTakenCourseIds.includes(course.id)))
-    return localizedResult
+    return {
+      courses: localizedResult,
+      totalCount,
+    }
   }
 
   // detailed version
@@ -97,6 +99,8 @@ export class CoursesServiceV2 {
     if (lectures.length === 0) {
       throw new Error('Invalid course id')
     }
+
+    const userTakenLectureIds = !user ? [] : await this.courseRepository.getTakenLectureIdsByUser(user.id, courseId)
     const Histories: courseHistory[] = []
 
     // year와 semester 단위로 묶기
@@ -129,7 +133,7 @@ export class CoursesServiceV2 {
             year: lec.year,
             semester: lec.semester,
             classes: [{ professors: professor_obj, classNo: lec.class_no, lectureId: lec.id }],
-            myProfessors: [],
+            myLectureId: userTakenLectureIds.includes(lec.id) ? lec.id : null,
           })
         }
         // year, semester가 없는 경우 : 에러
@@ -138,19 +142,6 @@ export class CoursesServiceV2 {
         throw new Error('Unexpected Error')
       }
     }
-
-    // 수강 이력이 있는 year와 semester에 대해 myProfessors 채우기
-    // myProfessors가 [] 이면, 해당 학기에 수강하지 않았거나, auth가 안 된 사용자.
-    const userTakenLectureIds = !user ? [] : await this.courseRepository.getTakenLectureIdsByUser(user.id, courseId)
-
-    // classes에 있는 lecture_id가 userTakenLectureIds에 포함되는지 확인해서 myProfessors 채우기
-    Histories.forEach((history) => {
-      history.classes.forEach((subclass) => {
-        if (userTakenLectureIds.includes(subclass.lectureId)) {
-          history.myProfessors.push(...subclass.professors)
-        }
-      })
-    })
 
     return {
       id: course?.id,

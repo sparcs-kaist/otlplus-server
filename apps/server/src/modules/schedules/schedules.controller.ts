@@ -11,8 +11,9 @@ export class SchedulesController {
 
   @Get()
   @Public()
-  async getSchedules(): Promise<ISchedules.Basic[]> {
-    const schedules = await this.schedulesService.getSchedules()
-    return schedules.map((schedule) => toJsonSchedules(schedule))
+  async getSchedules(): Promise<ISchedules.SchedulesResponse> {
+    const { schedules } = await this.schedulesService.getSchedules()
+    schedules.map((schedule) => toJsonSchedules(schedule))
+    return { schedules }
   }
 }
