@@ -1,7 +1,4 @@
-import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager'
-import {
-  Controller, ExecutionContext, Get, Query, UseInterceptors,
-} from '@nestjs/common'
+import { Controller, ExecutionContext, Get, Query, UseInterceptors } from '@nestjs/common'
 import { GetLanguage, Language } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator'
@@ -36,23 +33,13 @@ export class LecturesControllerV2 {
     return ttlInMs
   }
 
+  @Public()
   @Get()
   async getLectures(
     @Query() query: ILectureV2.getQuery,
-    @GetUser() user: session_userprofile,
+    @GetUser() user: session_userprofile | undefined,
     @GetLanguage() language: Language,
   ): Promise<ILectureV2.courseWrapped> {
-    return await this.LectureService.getLectureByFilter(query, user, language)
-  }
-
-  @Public()
-  @CacheTTL(LecturesControllerV2.cacheTTLFactory)
-  @UseInterceptors(CacheInterceptor)
-  @Get('/public')
-  async getLecturesPublic(
-    @Query() query: ILectureV2.getQuery,
-    @GetLanguage() language: Language,
-  ): Promise<ILectureV2.courseWrapped> {
-    return await this.LectureService.getLectureByFilter(query, null, language)
+    return await this.LectureService.getLectureByFilter(query, user || null, language)
   }
 }

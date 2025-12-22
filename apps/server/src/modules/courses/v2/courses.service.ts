@@ -21,7 +21,8 @@ type courseHistory = {
   myLectureId: number | null
 }
 
-const fallbackEmpty = (preferred?: string | null, fallback?: string | null) => (preferred ?? '').trim() || (fallback ?? '')
+const fallbackEmpty = (preferred?: string | null, fallback?: string | null) =>
+  (preferred ?? '').trim() || (fallback ?? '')
 
 function toICourseBasic(c: ECourseV2.BasicWithProfessors, lang: language, completed: boolean): ICourseV2.Basic {
   return {
@@ -61,9 +62,7 @@ export class CoursesServiceV2 {
     user: session_userprofile | null,
     lang: language,
   ): Promise<ICourseV2.GETCoursesResponse> {
-    const {
-      department, type, level, keyword, term, order, offset, limit,
-    } = query
+    const { department, type, level, keyword, term, order, offset, limit } = query
     const { queryResult, totalCount } = await this.courseRepository.getCourses(
       department,
       type,
@@ -77,7 +76,9 @@ export class CoursesServiceV2 {
 
     const userTakenCourseIds = !user ? [] : await this.courseRepository.getTakenCourseIdsByUser(user.id)
 
-    const localizedResult = queryResult.map((course) => toICourseBasic(course, lang, userTakenCourseIds.includes(course.id)))
+    const localizedResult = queryResult.map((course) =>
+      toICourseBasic(course, lang, userTakenCourseIds.includes(course.id)),
+    )
     return {
       courses: localizedResult,
       totalCount,
@@ -127,8 +128,7 @@ export class CoursesServiceV2 {
         if (existing) {
           existing.classes.push({ professors: professor_obj, classNo: lec.class_no, lectureId: lec.id })
           // year, semester가 없는 경우 : 새로 추가
-        }
-        else {
+        } else {
           Histories.push({
             year: lec.year,
             semester: lec.semester,
@@ -137,8 +137,7 @@ export class CoursesServiceV2 {
           })
         }
         // year, semester가 없는 경우 : 에러
-      }
-      else {
+      } else {
         throw new Error('Unexpected Error')
       }
     }
