@@ -1,4 +1,3 @@
-import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager'
 import {
   BadRequestException,
   Controller,
@@ -46,6 +45,7 @@ export class CourseControllerV2 {
   // Note : 요구한 Spec이 Optional인데, OptionalUser에서 캐싱 issue와
   // Nest의 구조상 데커레이터로 처리가 어려워 api를 분리하였습니다.
   // * 2025.12.22 수정 => optional인 경우도 통합
+  @Public()
   @Get()
   async getCourses(
     @Query() query: ICourseV2.Query,
@@ -56,18 +56,7 @@ export class CourseControllerV2 {
     return courses
   }
 
-  // @Get('/public')
-  // @CacheTTL(CourseControllerV2.cacheTTLFactory)
-  // @UseInterceptors(CacheInterceptor)
-  // @Public()
-  // async getCoursesPublic(
-  //   @Query() query: ICourseV2.Query,
-  //   @GetLanguage() language: Language,
-  // ): Promise<ICourseV2.Basic[]> {
-  //   const courses = await this.coursesService.getCourses(query, null, language)
-  //   return courses
-  // }
-
+  @Public()
   @Get(':courseId')
   async getCourseById(
     @Param('courseId', ParseIntPipe) courseId: number,
@@ -75,34 +64,11 @@ export class CourseControllerV2 {
     @GetLanguage() language: Language,
   ): Promise<ICourseV2.Detail> {
     try {
-      return await this.coursesService.getCourseById(courseId, user, language)
-    }
-    catch (error) {
+      return await this.coursesService.getCourseById(courseId, user || null, language)
+    } catch (error) {
       if (error === 'Invalid course id') {
         throw new BadRequestException('Invalid course id') // 400
-      }
-      else {
-        throw error // 기타 에러 : 500
-      }
-    }
-  }
-
-  @Get(':courseId/public')
-  @CacheTTL(CourseControllerV2.cacheTTLFactory)
-  @UseInterceptors(CacheInterceptor)
-  @Public()
-  async getCourseByIdPublic(
-    @Param('courseId', ParseIntPipe) courseId: number,
-    @GetLanguage() language: Language,
-  ): Promise<ICourseV2.Detail> {
-    try {
-      return await this.coursesService.getCourseById(courseId, null, language)
-    }
-    catch (error) {
-      if (error === 'Invalid course id') {
-        throw new BadRequestException('Invalid course id') // 400
-      }
-      else {
+      } else {
         throw error // 기타 에러 : 500
       }
     }

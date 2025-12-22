@@ -33,10 +33,9 @@ export class LecturesServiceV2 {
     const mmToHHmm = (mins: number) => `${pad2(Math.floor(mins / 60))}:${pad2(mins % 60)}`
 
     // 1) Fetch lectures matching the filter
-    const {
-      keyword, type, department, level, year, semester, day, begin, end, order, limit, offset,
-    } = query
-    const choose = (ko?: string | null, en?: string | null) => (language === 'en' ? (en ?? '').trim() || (ko ?? '') : (ko ?? '').trim() || (en ?? ''))
+    const { keyword, type, department, level, year, semester, day, begin, end, order, limit, offset } = query
+    const choose = (ko?: string | null, en?: string | null) =>
+      language === 'en' ? (en ?? '').trim() || (ko ?? '') : (ko ?? '').trim() || (en ?? '')
     const lectures = await this.lectureRepository.filterByRequest(
       keyword,
       type as unknown as string[] | undefined,
@@ -59,7 +58,7 @@ export class LecturesServiceV2 {
     // 2) Fetch metadata (classTimes, examTime, professors)
     const lectureIds = lectures.map((l) => l.id)
     const metaTuples = await this.lectureRepository.getLectureMetadataByIds(lectureIds)
-    const metaById = new Map<number, { classTimes: any[], examTimes: any[], professors: any[] }>()
+    const metaById = new Map<number, { classTimes: any[]; examTimes: any[]; professors: any[] }>()
     for (const [id, classTimes, examTimes, professors] of metaTuples) {
       metaById.set(id, { classTimes, examTimes, professors })
     }
@@ -91,7 +90,7 @@ export class LecturesServiceV2 {
     }
 
     // 5) Group by course and assemble response
-    type CourseGroup = { name: string, code: string, type: string, lectures: ILectureV2.Basic[], completed: boolean }
+    type CourseGroup = { name: string; code: string; type: string; lectures: ILectureV2.Basic[]; completed: boolean }
     const grouped = new Map<number, CourseGroup>()
 
     for (const lec of lectures) {
@@ -151,8 +150,7 @@ export class LecturesServiceV2 {
           lectures: [basic],
           completed: takenCourseIdSet.has(courseId),
         })
-      }
-      else {
+      } else {
         grouped.get(courseId)!.lectures.push(basic)
       }
     }
