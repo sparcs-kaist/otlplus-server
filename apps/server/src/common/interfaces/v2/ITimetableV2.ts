@@ -259,11 +259,6 @@ export namespace ITimetableV2 {
     @IsNumber()
     @Min(0)
     @Type(() => Number)
-    userId!: number
-
-    @IsNumber()
-    @Min(0)
-    @Type(() => Number)
     year!: number
 
     @IsNumber()

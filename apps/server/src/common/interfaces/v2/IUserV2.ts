@@ -201,4 +201,14 @@ export namespace IUserV2 {
     @IsIn(['add', 'delete'], { message: 'mode must be either "add" or "delete"' })
     mode!: 'add' | 'delete'
   }
+
+  export class WishlistQueryDto {
+    @IsNumber()
+    @Min(0)
+    year!: number
+
+    @IsNumber()
+    @Min(1)
+    semester!: number
+  }
 }
