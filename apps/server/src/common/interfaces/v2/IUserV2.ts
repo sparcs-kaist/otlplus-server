@@ -14,6 +14,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Max,
   Min,
   ValidateNested,
 } from 'class-validator'
@@ -205,10 +206,13 @@ export namespace IUserV2 {
   export class WishlistQueryDto {
     @IsNumber()
     @Min(0)
+    @Type(() => Number)
     year!: number
 
     @IsNumber()
     @Min(1)
+    @Max(4)
+    @Type(() => Number)
     semester!: number
   }
 }
