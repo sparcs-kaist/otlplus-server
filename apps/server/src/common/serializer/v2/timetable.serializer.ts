@@ -40,8 +40,8 @@ export const toJsonTimetableV2WithLectures = (
       id: lecture.subject_lecture.subject_department.id,
       name:
         language === 'en'
-          ? lecture.subject_lecture.subject_department.name_en
-          : lecture.subject_lecture.subject_department.name,
+          ? (lecture.subject_lecture.subject_department.name_en ?? '')
+          : (lecture.subject_lecture.subject_department.name ?? ''),
     },
 
     type: lecture.subject_lecture.type,
