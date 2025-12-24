@@ -19,16 +19,6 @@ export const toJsonTimetableV2WithLectures = (
   timetable: ETimetable.Details,
   language: Language,
 ): ITimetableV2.GetResDto => ({
-  id: timetable.id,
-  name: timetable.name ?? '',
-  userId: timetable.user_id,
-  year: timetable.year ?? 0,
-  semester: timetable.semester ?? 0,
-  timetableOrder: timetable.arrange_order,
-
-  // TODO: this is temporary, need to be replaced with updated lecture serializer
-  // this returns specified interface, which is not exactly the same as ILecture.Detail
-  // either ILectureV2.Detail or v2 serializer should be properly implemented from lecture side
   lectures: timetable.timetable_timetable_lectures.map((lecture) => ({
     id: lecture.subject_lecture.id,
     courseId: lecture.subject_lecture.course_id,

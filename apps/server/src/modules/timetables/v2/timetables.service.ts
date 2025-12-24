@@ -1,4 +1,6 @@
-import { BadRequestException, ForbiddenException, Inject, Injectable, UnauthorizedException } from '@nestjs/common'
+import {
+  BadRequestException, ForbiddenException, Inject, Injectable, UnauthorizedException,
+} from '@nestjs/common'
 import { Transactional } from '@nestjs-cls/transactional'
 import { Language } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
@@ -19,8 +21,12 @@ export class TimetablesServiceV2 {
     private readonly timetableMQ: TimetableMQ,
   ) {}
 
-  async getTimetables(user: session_userprofile) {
-    return await this.timetableRepository.getTimetableBasics(user)
+  async getTimetables(
+    user: session_userprofile,
+    query: ITimetableV2.GetTimetablesReqDto,
+  ): Promise<ITimetableV2.GetTimetablesResDto> {
+    const timetables = await this.timetableRepository.getTimetables(user, query.year, query.semester)
+    return { timetables }
   }
 
   @Transactional()
@@ -29,7 +35,9 @@ export class TimetablesServiceV2 {
     body: ITimetableV2.CreateReqDto,
     language: Language,
   ): Promise<ITimetableV2.CreateResDto> {
-    const { userId, year, semester, lectureIds } = body
+    const {
+      userId, year, semester, lectureIds,
+    } = body
 
     if (userId !== user.id) {
       throw new BadRequestException('Current user does not match userId in POST request')
@@ -38,8 +46,7 @@ export class TimetablesServiceV2 {
     const relatedTimetables = await this.timetableRepository.getTimetableBasics(user, year, semester, {
       orderBy: { arrange_order: 'asc' },
     })
-    const arrangeOrder =
-      relatedTimetables.length > 0 ? relatedTimetables[relatedTimetables.length - 1].arrange_order + 1 : 0
+    const arrangeOrder = relatedTimetables.length > 0 ? relatedTimetables[relatedTimetables.length - 1].arrange_order + 1 : 0
 
     // Remove duplicate lecture IDs
     const uniqueLectureIds = Array.from(new Set(lectureIds ?? []))
@@ -97,9 +104,7 @@ export class TimetablesServiceV2 {
           arrange_order: timeTable.arrange_order - 1,
         }))
       await Promise.all(
-        timeTablesToBeUpdated.map(async (updateElem) =>
-          this.timetableRepository.updateOrder(updateElem.id, updateElem.arrange_order),
-        ),
+        timeTablesToBeUpdated.map(async (updateElem) => this.timetableRepository.updateOrder(updateElem.id, updateElem.arrange_order)),
       )
 
       // update statistics
@@ -112,7 +117,8 @@ export class TimetablesServiceV2 {
       return {
         message: 'Timetable deleted successfully',
       }
-    } catch (error) {
+    }
+    catch (error) {
       // catch prisma.timetable_timetable.findUniqueOrThrow() + not found, throw 400
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
@@ -169,25 +175,24 @@ export class TimetablesServiceV2 {
         }
 
         // Calculate which timetables need to be updated
-        let timeTablesToBeUpdated: { id: number; arrange_order: number }[] = []
+        let timeTablesToBeUpdated: { id: number, arrange_order: number }[] = []
 
         if (targetArrangeOrder < timetable.arrange_order) {
           // Moving to earlier position: shift timetables between target and current position forward
           timeTablesToBeUpdated = relatedTimeTables
             .filter(
-              (timeTable) =>
-                timeTable.arrange_order >= targetArrangeOrder && timeTable.arrange_order < timetable.arrange_order,
+              (timeTable) => timeTable.arrange_order >= targetArrangeOrder && timeTable.arrange_order < timetable.arrange_order,
             )
             .map((timeTable) => ({
               id: timeTable.id,
               arrange_order: timeTable.arrange_order + 1,
             }))
-        } else if (targetArrangeOrder > timetable.arrange_order) {
+        }
+        else if (targetArrangeOrder > timetable.arrange_order) {
           // Moving to later position: shift timetables between current and target position backward
           timeTablesToBeUpdated = relatedTimeTables
             .filter(
-              (timeTable) =>
-                timeTable.arrange_order <= targetArrangeOrder && timeTable.arrange_order > timetable.arrange_order,
+              (timeTable) => timeTable.arrange_order <= targetArrangeOrder && timeTable.arrange_order > timetable.arrange_order,
             )
             .map((timeTable) => ({
               id: timeTable.id,
@@ -197,9 +202,7 @@ export class TimetablesServiceV2 {
 
         // Update other timetables first
         await Promise.all(
-          timeTablesToBeUpdated.map(async (timetableToUpdate) =>
-            this.timetableRepository.updateOrder(timetableToUpdate.id, timetableToUpdate.arrange_order),
-          ),
+          timeTablesToBeUpdated.map(async (timetableToUpdate) => this.timetableRepository.updateOrder(timetableToUpdate.id, timetableToUpdate.arrange_order)),
         )
 
         // Finally update the target timetable
@@ -209,7 +212,8 @@ export class TimetablesServiceV2 {
       return {
         message: 'Timetable updated successfully',
       }
-    } catch (error) {
+    }
+    catch (error) {
       // catch prisma.timetable_timetable.findUniqueOrThrow() + not found, throw 400
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
@@ -232,7 +236,8 @@ export class TimetablesServiceV2 {
       }
 
       return toJsonTimetableV2WithLectures(timetable, language)
-    } catch (error) {
+    }
+    catch (error) {
       // catch prisma.timetable_timetable.findUniqueOrThrow() + not found, throw 400
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
@@ -262,7 +267,8 @@ export class TimetablesServiceV2 {
       let lecture
       try {
         lecture = await this.lectureRepository.getLectureBasicById(lectureId)
-      } catch (error) {
+      }
+      catch (error) {
         if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
           throw new BadRequestException('lectureId is invalid')
         }
@@ -273,7 +279,8 @@ export class TimetablesServiceV2 {
       let timetable
       try {
         timetable = await this.timetableRepository.getTimeTableById(timetableId)
-      } catch (error) {
+      }
+      catch (error) {
         if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
           throw new BadRequestException('timetableId is invalid')
         }
@@ -291,7 +298,8 @@ export class TimetablesServiceV2 {
 
       if (action === 'add') {
         await this.timetableRepository.addLectureToTimetable(timetable.id, lectureId)
-      } else if (action === 'delete') {
+      }
+      else if (action === 'delete') {
         await this.timetableRepository.removeLectureFromTimetable(timetable.id, lectureId)
       }
       await this.timetableMQ.publishLectureNumUpdate(lectureId).catch((error) => {
@@ -300,7 +308,8 @@ export class TimetablesServiceV2 {
       return {
         message: 'Timetable lecture updated successfully',
       }
-    } catch (error) {
+    }
+    catch (error) {
       // Re-throw if it's already a HttpException (BadRequestException, ForbiddenException, etc.)
       if (error instanceof BadRequestException || error instanceof ForbiddenException) {
         throw error
@@ -313,5 +322,20 @@ export class TimetablesServiceV2 {
       }
       throw error
     }
+  }
+
+  @Transactional()
+  async getMyTimetable(
+    user: session_userprofile,
+    query: ITimetableV2.MyTimetableReqDto,
+    language: Language,
+  ): Promise<ITimetableV2.MyTimetableResDto> {
+    const timetable = await this.lectureRepository.getTakenLecturesBySemester(user, query.year, query.semester)
+
+    if (!timetable) {
+      throw new BadRequestException('No timetable found for the current user')
+    }
+
+    return toJsonTimetableV2WithLectures(timetable, language)
   }
 }

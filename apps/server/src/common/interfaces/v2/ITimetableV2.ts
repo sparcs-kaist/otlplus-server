@@ -16,6 +16,23 @@ import {
 export const TIMETABLE_MAX_LIMIT = 50
 
 export namespace ITimetableV2 {
+  export class GetTimetablesReqDto {
+    @IsNumber()
+    @Min(0)
+    @Type(() => Number)
+    year!: number
+
+    @IsNumber()
+    @Min(1)
+    @Max(4)
+    @Type(() => Number)
+    semester!: number
+  }
+
+  export interface GetTimetablesResDto {
+    timetables: TimetableItem[]
+  }
+
   export class DeleteReqDto {
     @IsNumber()
     @Min(0)
@@ -217,37 +234,6 @@ export namespace ITimetableV2 {
   }
 
   export class GetResDto {
-    @IsNumber()
-    @Min(0)
-    @Type(() => Number)
-    id!: number
-
-    @IsString()
-    @Type(() => String)
-    name!: string
-
-    @IsNumber()
-    @Min(0)
-    @Type(() => Number)
-    userId!: number
-
-    @IsNumber()
-    @Min(0)
-    @Type(() => Number)
-    year!: number
-
-    @IsNumber()
-    @Min(1)
-    @Max(4)
-    @Type(() => Number)
-    semester!: number
-
-    @IsNumber()
-    @Min(0)
-    @Type(() => Number)
-    timetableOrder!: number
-
-    // TODO: this is temporary, waiting for lecture
     lectures!: LectureResDto[]
   }
 
@@ -293,15 +279,26 @@ export namespace ITimetableV2 {
 
   export class CreateResDto extends GetResDto {}
 
+  export class MyTimetableReqDto {
+    @IsNumber()
+    @Min(0)
+    @Type(() => Number)
+    year!: number
+
+    @IsNumber()
+    @Min(1)
+    @Max(4)
+    @Type(() => Number)
+    semester!: number
+  }
+
+  export class MyTimetableResDto extends GetResDto {}
+
   export interface TimetableItem {
     id: number
     name: string
     year: number | null
     semester: number | null
     timeTableOrder: number
-  }
-
-  export interface Response {
-    timetables: TimetableItem[]
   }
 }
