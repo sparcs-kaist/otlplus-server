@@ -62,8 +62,8 @@ export class TimetablesControllerV2 {
 
   @Get('/my-timetable')
   async getMyTimetable(
-    @Query() query: ITimetableV2.MyTimetableReqDto,
     @GetUser() user: session_userprofile,
+    @Query() query: ITimetableV2.MyTimetableReqDto,
     @GetLanguage() language: Language,
   ): Promise<ITimetableV2.MyTimetableResDto> {
     return await this.timetablesService.getMyTimetable(user, query, language)

@@ -325,7 +325,11 @@ export class TimetablesServiceV2 {
     query: ITimetableV2.MyTimetableReqDto,
     language: Language,
   ): Promise<ITimetableV2.MyTimetableResDto> {
-    const lectures = await this.lectureRepository.getTakenLecturesBySemester(user.id, query.year, query.semester)
+    const lectures = await this.lectureRepository.getTakenLecturesBySemester(
+      user.id,
+      Number(query.year),
+      Number(query.semester),
+    )
 
     if (!lectures) {
       throw new BadRequestException('No timetable found for the current user')

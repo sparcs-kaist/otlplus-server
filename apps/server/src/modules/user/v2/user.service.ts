@@ -55,7 +55,11 @@ export class UserServiceV2 {
     return toJsonUserLecturesV2(takenLectures, reviewedLectureIds, totalLikesCount, language)
   }
 
-  async getWishlist(user: session_userprofile, language: Language): Promise<IUserV2.WishlistResponse> {
+  async getWishlist(
+    user: session_userprofile,
+    query: IUserV2.WishlistQueryDto,
+    language: Language,
+  ): Promise<IUserV2.WishlistResponse> {
     // Fetch wishlist and taken lectures in parallel
     const [wishlist, takenLectures] = await Promise.all([
       this.wishlistRepository.getOrCreateWishlist(user.id),
@@ -71,7 +75,11 @@ export class UserServiceV2 {
     )
 
     // Fetch course information in batch
-    const coursesRaw = await this.courseRepository.getCoursesByIds(courseIds)
+    const coursesRaw = await this.courseRepository.getCoursesByIdsSemester(
+      courseIds,
+      Number(query.year),
+      Number(query.semester),
+    )
     const courseMap = new Map(coursesRaw.map((course) => [course.id, mapCourse(course)]))
 
     // Serialize and group by course
@@ -96,7 +104,8 @@ export class UserServiceV2 {
         throw new BadRequestException('Lecture already in wishlist')
       }
       await this.wishlistRepository.addLecture(wishlist.id, body.lectureId)
-    } else if (body.mode === 'delete') {
+    }
+    else if (body.mode === 'delete') {
       if (!existingLecture) {
         throw new BadRequestException('Lecture not in wishlist')
       }

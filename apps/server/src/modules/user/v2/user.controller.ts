@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   Patch,
   Put,
+  Query,
   UnauthorizedException,
 } from '@nestjs/common'
 import { GetLanguage, Language } from '@otl/server-nest/common/decorators/get-language.decorator'
@@ -31,7 +32,7 @@ export class UserControllerV2 {
     if (user) {
       return this.userServiceV2.getUnreviewedRandomCourse(user, language)
     }
-    throw new HttpException("Can't find user", 401)
+    throw new HttpException('Can\'t find user', 401)
   }
 
   @Get('info')
@@ -70,6 +71,7 @@ export class UserControllerV2 {
   @Get(':userId/wishlist')
   async getWishlist(
     @Param('userId', ParseIntPipe) userId: number,
+    @Query() query: IUserV2.WishlistQueryDto,
     @GetUser() user: session_userprofile,
     @GetLanguage() language: Language,
   ): Promise<IUserV2.WishlistResponse> {
@@ -77,7 +79,7 @@ export class UserControllerV2 {
       throw new UnauthorizedException('Current user does not match userId')
     }
 
-    return await this.userServiceV2.getWishlist(user, language)
+    return await this.userServiceV2.getWishlist(user, query, language)
   }
 
   @Patch(':userId/wishlist')
