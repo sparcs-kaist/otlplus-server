@@ -5,7 +5,7 @@ import { ILecture } from './ILecture'
 
 export namespace IWishlist {
   export interface WithLectures {
-    lectures: ILecture.Basic[]
+    lectures: ILecture.Detail[]
   }
 
   export class AddLectureDto {

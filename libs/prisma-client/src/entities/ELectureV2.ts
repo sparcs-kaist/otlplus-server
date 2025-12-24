@@ -24,6 +24,8 @@ export namespace ELectureV2 {
     load: true,
     speech: true,
     is_english: true,
+    num_classes: true,
+    num_labs: true,
   })
 
   export const BasicArgs = Prisma.validator<Prisma.subject_lectureDefaultArgs>()({

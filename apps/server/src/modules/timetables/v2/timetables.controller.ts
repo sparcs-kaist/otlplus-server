@@ -1,8 +1,9 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common'
+import {
+  Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query,
+} from '@nestjs/common'
 import { GetLanguage, Language } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
-import { toJsonTimetableV2 } from '@otl/server-nest/common/serializer/v2/timetable.serializer'
 import { session_userprofile } from '@prisma/client'
 
 import { TimetablesServiceV2 } from './timetables.service'
@@ -12,9 +13,8 @@ export class TimetablesControllerV2 {
   constructor(private readonly timetablesService: TimetablesServiceV2) {}
 
   @Get()
-  async getTimetables(@GetUser() user: session_userprofile): Promise<ITimetableV2.Response> {
-    const timeTableList = await this.timetablesService.getTimetables(user)
-    return { timetables: timeTableList.map((timeTable) => toJsonTimetableV2(timeTable)) }
+  async getTimetables(@Query() query: ITimetableV2.GetTimetablesReqDto, @GetUser() user: session_userprofile) {
+    return await this.timetablesService.getTimetables(user, query)
   }
 
   @Post()
@@ -58,5 +58,14 @@ export class TimetablesControllerV2 {
     @Body() body: ITimetableV2.UpdateLectureReqDto,
   ): Promise<ITimetableV2.UpdateLectureResDto> {
     return await this.timetablesService.updateTimetableLecture(user, body, timetableId)
+  }
+
+  @Get('/my-timetable')
+  async getMyTimetable(
+    @Query() query: ITimetableV2.MyTimetableReqDto,
+    @GetUser() user: session_userprofile,
+    @GetLanguage() language: Language,
+  ): Promise<ITimetableV2.MyTimetableResDto> {
+    return await this.timetablesService.getMyTimetable(user, query, language)
   }
 }

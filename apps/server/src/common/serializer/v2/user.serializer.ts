@@ -1,7 +1,11 @@
 import { IUserV2 } from '@otl/server-nest/common/interfaces/v2'
 import { CourseBasic } from '@otl/server-nest/modules/courses/domain/course'
 
+import { getTimeNumeric } from '@otl/common'
+
 import { ELecture, EWishlist } from '@otl/prisma-client/entities'
+
+import { toJsonExamtime } from '../examtime.serializer'
 
 export const toJsonUserLecturesV2 = (
   lectures: ELecture.Details[],
@@ -110,13 +114,13 @@ export const toJsonWishlistV2 = (
                 : lecture.subject_department.name,
           },
           type: language === 'en' && lecture.type_en ? lecture.type_en : lecture.type,
-          limitPeople: lecture.limit_people,
+          limitPeople: lecture.limit,
           numPeople: lecture.num_people,
           credit: lecture.credit,
           creditAU: lecture.credit_au,
-          averageGrade: lecture.average_grade,
-          averageLoad: lecture.average_load,
-          averageSpeech: lecture.average_speech,
+          averageGrade: lecture.grade_sum,
+          averageLoad: lecture.load_sum,
+          averageSpeech: lecture.speech_sum,
           isEnglish: lecture.is_english,
           professors: lecture.subject_lecture_professors.map((lp) => ({
             id: lp.professor_id,
@@ -125,19 +129,23 @@ export const toJsonWishlistV2 = (
                 ? lp.professor.professor_name_en
                 : lp.professor.professor_name,
           })),
-          classes: lecture.class_times.map((ct) => ({
+          classes: lecture.subject_classtime.map((ct) => ({
             day: ct.day,
-            begin: ct.begin,
-            end: ct.end,
-            buildingCode: ct.building_code,
-            buildingName: language === 'en' && ct.building_name_en ? ct.building_name_en : ct.building_name,
+            begin: getTimeNumeric(ct.begin, false),
+            end: getTimeNumeric(ct.end, false),
+            buildingCode: ct.building_id,
+            buildingName:
+              language === 'en' && ct.building_full_name_en ? ct.building_full_name_en : ct.building_full_name,
             roomName: ct.room_name,
           })),
-          examTimes: lecture.exam_times.map((et) => ({
+          examTimes: lecture.subject_examtime.map((et) => ({
             day: et.day,
-            str: language === 'en' && et.str_en ? et.str_en : et.str,
-            begin: et.begin,
-            end: et.end,
+            str: (() => {
+              const temp = toJsonExamtime(et)
+              return language === 'en' ? temp.str_en : temp.str
+            })(),
+            begin: getTimeNumeric(et.begin, false),
+            end: getTimeNumeric(et.end, false),
           })),
           classDuration: lecture.num_classes,
           expDuration: lecture.num_labs,
