@@ -1,16 +1,16 @@
 import { IUserV2 } from '@otl/server-nest/common/interfaces/v2'
 import { CourseBasic } from '@otl/server-nest/modules/courses/domain/course'
 
-import { ELecture, EWishlist } from '@otl/prisma-client/entities'
+import { ELectureV2, EWishlistV2 } from '@otl/prisma-client/entities'
 
 export const toJsonUserLecturesV2 = (
-  lectures: ELecture.Details[],
+  lectures: ELectureV2.Basic[],
   reviewedLectureIds: Set<number>,
   totalLikesCount: number,
   language: string,
 ): IUserV2.LecturesResponse => {
   // Group lectures by year and semester
-  const groupedMap = new Map<string, ELecture.Details[]>()
+  const groupedMap = new Map<string, ELectureV2.Basic[]>()
 
   lectures.forEach((lecture) => {
     const key = `${lecture.year}-${lecture.semester}`
@@ -64,13 +64,13 @@ export const toJsonUserLecturesV2 = (
 }
 
 export const toJsonWishlistV2 = (
-  wishlist: EWishlist.WithLectures,
+  wishlist: EWishlistV2.WithLectures,
   courses: Map<number, CourseBasic>,
   takenCourseIds: Set<number>,
   language: string,
 ): IUserV2.WishlistResponse => {
   // Group lectures by course_id
-  const courseMap = new Map<number, ELecture.Details[]>()
+  const courseMap = new Map<number, ELectureV2.Basic[]>()
 
   wishlist.timetable_wishlist_lectures.forEach((wishlistLecture) => {
     const lecture = wishlistLecture.subject_lecture

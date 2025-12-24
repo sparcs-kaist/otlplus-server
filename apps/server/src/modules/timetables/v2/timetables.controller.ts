@@ -13,10 +13,7 @@ export class TimetablesControllerV2 {
   constructor(private readonly timetablesService: TimetablesServiceV2) {}
 
   @Get()
-  async getTimetables(
-    @Query() query: ITimetableV2.GetTimetablesReqDto,
-    @GetUser() user: session_userprofile,
-  ): Promise<ITimetableV2.GetTimetablesResDto> {
+  async getTimetables(@Query() query: ITimetableV2.GetTimetablesReqDto, @GetUser() user: session_userprofile) {
     return await this.timetablesService.getTimetables(user, query)
   }
 
