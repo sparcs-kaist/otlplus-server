@@ -68,7 +68,7 @@ export const toJsonUserLecturesV2 = (
 }
 
 export const toJsonWishlistV2 = (
-  wishlist: EWishlist.WithLectures,
+  wishlist: EWishlist.WithLecturesBySemesterPayload,
   courses: Map<number, CourseBasic>,
   takenCourseIds: Set<number>,
   language: string,

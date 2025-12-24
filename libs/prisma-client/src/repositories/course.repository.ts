@@ -554,21 +554,4 @@ export class CourseRepository implements ServerConsumerCourseRepository {
       include: ECourse.Basic,
     })
   }
-
-  async getCoursesByIdsSemester(ids: number[], year: number, semester: number) {
-    return this.prismaRead.subject_course.findMany({
-      where: {
-        id: {
-          in: ids,
-        },
-        lecture: {
-          some: {
-            year,
-            semester,
-          },
-        },
-      },
-      include: ECourse.Basic,
-    })
-  }
 }

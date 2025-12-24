@@ -61,10 +61,13 @@ export class UserServiceV2 {
     language: Language,
   ): Promise<IUserV2.WishlistResponse> {
     // Fetch wishlist and taken lectures in parallel
-    const [wishlist, takenLectures] = await Promise.all([
-      this.wishlistRepository.getOrCreateWishlist(user.id),
-      this.lectureRepository.getTakenLectures(user),
-    ])
+    const wishlist = await this.wishlistRepository.getOrCreateWishlistBySemester(
+      user.id,
+      Number(query.year),
+      Number(query.semester),
+    )
+
+    const takenLectures = await this.lectureRepository.getTakenLectures(user)
 
     // Create Set of taken course IDs for O(1) lookup
     const takenCourseIds = new Set(takenLectures.map((lecture) => lecture.course_id))
@@ -75,11 +78,7 @@ export class UserServiceV2 {
     )
 
     // Fetch course information in batch
-    const coursesRaw = await this.courseRepository.getCoursesByIdsSemester(
-      courseIds,
-      Number(query.year),
-      Number(query.semester),
-    )
+    const coursesRaw = await this.courseRepository.getCoursesByIds(courseIds)
     const courseMap = new Map(coursesRaw.map((course) => [course.id, mapCourse(course)]))
 
     // Serialize and group by course
