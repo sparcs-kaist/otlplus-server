@@ -4,7 +4,10 @@ import {
 import { Transactional } from '@nestjs-cls/transactional'
 import { Language } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
-import { toJsonTimetableV2WithLectures } from '@otl/server-nest/common/serializer/v2/timetable.serializer'
+import {
+  toJsonLectures,
+  toJsonTimetableV2WithLectures,
+} from '@otl/server-nest/common/serializer/v2/timetable.serializer'
 import { TIMETABLE_MQ, TimetableMQ } from '@otl/server-nest/modules/timetables/domain/out/TimetableMQ'
 import { Prisma, session_userprofile } from '@prisma/client'
 
@@ -21,10 +24,7 @@ export class TimetablesServiceV2 {
     private readonly timetableMQ: TimetableMQ,
   ) {}
 
-  async getTimetables(
-    user: session_userprofile,
-    query: ITimetableV2.GetTimetablesReqDto,
-  ): Promise<ITimetableV2.GetTimetablesResDto> {
+  async getTimetables(user: session_userprofile, query: ITimetableV2.GetTimetablesReqDto) {
     const timetables = await this.timetableRepository.getTimetables(user, query.year, query.semester)
     return { timetables }
   }
@@ -35,13 +35,7 @@ export class TimetablesServiceV2 {
     body: ITimetableV2.CreateReqDto,
     language: Language,
   ): Promise<ITimetableV2.CreateResDto> {
-    const {
-      userId, year, semester, lectureIds,
-    } = body
-
-    if (userId !== user.id) {
-      throw new BadRequestException('Current user does not match userId in POST request')
-    }
+    const { year, semester, lectureIds } = body
 
     const relatedTimetables = await this.timetableRepository.getTimetableBasics(user, year, semester, {
       orderBy: { arrange_order: 'asc' },
@@ -61,6 +55,7 @@ export class TimetablesServiceV2 {
       semester,
       arrangeOrder,
       filteredLectures,
+      language === 'en' ? `Timetable ${arrangeOrder + 1}` : `시간표 ${arrangeOrder + 1}`,
     )
 
     await Promise.all(
@@ -69,7 +64,7 @@ export class TimetablesServiceV2 {
       logger.error('Failed to publish lecture num update', error)
     })
 
-    return toJsonTimetableV2WithLectures(createdTimetable, language)
+    return { id: createdTimetable.id }
   }
 
   @Transactional()
@@ -330,12 +325,12 @@ export class TimetablesServiceV2 {
     query: ITimetableV2.MyTimetableReqDto,
     language: Language,
   ): Promise<ITimetableV2.MyTimetableResDto> {
-    const timetable = await this.lectureRepository.getTakenLecturesBySemester(user.id, query.year, query.semester)
+    const lectures = await this.lectureRepository.getTakenLecturesBySemester(user.id, query.year, query.semester)
 
-    if (!timetable) {
+    if (!lectures) {
       throw new BadRequestException('No timetable found for the current user')
     }
 
-    return toJsonTimetableV2WithLectures(timetable, language)
+    return { lectures: toJsonLectures(lectures, language).lectures }
   }
 }

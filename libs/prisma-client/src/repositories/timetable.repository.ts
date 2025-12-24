@@ -73,6 +73,7 @@ export class TimetableRepository {
     semester: number,
     arrangeOrder: number,
     lectures: ELecture.Details[],
+    name?: string,
   ): Promise<ETimetable.Details> {
     return this.prismaRead.timetable_timetable.create({
       data: {
@@ -80,6 +81,7 @@ export class TimetableRepository {
         year,
         semester,
         arrange_order: arrangeOrder,
+        name: name ?? '',
         timetable_timetable_lectures: {
           createMany: {
             data: lectures.map((lecture) => ({

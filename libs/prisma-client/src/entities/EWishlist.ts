@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client'
 
-import { ELectureV2 } from './ELectureV2'
+import { ELecture } from './ELecture'
 
 export namespace EWishlist {
   export const WithLectures = Prisma.validator<Prisma.timetable_wishlistDefaultArgs>()({
@@ -8,7 +8,7 @@ export namespace EWishlist {
       timetable_wishlist_lectures: {
         include: {
           subject_lecture: {
-            include: ELectureV2.Details.include,
+            include: ELecture.Details.include,
           },
         },
         where: { subject_lecture: { deleted: false } },

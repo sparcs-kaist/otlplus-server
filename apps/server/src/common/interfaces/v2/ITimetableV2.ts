@@ -277,7 +277,12 @@ export namespace ITimetableV2 {
     lectureIds!: number[]
   }
 
-  export class CreateResDto extends GetResDto {}
+  export class CreateResDto {
+    @IsNumber()
+    @Min(0)
+    @Type(() => Number)
+    id!: number
+  }
 
   export class MyTimetableReqDto {
     @IsNumber()
