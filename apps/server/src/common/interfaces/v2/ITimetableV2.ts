@@ -148,7 +148,7 @@ export namespace ITimetableV2 {
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => DepartmentResDto)
-    department!: DepartmentResDto[]
+    department!: DepartmentResDto
 
     @IsString()
     @Type(() => String)
@@ -204,6 +204,16 @@ export namespace ITimetableV2 {
     classes!: ClassResDto[]
 
     examTimes!: ExamTimeResDto[]
+
+    @IsNumber()
+    @Min(0)
+    @Type(() => Number)
+    classDuration!: number
+
+    @IsNumber()
+    @Min(0)
+    @Type(() => Number)
+    expDuration!: number
   }
 
   export class GetResDto {

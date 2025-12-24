@@ -1,6 +1,4 @@
-import {
-  Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post,
-} from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common'
 import { GetLanguage, Language } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'

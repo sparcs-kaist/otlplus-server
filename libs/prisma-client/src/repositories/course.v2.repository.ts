@@ -59,7 +59,7 @@ export class CourseRepositoryV2 {
     order: string | undefined,
     offset: number | undefined,
     limit: number | undefined,
-  ): Promise<{ queryResult: ECourseV2.BasicWithProfessors[], totalCount: number }> {
+  ): Promise<{ queryResult: ECourseV2.BasicWithProfessors[]; totalCount: number }> {
     const DEFAULT_LIMIT = 150
     // const DEFAULT_ORDER = ['old_code'] satisfies (keyof ECourse.Details)[]
     const departmentFilter = this.departmentFilter(department)
@@ -184,50 +184,50 @@ export class CourseRepositoryV2 {
     }
     const professors_professor_name_filter = isCourse
       ? {
-        subject_course_professors: {
-          some: {
-            professor: {
-              professor_name: {
-                contains: keyword_trimed,
+          subject_course_professors: {
+            some: {
+              professor: {
+                professor_name: {
+                  contains: keyword_trimed,
+                },
               },
             },
           },
-        },
-      }
+        }
       : {
-        subject_lecture_professors: {
-          some: {
-            professor: {
-              professor_name: {
-                contains: keyword_trimed,
+          subject_lecture_professors: {
+            some: {
+              professor: {
+                professor_name: {
+                  contains: keyword_trimed,
+                },
               },
             },
           },
-        },
-      }
+        }
     const professors_professor_name_en_filter = isCourse
       ? {
-        subject_course_professors: {
-          some: {
-            professor: {
-              professor_name_en: {
-                contains: keyword_trimed,
+          subject_course_professors: {
+            some: {
+              professor: {
+                professor_name_en: {
+                  contains: keyword_trimed,
+                },
               },
             },
           },
-        },
-      }
+        }
       : {
-        subject_lecture_professors: {
-          some: {
-            professor: {
-              professor_name_en: {
-                contains: keyword_trimed,
+          subject_lecture_professors: {
+            some: {
+              professor: {
+                professor_name_en: {
+                  contains: keyword_trimed,
+                },
               },
             },
           },
-        },
-      }
+        }
 
     const old_code_filter = {
       old_code: {

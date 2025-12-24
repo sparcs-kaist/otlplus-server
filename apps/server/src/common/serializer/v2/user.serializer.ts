@@ -92,6 +92,7 @@ export const toJsonWishlistV2 = (
       }
 
       return {
+        id: course.id,
         name: language === 'en' && course.titleEn ? course.titleEn : course.title,
         code: course.newCode,
         type: language === 'en' && course.typeEn ? course.typeEn : course.type,
@@ -101,6 +102,22 @@ export const toJsonWishlistV2 = (
           name: language === 'en' && lecture.title_en ? lecture.title_en : lecture.title,
           code: lecture.new_code,
           classNo: lecture.class_no,
+          department: {
+            id: lecture.subject_department.id,
+            name:
+              language === 'en' && lecture.subject_department.name_en
+                ? lecture.subject_department.name_en
+                : lecture.subject_department.name,
+          },
+          type: language === 'en' && lecture.type_en ? lecture.type_en : lecture.type,
+          limitPeople: lecture.limit_people,
+          numPeople: lecture.num_people,
+          credit: lecture.credit,
+          creditAU: lecture.credit_au,
+          averageGrade: lecture.average_grade,
+          averageLoad: lecture.average_load,
+          averageSpeech: lecture.average_speech,
+          isEnglish: lecture.is_english,
           professors: lecture.subject_lecture_professors.map((lp) => ({
             id: lp.professor_id,
             name:
@@ -108,6 +125,22 @@ export const toJsonWishlistV2 = (
                 ? lp.professor.professor_name_en
                 : lp.professor.professor_name,
           })),
+          classes: lecture.class_times.map((ct) => ({
+            day: ct.day,
+            begin: ct.begin,
+            end: ct.end,
+            buildingCode: ct.building_code,
+            buildingName: language === 'en' && ct.building_name_en ? ct.building_name_en : ct.building_name,
+            roomName: ct.room_name,
+          })),
+          examTimes: lecture.exam_times.map((et) => ({
+            day: et.day,
+            str: language === 'en' && et.str_en ? et.str_en : et.str,
+            begin: et.begin,
+            end: et.end,
+          })),
+          classDuration: lecture.num_classes,
+          expDuration: lecture.num_labs,
         })),
       }
     })

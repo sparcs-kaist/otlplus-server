@@ -96,8 +96,7 @@ export class UserServiceV2 {
         throw new BadRequestException('Lecture already in wishlist')
       }
       await this.wishlistRepository.addLecture(wishlist.id, body.lectureId)
-    }
-    else if (body.mode === 'delete') {
+    } else if (body.mode === 'delete') {
       if (!existingLecture) {
         throw new BadRequestException('Lecture not in wishlist')
       }
