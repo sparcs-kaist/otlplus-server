@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 
 import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 
-import { EWishlist } from '../entities'
+import { ELecture, EWishlist } from '../entities'
 import { PrismaService } from '../prisma.service'
 
 @Injectable()
@@ -18,6 +18,28 @@ export class WishlistRepository {
       create: { user_id: userId },
       update: {},
       include: EWishlist.WithLectures.include,
+    })
+  }
+
+  async getOrCreateWishlistBySemester(
+    userId: number,
+    year: number,
+    semester: number,
+  ): Promise<EWishlist.WithLecturesBySemesterPayload> {
+    return this.prisma.timetable_wishlist.upsert({
+      where: { user_id: userId }, // user_id unique
+      create: { user_id: userId },
+      update: {},
+      include: {
+        timetable_wishlist_lectures: {
+          where: {
+            subject_lecture: { year, semester, deleted: false },
+          },
+          include: {
+            subject_lecture: { include: ELecture.Details.include },
+          },
+        },
+      },
     })
   }
 
