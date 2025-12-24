@@ -42,6 +42,15 @@ export class TimetablesControllerV2 {
     return await this.timetablesService.updateTimetable(user, body)
   }
 
+  @Get('/my-timetable')
+  async getMyTimetable(
+    @Query() query: ITimetableV2.MyTimetableReqDto,
+    @GetUser() user: session_userprofile,
+    @GetLanguage() language: Language,
+  ): Promise<ITimetableV2.MyTimetableResDto> {
+    return await this.timetablesService.getMyTimetable(user, query, language)
+  }
+
   @Get('/:timetableId')
   async getTimetable(
     @Param('timetableId', ParseIntPipe) timetableId: number,
@@ -58,14 +67,5 @@ export class TimetablesControllerV2 {
     @Body() body: ITimetableV2.UpdateLectureReqDto,
   ): Promise<ITimetableV2.UpdateLectureResDto> {
     return await this.timetablesService.updateTimetableLecture(user, body, timetableId)
-  }
-
-  @Get('/my-timetable')
-  async getMyTimetable(
-    @Query() query: ITimetableV2.MyTimetableReqDto,
-    @GetUser() user: session_userprofile,
-    @GetLanguage() language: Language,
-  ): Promise<ITimetableV2.MyTimetableResDto> {
-    return await this.timetablesService.getMyTimetable(user, query, language)
   }
 }

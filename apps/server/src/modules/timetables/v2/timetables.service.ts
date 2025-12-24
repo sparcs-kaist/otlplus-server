@@ -6,6 +6,7 @@ import { Language } from '@otl/server-nest/common/decorators/get-language.decora
 import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
 import {
   toJsonLectures,
+  toJsonTimetableV2,
   toJsonTimetableV2WithLectures,
 } from '@otl/server-nest/common/serializer/v2/timetable.serializer'
 import { TIMETABLE_MQ, TimetableMQ } from '@otl/server-nest/modules/timetables/domain/out/TimetableMQ'
@@ -24,9 +25,12 @@ export class TimetablesServiceV2 {
     private readonly timetableMQ: TimetableMQ,
   ) {}
 
-  async getTimetables(user: session_userprofile, query: ITimetableV2.GetTimetablesReqDto) {
+  async getTimetables(
+    user: session_userprofile,
+    query: ITimetableV2.GetTimetablesReqDto,
+  ): Promise<ITimetableV2.GetTimetablesResDto> {
     const timetables = await this.timetableRepository.getTimetables(user, query.year, query.semester)
-    return { timetables }
+    return { timetables: timetables.map(toJsonTimetableV2) }
   }
 
   @Transactional()
