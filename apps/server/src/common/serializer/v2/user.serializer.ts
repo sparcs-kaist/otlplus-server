@@ -1,16 +1,16 @@
 import { IUserV2 } from '@otl/server-nest/common/interfaces/v2'
 import { CourseBasic } from '@otl/server-nest/modules/courses/domain/course'
 
-import { ELectureV2, EWishlistV2 } from '@otl/prisma-client/entities'
+import { ELecture, ELectureV2, EWishlistV2 } from '@otl/prisma-client/entities'
 
 export const toJsonUserLecturesV2 = (
-  lectures: ELectureV2.Basic[],
+  lectures: ELecture.Basic[],
   reviewedLectureIds: Set<number>,
   totalLikesCount: number,
   language: string,
 ): IUserV2.LecturesResponse => {
   // Group lectures by year and semester
-  const groupedMap = new Map<string, ELectureV2.Basic[]>()
+  const groupedMap = new Map<string, ELecture.Basic[]>()
 
   lectures.forEach((lecture) => {
     const key = `${lecture.year}-${lecture.semester}`
