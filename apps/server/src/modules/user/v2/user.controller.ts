@@ -31,7 +31,7 @@ export class UserControllerV2 {
     if (user) {
       return this.userServiceV2.getUnreviewedRandomCourse(user, language)
     }
-    throw new HttpException('Can\'t find user', 401)
+    throw new HttpException("Can't find user", 401)
   }
 
   @Get('info')

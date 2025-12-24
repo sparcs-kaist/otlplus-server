@@ -36,15 +36,13 @@ export const toJsonTimetableV2WithLectures = (
     name: language === 'en' ? lecture.subject_lecture.title_en : lecture.subject_lecture.title,
     code: lecture.subject_lecture.new_code,
 
-    department: [
-      {
-        id: lecture.subject_lecture.subject_department.id,
-        name:
-          language === 'en'
-            ? lecture.subject_lecture.subject_department.name_en
-            : lecture.subject_lecture.subject_department.name,
-      },
-    ],
+    department: {
+      id: lecture.subject_lecture.subject_department.id,
+      name:
+        language === 'en'
+          ? lecture.subject_lecture.subject_department.name_en
+          : lecture.subject_lecture.subject_department.name,
+    },
 
     type: lecture.subject_lecture.type,
     limitPeople: lecture.subject_lecture.limit,
@@ -91,5 +89,7 @@ export const toJsonTimetableV2WithLectures = (
       begin: getTimeNumeric(examtime.begin, false),
       end: getTimeNumeric(examtime.end, false),
     })),
-  })) as ITimetableV2.LectureResDto[],
+    classDuration: lecture.subject_lecture.num_classes,
+    expDuration: lecture.subject_lecture.num_labs,
+  })),
 })

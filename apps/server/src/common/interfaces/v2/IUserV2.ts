@@ -19,6 +19,7 @@ import {
 } from 'class-validator'
 
 import { IDepartmentV2 } from './IDepartmentV2'
+import { ILectureV2 } from './ILectureV2'
 
 export namespace IUserV2 {
   export interface SsoInfoOneApp {
@@ -179,20 +180,13 @@ export namespace IUserV2 {
     lecturesWrap!: LecturesWrap[]
   }
 
-  export interface WishlistLectureItem {
-    id: number
-    name: string
-    code: string
-    classNo: string
-    professors: ProfessorItem[]
-  }
-
   export interface WishlistCourseItem {
+    id: number
     name: string
     code: string
     type: string
     completed: boolean
-    lectures: WishlistLectureItem[]
+    lectures: ILectureV2.Basic[]
   }
 
   export interface WishlistResponse {

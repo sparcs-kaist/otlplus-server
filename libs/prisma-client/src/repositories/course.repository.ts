@@ -265,50 +265,50 @@ export class CourseRepository implements ServerConsumerCourseRepository {
     }
     const professors_professor_name_filter = isCourse
       ? {
-        subject_course_professors: {
-          some: {
-            professor: {
-              professor_name: {
-                contains: keyword_trimed,
+          subject_course_professors: {
+            some: {
+              professor: {
+                professor_name: {
+                  contains: keyword_trimed,
+                },
               },
             },
           },
-        },
-      }
+        }
       : {
-        subject_lecture_professors: {
-          some: {
-            professor: {
-              professor_name: {
-                contains: keyword_trimed,
+          subject_lecture_professors: {
+            some: {
+              professor: {
+                professor_name: {
+                  contains: keyword_trimed,
+                },
               },
             },
           },
-        },
-      }
+        }
     const professors_professor_name_en_filter = isCourse
       ? {
-        subject_course_professors: {
-          some: {
-            professor: {
-              professor_name_en: {
-                contains: keyword_trimed,
+          subject_course_professors: {
+            some: {
+              professor: {
+                professor_name_en: {
+                  contains: keyword_trimed,
+                },
               },
             },
           },
-        },
-      }
+        }
       : {
-        subject_lecture_professors: {
-          some: {
-            professor: {
-              professor_name_en: {
-                contains: keyword_trimed,
+          subject_lecture_professors: {
+            some: {
+              professor: {
+                professor_name_en: {
+                  contains: keyword_trimed,
+                },
               },
             },
           },
-        },
-      }
+        }
 
     const old_code_filter = {
       old_code: {
@@ -484,8 +484,7 @@ export class CourseRepository implements ServerConsumerCourseRepository {
     let courseIds
     if (!Array.isArray(courseId)) {
       courseIds = [courseId]
-    }
-    else {
+    } else {
       courseIds = courseId
     }
     const courseUsers = await this.prismaRead.subject_courseuser.findMany({
@@ -507,8 +506,7 @@ export class CourseRepository implements ServerConsumerCourseRepository {
       courseIds.forEach((id) => {
         result[id] = false
       })
-    }
-    else {
+    } else {
       courseUsers.forEach((courseUser) => {
         result[courseUser.course_id] = this.isRead(courseUser)
       })
