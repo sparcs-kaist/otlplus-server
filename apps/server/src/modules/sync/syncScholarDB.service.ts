@@ -520,10 +520,15 @@ export class SyncScholarDBService {
   }
 
   deriveExamtimeInfo(examtime: ISync.ExamtimeType): DerivedExamtimeInfo {
+    const beginHours = String(examtime.EXAM_BEGIN.hours).padStart(2, '0')
+    const beginMinutes = String(examtime.EXAM_BEGIN.minutes).padStart(2, '0')
+    const endHours = String(examtime.EXAM_END.hours).padStart(2, '0')
+    const endMinutes = String(examtime.EXAM_END.minutes).padStart(2, '0')
+
     return {
       day: examtime.EXAM_DAY - 1,
-      begin: new Date(`1970-01-01T${examtime.EXAM_BEGIN.slice(11)}Z`),
-      end: new Date(`1970-01-01T${examtime.EXAM_END.slice(11)}Z`),
+      begin: new Date(`1970-01-01T${beginHours}:${beginMinutes}:00Z`),
+      end: new Date(`1970-01-01T${endHours}:${endMinutes}:00Z`),
     }
   }
 
@@ -536,10 +541,15 @@ export class SyncScholarDBService {
   }
 
   deriveClasstimeInfo(classTime: ISync.ClasstimeType): DerivedClasstimeInfo {
+    const beginHours = String(classTime.LECTURE_BEGIN.hours).padStart(2, '0')
+    const beginMinutes = String(classTime.LECTURE_BEGIN.minutes).padStart(2, '0')
+    const endHours = String(classTime.LECTURE_END.hours).padStart(2, '0')
+    const endMinutes = String(classTime.LECTURE_END.minutes).padStart(2, '0')
+
     return {
       day: classTime.LECTURE_DAY,
-      begin: new Date(`1970-01-01T${classTime.LECTURE_BEGIN.slice(11)}Z`),
-      end: new Date(`1970-01-01T${classTime.LECTURE_END.slice(11)}Z`),
+      begin: new Date(`1970-01-01T${beginHours}:${beginMinutes}:00Z`),
+      end: new Date(`1970-01-01T${endHours}:${endMinutes}:00Z`),
       type: classTime.LECTURE_TYPE,
       building_id: classTime.BUILDING.toString(),
       room_name: classTime.ROOM_NO,
