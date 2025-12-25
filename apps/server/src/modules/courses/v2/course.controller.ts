@@ -1,12 +1,5 @@
 import {
-  BadRequestException,
-  Controller,
-  ExecutionContext,
-  Get,
-  Param,
-  ParseIntPipe,
-  Query,
-  UseInterceptors,
+  BadRequestException, Controller, ExecutionContext, Get, Param, ParseIntPipe, Query,
 } from '@nestjs/common'
 import { GetLanguage, Language } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
@@ -65,10 +58,12 @@ export class CourseControllerV2 {
   ): Promise<ICourseV2.Detail> {
     try {
       return await this.coursesService.getCourseById(courseId, user || null, language)
-    } catch (error) {
+    }
+    catch (error) {
       if (error === 'Invalid course id') {
         throw new BadRequestException('Invalid course id') // 400
-      } else {
+      }
+      else {
         throw error // 기타 에러 : 500
       }
     }
