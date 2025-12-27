@@ -3,7 +3,7 @@ import { ICourseV2, IProfessorV2 } from '@otl/server-nest/common/interfaces/v2'
 import { session_userprofile } from '@prisma/client'
 
 import { ECourseV2 } from '@otl/prisma-client/entities'
-import { CourseRepositoryV2 } from '@otl/prisma-client/repositories'
+import { CourseRepositoryV2, LectureRepository } from '@otl/prisma-client/repositories'
 import { ProfessorRepositoryV2 } from '@otl/prisma-client/repositories/professor.repository.v2'
 
 type language = 'ko' | 'en'
@@ -53,6 +53,7 @@ function toICourseBasic(c: ECourseV2.BasicWithProfessors, lang: language, comple
 export class CoursesServiceV2 {
   constructor(
     private readonly courseRepository: CourseRepositoryV2,
+    private readonly lectureRepository: LectureRepository,
     private readonly professorRepository: ProfessorRepositoryV2,
   ) {}
 
@@ -100,7 +101,7 @@ export class CoursesServiceV2 {
       throw new Error('Invalid course id')
     }
 
-    const userTakenLectureIds = !user ? [] : await this.courseRepository.getTakenLectureIdsByUser(user.id, courseId)
+    const userTakenLectureIds = (!user ? [] : await this.lectureRepository.getTakenLectures(user)).map((lec) => lec.id)
     const Histories: courseHistory[] = []
 
     // year와 semester 단위로 묶기
