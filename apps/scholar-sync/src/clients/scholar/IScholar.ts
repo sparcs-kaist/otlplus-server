@@ -1,6 +1,6 @@
 import { Transform, Type } from 'class-transformer'
 import {
-  IsIn, IsInt, IsNumber, IsOptional, IsString, ValidateNested,
+  IsIn, IsInt, IsNumber, IsObject, IsOptional, IsString, ValidateNested,
 } from 'class-validator'
 
 export namespace IScholar {
@@ -64,12 +64,34 @@ export namespace IScholar {
     LECTURE_DAY!: number
 
     /** 수업 시작 시간 */
-    @IsString()
-    LECTURE_BEGIN!: string
+    @IsObject()
+    LECTURE_BEGIN!: {
+      date: number
+      day: number
+      hours: number
+      minutes: number
+      month: number
+      nanos: number
+      seconds: number
+      time: number
+      timezoneOffset: number
+      year: number
+    }
 
     /** 수업 종료 시간 */
-    @IsString()
-    LECTURE_END!: string
+    @IsObject()
+    LECTURE_END!: {
+      date: number
+      day: number
+      hours: number
+      minutes: number
+      month: number
+      nanos: number
+      seconds: number
+      time: number
+      timezoneOffset: number
+      year: number
+    }
 
     /** 수업 종류. l: lecture, e: experiment */
     @Transform(({ value }) => value.toLowerCase()) // TODO: DB까지 전부 대문자로 변경?
@@ -150,12 +172,34 @@ export namespace IScholar {
     EXAM_DAY!: number
 
     /** 시험 시작 시간 */
-    @IsString()
-    EXAM_BEGIN!: string
+    @IsObject()
+    EXAM_BEGIN!: {
+      date: number
+      day: number
+      hours: number
+      minutes: number
+      month: number
+      nanos: number
+      seconds: number
+      time: number
+      timezoneOffset: number
+      year: number
+    }
 
     /** 시험 종료 시간 */
-    @IsString()
-    EXAM_END!: string
+    @IsObject()
+    EXAM_END!: {
+      date: number
+      day: number
+      hours: number
+      minutes: number
+      month: number
+      nanos: number
+      seconds: number
+      time: number
+      timezoneOffset: number
+      year: number
+    }
 
     /** 공지사항 */
     @IsString()

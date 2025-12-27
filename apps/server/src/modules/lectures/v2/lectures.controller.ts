@@ -1,4 +1,6 @@
-import { Controller, ExecutionContext, Get, Query, UseInterceptors } from '@nestjs/common'
+import {
+  Controller, ExecutionContext, Get, Query,
+} from '@nestjs/common'
 import { GetLanguage, Language } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator'
