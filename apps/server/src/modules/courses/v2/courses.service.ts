@@ -127,6 +127,9 @@ export class CoursesServiceV2 {
         // year, semester가 이미 있는 경우 : 분반 (classNo)만 추가
         if (existing) {
           existing.classes.push({ professors: professor_obj, classNo: lec.class_no, lectureId: lec.id })
+          if (userTakenLectureIds.includes(lec.id)) {
+            existing.myLectureId = lec.id
+          }
           // year, semester가 없는 경우 : 새로 추가
         }
         else {
