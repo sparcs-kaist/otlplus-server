@@ -21,6 +21,7 @@ import {
 
 import { IDepartmentV2 } from './IDepartmentV2'
 import { ILectureV2 } from './ILectureV2'
+import { IReviewV2 } from './IReviewV2'
 
 export namespace IUserV2 {
   export interface SsoInfoOneApp {
@@ -188,6 +189,10 @@ export namespace IUserV2 {
     type: string
     completed: boolean
     lectures: ILectureV2.Basic[]
+  }
+
+  export interface WrittenReviewsResponse {
+    reviews: IReviewV2.Basic[]
   }
 
   export interface WishlistResponse {

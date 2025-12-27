@@ -3,7 +3,7 @@ import { ICourseV2, IProfessorV2 } from '@otl/server-nest/common/interfaces/v2'
 import { session_userprofile } from '@prisma/client'
 
 import { ECourseV2 } from '@otl/prisma-client/entities'
-import { CourseRepositoryV2 } from '@otl/prisma-client/repositories'
+import { CourseRepositoryV2, LectureRepository } from '@otl/prisma-client/repositories'
 import { ProfessorRepositoryV2 } from '@otl/prisma-client/repositories/professor.repository.v2'
 
 type language = 'ko' | 'en'
@@ -53,6 +53,7 @@ function toICourseBasic(c: ECourseV2.BasicWithProfessors, lang: language, comple
 export class CoursesServiceV2 {
   constructor(
     private readonly courseRepository: CourseRepositoryV2,
+    private readonly lectureRepository: LectureRepository,
     private readonly professorRepository: ProfessorRepositoryV2,
   ) {}
 
@@ -100,7 +101,7 @@ export class CoursesServiceV2 {
       throw new Error('Invalid course id')
     }
 
-    const userTakenLectureIds = !user ? [] : await this.courseRepository.getTakenLectureIdsByUser(user.id, courseId)
+    const userTakenLectureIds = (!user ? [] : await this.lectureRepository.getTakenLectures(user)).map((lec) => lec.id)
     const Histories: courseHistory[] = []
 
     // year와 semester 단위로 묶기
@@ -126,6 +127,9 @@ export class CoursesServiceV2 {
         // year, semester가 이미 있는 경우 : 분반 (classNo)만 추가
         if (existing) {
           existing.classes.push({ professors: professor_obj, classNo: lec.class_no, lectureId: lec.id })
+          if (userTakenLectureIds.includes(lec.id)) {
+            existing.myLectureId = lec.id
+          }
           // year, semester가 없는 경우 : 새로 추가
         }
         else {
