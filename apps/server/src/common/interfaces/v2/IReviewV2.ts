@@ -13,6 +13,7 @@ export namespace IReviewV2 {
     id: number
     courseId: number
     courseName: string
+    lectureId: number
     professors: IProfessorV2.Basic[]
     year: number
     semester: number // 1-4

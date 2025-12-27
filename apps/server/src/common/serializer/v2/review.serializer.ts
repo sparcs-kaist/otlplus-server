@@ -25,6 +25,7 @@ export const toJsonReviewV2 = (
     id: review.id,
     courseId: review.course.id,
     courseName: language.includes('en') && review.course.title_en ? review.course.title_en : review.course.title,
+    lectureId: review.lecture.id,
     professors,
     year: review.lecture.year,
     semester: review.lecture.semester,
