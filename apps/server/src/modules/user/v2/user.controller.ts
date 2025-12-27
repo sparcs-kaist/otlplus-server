@@ -35,6 +35,17 @@ export class UserControllerV2 {
     throw new HttpException('Can\'t find user', 401)
   }
 
+  @Get('written-reviews')
+  async getUserWrittenReviews(
+    @GetUser() user: session_userprofile,
+    @GetLanguage() language: Language,
+  ): Promise<IReviewV2.Basic[] | null> {
+    if (user) {
+      return this.userServiceV2.getUserWrittenReviews(user, language)
+    }
+    throw new HttpException('Can\'t find user', 401)
+  }
+
   @Get('info')
   async getUserInfo(@GetUser() user: session_userprofile): Promise<IUserV2.Info | null> {
     return this.userServiceV2.getUserInfo(user)

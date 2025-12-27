@@ -30,7 +30,6 @@ export namespace IReviewV2 {
     averageGrade: number
     averageLoad: number
     averageSpeech: number
-    myReviewId: number[]
     department: IDepartmentV2.Basic | null
     totalCount: number
   }

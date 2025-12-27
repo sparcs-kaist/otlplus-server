@@ -2,6 +2,7 @@ import {
   HttpException, HttpStatus, Inject, Injectable,
 } from '@nestjs/common'
 import { Transactional } from '@nestjs-cls/transactional'
+import { Language } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { IReviewV2 } from '@otl/server-nest/common/interfaces/v2'
 import { toJsonReviewV2 } from '@otl/server-nest/common/serializer/v2/review.serializer'
 import { UNDERGRADUATE_DEPARTMENTS } from '@otl/server-nest/modules/departments/departments.service'
@@ -32,7 +33,7 @@ export class ReviewsServiceV2 {
   async getReviewsV2(
     reviewsParam: IReviewV2.QueryDto,
     user: EUser.Basic | null,
-    language: string = 'ko',
+    language: Language = 'ko',
   ): Promise<IReviewV2.GetResponseDto> {
     const MAX_LIMIT = 50
     const DEFAULT_ORDER = ['-written_datetime', '-id']
@@ -58,9 +59,6 @@ export class ReviewsServiceV2 {
         reviews = await this.getDefaultReviews(reviewsParam, DEFAULT_ORDER, MAX_LIMIT)
     }
 
-    // 사용자가 작성한 리뷰 ID 찾기
-    const myReviewId = user ? reviews.filter((review) => review.writer_id === user.id).map((review) => review.id) : []
-
     const reviewsWithLiked = reviews.map((review) => toJsonReviewV2(review as EReview.Extended, user, language))
 
     // 평균 계산
@@ -73,7 +71,6 @@ export class ReviewsServiceV2 {
       averageGrade,
       averageLoad,
       averageSpeech,
-      myReviewId,
       department,
       totalCount: reviewsWithLiked.length,
     }
