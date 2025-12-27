@@ -55,9 +55,9 @@ export class UserServiceV2 {
     return toJsonUserLecturesV2(takenLectures, reviewedLectureIds, totalLikesCount, language)
   }
 
-  async getUserWrittenReviews(user: session_userprofile, language: Language): Promise<IReviewV2.Basic[] | null> {
+  async getUserWrittenReviews(user: session_userprofile, language: Language): Promise<IUserV2.WrittenReviewsResponse> {
     const writtenRaw = await this.reviewsRepository.findReviewByUser(user)
-    return writtenRaw.map((review) => toJsonReviewV2(review, null, language))
+    return { reviews: writtenRaw.map((review) => toJsonReviewV2(review, null, language)) }
   }
 
   async getWishlist(

@@ -39,7 +39,7 @@ export class UserControllerV2 {
   async getUserWrittenReviews(
     @GetUser() user: session_userprofile,
     @GetLanguage() language: Language,
-  ): Promise<IReviewV2.Basic[] | null> {
+  ): Promise<IUserV2.WrittenReviewsResponse> {
     if (user) {
       return this.userServiceV2.getUserWrittenReviews(user, language)
     }
