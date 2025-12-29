@@ -21,8 +21,8 @@ export class LectureRepository implements ServerConsumerLectureRepository {
     private readonly courseRepository: CourseRepository,
   ) {}
 
-  async getLectureDetailById(id: number): Promise<ELecture.Details> {
-    return await this.prismaRead.subject_lecture.findUniqueOrThrow({
+  async getLectureDetailById(id: number): Promise<ELecture.Details | null> {
+    return await this.prismaRead.subject_lecture.findUnique({
       include: ELecture.Details.include,
       where: {
         id,
@@ -380,6 +380,7 @@ export class LectureRepository implements ServerConsumerLectureRepository {
         : lecture.classNo.length > 0
           ? lecture.classNo
           : 'A'
+      // classNo: 분반
 
       await this.prisma.subject_lecture.update({
         where: { id: lecture.id },

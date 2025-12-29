@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common'
 import { EDepartment } from '@otl/prisma-client/entities'
 import { DepartmentRepository } from '@otl/prisma-client/repositories'
 
-const UNDERGRADUATE_DEPARTMENTS = [
+export const UNDERGRADUATE_DEPARTMENTS = [
   'CE',
   'MSB',
   'ME',
@@ -53,7 +53,9 @@ export class DepartmentsService {
       this.departmentRepository.getDepartmentCodesOfRecentLectures(yearThreshold),
     ])
 
-    if (recentDepartmentCodes.length === 0) console.error('recentDepartmentCodes is empty, which indicates something is wrong')
+    if (recentDepartmentCodes.length === 0) {
+      console.error('recentDepartmentCodes is empty, which indicates something is wrong')
+    }
 
     const result = {
       undergraduate: [] as EDepartment.Basic[],

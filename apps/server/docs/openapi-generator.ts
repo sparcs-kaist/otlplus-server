@@ -17,9 +17,18 @@ function normalizePath(p: string) {
 
 const HTTP_METHOD_DECORATORS = ['Get', 'Post', 'Put', 'Delete', 'Patch']
 const EXCLUDE_FILES = ['IAuth.ts', 'index.ts', 'validators.decorator.ts']
+const EXCLUDE_DIRS = ['volumes']
 
 function hasPublicDecorator(decorators: Decorator[]): boolean {
   return decorators.some((dec) => dec.getName() === 'Public')
+}
+
+function isExcludedPath(filePath: string): boolean {
+  const normalizedPath = filePath.replace(/\\/g, '/')
+  return EXCLUDE_DIRS.some((dir) => {
+    const dirPattern = `/${dir}/`
+    return normalizedPath.includes(dirPattern) || normalizedPath.endsWith(`/${dir}`)
+  })
 }
 
 function convertTypeArrayToOneOf(obj: any) {
@@ -87,6 +96,9 @@ async function main() {
   const tsConfigPath = './apps/server/tsconfig.app.json' // 실제 경로 설정
   const project = new Project({
     tsConfigFilePath: tsConfigPath,
+    skipFileDependencyResolution: true,
+    skipAddingFilesFromTsConfig: false,
+    useInMemoryFileSystem: false,
   })
   const openapiDoc: OpenAPIObject = {
     openapi: '3.0.3',
@@ -124,6 +136,11 @@ async function main() {
           in: 'header',
           name: 'X-AUTH-SID',
         },
+        sidAuthToken: {
+          type: 'apiKey',
+          in: 'header',
+          name: 'X-SID-AUTH-TOKEN',
+        },
       },
     },
     security: [
@@ -133,6 +150,7 @@ async function main() {
         jwtHeaderAccessToken: [],
         jwtHeaderRefreshToken: [],
         sidHeader: [],
+        sidAuthToken: [],
       },
     ],
   }
@@ -141,7 +159,9 @@ async function main() {
   // const schemaTypeAliasPaths = []
   const classValidatorSchemas: Record<string, any> = {}
   const interfacesSchema: Record<string, any> = {}
-  const schemaSourceFiles = project.getSourceFiles('apps/server/src/common/interfaces/**/*.ts')
+  const schemaSourceFiles = project
+    .getSourceFiles('apps/server/src/common/interfaces/**/*.ts')
+    .filter((sourceFile) => !isExcludedPath(sourceFile.getFilePath()))
   for (const sourceFile of schemaSourceFiles) {
     const modules = sourceFile.getModules()
     // const interfaces = modules.flatMap((m) => m.getInterfaces())
@@ -182,7 +202,9 @@ async function main() {
   // console.log('interfaces schema', interfacesSchema)
   // console.log('class-validator schemas', classValidatorSchemas)
 
-  const sourceFiles = project.getSourceFiles('apps/server/src/**/*.controller.ts')
+  const sourceFiles = project
+    .getSourceFiles('apps/server/src/**/*.controller.ts')
+    .filter((sourceFile) => !isExcludedPath(sourceFile.getFilePath()))
   sourceFiles.forEach((sourceFile: SourceFile) => {
     const classes = sourceFile.getClasses()
     for (const cls of classes) {
@@ -221,6 +243,21 @@ async function main() {
 
           if (!deco) return
           const dName = deco.getName().toLowerCase() // query, body, param
+
+          // === GetLanguage decorator detection ===
+          // NOTE: We check by decorator name directly ("GetLanguage").
+          // Also, ignore the normal process below and just inject header param.
+          if (deco.getName() === 'GetLanguage') {
+            // Inject accept-language header parameter if not already pushed
+            parameters.push({
+              name: 'accept-language',
+              in: 'header',
+              required: false,
+              schema: { type: 'string', enum: ['en', 'ko'] },
+              description: 'en/ko (기본: ko). 언어 헤더 파라미터',
+            })
+            return
+          }
           if (!['query', 'param', 'body'].includes(dName)) {
             return
           }
@@ -236,13 +273,27 @@ async function main() {
             })
           }
           else if (dName === 'param') {
+            // Try to infer schema type from TS type or pipes like ParseIntPipe
+            const callExpr = deco.getCallExpression()
+            const decoArgs = callExpr ? callExpr.getArguments() : []
+            const hasParseIntPipe = decoArgs.some((arg) => arg.getText().includes('ParseIntPipe'))
+
+            let inferredType: any = { type: 'string' }
+            if (hasParseIntPipe) {
+              inferredType = { type: 'integer' }
+            }
+            else if (paramType.isNumber()) {
+              inferredType = { type: 'number' }
+            }
+            else if (paramType.isBoolean()) {
+              inferredType = { type: 'boolean' }
+            }
+
             parameters.push({
               name: param.getName(),
-              in: 'path', // query, param
+              in: 'path',
               required: !param.isOptional(),
-              schema: {
-                type: 'string',
-              },
+              schema: inferredType,
             })
           }
           else {

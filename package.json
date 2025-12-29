@@ -10,7 +10,7 @@
     "generate:server:api-docs": "tsx apps/server/docs/openapi-generator.ts",
     "build:all": "nest build server && nest build scholar-sync",
     "build:server": "nest build server",
-    "postbuild:server": "cp -r apps/server/docs/swagger.json dist/apps/server/apps/server/docs/swagger.json",
+    "postbuild:server": "mkdir -p dist/apps/server/apps/server/docs && cp apps/server/docs/swagger.json dist/apps/server/apps/server/docs/swagger.json",
     "build:scholar-sync": "nest build scholar-sync",
     "build:notification-consumer": "nest build notification-consumer",
     "build:server-consumer": "nest build server-consumer && yarn sentry:sourcemaps:consumer-dev",
