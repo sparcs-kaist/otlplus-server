@@ -209,14 +209,14 @@ export class LectureRepository implements ServerConsumerLectureRepository {
     if (!year) {
       return {
         semester: {
-          in: semester,
+          equals: semester,
         },
       }
     }
     if (!semester) {
       return {
-        years: {
-          equals: semester,
+        year: {
+          equals: year,
         },
       }
     }
