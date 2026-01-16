@@ -36,6 +36,7 @@ export namespace ICourseV2 {
       semester: number
       classes: {
         lectureId: number
+        subtitle: string // 부제
         classNo: string // 분반
         professors: IProfessorV2.Basic[] // 해당 분반의 교수님
       }[]
