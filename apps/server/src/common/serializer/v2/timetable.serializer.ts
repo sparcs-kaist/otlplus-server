@@ -23,7 +23,11 @@ export const toJsonTimetableV2WithLectures = (
     id: lecture.subject_lecture.id,
     courseId: lecture.subject_lecture.course_id,
     classNo: lecture.subject_lecture.class_no,
-    name: language === 'en' ? lecture.subject_lecture.title_en : lecture.subject_lecture.title,
+    name: (language === 'en' ? lecture.subject_lecture.common_title_en : lecture.subject_lecture.common_title) ?? '',
+    subtitle:
+      language === 'en'
+        ? lecture.subject_lecture.title_en.replace(lecture.subject_lecture.common_title_en ?? '', '')
+        : lecture.subject_lecture.title.replace(lecture.subject_lecture.common_title ?? '', ''),
     code: lecture.subject_lecture.new_code,
 
     department: {
@@ -89,7 +93,11 @@ export const toJsonLectures = (lectures: ELecture.Details[], language: Language)
     id: lecture.id,
     courseId: lecture.course_id,
     classNo: lecture.class_no,
-    name: language === 'en' ? lecture.title_en : lecture.title,
+    name: (language === 'en' ? lecture.common_title_en : lecture.common_title) ?? '',
+    subtitle:
+      language === 'en'
+        ? lecture.title_en.replace(lecture.common_title_en ?? '', '')
+        : lecture.title.replace(lecture.common_title ?? '', ''),
     code: lecture.new_code,
 
     department: {

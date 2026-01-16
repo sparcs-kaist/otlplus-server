@@ -29,6 +29,7 @@ export namespace ILectureV2 {
     courseId: number
     classNo: string // 분반 정보
     name: string // localized
+    subtitle: string // 부제 localized
     code: string // 강의 코드
     department: IDepartmentV2.Basic
     type: string // localized

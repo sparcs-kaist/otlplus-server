@@ -129,7 +129,11 @@ export class LecturesServiceV2 {
         id: lec.id,
         courseId: lec.course_id,
         classNo: String(lec.class_no ?? ''),
-        name: choose(lec.title, lec.title_en),
+        name: choose(lec.common_title, lec.common_title_en),
+        subtitle: choose(
+          lec.title.replace(lec.common_title ?? '', ''),
+          lec.title_en.replace(lec.common_title_en ?? '', ''),
+        ),
         code: courseCodeById.get(lec.course_id) ?? '',
         department: {
           id: lec.subject_department.id,
@@ -155,7 +159,7 @@ export class LecturesServiceV2 {
       if (!grouped.has(courseId)) {
         grouped.set(courseId, {
           id: courseId,
-          name: choose(lec.title, lec.title_en),
+          name: choose(lec.common_title, lec.common_title_en),
           code: courseCodeById.get(courseId) ?? '',
           type: choose(lec.type, lec.type_en),
           lectures: [basic],
