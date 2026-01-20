@@ -1,32 +1,22 @@
 FROM node:20 AS build
 
-RUN mkdir -p /var/www/otlplus-server
-RUN mkdir -p /var/www/otlplus-server/libs
-RUN mkdir -p /var/www/otlplus-server/apps
+RUN mkdir -p /var/www/otlplus-server && \
+    mkdir -p /var/www/otlplus-server/libs && \
+    mkdir -p /var/www/otlplus-server/apps && \
+    mkdir -p /var/www/otlplus-server/apps/server/logs
+
 WORKDIR /var/www/otlplus-server
-RUN mkdir -p /var/www/otlplus-server/apps/server/logs
 
-
-COPY package.json yarn.lock* package-lock.json* tsconfig.json tsconfig.build.json ./
-COPY nest-cli.json ./
-COPY ecosystem.config.js ./
-#COPY ./apps/server/package.json ./apps/server/package.json
-#COPY ./packages/api-interface/package.json ./packages/api-interface/package.json
+COPY package.json yarn.lock* package-lock.json* tsconfig.json tsconfig.build.json nest-cli.json ./
 
 RUN yarn --production
 
-COPY ./apps/server ./apps/server
-COPY ./apps/scholar-sync ./apps/scholar-sync
-COPY ./apps/server-consumer ./apps/server-consumer
-COPY ./apps/notification-consumer ./apps/notification-consumer
-COPY ./libs/common ./libs/common
-COPY ./libs/prisma-client ./libs/prisma-client
-COPY ./libs/rmq ./libs/rmq
-
+COPY ./apps/server ./apps/scholar-sync ./apps/server-consumer ./apps/notification-consumer ./apps/
+COPY ./libs/common ./libs/prisma-client ./libs/rmq ./libs/
 
 RUN yarn client:generate
-RUN yarn generate:server:api-docs
-RUN yarn build:server
+RUN yarn generate:server:api-docs && \
+    yarn build:server
 
 FROM node:20-slim AS server
 RUN apt-get update -y && apt-get install -y openssl
