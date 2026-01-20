@@ -28,3 +28,5 @@ COPY --from=build /var/www/otlplus-server/node_modules /var/www/otlplus-server/n
 WORKDIR /var/www/otlplus-server
 
 EXPOSE 8000
+
+CMD ["node", "./dist/apps/server/apps/server/src/bootstrap/bootstrap.js"]
