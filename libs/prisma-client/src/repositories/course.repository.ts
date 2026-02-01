@@ -5,7 +5,6 @@ import { Prisma } from '@prisma/client'
 
 import { formatNewLectureCodeWithDot, orderFilter } from '@otl/prisma-client/common'
 import { mapCourse } from '@otl/prisma-client/common/mapper/course'
-import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 import { PaginationOption } from '@otl/prisma-client/types'
 
 import { ECourse } from '../entities/ECourse'
@@ -16,10 +15,7 @@ import ECourseUser = ECourse.ECourseUser
 
 @Injectable()
 export class CourseRepository implements ServerConsumerCourseRepository {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly prismaRead: PrismaReadService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   private TYPE_ACRONYMS = {
     GR: 'General Required',
@@ -58,7 +54,7 @@ export class CourseRepository implements ServerConsumerCourseRepository {
   ]
 
   public async getCourseById(id: number): Promise<ECourse.Details | null> {
-    return await this.prismaRead.subject_course.findUnique({
+    return await this.prisma.subject_course.findUnique({
       // relationLoadStrategy: 'query',
       include: ECourse.Details.include,
       where: {
@@ -68,7 +64,7 @@ export class CourseRepository implements ServerConsumerCourseRepository {
   }
 
   public async getCourseBasicById(id: number): Promise<CourseBasic | null> {
-    const course = await this.prismaRead.subject_course.findUnique({
+    const course = await this.prisma.subject_course.findUnique({
       where: {
         id,
       },
@@ -81,7 +77,7 @@ export class CourseRepository implements ServerConsumerCourseRepository {
 
   public async getLecturesByCourseId(id: number, order?: string[]): Promise<ELecture.Details[]> {
     const orders = order || ['year', 'semester', 'class_no']
-    const course = await this.prismaRead.subject_course.findUnique({
+    const course = await this.prisma.subject_course.findUnique({
       include: {
         lecture: {
           include: {
@@ -102,7 +98,7 @@ export class CourseRepository implements ServerConsumerCourseRepository {
   }
 
   public async getReviewsByCourseId(option: PaginationOption, id: number): Promise<EReview.Details[]> {
-    const review = await this.prismaRead.review_review.findMany({
+    const review = await this.prisma.review_review.findMany({
       where: { course_id: id },
       include: EReview.Details.include,
       take: option.limit,
@@ -140,7 +136,7 @@ export class CourseRepository implements ServerConsumerCourseRepository {
       levelFilter,
     ].filter((filter): filter is object => filter !== null)
 
-    const queryResult = await this.prismaRead.subject_course.findMany({
+    const queryResult = await this.prisma.subject_course.findMany({
       include: ECourse.Details.include,
       where: {
         AND: filterList,
@@ -404,7 +400,7 @@ export class CourseRepository implements ServerConsumerCourseRepository {
       orderDict[orderBy[orderBy.length - 1]] = sorOrder
       orderFilters.push(orderDict)
     })
-    return this.prismaRead.subject_course.findMany({
+    return this.prisma.subject_course.findMany({
       where: {
         lecture: {
           some: {
@@ -424,7 +420,7 @@ export class CourseRepository implements ServerConsumerCourseRepository {
   }
 
   async getCourseAutocomplete(keyword: string): Promise<ECourse.Extended | null> {
-    const candidate = await this.prismaRead.subject_course.findFirst({
+    const candidate = await this.prisma.subject_course.findFirst({
       where: {
         OR: [
           { subject_department: { name: { startsWith: keyword } } },
@@ -488,7 +484,7 @@ export class CourseRepository implements ServerConsumerCourseRepository {
     else {
       courseIds = courseId
     }
-    const courseUsers = await this.prismaRead.subject_courseuser.findMany({
+    const courseUsers = await this.prisma.subject_courseuser.findMany({
       select: {
         subject_course: { select: { latest_written_datetime: true } },
         latest_read_datetime: true,
@@ -545,7 +541,7 @@ export class CourseRepository implements ServerConsumerCourseRepository {
   }
 
   async getCoursesByIds(ids: number[]) {
-    return this.prismaRead.subject_course.findMany({
+    return this.prisma.subject_course.findMany({
       where: {
         id: {
           in: ids,

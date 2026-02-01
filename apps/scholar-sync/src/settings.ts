@@ -48,15 +48,6 @@ const getPrismaConnectConfig = (): mariadb.PoolConfig => ({
   connectionLimit: 10,
 })
 
-const getPrismaReadConnectConfig = (): mariadb.PoolConfig => ({
-  host: process.env.READ_DATABASE_HOST,
-  port: Number(process.env.READ_DATABASE_PORT) || 3306,
-  user: process.env.READ_DATABASE_USER,
-  password: process.env.READ_DATABASE_PASSWORD,
-  database: process.env.READ_DATABASE_NAME,
-  connectionLimit: 10,
-})
-
 const getSyncConfig = () => ({
   slackKey: process.env.SLACK_KEY,
   scholarKey: process.env.SCHOLAR_AUTH_KEY,
@@ -122,7 +113,6 @@ function getLoggingConfig() {
 }
 export default () => ({
   ormconfig: () => getPrismaConnectConfig(),
-  ormReplicatedConfig: () => getPrismaReadConnectConfig(),
   getCorsConfig: () => getCorsConfig(),
   syncConfig: () => getSyncConfig(),
   getVersion: () => getVersion(),

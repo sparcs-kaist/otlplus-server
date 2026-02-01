@@ -21,7 +21,7 @@ import { PrismaModule, PrismaService } from '@otl/prisma-client'
   imports: [
     SentryModule.forRoot(),
     RmqModule,
-    PrismaModule.register(settings().ormconfig(), settings().ormReplicatedConfig()),
+    PrismaModule.register(settings().ormconfig()),
     ClsModule.forRoot({
       global: true,
       middleware: { mount: true },
