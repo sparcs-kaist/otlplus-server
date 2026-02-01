@@ -2,17 +2,13 @@ import { Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
 
 import { formatNewLectureCodeWithDot } from '@otl/prisma-client/common'
-import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 
 import { ECourseV2 } from '../entities/ECourseV2'
 import { PrismaService } from '../prisma.service'
 
 @Injectable()
 export class CourseRepositoryV2 {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly prismaRead: PrismaReadService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   private TYPE_ACRONYMS = {
     GR: 'General Required',
@@ -71,7 +67,7 @@ export class CourseRepositoryV2 {
       (filter): filter is object => filter !== null,
     )
 
-    const queryResult = await this.prismaRead.subject_course.findMany({
+    const queryResult = await this.prisma.subject_course.findMany({
       select: ECourseV2.BasicWithProfessorsArgs.select,
       where: {
         AND: filterList,
@@ -81,7 +77,7 @@ export class CourseRepositoryV2 {
       take: limit ?? DEFAULT_LIMIT,
     })
 
-    const queryCountResult = await this.prismaRead.subject_course.count({
+    const queryCountResult = await this.prisma.subject_course.count({
       where: {
         AND: filterList,
       },
@@ -283,12 +279,12 @@ export class CourseRepositoryV2 {
     course: ECourseV2.CourseDetail | null
     lectures: ECourseV2.CourseNestedLectures[]
   }> {
-    const course = await this.prismaRead.subject_course.findUnique({
+    const course = await this.prisma.subject_course.findUnique({
       where: { id: courseId },
       select: ECourseV2.CourseDetailArgs.select,
     })
 
-    const lectures = await this.prismaRead.subject_lecture.findMany({
+    const lectures = await this.prisma.subject_lecture.findMany({
       where: { course_id: courseId },
       select: ECourseV2.courseNestedLecturesArgs.select,
       orderBy: [{ year: 'desc' }, { semester: 'desc' }, { class_no: 'asc' }],
@@ -300,7 +296,7 @@ export class CourseRepositoryV2 {
   // 수강 여부 확인을 위해 수강한 course의 id list를 반환하는 메서드
   public async getTakenCourseIdsByUser(userId: number): Promise<number[]> {
     // user가 수강한 lecture의 id들
-    const takenLectures = await this.prismaRead.session_userprofile_taken_lectures.findMany({
+    const takenLectures = await this.prisma.session_userprofile_taken_lectures.findMany({
       where: { userprofile_id: userId },
       select: { lecture_id: true },
     })
@@ -310,7 +306,7 @@ export class CourseRepositoryV2 {
     }
 
     // lecture id들로 부터 course id 찾기
-    const takenCourses = await this.prismaRead.subject_lecture.findMany({
+    const takenCourses = await this.prisma.subject_lecture.findMany({
       where: { id: { in: lectureIds } },
       select: { course_id: true },
       distinct: ['course_id'],
@@ -322,14 +318,14 @@ export class CourseRepositoryV2 {
   // @Todo : LectureV2Repository로 옮기기
   public async getTakenLectureIdsByUser(userId: number, courseId: number): Promise<number[]> {
     // 1) 본인이 수강한 lecture 가져오기 : (lecture id, course_id)가져오기
-    const takenLectureIds = await this.prismaRead.session_userprofile_taken_lectures.findMany({
+    const takenLectureIds = await this.prisma.session_userprofile_taken_lectures.findMany({
       where: { userprofile_id: userId },
       select: {
         lecture_id: true,
       },
     })
     // 2)  해당 course에 속한 lecture인지 필터링
-    const lecturesInCourse = await this.prismaRead.subject_lecture.findMany({
+    const lecturesInCourse = await this.prisma.subject_lecture.findMany({
       where: { course_id: courseId },
       select: { id: true },
     })

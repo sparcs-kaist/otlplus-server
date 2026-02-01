@@ -1,16 +1,12 @@
 import { Injectable } from '@nestjs/common'
 
-import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 
 import { ECustomblock } from '../entities/ECustomblock'
 
 @Injectable()
 export class CustomblockRepository {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly prismaRead: PrismaReadService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   // 커스텀 블록 생성
   async createCustomblock(data: ECustomblock.CreateInput): Promise<ECustomblock.Basic> {
@@ -43,7 +39,7 @@ export class CustomblockRepository {
 
   // timetable에 있는 custom block 목록 가져오기
   async getCustomblocksList(timeTableId: number): Promise<ECustomblock.Basic[]> {
-    return this.prismaRead.block_custom_blocks.findMany({
+    return this.prisma.block_custom_blocks.findMany({
       where: {
         timetable_timetable_customblocks: {
           some: { timetable_id: timeTableId },
