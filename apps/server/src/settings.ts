@@ -11,7 +11,14 @@ const getCorsConfig = () => {
   const { NODE_ENV } = process.env
   if (NODE_ENV === 'prod') {
     return {
-      origin: ['https://otl.kaist.ac.kr', 'http://otl.kaist.ac.kr', 'https://otl.sparcs.org', 'http://otl.sparcs.org'],
+      origin: [
+        'https://otl.kaist.ac.kr',
+        'http://otl.kaist.ac.kr',
+        'https://otl.sparcs.org',
+        'http://otl.sparcs.org',
+        'https://beta.otl.sparcs.org',
+        'https://beta.otl.sparcs.org',
+      ],
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
       credentials: true,
       preflightContinue: false,
