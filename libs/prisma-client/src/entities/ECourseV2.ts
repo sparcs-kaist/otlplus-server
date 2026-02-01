@@ -71,6 +71,10 @@ export namespace ECourseV2 {
   // Course에 속한 lecture에 대한 타입
   const courseNestedLecturesSelect = Prisma.validator<Prisma.subject_lectureSelect>()({
     id: true,
+    title: true,
+    title_en: true,
+    common_title: true,
+    common_title_en: true,
     year: true,
     semester: true,
     class_no: true,

@@ -7,6 +7,8 @@ export namespace ELectureV2 {
     class_no: true,
     title: true,
     title_en: true, // title -> name 으로 localize
+    common_title: true,
+    common_title_en: true,
     subject_department: {
       select: {
         id: true,
