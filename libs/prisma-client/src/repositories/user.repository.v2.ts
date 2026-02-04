@@ -1,17 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { Prisma, session_userprofile, subject_semester } from '@prisma/client'
 
-import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
-
 import { EUser } from '../entities/EUser'
 import { PrismaService } from '../prisma.service'
 
 @Injectable()
 export class UserRepositoryV2 {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly prismaRead: PrismaReadService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async findBySid(sid: string): Promise<session_userprofile | null> {
     return this.prisma.session_userprofile.findFirst({
@@ -59,7 +54,7 @@ export class UserRepositoryV2 {
     const ids = Array.from(new Set(normalized))
     // 2) 존재 검증: 하나라도 없으면 400
     if (ids.length > 0) {
-      const existing = await this.prismaRead.subject_department.findMany({
+      const existing = await this.prisma.subject_department.findMany({
         where: { id: { in: ids } },
         select: { id: true },
       })
@@ -116,7 +111,7 @@ export class UserRepositoryV2 {
   }
 
   findByStudentId(studentId: number): Promise<session_userprofile | null> {
-    return this.prismaRead.session_userprofile.findFirst({
+    return this.prisma.session_userprofile.findFirst({
       where: {
         student_id: studentId.toString(),
       },
