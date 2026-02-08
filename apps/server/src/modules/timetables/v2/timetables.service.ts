@@ -33,6 +33,38 @@ export class TimetablesServiceV2 {
     return { timetables: timetables.map(toJsonTimetableV2) }
   }
 
+  async getTimetablesBySemester(
+    user: session_userprofile,
+    query: ITimetableV2.GetTimetablesBySemesterReqDto,
+  ): Promise<ITimetableV2.GetTimetablesBySemesterResDto> {
+    const timetables = await this.timetableRepository.getTimetables(user, query.year, query.semester, {
+      orderBy: [{ year: 'desc' }, { semester: 'asc' }, { arrange_order: 'asc' }],
+    })
+
+    // Group timetables by year and semester
+    const semesterMap = new Map<string, ITimetableV2.SemesterTimetableGroup>()
+
+    for (const timetable of timetables) {
+      if (timetable.year === null || timetable.semester === null) continue
+
+      const key = `${timetable.year}-${timetable.semester}`
+
+      if (!semesterMap.has(key)) {
+        semesterMap.set(key, {
+          year: timetable.year,
+          semester: timetable.semester,
+          timetables: [],
+        })
+      }
+
+      semesterMap.get(key)!.timetables.push({ id: timetable.id, timeTableOrder: timetable.arrange_order })
+    }
+
+    return {
+      semesters: Array.from(semesterMap.values()),
+    }
+  }
+
   @Transactional()
   async createTimetable(
     user: session_userprofile,

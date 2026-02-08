@@ -51,6 +51,14 @@ export class TimetablesControllerV2 {
     return await this.timetablesService.getMyTimetable(user, query, language)
   }
 
+  @Get('/by-semester')
+  async getTimetablesBySemester(
+    @Query() query: ITimetableV2.GetTimetablesBySemesterReqDto,
+    @GetUser() user: session_userprofile,
+  ): Promise<ITimetableV2.GetTimetablesBySemesterResDto> {
+    return await this.timetablesService.getTimetablesBySemester(user, query)
+  }
+
   @Get('/:timetableId')
   async getTimetable(
     @Param('timetableId', ParseIntPipe) timetableId: number,
