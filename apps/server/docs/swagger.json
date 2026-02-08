@@ -2869,6 +2869,24 @@
         "security": []
       }
     },
+    "/api/v2/semesters/current": {
+      "get": {
+        "summary": "SemestersControllerV2.getCurrentSemester",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ISemester.Response"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
     "/api/v2/timetables": {
       "get": {
         "summary": "TimetablesControllerV2.getTimetables",

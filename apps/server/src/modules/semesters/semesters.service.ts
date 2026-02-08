@@ -15,24 +15,22 @@ export class SemestersService {
       orderBy: [{ year: 'desc' }, { semester: 'desc' }],
       take: 5,
     })
-
-    // Case 1: 현재 시간이 학기 기간 내에 있는 경우 (beginning <= now <= end)
-    const activeSemester = semesters.find((semester) => {
+    // 현재 시간에 해당하는 학기가 있는 경우
+    let currentSemester = semesters.find((semester) => {
       const beginning = new Date(semester.beginning)
       const end = new Date(semester.end)
       return beginning <= currentTime && currentTime <= end
     })
-    if (activeSemester) return activeSemester
 
-    // Case 2: 학기 사이의 gap 기간 - 이전 학기가 끝났으면 다음 학기를 반환
-    const upcomingSemester = semesters.find((s) => new Date(s.beginning) > currentTime)
-    if (upcomingSemester) {
-      const pastSemesterExists = semesters.some((s) => new Date(s.end) < currentTime)
-      if (pastSemesterExists) return upcomingSemester
+    // 현재 시간에 해당하는 학기가 없는 경우 ( 학기가 끝났는데, 그 다음 학기를 추가하지 않은 경우 and 추가를 했는데 아직 시작하지 않은 경우 )
+    // end가 현재 시간보다 전인 가장 최근 케이스
+    if (!currentSemester) {
+      currentSemester = semesters.find((semester) => {
+        const end = new Date(semester.end)
+        return end <= currentTime
+      }) ?? semesters[0]
     }
-
-    // Case 3: Fallback - 다음 학기가 없는 경우, 가장 최근 종료된 학기 반환
-    return semesters.find((s) => new Date(s.end) <= currentTime) ?? semesters[0]
+    return currentSemester
   }
 
   async getSemesters(order: ISemester.QueryDto) {
