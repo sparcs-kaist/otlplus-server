@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
-import { ElasticsearchService } from '@otl/elasticsearch-client'
 import { ICourseV2, IProfessorV2 } from '@otl/server-nest/common/interfaces/v2'
+import { ElasticsearchService } from '@otl/server-nest/modules/elasticsearch/elasticsearch.service'
 import { session_userprofile } from '@prisma/client'
 
 import { ECourseV2 } from '@otl/prisma-client/entities'

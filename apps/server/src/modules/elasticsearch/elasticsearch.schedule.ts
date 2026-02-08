@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common'
 import { Cron } from '@nestjs/schedule'
-import { ElasticsearchService } from '@otl/elasticsearch-client'
 
 import logger from '@otl/common/logger/logger'
 
+import { ElasticsearchService } from './elasticsearch.service'
+
 @Injectable()
 export class ElasticsearchSchedule {
-  private readonly logger = logger
-
   constructor(private readonly elasticsearchService: ElasticsearchService) {}
 
   @Cron('0 2 * * *', {
@@ -15,13 +14,13 @@ export class ElasticsearchSchedule {
     timeZone: 'Asia/Seoul',
   })
   async syncCourses() {
-    this.logger.info('Starting scheduled Elasticsearch sync...')
+    logger.info('Starting scheduled Elasticsearch sync...')
     try {
       await this.elasticsearchService.syncAllCourses()
-      this.logger.info('Scheduled Elasticsearch sync completed successfully')
+      logger.info('Scheduled Elasticsearch sync completed successfully')
     }
     catch (error) {
-      this.logger.error('Scheduled Elasticsearch sync failed', error)
+      logger.error('Scheduled Elasticsearch sync failed', error)
     }
   }
 }
