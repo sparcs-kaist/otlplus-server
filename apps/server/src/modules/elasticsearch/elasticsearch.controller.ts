@@ -8,6 +8,8 @@ import { ElasticsearchApiKeyAuth } from '@otl/server-nest/common/decorators/elas
 export class ElasticsearchController {
   constructor(private readonly elasticsearchService: ElasticsearchService) {}
 
+  // manual sync of elasticsearch indexes
+  // through sending request with API key to this endpoint
   @Post('sync')
   @ApiSecurity('elasticsearchApiKey')
   @ElasticsearchApiKeyAuth()

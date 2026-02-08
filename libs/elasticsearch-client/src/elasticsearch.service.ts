@@ -1,7 +1,7 @@
 import { Client } from '@elastic/elasticsearch'
-import {
-  Inject, Injectable, Logger, OnModuleInit,
-} from '@nestjs/common'
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common'
+
+import logger from '@otl/common/logger/logger'
 
 import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 
@@ -30,7 +30,7 @@ interface CourseDocument {
 
 @Injectable()
 export class ElasticsearchService implements OnModuleInit {
-  private readonly logger = new Logger(ElasticsearchService.name)
+  private readonly logger = logger
 
   private client: Client
 
@@ -59,7 +59,7 @@ export class ElasticsearchService implements OnModuleInit {
   async onModuleInit() {
     try {
       await this.createIndexIfNotExists()
-      this.logger.log('Elasticsearch index initialized successfully')
+      this.logger.info('Elasticsearch index initialized successfully')
     }
     catch (error) {
       this.logger.error('Failed to initialize Elasticsearch index', error)
@@ -184,7 +184,7 @@ export class ElasticsearchService implements OnModuleInit {
           },
         },
       })
-      this.logger.log(`Created Elasticsearch index: ${this.indexName}`)
+      this.logger.info(`Created Elasticsearch index: ${this.indexName}`)
     }
   }
 
@@ -209,7 +209,6 @@ export class ElasticsearchService implements OnModuleInit {
 
     try {
       const body = courses.flatMap((course) => [
-
         { index: { _index: this.indexName, _id: course.id.toString() } },
         course,
       ])
@@ -231,7 +230,7 @@ export class ElasticsearchService implements OnModuleInit {
         this.logger.error(`Bulk index errors: ${JSON.stringify(erroredDocuments)}`)
       }
       else {
-        this.logger.log(`Successfully indexed ${courses.length} courses`)
+        this.logger.info(`Successfully indexed ${courses.length} courses`)
       }
     }
     catch (error) {
@@ -453,7 +452,7 @@ export class ElasticsearchService implements OnModuleInit {
   }
 
   async syncAllCourses() {
-    this.logger.log('Starting full course sync to Elasticsearch...')
+    this.logger.info('Starting full course sync to Elasticsearch...')
 
     try {
       // Fetch all courses with related data
@@ -513,7 +512,7 @@ export class ElasticsearchService implements OnModuleInit {
       const exists = await this.client.indices.exists({ index: this.indexName })
       if (exists) {
         await this.client.indices.delete({ index: this.indexName })
-        this.logger.log(`Deleted existing index: ${this.indexName}`)
+        this.logger.info(`Deleted existing index: ${this.indexName}`)
       }
       await this.createIndexIfNotExists()
 
@@ -522,10 +521,10 @@ export class ElasticsearchService implements OnModuleInit {
       for (let i = 0; i < documents.length; i += batchSize) {
         const batch = documents.slice(i, i + batchSize)
         await this.bulkIndexCourses(batch)
-        this.logger.log(`Indexed batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(documents.length / batchSize)}`)
+        this.logger.info(`Indexed batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(documents.length / batchSize)}`)
       }
 
-      this.logger.log(`Successfully synced ${documents.length} courses to Elasticsearch`)
+      this.logger.info(`Successfully synced ${documents.length} courses to Elasticsearch`)
     }
     catch (error) {
       this.logger.error('Failed to sync courses to Elasticsearch', error)
