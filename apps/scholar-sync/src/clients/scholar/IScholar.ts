@@ -562,4 +562,31 @@ export namespace IScholar {
     @IsIn(['부전공신청', '복수전공신청'])
     APPLICATION_TYPE!: string
   }
+
+  // TODO: 전산팀 API 응답 타입 (예상)
+  // 실시간 수강신청 인원 조회 API가 생기면 활성화
+  // export class EnrollmentCountType {
+  //   /** 개설 연도 */
+  //   @Transform(({ value }) => parseInt(value))
+  //   @IsInt()
+  //   LECTURE_YEAR!: number
+  //
+  //   /** 개설 학기. 1: 봄학기, 2:여름학기, 3: 가을학기, 4: 겨울학기 */
+  //   @Transform(({ value }) => parseInt(value))
+  //   @IsIn([1, 2, 3, 4])
+  //   LECTURE_TERM!: 1 | 2 | 3 | 4
+  //
+  //   /** 36.492 등의 과목코드 */
+  //   @IsString()
+  //   SUBJECT_NO!: string
+  //
+  //   /** 분반 */
+  //   @IsString()
+  //   LECTURE_CLASS!: string
+  //
+  //   /** 수강신청 인원 */
+  //   @Transform(({ value }) => parseInt(value))
+  //   @IsInt()
+  //   ENROLLED_COUNT!: number
+  // }
 }

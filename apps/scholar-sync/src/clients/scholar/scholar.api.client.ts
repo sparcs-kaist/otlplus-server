@@ -117,4 +117,18 @@ export class ScholarApiClient {
     // return data?.OutBlock_1;
     return plainToInstance<ScholarOtherMajorType, any>(ScholarOtherMajorType, (data?.OutBlock_1 as any[]) || [])
   }
+
+  // TODO: 전산팀 API가 생기면 활성화
+  // 실시간 수강신청 인원 조회 API (예상 엔드포인트)
+  // async getEnrollmentCount(lectureYear?: number, lectureTerm?: number): Promise<IScholar.EnrollmentCountType[]> {
+  //   const params = {
+  //     lecture_year: lectureYear,
+  //     lecture_term: lectureTerm,
+  //   }
+  //   const data = await this.get('/enrollment_count_type', params)
+  //   return plainToInstance<IScholar.EnrollmentCountType, any>(
+  //     IScholar.EnrollmentCountType,
+  //     (data?.OutBlock_1 as any[]) || [],
+  //   )
+  // }
 }

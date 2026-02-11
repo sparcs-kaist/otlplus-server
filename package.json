@@ -211,8 +211,18 @@
     "moduleNameMapper": {
       "^@otl/common$": "<rootDir>/libs/common/src",
       "^@otl/common/(.*)$": "<rootDir>/libs/common/src/$1",
+      "^@otl/prisma-client$": "<rootDir>/libs/prisma-client/src",
+      "^@otl/prisma-client/(.*)$": "<rootDir>/libs/prisma-client/src/$1",
+      "^@otl/rmq$": "<rootDir>/libs/rmq/src",
+      "^@otl/rmq/(.*)$": "<rootDir>/libs/rmq/src/$1",
+      "^@otl/redis$": "<rootDir>/libs/redis/src",
+      "^@otl/redis/(.*)$": "<rootDir>/libs/redis/src/$1",
       "^@otl/server-nest/(.*)$": "<rootDir>/apps/server/src/$1",
-      "^@otl/prisma-client/(.*)$": "<rootDir>/libs/prisma-client/src/$1"
+      "^@otl/scholar-sync/domain$": "<rootDir>/apps/scholar-sync/src/common/domain",
+      "^@otl/scholar-sync/domain/(.*)$": "<rootDir>/apps/scholar-sync/src/common/domain/$1",
+      "^@otl/scholar-sync/(.*)$": "<rootDir>/apps/scholar-sync/src/$1",
+      "^@otl/notification-consumer/(.*)$": "<rootDir>/apps/notification-consumer/src/$1",
+      "^@otl/server-consumer/(.*)$": "<rootDir>/apps/server-consumer/src/$1"
     },
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"

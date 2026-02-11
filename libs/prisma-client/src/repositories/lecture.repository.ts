@@ -59,6 +59,7 @@ export class LectureRepository implements ServerConsumerLectureRepository {
     const groupFilter = this.courseRepository.groupFilter(query?.group)
     const keywordFilter = this.courseRepository.keywordFilter(query?.keyword, false)
     const levelFilter = this.courseRepository.levelFilter(query?.level)
+    const vacancyFilter = this.vacancyFilter(query?.has_vacancy)
     const researchFilter = researchTypes.map((type) => ({
       type_en: {
         not: type,
@@ -82,7 +83,8 @@ export class LectureRepository implements ServerConsumerLectureRepository {
       keywordFilter,
       defaultFilter,
       levelFilter,
-    ].filter((filter): filter is object => filter !== null)
+      vacancyFilter,
+    ].filter((filter): filter is object => filter !== null && !('has_vacancy' in filter))
     const queryResult = await this.prisma.subject_lecture.findMany({
       include: {
         subject_department: true,
@@ -98,11 +100,11 @@ export class LectureRepository implements ServerConsumerLectureRepository {
       take: query.limit ?? DEFAULT_LIMIT,
     })
 
-    // const orderedQuery = applyOrder<ELecture.Details>(
-    //   levelFilteredResult,
-    //   (query.order ?? DEFAULT_ORDER) as (keyof ELecture.Details)[],
-    // )
-    // return applyOffset<ELecture.Details>(orderedQuery, query.offset ?? 0)
+    // 빈자리 필터: enrolled_count가 null(정보 없음)이거나 limit보다 작은 경우
+    if (query?.has_vacancy) {
+      return queryResult.filter((lecture) => lecture.enrolled_count === null || lecture.enrolled_count < lecture.limit)
+    }
+
     return queryResult
   }
 
@@ -251,6 +253,19 @@ export class LectureRepository implements ServerConsumerLectureRepository {
     }
 
     return Object.keys(result).length > 0 ? { subject_classtime: { some: result } } : null
+  }
+
+  /**
+   * 빈자리 있는 강의만 필터링
+   * enrolled_count가 null(정보 없음)이면 빈자리 있음으로 간주
+   * Prisma는 컬럼 간 비교를 직접 지원하지 않으므로, 결과 조회 후 필터링 필요
+   * 여기서는 enrolled_count가 존재하는 경우에만 필터 적용
+   */
+  public vacancyFilter(hasVacancy?: boolean): { has_vacancy: true } | null {
+    if (!hasVacancy) return null
+    // 실제 필터링은 filterByRequest에서 post-processing으로 처리
+    // Prisma에서 컬럼 간 비교는 직접 지원하지 않음
+    return { has_vacancy: true }
   }
 
   public datetimeConverter(time: number): Date {

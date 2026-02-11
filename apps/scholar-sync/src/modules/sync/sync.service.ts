@@ -623,6 +623,9 @@ export class SyncService {
       semester: data.semester,
     })
 
+    // 수강인원 카운트 업데이트
+    await this.updateEnrollmentCounts(data.year, data.semester)
+
     await this.slackNoti.sendSyncNoti(
       `syncTakenLecture: ${resultDetail.updated.length} updated, ${skipCount} skipped, ${resultDetail.errors.length} errors`,
     )
@@ -631,6 +634,20 @@ export class SyncService {
     result.results.push(resultDetail)
 
     return result
+  }
+
+  /**
+   * 해당 학기 모든 강의의 수강신청 인원을 업데이트
+   * sync_taken_lectures 테이블에서 집계하여 subject_lecture.enrolled_count에 반영
+   */
+  async updateEnrollmentCounts(year: number, semester: number) {
+    const counts = await this.syncRepository.getEnrollmentCountsByLecture(year, semester)
+    await this.syncRepository.updateLectureEnrollmentCounts(
+      // eslint-disable-next-line no-underscore-dangle
+      counts.map((c) => ({ lectureId: c.lecture_id, count: c._count.student_id })),
+      { year, semester },
+    )
+    this.logger.log(`Updated enrollment counts for ${counts.length} lectures in ${year}-${semester}`)
   }
 
   getLectureIdOfAttendRecord(lectures: ELecture.Basic[], attend: IScholar.ScholarAttendType) {

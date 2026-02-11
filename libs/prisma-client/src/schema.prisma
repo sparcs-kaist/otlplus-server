@@ -628,6 +628,7 @@ model subject_lecture {
   credit_au                       Int
   limit                           Int
   num_people                      Int?
+  enrolled_count                  Int?    // 실제 수강신청 인원 (sync_taken_lectures 기반)
   is_english                      Boolean
   deleted                         Boolean
   course_id                       Int

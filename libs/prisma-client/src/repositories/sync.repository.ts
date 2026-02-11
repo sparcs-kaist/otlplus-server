@@ -498,4 +498,43 @@ export class SyncRepository {
       orderBy: [{ year: 'desc' }, { semester: 'desc' }],
     })
   }
+
+  /**
+   * 학기별 강의당 수강인원 집계
+   * sync_taken_lectures 테이블에서 year, semester로 필터링하여 lecture_id별 수강인원 집계
+   */
+  async getEnrollmentCountsByLecture(year: number, semester: number) {
+    return this.prisma.sync_taken_lectures.groupBy({
+      by: ['lecture_id'],
+      where: { year, semester },
+      _count: { student_id: true },
+    })
+  }
+
+  /**
+   * 강의 enrolled_count 일괄 업데이트
+   * 트랜잭션으로 일괄 처리하여 성능 최적화
+   */
+  async updateLectureEnrollmentCounts(
+    updates: { lectureId: number, count: number }[],
+    { year, semester }: { year: number, semester: number },
+  ) {
+    // 해당 학기 모든 강의의 enrolled_count를 먼저 0으로 초기화
+    await this.prisma.subject_lecture.updateMany({
+      where: { year, semester, deleted: false },
+      data: { enrolled_count: 0 },
+    })
+
+    // 배치로 업데이트 (100개씩 처리)
+    const BATCH_SIZE = 100
+    for (let i = 0; i < updates.length; i += BATCH_SIZE) {
+      const batch = updates.slice(i, i + BATCH_SIZE)
+      await this.prisma.$transaction(
+        batch.map(({ lectureId, count }) => this.prisma.subject_lecture.update({
+          where: { id: lectureId },
+          data: { enrolled_count: count },
+        })),
+      )
+    }
+  }
 }

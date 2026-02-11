@@ -4,7 +4,7 @@ import { IProfessor } from '@otl/server-nest/common/interfaces/IProfessor'
 import { ITimetable } from '@otl/server-nest/common/interfaces/ITimetable'
 import { Transform, Type } from 'class-transformer'
 import {
-  IsInt, IsNumber, IsOptional, IsString,
+  IsBoolean, IsInt, IsNumber, IsOptional, IsString,
 } from 'class-validator'
 
 export namespace ILecture {
@@ -141,6 +141,8 @@ export namespace ILecture {
     class_title: string
     class_title_en: string
     review_total_weight: number
+    enrolled_count: number // 실제 수강신청 인원
+    vacancy: number // 빈자리: limit - enrolled_count
     professors: IProfessor.Basic[]
   }
 
@@ -187,6 +189,11 @@ export namespace ILecture {
     @Transform(({ value }) => parseInt(value))
     @IsNumber()
     end?: number
+
+    @IsOptional()
+    @Transform(({ value }) => value === 'true')
+    @IsBoolean()
+    has_vacancy?: boolean // 빈자리 있는 강의만 필터
   }
 
   export class AutocompleteQueryDto {

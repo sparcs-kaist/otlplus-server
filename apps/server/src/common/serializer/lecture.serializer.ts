@@ -56,6 +56,7 @@ export function toJsonLectureMinimal(lecture: ELecture.Basic): ILecture.Minimal 
 export function toJsonLectureBasic(lecture: ELecture.Extended): ILecture.Basic {
   const professors = lecture.subject_lecture_professors.map((x) => x.professor)
   const ordered_professors = applyOrder(professors, ['professor_name'])
+  const enrolled = lecture.enrolled_count ?? 0
 
   return {
     id: lecture.id,
@@ -86,6 +87,8 @@ export function toJsonLectureBasic(lecture: ELecture.Extended): ILecture.Basic {
     class_title: lecture.class_title ?? '',
     class_title_en: lecture.class_title_en ?? '',
     review_total_weight: lecture.review_total_weight + 0.000001,
+    enrolled_count: enrolled,
+    vacancy: lecture.limit - enrolled,
     professors: toJsonProfessors(ordered_professors),
   }
 }
