@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
 
-import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 
 import { ELecture } from '../entities/ELecture'
@@ -13,7 +12,6 @@ import { CourseRepositoryV2 } from './course.v2.repository'
 export class LectureRepositoryV2 {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly prismaRead: PrismaReadService,
     private readonly courseRepository: CourseRepositoryV2,
   ) {}
 
@@ -64,7 +62,7 @@ export class LectureRepositoryV2 {
       defaultFilter,
       levelFilter,
     ].filter((filter): filter is object => filter !== null)
-    const queryResult = await this.prismaRead.subject_lecture.findMany({
+    const queryResult = await this.prisma.subject_lecture.findMany({
       where: {
         AND: filters,
       },
@@ -162,15 +160,15 @@ export class LectureRepositoryV2 {
     if (!ids || ids.length === 0) return []
 
     const [classTimes, examTimes, professorLinks] = await Promise.all([
-      this.prismaRead.subject_classtime.findMany({
+      this.prisma.subject_classtime.findMany({
         where: { lecture_id: { in: ids } },
         select: { lecture_id: true, ...ELectureV2.ClassTimeArgs.select },
       }),
-      this.prismaRead.subject_examtime.findMany({
+      this.prisma.subject_examtime.findMany({
         where: { lecture_id: { in: ids } },
         select: { lecture_id: true, ...ELectureV2.ExamTimeArgs.select },
       }),
-      this.prismaRead.subject_lecture_professors.findMany({
+      this.prisma.subject_lecture_professors.findMany({
         where: { lecture_id: { in: ids } },
         select: {
           lecture_id: true,
@@ -213,7 +211,7 @@ export class LectureRepositoryV2 {
   // year, semester 필터링 버전 + userId 만으로 조회
   async getTakenLecturesBySemester(userId: number, year: number, semester: number): Promise<ELecture.Details[]> {
     const lectures = (
-      await this.prismaRead.session_userprofile_taken_lectures.findMany({
+      await this.prisma.session_userprofile_taken_lectures.findMany({
         where: {
           userprofile_id: userId,
           lecture: {

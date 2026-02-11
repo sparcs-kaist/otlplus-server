@@ -1,16 +1,11 @@
 import { Injectable } from '@nestjs/common'
 
-import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
-
 import { ELecture, EWishlist } from '../entities'
 import { PrismaService } from '../prisma.service'
 
 @Injectable()
 export class WishlistRepository {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly prismaRead: PrismaReadService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async getOrCreateWishlist(userId: number) {
     return this.prisma.timetable_wishlist.upsert({

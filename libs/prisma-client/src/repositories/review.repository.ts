@@ -10,7 +10,6 @@ import {
 } from '@prisma/client'
 
 import { mapReview, mapReviewWithLecture } from '@otl/prisma-client/common/mapper/review'
-import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 
 import { orderFilter } from '../common/util'
@@ -19,10 +18,7 @@ import { EReview } from '../entities/EReview'
 
 @Injectable()
 export class ReviewsRepository implements ServerConsumerReviewRepository {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly prismaRead: PrismaReadService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async findReviewByUser(user: session_userprofile): Promise<EReview.Details[]> {
     const reviews = await this.prisma.review_review.findMany({
@@ -75,7 +71,7 @@ export class ReviewsRepository implements ServerConsumerReviewRepository {
   }
 
   async getReviewsByIds(reviewIds: number[]) {
-    return this.prismaRead.review_review.findMany({
+    return this.prisma.review_review.findMany({
       where: {
         id: {
           in: reviewIds,
@@ -110,7 +106,7 @@ export class ReviewsRepository implements ServerConsumerReviewRepository {
       orderDict[orderBy[orderBy.length - 1]] = sortOrder
       orderFilters.push(orderDict)
     })
-    return this.prismaRead.review_review.findMany({
+    return this.prisma.review_review.findMany({
       where: {
         lecture: lectureFilter,
       },
@@ -122,7 +118,7 @@ export class ReviewsRepository implements ServerConsumerReviewRepository {
   }
 
   async getReviewsOfLecture(id: number, order: string[], offset: number, limit: number): Promise<EReview.Details[]> {
-    return this.prismaRead.review_review.findMany({
+    return this.prisma.review_review.findMany({
       where: { lecture_id: id },
       include: EReview.Details.include,
       orderBy: orderFilter(order),
@@ -137,7 +133,7 @@ export class ReviewsRepository implements ServerConsumerReviewRepository {
     limit: number,
     lecture: ELecture.Details,
   ): Promise<EReview.Details[]> {
-    return await this.prismaRead.review_review.findMany({
+    return await this.prisma.review_review.findMany({
       ...EReview.Details,
       where: {
         lecture: {
@@ -164,7 +160,7 @@ export class ReviewsRepository implements ServerConsumerReviewRepository {
     courseId: number,
     professorId: number,
   ): Promise<EReview.Details[]> {
-    return await this.prismaRead.review_review.findMany({
+    return await this.prisma.review_review.findMany({
       where: {
         lecture: {
           course_id: courseId,
@@ -225,7 +221,7 @@ export class ReviewsRepository implements ServerConsumerReviewRepository {
     if (lectureSemester) {
       lectureFilter = { ...lectureFilter, semester: lectureSemester }
     }
-    const reviewsCount = await this.prismaRead.review_review.count({
+    const reviewsCount = await this.prisma.review_review.count({
       where: {
         lecture: lectureFilter,
       },
@@ -390,7 +386,7 @@ export class ReviewsRepository implements ServerConsumerReviewRepository {
   async getRelatedReviewsByLectureId(lecture: LectureBasic, professorsId: number[]): Promise<ReviewWithLecture[]> {
     if (lecture.courseId == null) {
       return (
-        await this.prismaRead.review_review.findMany({
+        await this.prisma.review_review.findMany({
           where: {
             lecture: {
               id: lecture.id,
@@ -401,7 +397,7 @@ export class ReviewsRepository implements ServerConsumerReviewRepository {
       ).map((review) => mapReviewWithLecture(review))
     }
 
-    const lectureProfessors = await this.prismaRead.subject_lecture_professors.findMany({
+    const lectureProfessors = await this.prisma.subject_lecture_professors.findMany({
       where: {
         lecture: {
           course: {
@@ -415,7 +411,7 @@ export class ReviewsRepository implements ServerConsumerReviewRepository {
       select: { id: true, professor_id: true, lecture_id: true },
     })
     const lectureIds = [...new Set(lectureProfessors.map((lp) => lp.lecture_id))]
-    const reviews = await this.prismaRead.review_review.findMany({
+    const reviews = await this.prisma.review_review.findMany({
       where: {
         lecture: {
           id: { in: lectureIds },
@@ -427,7 +423,7 @@ export class ReviewsRepository implements ServerConsumerReviewRepository {
   }
 
   async getRelatedReviewsByCourseId(courseId: number): Promise<ReviewWithLecture[]> {
-    const reviews = await this.prismaRead.review_review.findMany({
+    const reviews = await this.prisma.review_review.findMany({
       where: {
         lecture: {
           course: {
@@ -441,7 +437,7 @@ export class ReviewsRepository implements ServerConsumerReviewRepository {
   }
 
   getRelatedReviewsByProfessorId(professorId: number): Promise<ReviewWithLecture[]> {
-    return this.prismaRead.review_review
+    return this.prisma.review_review
       .findMany({
         where: {
           lecture: {
@@ -458,7 +454,7 @@ export class ReviewsRepository implements ServerConsumerReviewRepository {
   }
 
   async getReviewLikeCount(reviewId: number): Promise<number> {
-    return await this.prismaRead.review_reviewvote.count({
+    return await this.prisma.review_reviewvote.count({
       where: { review_id: reviewId },
     })
   }

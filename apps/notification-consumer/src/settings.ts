@@ -19,15 +19,6 @@ const getPrismaConnectConfig = (): mariadb.PoolConfig => ({
   connectionLimit: 20,
 })
 
-const getPrismaReadConnectConfig = (): mariadb.PoolConfig => ({
-  host: process.env.READ_DATABASE_HOST,
-  port: Number(process.env.READ_DATABASE_PORT) || 3306,
-  user: process.env.READ_DATABASE_USER,
-  password: process.env.READ_DATABASE_PASSWORD,
-  database: process.env.READ_DATABASE_NAME,
-  connectionLimit: 20,
-})
-
 const getFirebaseConfig = (): ServiceAccount => {
   const secretPath = process.env.GOOGLE_APPLICATION_CREDENTIALS as string
   const credentialPath = path.resolve(process.cwd(), secretPath)
@@ -53,7 +44,6 @@ const getRedisConfig = (): RedisModuleOptions => ({
 
 export default () => ({
   ormconfig: () => getPrismaConnectConfig(),
-  ormReplicatedConfig: () => getPrismaReadConnectConfig(),
   getVersion: () => getVersion(),
   getFirebaseConfig: () => getFirebaseConfig(),
   getRedisConfig: () => getRedisConfig(),

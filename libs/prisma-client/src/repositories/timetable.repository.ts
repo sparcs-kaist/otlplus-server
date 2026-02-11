@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { Prisma, PrismaClient, session_userprofile } from '@prisma/client'
 
-import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 
 import { ELecture } from '../entities/ELecture'
@@ -9,10 +8,7 @@ import { ETimetable } from '../entities/ETimetable'
 
 @Injectable()
 export class TimetableRepository {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly prismaRead: PrismaReadService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async getTimetables(
     user: session_userprofile,
@@ -75,7 +71,7 @@ export class TimetableRepository {
     lectures: ELecture.Details[],
     name?: string,
   ): Promise<ETimetable.Details> {
-    return this.prismaRead.timetable_timetable.create({
+    return this.prisma.timetable_timetable.create({
       data: {
         user_id: user.id,
         year,
@@ -168,7 +164,7 @@ export class TimetableRepository {
   }
 
   async getLecturesWithClassTimes(timetableId: number) {
-    return this.prismaRead.timetable_timetable_lectures.findMany({
+    return this.prisma.timetable_timetable_lectures.findMany({
       where: { timetable_id: timetableId },
       include: ETimetable.WithLectureClasstimes.include,
     })
@@ -176,7 +172,7 @@ export class TimetableRepository {
 
   async getTimeTableLectures(timetableId: number): Promise<number[]> {
     return (
-      await this.prismaRead.timetable_timetable_lectures.findMany({
+      await this.prisma.timetable_timetable_lectures.findMany({
         where: { timetable_id: timetableId },
       })
     ).map((lecture) => lecture.lecture_id)
