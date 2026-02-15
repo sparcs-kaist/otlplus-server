@@ -14,6 +14,7 @@ type courseHistory = {
   // 그 학기에 개설된 분반들
   classes: {
     lectureId: number
+    subtitle: string
     classNo: string
     // 각 분반의 담당 교수님(들)
     professors: IProfessorV2.Basic[]
@@ -123,10 +124,18 @@ export class CoursesServiceV2 {
             }
           }),
         )
+        const subtitle: string = user_language === 'en'
+          ? lec.title_en.replace(lec.common_title_en ?? '', '')
+          : lec.title.replace(lec.common_title ?? '', '')
         const existing = Histories.find((h) => h.year === lec.year && h.semester === lec.semester)
         // year, semester가 이미 있는 경우 : 분반 (classNo)만 추가
         if (existing) {
-          existing.classes.push({ professors: professor_obj, classNo: lec.class_no, lectureId: lec.id })
+          existing.classes.push({
+            professors: professor_obj,
+            classNo: lec.class_no,
+            lectureId: lec.id,
+            subtitle,
+          })
           if (userTakenLectureIds.includes(lec.id)) {
             existing.myLectureId = lec.id
           }
@@ -136,7 +145,14 @@ export class CoursesServiceV2 {
           Histories.push({
             year: lec.year,
             semester: lec.semester,
-            classes: [{ professors: professor_obj, classNo: lec.class_no, lectureId: lec.id }],
+            classes: [
+              {
+                professors: professor_obj,
+                classNo: lec.class_no,
+                lectureId: lec.id,
+                subtitle,
+              },
+            ],
             myLectureId: userTakenLectureIds.includes(lec.id) ? lec.id : null,
           })
         }

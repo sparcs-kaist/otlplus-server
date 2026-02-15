@@ -161,6 +161,10 @@ export namespace ITimetableV2 {
     @Type(() => String)
     name!: string
 
+    @IsString()
+    @Type(() => String)
+    subtitle!: string
+
     // this is temporary, waiting for department serializer
     @IsArray()
     @ValidateNested({ each: true })

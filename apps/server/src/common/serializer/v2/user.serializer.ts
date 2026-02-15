@@ -104,7 +104,11 @@ export const toJsonWishlistV2 = (
         lectures: lectures.map((lecture) => ({
           id: lecture.id,
           courseId: lecture.course_id,
-          name: language === 'en' && lecture.title_en ? lecture.title_en : lecture.title,
+          name: (language === 'en' && lecture.common_title_en ? lecture.common_title_en : lecture.common_title) ?? '',
+          subtitle:
+            language === 'en'
+              ? lecture.title_en.replace(lecture.common_title_en ?? '', '')
+              : lecture.title.replace(lecture.common_title ?? '', ''),
           code: lecture.new_code,
           classNo: lecture.class_no,
           department: {
