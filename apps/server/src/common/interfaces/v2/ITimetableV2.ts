@@ -305,4 +305,28 @@ export namespace ITimetableV2 {
     semester: number | null
     timeTableOrder: number
   }
+
+  export class GetTimetablesBySemesterReqDto {
+    @IsNumber()
+    @IsOptional()
+    @Type(() => Number)
+    year?: number
+
+    @IsNumber()
+    @IsOptional()
+    @Min(1)
+    @Max(4)
+    @Type(() => Number)
+    semester?: number
+  }
+
+  export interface SemesterTimetableGroup {
+    year: number
+    semester: number
+    timetables: { id: number, timeTableOrder: number }[]
+  }
+
+  export interface GetTimetablesBySemesterResDto {
+    semesters: SemesterTimetableGroup[]
+  }
 }

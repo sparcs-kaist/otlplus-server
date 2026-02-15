@@ -1,15 +1,11 @@
 import { Injectable } from '@nestjs/common'
 import { session_userprofile, subject_department } from '@prisma/client'
 
-import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 
 @Injectable()
 export class DepartmentRepository {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly prismaRead: PrismaReadService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async getBasicDepartmentById(id: number): Promise<subject_department | null> {
     return this.prisma.subject_department.findUnique({
@@ -23,14 +19,14 @@ export class DepartmentRepository {
       return null
     }
 
-    return this.prismaRead.subject_department.findUnique({
+    return this.prisma.subject_department.findUnique({
       where: { id: departmentId },
     })
   }
 
   async getFavoriteDepartments(user: session_userprofile): Promise<subject_department[]> {
     const favoriteDepartments = (
-      await this.prismaRead.session_userprofile_favorite_departments.findMany({
+      await this.prisma.session_userprofile_favorite_departments.findMany({
         where: { userprofile_id: user.id },
         include: {
           department: true,
@@ -42,7 +38,7 @@ export class DepartmentRepository {
 
   async getMajors(user: session_userprofile): Promise<subject_department[]> {
     const majors = (
-      await this.prismaRead.session_userprofile_majors.findMany({
+      await this.prisma.session_userprofile_majors.findMany({
         where: { userprofile_id: user.id },
         include: {
           subject_department: true,
@@ -54,7 +50,7 @@ export class DepartmentRepository {
 
   async getMinors(user: session_userprofile): Promise<subject_department[]> {
     const minors = (
-      await this.prismaRead.session_userprofile_minors.findMany({
+      await this.prisma.session_userprofile_minors.findMany({
         where: { userprofile_id: user.id },
         include: {
           subject_department: true,
@@ -66,7 +62,7 @@ export class DepartmentRepository {
 
   async getSpecializedMajors(user: session_userprofile): Promise<subject_department[]> {
     const specializedMajors = (
-      await this.prismaRead.session_userprofile_specialized_major.findMany({
+      await this.prisma.session_userprofile_specialized_major.findMany({
         where: { userprofile_id: user.id },
         include: {
           subject_department: true,
@@ -77,7 +73,7 @@ export class DepartmentRepository {
   }
 
   async getAllDepartmentOptions(excludedDepartmentCodes: string[]): Promise<subject_department[]> {
-    return this.prismaRead.subject_department.findMany({
+    return this.prisma.subject_department.findMany({
       where: {
         visible: true,
         code: { notIn: excludedDepartmentCodes },
@@ -87,7 +83,7 @@ export class DepartmentRepository {
   }
 
   async getDepartmentCodesOfRecentLectures(yearThreshold: number): Promise<string[]> {
-    const res = await this.prismaRead.subject_department.findMany({
+    const res = await this.prisma.subject_department.findMany({
       where: {
         subject_lecture: {
           some: {

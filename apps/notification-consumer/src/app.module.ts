@@ -24,7 +24,7 @@ import { NotificationPrismaRepository } from '@otl/prisma-client/repositories/no
   imports: [
     RmqModule,
     RmqConnectionModule.register(),
-    PrismaModule.register(settings().ormconfig(), settings().ormReplicatedConfig()),
+    PrismaModule.register(settings().ormconfig()),
     ClsModule.forRoot({
       global: true,
       middleware: { mount: true },

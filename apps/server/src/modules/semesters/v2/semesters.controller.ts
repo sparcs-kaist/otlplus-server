@@ -15,4 +15,12 @@ export class SemestersControllerV2 {
     const semesters = await this.semestersService.getSemesters()
     return { semesters: semesters.map((semester) => toJsonSemester(semester)) }
   }
+
+  // Buddy팀 요청에 따른 API로, 이전 학기가 종료되면 다음 예정 학기를 던져줍니다
+  @Get('/current')
+  @Public()
+  async getCurrentSemester(): Promise<ISemester.Response> {
+    const semester = await this.semestersService.getCurrentSemester()
+    return toJsonSemester(semester)
+  }
 }

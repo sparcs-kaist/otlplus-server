@@ -3,15 +3,11 @@ import { ServerConsumerProfessorRepository } from '@otl/server-consumer/out/prof
 import { ProfessorBasic, ProfessorScore } from '@otl/server-nest/modules/professor/domain/professor'
 
 import { mapProfessor } from '@otl/prisma-client/common/mapper/professor'
-import { PrismaReadService } from '@otl/prisma-client/prisma.read.service'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 
 @Injectable()
 export class ProfessorRepository implements ServerConsumerProfessorRepository {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly prismaRead: PrismaReadService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   /**
    * Finds professors by lecture ID.
@@ -19,7 +15,7 @@ export class ProfessorRepository implements ServerConsumerProfessorRepository {
    * @returns A promise that resolves to an array of ProfessorBasic objects.
    */
   async findProfessorsByLectureId(id: number): Promise<ProfessorBasic[]> {
-    const subjectLectureProfessors = await this.prismaRead.subject_lecture_professors.findMany({
+    const subjectLectureProfessors = await this.prisma.subject_lecture_professors.findMany({
       where: { lecture: { id } },
     })
 
@@ -29,7 +25,7 @@ export class ProfessorRepository implements ServerConsumerProfessorRepository {
     // Extracting unique professor IDs from the subjectLectureProfessors
     const professorIds = subjectLectureProfessors.map((slp) => slp.professor_id)
 
-    const professors = await this.prismaRead.subject_professor.findMany({
+    const professors = await this.prisma.subject_professor.findMany({
       where: {
         id: { in: professorIds },
       },
