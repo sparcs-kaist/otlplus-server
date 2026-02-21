@@ -120,6 +120,16 @@ export class SyncDynamicController {
     await this.syncSchedule.updateReviews()
   }
 
+  @Post('enrollmentCounts')
+  @ApiQuery({ name: 'year', type: Number, required: false })
+  @ApiQuery({ name: 'semester', type: Number, required: false })
+  @ApiQuery({ name: 'interval', type: Number, required: false })
+  @ApiSecurity('X-API-KEY')
+  @SyncApiKeyAuth()
+  async refreshEnrollmentCounts(@Query() query: SyncTerm) {
+    return this.syncSchedule.refreshEnrollmentCounts(query.year, query.semester, query.interval)
+  }
+
   @Patch('toggle/:jobName')
   @ApiSecurity('X-API-KEY')
   @SyncApiKeyAuth()

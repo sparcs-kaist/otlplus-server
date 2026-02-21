@@ -1,14 +1,23 @@
 import { Module } from '@nestjs/common'
+import { ScheduleModule } from '@nestjs/schedule'
 import { ClsPluginTransactional } from '@nestjs-cls/transactional'
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma'
 import { RedisModule } from '@nestjs-modules/ioredis'
 import { AppController } from '@otl/notification-consumer/app.controller'
 import { AppService } from '@otl/notification-consumer/app.service'
+import { BatchController } from '@otl/notification-consumer/batch.controller'
+import { BatchFcmService } from '@otl/notification-consumer/batch-fcm.service'
+import { CircuitBreakerService } from '@otl/notification-consumer/circuit-breaker.service'
 import { DeadLetterController } from '@otl/notification-consumer/dead-letter.controller'
+import { DeviceCleanupService } from '@otl/notification-consumer/device-cleanup.service'
 import { NotificationJobService } from '@otl/notification-consumer/job.service'
 import { AGREEMENT_REPOSITORY } from '@otl/notification-consumer/out/agreement.repository'
 import { NOTIFICATION_MQ } from '@otl/notification-consumer/out/notification.mq'
 import { NOTIFICATION_REPOSITORY } from '@otl/notification-consumer/out/notification.repository'
+import {
+  ConsumerPushNotificationHistoryPrismaRepository,
+  PUSH_NOTIFICATION_HISTORY_REPOSITORY,
+} from '@otl/notification-consumer/out/push-notification-history.repository'
 import { NotificationSchedulerService } from '@otl/notification-consumer/schedule.service'
 import settings from '@otl/notification-consumer/settings'
 import { RmqConnectionModule } from '@otl/rmq'
@@ -25,6 +34,7 @@ import { NotificationPrismaRepository } from '@otl/prisma-client/repositories/no
     RmqModule,
     RmqConnectionModule.register(),
     PrismaModule.register(settings().ormconfig()),
+    ScheduleModule.forRoot(),
     ClsModule.forRoot({
       global: true,
       middleware: { mount: true },
@@ -39,8 +49,9 @@ import { NotificationPrismaRepository } from '@otl/prisma-client/repositories/no
     }),
     RedisModule.forRoot(settings().getRedisConfig()),
   ],
-  controllers: [AppController, DeadLetterController],
+  controllers: [AppController, DeadLetterController, BatchController],
   providers: [
+    // --- Existing ---
     {
       provide: AGREEMENT_REPOSITORY,
       useClass: AgreementPrismaRepository,
@@ -56,6 +67,14 @@ import { NotificationPrismaRepository } from '@otl/prisma-client/repositories/no
     AppService,
     NotificationSchedulerService,
     NotificationJobService,
+    // --- New batch system ---
+    {
+      provide: PUSH_NOTIFICATION_HISTORY_REPOSITORY,
+      useClass: ConsumerPushNotificationHistoryPrismaRepository,
+    },
+    BatchFcmService,
+    CircuitBreakerService,
+    DeviceCleanupService,
   ],
 })
 export class AppModule {}

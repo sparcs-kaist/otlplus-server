@@ -11,6 +11,12 @@ export interface DeviceRepository {
   // get device by userId and token
   findByUserIdAndToken(userId: number, token: string): Promise<UserDevice | null>
 
+  // get active devices for multiple users (bulk query)
+  findActiveDevicesByUserIds(userIds: number[]): Promise<UserDevice[]>
+
+  // deactivate devices by tokens
+  deactivateByTokens(tokens: string[]): Promise<number>
+
   // register device
   save(device: UserDevice): Promise<UserDevice>
   save(device: UserDeviceCreate): Promise<UserDevice>

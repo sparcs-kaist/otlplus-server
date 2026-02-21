@@ -339,6 +339,8 @@ model session_userprofile_device {
   deviceType      DeviceType?
   deviceOsVersion String?             @db.VarChar(255)
   appVersion      String?             @db.VarChar(255)
+  created_at      DateTime            @default(now()) @db.DateTime(0)
+  updated_at      DateTime            @default(now()) @updatedAt @db.DateTime(0)
   userprofile     session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict)
 
   @@unique([userprofile_id, token], map: "session_fcm_token_userprofile_id_token_uniq")
@@ -1065,6 +1067,88 @@ model paper {
   @@index([professor_id], map: "paper_professor_id_fkey")
 }
 
+model push_notification {
+  id               Int                          @id @default(autoincrement())
+  name             String                       @unique(map: "push_notification_name_uniq") @db.VarChar(200)
+  type             AgreementType
+  titleTemplate    String                       @db.VarChar(500)
+  bodyTemplate     String                       @db.LongText
+  targetType       NotificationTargetType
+  targetFilter     Json?
+  scheduleType     NotificationScheduleType
+  scheduleAt       DateTime?                    @db.DateTime(0)
+  cronExpression   String?                      @db.VarChar(100)
+  priority         NotificationPriority         @default(NORMAL)
+  digestKey        String?                      @db.VarChar(100)
+  digestWindowSec  Int?
+  isActive         Boolean                      @default(true)
+  createdBy        Int?
+  createdAt        DateTime                     @default(now()) @db.DateTime(0)
+  updatedAt        DateTime                     @default(now()) @updatedAt @db.DateTime(0)
+  batches          push_notification_batch[]
+  histories        push_notification_history[]
+}
+
+model push_notification_batch {
+  id               Int                          @id @default(autoincrement())
+  notificationId   Int
+  batchId          String                       @unique(map: "push_notification_batch_batchId_uniq") @db.VarChar(36)
+  totalCount       Int
+  sentCount        Int                          @default(0)
+  failedCount      Int                          @default(0)
+  status           String                       @default("PENDING") @db.VarChar(20)
+  startedAt        DateTime?                    @db.DateTime(0)
+  completedAt      DateTime?                    @db.DateTime(0)
+  createdAt        DateTime                     @default(now()) @db.DateTime(0)
+  notification     push_notification            @relation(fields: [notificationId], references: [id], onUpdate: Restrict)
+  histories        push_notification_history[]
+
+  @@index([notificationId], map: "push_notification_batch_notificationId_fkey")
+  @@index([status], map: "push_notification_batch_status_index")
+}
+
+model push_notification_history {
+  id               Int                          @id @default(autoincrement())
+  batchId          Int
+  notificationId   Int
+  userId           Int
+  deviceId         Int?
+  fcmToken         String?                      @db.VarChar(255)
+  notificationType AgreementType
+  priority         NotificationPriority
+  title            String                       @db.VarChar(500)
+  body             String                       @db.LongText
+  status           NotificationHistoryStatus    @default(QUEUED)
+  fcmMessageId     String?                      @db.VarChar(255)
+  errorCode        String?                      @db.VarChar(100)
+  errorMessage     String?                      @db.LongText
+  idempotencyKey   String                       @unique(map: "push_notification_history_idempotencyKey_uniq") @db.VarChar(255)
+  queuedAt         DateTime                     @default(now()) @db.DateTime(0)
+  sentAt           DateTime?                    @db.DateTime(0)
+  deliveredAt      DateTime?                    @db.DateTime(0)
+  readAt           DateTime?                    @db.DateTime(0)
+  createdAt        DateTime                     @default(now()) @db.DateTime(0)
+  batch            push_notification_batch      @relation(fields: [batchId], references: [id], onUpdate: Restrict)
+  notification     push_notification            @relation(fields: [notificationId], references: [id], onUpdate: Restrict)
+
+  @@index([batchId], map: "push_notification_history_batchId_fkey")
+  @@index([notificationId], map: "push_notification_history_notificationId_fkey")
+  @@index([userId], map: "push_notification_history_userId_index")
+  @@index([status], map: "push_notification_history_status_index")
+  @@index([userId, status], map: "push_notification_history_userId_status_index")
+}
+
+model user_push_agreement {
+  userId           Int                          @id
+  info             Boolean                      @default(true)
+  marketing        Boolean                      @default(false)
+  nightMarketing   Boolean                      @default(false)
+  detailVersion    Int                          @default(1)
+  detail           Json?
+  agreedAt         DateTime                     @default(now()) @db.DateTime(0)
+  updatedAt        DateTime                     @default(now()) @updatedAt @db.DateTime(0)
+}
+
 enum SyncType {
   DEPARTMENT
   COURSE
@@ -1088,4 +1172,30 @@ enum AgreementType {
   INFO
   MARKETING
   NIGHT_MARKETING
+}
+
+enum NotificationScheduleType {
+  IMMEDIATE
+  ONE_TIME
+  CRON
+}
+
+enum NotificationTargetType {
+  ALL
+  SEGMENT
+  MANUAL
+}
+
+enum NotificationPriority {
+  URGENT
+  NORMAL
+  LOW
+}
+
+enum NotificationHistoryStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  FAILED
+  DLQ
 }

@@ -1,8 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common'
-import { messaging } from 'firebase-admin'
-import { getMessaging } from 'firebase-admin/messaging'
-
-import Message = messaging.Message
+import { DeviceCleanupService } from '@otl/notification-consumer/device-cleanup.service'
 import { AGREEMENT_REPOSITORY, ConsumerAgreementRepository } from '@otl/notification-consumer/out/agreement.repository'
 import { NOTIFICATION_MQ, NotificationConsumerMQ } from '@otl/notification-consumer/out/notification.mq'
 import {
@@ -12,6 +9,8 @@ import {
 import { NotificationSchedulerService } from '@otl/notification-consumer/schedule.service'
 import { FCMNotificationRequest } from '@otl/server-nest/modules/notification/domain/notification'
 import { ConsumeMessage } from 'amqplib'
+import { messaging } from 'firebase-admin'
+import { getMessaging } from 'firebase-admin/messaging'
 import { StatusCodes } from 'http-status-codes'
 
 import { getCurrentMethodName } from '@otl/common'
@@ -19,6 +18,24 @@ import { AgreementType } from '@otl/common/enum/agreement'
 import { AgreementException } from '@otl/common/exception/agreement.exception'
 import { NotificationException } from '@otl/common/exception/notification.exception'
 import logger from '@otl/common/logger/logger'
+
+import Message = messaging.Message
+
+function isInvalidTokenError(error: unknown): boolean {
+  if (error && typeof error === 'object' && 'code' in error) {
+    const code = String((error as { code: string }).code)
+    return code.includes('not-registered') || code.includes('invalid-registration') || code.includes('invalid-argument')
+  }
+  return false
+}
+
+function isRetryableError(error: unknown): boolean {
+  if (error && typeof error === 'object' && 'code' in error) {
+    const code = String((error as { code: string }).code)
+    return code.includes('unavailable') || code.includes('internal') || code.includes('deadline-exceeded')
+  }
+  return false
+}
 
 @Injectable()
 export class AppService {
@@ -30,6 +47,7 @@ export class AppService {
     @Inject(NOTIFICATION_MQ)
     private readonly notificationConsumerMQ: NotificationConsumerMQ,
     private readonly notificationSchedulerService: NotificationSchedulerService,
+    private readonly deviceCleanup: DeviceCleanupService,
   ) {}
 
   async handleNotification(msg: FCMNotificationRequest, _amqpMsg: ConsumeMessage): Promise<boolean> {
@@ -65,7 +83,7 @@ export class AppService {
   }
 
   async handleAdNotification(msg: FCMNotificationRequest) {
-    console.log(msg)
+    logger.info(`[AdNotification] Processing for user ${msg.userId}`)
     return this.sendFCM(msg)
   }
 
@@ -125,26 +143,58 @@ export class AppService {
         title,
         body,
       },
-      apns: { payload: { aps: { alert: { title, body } } } },
+      data: {
+        requestId: requestId || '',
+        notificationName: notificationName || '',
+        type: 'notification',
+      },
+      apns: {
+        headers: { 'apns-priority': '10' },
+        payload: { aps: { alert: { title, body }, sound: 'default' } },
+      },
       android: {
         priority: 'high' as const,
+        notification: {
+          sound: 'default',
+          channelId: 'default',
+        },
       },
-      webpush: {},
     }
 
-    console.log(message)
-    const response = await getMessaging().send(message)
-    console.log(response)
-    await this.notificationRepository.saveRequest({
-      notificationName,
-      userId,
-      content,
-      requestId,
-      scheduleAt,
-      fcmId: response,
-      isCompleted: true,
-      isRead: false,
-      deviceToken,
-    })
+    try {
+      logger.info(`[sendFCM] Sending to user ${userId}, token ${deviceToken?.substring(0, 10)}...`)
+      const response = await getMessaging().send(message)
+      logger.info(`[sendFCM] Success: ${response}`)
+
+      await this.notificationRepository.saveRequest({
+        notificationName,
+        userId,
+        content,
+        requestId,
+        scheduleAt,
+        fcmId: response,
+        isCompleted: true,
+        isRead: false,
+        deviceToken,
+      })
+    }
+    catch (error) {
+      logger.error(`[sendFCM] Error sending to user ${userId}:`, error)
+
+      if (isInvalidTokenError(error)) {
+        logger.warn(`[sendFCM] Invalid token for user ${userId}, deactivating device`)
+        await this.deviceCleanup.deactivateTokens([deviceToken])
+        // Don't rethrow — message is handled
+        return
+      }
+
+      if (isRetryableError(error)) {
+        // Rethrow to nack and retry via DLQ
+        throw error
+      }
+
+      // Non-retryable error — log and move on
+      throw error
+    }
   }
 }

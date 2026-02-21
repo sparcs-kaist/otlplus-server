@@ -188,6 +188,23 @@ export class SyncSchedule {
     await this.syncService.updateRepresentativeLectures()
   }
 
+  /**
+   * 기존 sync_taken_lectures 데이터로 enrolled_count 갱신
+   * 학교 서버 접근 없이 로컬 DB 데이터만 사용
+   */
+  async refreshEnrollmentCounts(year?: number, semester?: number, interval?: number) {
+    const semesters = await this.determineTargetSemesters(year, semester, interval)
+    const results: { year: number, semester: number, updatedLectures: number }[] = []
+
+    for (const [y, s] of [...semesters].reverse()) {
+      const count = await this.syncService.updateEnrollmentCounts(y, s)
+      results.push({ year: y, semester: s, updatedLectures: count })
+      this.logger.log(`Refreshed enrollment counts for ${y}-${s}: ${count} lectures`)
+    }
+
+    return results
+  }
+
   private async determineTargetSemesters(year?: number, semester?: number, interval?: number) {
     if (year && semester) {
       const semesters: [number, number][] = [[year, semester]]

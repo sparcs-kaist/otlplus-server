@@ -86,6 +86,26 @@ export class DevicePrismaRepository implements DeviceRepository {
       })
   }
 
+  async findActiveDevicesByUserIds(userIds: number[]): Promise<UserDevice[]> {
+    if (userIds.length === 0) return []
+    const devices = await this.prisma.session_userprofile_device.findMany({
+      where: {
+        userprofile_id: { in: userIds },
+        is_active: true,
+      },
+    })
+    return devices.map((e: EDevice.Basic) => mapUserDevice(e))
+  }
+
+  async deactivateByTokens(tokens: string[]): Promise<number> {
+    if (tokens.length === 0) return 0
+    const result = await this.prisma.session_userprofile_device.updateMany({
+      where: { token: { in: tokens } },
+      data: { is_active: false },
+    })
+    return result.count
+  }
+
   findByUserId(userId: number): Promise<UserDevice[] | null> {
     return this.prisma.session_userprofile_device
       .findMany({

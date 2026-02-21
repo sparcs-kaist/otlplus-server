@@ -640,7 +640,7 @@ export class SyncService {
    * 해당 학기 모든 강의의 수강신청 인원을 업데이트
    * sync_taken_lectures 테이블에서 집계하여 subject_lecture.enrolled_count에 반영
    */
-  async updateEnrollmentCounts(year: number, semester: number) {
+  async updateEnrollmentCounts(year: number, semester: number): Promise<number> {
     const counts = await this.syncRepository.getEnrollmentCountsByLecture(year, semester)
     await this.syncRepository.updateLectureEnrollmentCounts(
       // eslint-disable-next-line no-underscore-dangle
@@ -648,6 +648,7 @@ export class SyncService {
       { year, semester },
     )
     this.logger.log(`Updated enrollment counts for ${counts.length} lectures in ${year}-${semester}`)
+    return counts.length
   }
 
   getLectureIdOfAttendRecord(lectures: ELecture.Basic[], attend: IScholar.ScholarAttendType) {
