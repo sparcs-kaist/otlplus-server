@@ -26,7 +26,7 @@ export class IsReviewProhibitedCommand implements AuthCommand {
 
     if (isReviewProhibited) {
       try {
-        const lectureId = reviewsBody?.lecture ?? reviewsBody?.lectureId
+        const lectureId = reviewsBody?.lecture || reviewsBody?.lectureId
         if (!reviewsBody || !lectureId) {
           throw new Error('lecture info are not found from request')
         }
