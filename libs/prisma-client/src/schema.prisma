@@ -316,6 +316,7 @@ model session_userprofile {
   session_userprofile_specialized_major session_userprofile_specialized_major[]
   taken_lectures                        session_userprofile_taken_lectures[]
   subject_courseuser                    subject_courseuser[]
+  api_keys                              session_api_key[]
   support_rate                          support_rate[]
   timetable_timetable                   timetable_timetable[]
   timetable_wishlist                    timetable_wishlist?
@@ -1087,4 +1088,19 @@ enum AgreementType {
   INFO
   MARKETING
   NIGHT_MARKETING
+}
+
+model session_api_key {
+  id             Int                 @id @default(autoincrement())
+  userprofile_id Int
+  key            String              @unique @db.VarChar(64)
+  name           String?             @db.VarChar(100)
+  created_at     DateTime            @default(now()) @db.DateTime(0)
+  last_used_at   DateTime?           @db.DateTime(0)
+  expires_at     DateTime?           @db.DateTime(0)
+  is_active      Boolean             @default(true)
+  userprofile    session_userprofile @relation(fields: [userprofile_id], references: [id], onUpdate: Restrict, onDelete: Cascade)
+
+  @@index([userprofile_id], map: "session_api_key_userprofile_id_fkey")
+  @@index([key], map: "session_api_key_key_index")
 }

@@ -89,4 +89,69 @@ export class UserRepository {
     const map = await this.prisma.session_userprofile.findFirst({ where: { uid } })
     return map?.sid ?? null
   }
+
+  // API Key methods
+  async createApiKey(data: { userprofile_id: number; key: string; name: string | null; is_active: boolean }) {
+    return this.prisma.session_api_key.create({
+      data: {
+        userprofile_id: data.userprofile_id,
+        key: data.key,
+        name: data.name,
+        is_active: data.is_active,
+      },
+      select: {
+        id: true,
+        key: true,
+        name: true,
+        created_at: true,
+      },
+    })
+  }
+
+  async findApiKey(key: string) {
+    return this.prisma.session_api_key.findUnique({
+      where: { key },
+      include: { userprofile: true },
+    })
+  }
+
+  async updateApiKeyLastUsed(keyId: number) {
+    return this.prisma.session_api_key.update({
+      where: { id: keyId },
+      data: { last_used_at: new Date() },
+    })
+  }
+
+  async listApiKeys(userId: number) {
+    return this.prisma.session_api_key.findMany({
+      where: { userprofile_id: userId },
+      select: {
+        id: true,
+        name: true,
+        created_at: true,
+        last_used_at: true,
+        is_active: true,
+      },
+      orderBy: { created_at: 'desc' },
+    })
+  }
+
+  async revokeApiKey(userId: number, keyId: number) {
+    return this.prisma.session_api_key.updateMany({
+      where: {
+        id: keyId,
+        userprofile_id: userId,
+      },
+      data: { is_active: false },
+    })
+  }
+
+  async deleteApiKey(userId: number, keyId: number) {
+    return this.prisma.session_api_key.deleteMany({
+      where: {
+        id: keyId,
+        userprofile_id: userId,
+      },
+    })
+  }
 }
