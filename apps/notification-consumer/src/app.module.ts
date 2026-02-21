@@ -14,6 +14,7 @@ import settings from '@otl/notification-consumer/settings'
 import { RmqConnectionModule } from '@otl/rmq'
 import { NotificationFcmPublisher } from '@otl/rmq/exchanges/notification/notification.fcm.publish'
 import { RmqModule } from '@otl/rmq/rmq.module'
+import { SentryModule } from '@sentry/nestjs/setup'
 import { ClsModule } from 'nestjs-cls'
 
 import { PrismaModule, PrismaService } from '@otl/prisma-client'
@@ -22,6 +23,7 @@ import { NotificationPrismaRepository } from '@otl/prisma-client/repositories/no
 
 @Module({
   imports: [
+    SentryModule.forRoot(),
     RmqModule,
     RmqConnectionModule.register(),
     PrismaModule.register(settings().ormconfig()),

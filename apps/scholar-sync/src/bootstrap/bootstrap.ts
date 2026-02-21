@@ -1,3 +1,6 @@
+// Sentry instrumentation MUST be imported before everything else
+import './instrument'
+
 import { ValidationPipe, VersioningType } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
 import { SwaggerModule } from '@nestjs/swagger'

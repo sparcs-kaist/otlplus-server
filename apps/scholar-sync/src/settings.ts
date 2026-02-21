@@ -54,6 +54,10 @@ const getSyncConfig = () => ({
   scholarUrl: process.env.SCHOLAR_BASE_URL,
 })
 
+const sentryConfig = () => ({
+  dsn: process.env.SENTRY_DSN_SCHOLAR_SYNC,
+})
+
 const getVersion = () => String(process.env.npm_package_version)
 
 const getSwaggerConfig = () => {
@@ -118,4 +122,5 @@ export default () => ({
   getVersion: () => getVersion(),
   getSwaggerConfig: () => getSwaggerConfig(),
   loggingConfig: () => getLoggingConfig(),
+  getSentryConfig: () => sentryConfig(),
 })
