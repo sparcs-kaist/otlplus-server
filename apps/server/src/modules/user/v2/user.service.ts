@@ -168,6 +168,6 @@ export class UserServiceV2 {
     const DEFAULT_ORDER = ['-written_datetime', '-id']
     const MAX_LIMIT = 100
     const likedRaw = await this.reviewsRepository.getLikedReviews(user.id, DEFAULT_ORDER, 0, MAX_LIMIT)
-    return likedRaw.map((review) => toJsonReviewV2(review, null, language))
+    return likedRaw.map((review) => toJsonReviewV2(review, user, language))
   }
 }
