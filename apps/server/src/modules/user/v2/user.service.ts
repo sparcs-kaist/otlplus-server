@@ -121,20 +121,22 @@ export class UserServiceV2 {
     user: session_userprofile,
     language: Language,
   ): Promise<ICourseV2.WritableReview | null> {
-    const WrittenReviews = await this.reviewsRepository.findReviewByUser(user)
-    const TakenLectures = await this.lectureRepository.getTakenLectures(user)
-    let UnreviewedLectures = TakenLectures
-    for (const review of WrittenReviews) {
-      UnreviewedLectures = UnreviewedLectures.filter((lecture) => lecture.id !== review.lecture_id)
-    }
-    if (UnreviewedLectures.length === 0) {
+    const [writtenReviews, reviewWritableLectures] = await Promise.all([
+      this.reviewsRepository.findReviewByUser(user),
+      this.lectureRepository.findReviewWritableLectures(user),
+    ])
+
+    const reviewedLectureIds = new Set(writtenReviews.map((review) => review.lecture_id))
+    const unreviewedLectures = reviewWritableLectures.filter((lecture) => !reviewedLectureIds.has(lecture.id))
+
+    if (unreviewedLectures.length === 0) {
       return null
     }
-    const RandomUnreviewedLecture = UnreviewedLectures[Math.floor(Math.random() * UnreviewedLectures.length)]
+    const randomLecture = unreviewedLectures[Math.floor(Math.random() * unreviewedLectures.length)]
     return {
-      lectureId: RandomUnreviewedLecture.id,
-      name: language === 'en' ? RandomUnreviewedLecture.title_en : RandomUnreviewedLecture.title,
-      totalRemainingCount: UnreviewedLectures.length,
+      lectureId: randomLecture.id,
+      name: language === 'en' ? randomLecture.title_en : randomLecture.title,
+      totalRemainingCount: unreviewedLectures.length,
     }
   }
 
@@ -168,6 +170,6 @@ export class UserServiceV2 {
     const DEFAULT_ORDER = ['-written_datetime', '-id']
     const MAX_LIMIT = 100
     const likedRaw = await this.reviewsRepository.getLikedReviews(user.id, DEFAULT_ORDER, 0, MAX_LIMIT)
-    return likedRaw.map((review) => toJsonReviewV2(review, null, language))
+    return likedRaw.map((review) => toJsonReviewV2(review, user, language))
   }
 }
