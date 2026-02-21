@@ -26,10 +26,11 @@ export class IsReviewProhibitedCommand implements AuthCommand {
 
     if (isReviewProhibited) {
       try {
-        if (!reviewsBody || !reviewsBody.lecture) {
+        const lectureId = reviewsBody?.lecture ?? reviewsBody?.lectureId
+        if (!reviewsBody || !lectureId) {
           throw new Error('lecture info are not found from request')
         }
-        const lecture = await this.lectureService.getLectureById(reviewsBody.lecture)
+        const lecture = await this.lectureService.getLectureById(lectureId)
         const semester = await this.prismaService.subject_semester.findFirst({
           where: {
             AND: [{ year: lecture.year }, { semester: lecture.semester }],

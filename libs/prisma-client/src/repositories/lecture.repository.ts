@@ -3,8 +3,6 @@ import { ServerConsumerLectureRepository } from '@otl/server-consumer/out/lectur
 import { LectureBasic, LectureScore } from '@otl/server-nest/modules/lectures/domain/lecture'
 import { Prisma, session_userprofile } from '@prisma/client'
 
-import { groupBy } from '@otl/common/utils/util'
-
 import { mapLecture } from '@otl/prisma-client/common/mapper/lecture'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 import { LectureQuery } from '@otl/prisma-client/types/query'
@@ -109,49 +107,19 @@ export class LectureRepository implements ServerConsumerLectureRepository {
   }
 
   async findReviewWritableLectures(user: session_userprofile, date?: Date): Promise<ELecture.Details[]> {
-    type Semester = { semester: number, year: number }
     const currDate = date ?? new Date()
     const notWritableSemesters = await this.prisma.subject_semester.findMany({
       where: {
-        OR: [
-          {
-            courseAddDropPeriodEnd: {
-              gte: currDate,
-            },
-          },
-          {
-            beginning: {
-              gte: currDate,
-            },
-          },
-        ],
+        courseDropDeadline: { gte: currDate },
       },
     })
-    const notWritableYearAndSemester = groupBy<Semester, number>(
-      notWritableSemesters.map((semester) => ({
-        semester: semester.semester,
-        year: semester.year,
-      })),
-      (subject_semester) => subject_semester.year,
-    )
 
-    const notWritableYearAndSemesterMap: Record<string, Record<string, Semester[] | undefined>> = {}
-    Object.entries(notWritableYearAndSemester).forEach(([key, value]) => {
-      if (value) {
-        notWritableYearAndSemesterMap[key] = groupBy<Semester, number>(value, (s) => s.year)
-      }
-    })
+    const notWritableSet = new Set(notWritableSemesters.map((s) => `${s.year}-${s.semester}`))
 
     const takenLectures = await this.getTakenLectures(user)
     const reviewWritableLectures = takenLectures.filter(
-      (lecture) => !!(notWritableYearAndSemesterMap[lecture.year] ?? [lecture.semester]),
+      (lecture) => !notWritableSet.has(`${lecture.year}-${lecture.semester}`),
     )
-
-    // const lectures = await this.prisma.subject_lecture.findMany({
-    //   where: {
-    //     AND: notWritableYearAndSemester
-    //   }
-    // })
 
     return reviewWritableLectures
   }
