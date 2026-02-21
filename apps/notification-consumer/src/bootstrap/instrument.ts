@@ -5,7 +5,6 @@
  * It initializes Sentry with full performance monitoring.
  */
 import * as Sentry from '@sentry/nestjs'
-import { nodeProfilingIntegration } from '@sentry/profiling-node'
 
 import settings from '../settings'
 
@@ -24,7 +23,6 @@ Sentry.init({
 
   integrations: [
     Sentry.prismaIntegration(),
-    nodeProfilingIntegration(),
   ],
 
   sendDefaultPii: true,

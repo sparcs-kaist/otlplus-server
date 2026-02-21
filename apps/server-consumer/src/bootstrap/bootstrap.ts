@@ -1,4 +1,4 @@
-// Sentry instrumentation MUST be imported before everything else
+// eslint-disable-next-line simple-import-sort/imports
 import './instrument'
 
 import { HttpException } from '@nestjs/common'
