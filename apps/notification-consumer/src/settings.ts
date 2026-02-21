@@ -32,6 +32,10 @@ const getFirebaseConfig = (): ServiceAccount => {
   }
 }
 
+const sentryConfig = () => ({
+  dsn: process.env.SENTRY_DSN_NOTIFICATION_CONSUMER,
+})
+
 const getVersion = () => String(process.env.npm_package_version)
 
 const getRedisConfig = (): RedisModuleOptions => ({
@@ -47,4 +51,5 @@ export default () => ({
   getVersion: () => getVersion(),
   getFirebaseConfig: () => getFirebaseConfig(),
   getRedisConfig: () => getRedisConfig(),
+  getSentryConfig: () => sentryConfig(),
 })
