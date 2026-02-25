@@ -127,7 +127,7 @@ export class AuthController {
           base_url = parsedOrigin;
         }
       }
-    } catch (e) {
+    } catch (_) {
       console.warn('Invalid preferred_url received:', preferred_url);
     }
 
