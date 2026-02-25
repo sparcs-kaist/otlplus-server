@@ -67,6 +67,7 @@ export class AuthController {
   async loginCallback(
     @Query('state') state: string,
     @Query('code') code: string,
+    @Query('preferred_url') preferred_url : string,
     @Req() req: IAuth.Request,
     @Session() session: Record<string, any>,
     @Res() response: IAuth.Response,
@@ -92,7 +93,41 @@ export class AuthController {
     @Todo
     call import_student_lectures(studentId)
      */
-    const next_url = `${process.env.WEB_URL}/login/success#accessToken=${accessToken}&refreshToken=${refreshToken}`
+
+    //@ Todo : auth/utils/sparcs-sso.ts와 whitelist domain 통합 관리
+    const isProduction = process.env.NODE_ENV === 'prod';
+    const white_list_origin = [
+      'https://otl.sparcs.org',
+      'https://otl.kaist.ac.kr',
+    ];
+
+    //production 아닌 경우
+    if (!isProduction) {
+      white_list_origin.push( 
+        'https://api.otl.dev.sparcs.org',
+        'https://otl-stage.sparcsandbox.com',
+        'http://localhost:8000',
+      );
+    }
+    
+
+    //sso 에서 넘어온 preferred_url의 origin 대로 redirect
+    //kaist.ac.kr -> kaist.ac.kr / sparcs.org -> sparcs.org
+    //prefered_url은 /login/success/ 까지 같이 오기 때문에 .origin으로 처리
+
+    let base_url = process.env.WEB_URL; // default (fallback : env 기본)
+    try {
+      if (preferred_url) {
+        const parsedOrigin = new URL(preferred_url).origin;
+        if (allowedOrigins.includes(parsedOrigin)) {
+          base_url = parsedOrigin;
+        }
+      }
+    } catch (e) {
+      console.warn('Invalid preferred_url received:', preferred_url);
+    }
+
+    const next_url = `${base_url}/login/success#accessToken=${accessToken}&refreshToken=${refreshToken}`
     response.redirect(next_url)
   }
 
