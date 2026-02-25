@@ -45,8 +45,12 @@ export class AuthController {
       }
       const { sid, uid } = this.authService.extractSidUidFromToken(picked, { allowExpired: true })
       if (sid && uid) {
+        const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https';
+        const host = req.get('host');
+        const base_url = host ? `${protocol}://${host}` : process.env.WEB_URL; //fall back : default url
+        
         return res.redirect(
-          `${process.env.WEB_URL}/login/success#accessToken=${accessToken}&refreshToken=${refreshToken}`,
+          `${base_url}/login/success#accessToken=${accessToken}&refreshToken=${refreshToken}`,
         )
       }
     }
@@ -119,7 +123,7 @@ export class AuthController {
     try {
       if (preferred_url) {
         const parsedOrigin = new URL(preferred_url).origin;
-        if (allowedOrigins.includes(parsedOrigin)) {
+        if (white_list_origin.includes(parsedOrigin)) {
           base_url = parsedOrigin;
         }
       }
