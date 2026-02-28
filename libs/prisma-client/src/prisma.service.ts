@@ -43,4 +43,14 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     // const extendedClient = this.$extends(signalExtension)
     // Object.assign(this, extendedClient)
   }
+
+  async onModuleDestroy() {
+    console.log('Closing Prisma connection...');
+    await this.$disconnect();
+    
+    if (this.dbPool && typeof this.dbPool.end === 'function') {
+      await this.dbPool.end();
+      console.log('MariaDB Pool closed successfully');
+    }
+  }
 }
