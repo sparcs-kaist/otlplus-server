@@ -24,6 +24,7 @@ RUN apt-get update -y && apt-get install -y openssl
 COPY --from=build /var/www/otlplus-server/dist/apps/server /var/www/otlplus-server/dist/apps/server
 COPY --from=build /var/www/otlplus-server/apps/server/static /var/www/otlplus-server/apps/server/static
 COPY --from=build /var/www/otlplus-server/node_modules /var/www/otlplus-server/node_modules
+COPY --from=build /var/www/otlplus-server/libs /var/www/otlplus-server/libs
 
 WORKDIR /var/www/otlplus-server
 
