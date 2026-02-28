@@ -29,8 +29,6 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
       ],
       errorFormat: 'pretty',
     })
-
-    this.dbPool = ormOption;
   }
 
   async onModuleInit() {
