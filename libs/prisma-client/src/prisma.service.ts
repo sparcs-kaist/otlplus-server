@@ -43,4 +43,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     // const extendedClient = this.$extends(signalExtension)
     // Object.assign(this, extendedClient)
   }
+
+  async onModuleDestroy() {
+    console.log('Closing Prisma connection...');
+    await this.$disconnect();
+  }
 }
