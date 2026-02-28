@@ -6,7 +6,7 @@ import * as mariadb from 'mariadb'
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
   
-  private readonly dbPool: mariadb.Pool;
+  private readonly dbPool: any;
   
   constructor(@Inject('ORM_OPTIONS') ormOption: mariadb.PoolConfig) {
     const adapter = new PrismaMariaDb(ormOption)
