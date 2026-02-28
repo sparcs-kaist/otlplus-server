@@ -50,6 +50,8 @@ const getPrismaConnectConfig = (): mariadb.PoolConfig => ({
   password: process.env.DATABASE_PASSWORD,
   database: process.env.DATABASE_NAME,
   connectionLimit: 40,
+  idleTimeout: 600,
+  minDelayValidation: 10000,
 })
 
 const getRedisConfig = () => ({
