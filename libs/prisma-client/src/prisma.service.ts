@@ -5,6 +5,9 @@ import * as mariadb from 'mariadb'
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
+  
+  private readonly dbPool: any;
+  
   constructor(@Inject('ORM_OPTIONS') ormOption: mariadb.PoolConfig) {
     const adapter = new PrismaMariaDb(ormOption)
     super({
@@ -29,6 +32,8 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
       ],
       errorFormat: 'pretty',
     })
+
+    this.dbPool = ormOption;
   }
 
   async onModuleInit() {
@@ -42,5 +47,15 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
     console.log('Prisma connected successfully')
     // const extendedClient = this.$extends(signalExtension)
     // Object.assign(this, extendedClient)
+  }
+
+  async onModuleDestroy() {
+    console.log('Closing Prisma connection...');
+    await this.$disconnect();
+    
+    if (this.dbPool && typeof this.dbPool.end === 'function') {
+      await this.dbPool.end();
+      console.log('MariaDB Pool closed successfully');
+    }
   }
 }
