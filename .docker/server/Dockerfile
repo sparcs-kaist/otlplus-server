@@ -11,8 +11,14 @@ COPY package.json yarn.lock* package-lock.json* tsconfig.json tsconfig.build.jso
 
 RUN yarn --production
 
-COPY ./apps/server ./apps/scholar-sync ./apps/server-consumer ./apps/notification-consumer ./apps/
-COPY ./libs/common ./libs/prisma-client ./libs/rmq ./libs/
+COPY ./apps/server ./apps/server
+COPY ./apps/scholar-sync ./apps/scholar-sync
+COPY ./apps/server-consumer ./apps/server-consumer
+COPY ./apps/notification-consumer ./apps/notification-consumer
+
+COPY ./libs/common ./libs/common
+COPY ./libs/prisma-client ./libs/prisma-client
+COPY ./libs/rmq ./libs/rmq
 
 RUN yarn client:generate
 RUN yarn generate:server:api-docs && \
