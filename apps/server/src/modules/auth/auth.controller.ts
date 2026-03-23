@@ -45,13 +45,11 @@ export class AuthController {
       }
       const { sid, uid } = this.authService.extractSidUidFromToken(picked, { allowExpired: true })
       if (sid && uid) {
-        const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https';
-        const host = req.get('host');
-        const base_url = host ? `${protocol}://${host}` : process.env.WEB_URL; //fall back : default url
-        
-        return res.redirect(
-          `${base_url}/login/success#accessToken=${accessToken}&refreshToken=${refreshToken}`,
-        )
+        const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https'
+        const host = req.get('host')
+        const base_url = host ? `${protocol}://${host}` : process.env.WEB_URL // fall back : default url
+
+        return res.redirect(`${base_url}/login/success#accessToken=${accessToken}&refreshToken=${refreshToken}`)
       }
     }
     // req.session['next'] = next ?? '/';
@@ -71,7 +69,7 @@ export class AuthController {
   async loginCallback(
     @Query('state') state: string,
     @Query('code') code: string,
-    @Query('preferred_url') preferred_url : string,
+    @Query('preferred_url') preferred_url: string,
     @Req() req: IAuth.Request,
     @Session() session: Record<string, any>,
     @Res() response: IAuth.Response,
@@ -98,37 +96,34 @@ export class AuthController {
     call import_student_lectures(studentId)
      */
 
-    //@ Todo : auth/utils/sparcs-sso.ts와 whitelist domain 통합 관리
-    const isProduction = process.env.NODE_ENV === 'prod';
-    const white_list_origin = [
-      'https://otl.sparcs.org',
-      'https://otl.kaist.ac.kr',
-    ];
+    // @ Todo : auth/utils/sparcs-sso.ts와 whitelist domain 통합 관리
+    const isProduction = process.env.NODE_ENV === 'prod'
+    const white_list_origin = ['https://otl.sparcs.org', 'https://otl.kaist.ac.kr']
 
-    //production 아닌 경우
+    // production 아닌 경우
     if (!isProduction) {
-      white_list_origin.push( 
+      white_list_origin.push(
         'https://api.otl.dev.sparcs.org',
         'https://otl-stage.sparcsandbox.com',
         'http://localhost:8000',
-      );
+      )
     }
-    
 
-    //sso 에서 넘어온 preferred_url의 origin 대로 redirect
-    //kaist.ac.kr -> kaist.ac.kr / sparcs.org -> sparcs.org
-    //prefered_url은 /login/success/ 까지 같이 오기 때문에 .origin으로 처리
+    // sso 에서 넘어온 preferred_url의 origin 대로 redirect
+    // kaist.ac.kr -> kaist.ac.kr / sparcs.org -> sparcs.org
+    // prefered_url은 /login/success/ 까지 같이 오기 때문에 .origin으로 처리
 
-    let base_url = process.env.WEB_URL; // default (fallback : env 기본)
+    let base_url = process.env.WEB_URL // default (fallback : env 기본)
     try {
       if (preferred_url) {
-        const parsedOrigin = new URL(preferred_url).origin;
+        const parsedOrigin = new URL(preferred_url).origin
         if (white_list_origin.includes(parsedOrigin)) {
-          base_url = parsedOrigin;
+          base_url = parsedOrigin
         }
       }
-    } catch (_) {
-      console.warn('Invalid preferred_url received:', preferred_url);
+    }
+    catch (_) {
+      console.warn('Invalid preferred_url received:', preferred_url)
     }
 
     const next_url = `${base_url}/login/success#accessToken=${accessToken}&refreshToken=${refreshToken}`
