@@ -323,7 +323,7 @@ export namespace ITimetableV2 {
   export interface SemesterTimetableGroup {
     year: number
     semester: number
-    timetables: { id: number, timeTableOrder: number }[]
+    timetables: { id: number, name: string }[]
   }
 
   export interface GetTimetablesBySemesterResDto {
