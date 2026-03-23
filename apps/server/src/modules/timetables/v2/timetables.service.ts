@@ -38,7 +38,7 @@ export class TimetablesServiceV2 {
     query: ITimetableV2.GetTimetablesBySemesterReqDto,
   ): Promise<ITimetableV2.GetTimetablesBySemesterResDto> {
     const timetables = await this.timetableRepository.getTimetables(user, query.year, query.semester, {
-      orderBy: [{ year: 'desc' }, { semester: 'asc' }, { arrange_order: 'asc' }],
+      orderBy: [{ year: 'desc' }, { semester: 'desc' }, { arrange_order: 'asc' }],
     })
 
     // Group timetables by year and semester
@@ -57,11 +57,21 @@ export class TimetablesServiceV2 {
         })
       }
 
-      semesterMap.get(key)!.timetables.push({ id: timetable.id, timeTableOrder: timetable.arrange_order })
+      semesterMap.get(key)!.timetables.push({
+        id: timetable.id,
+        name: timetable.name ?? '',
+      })
     }
 
+    // Filter out semesters that have only one timetable and it has no lectures
+    const semesters = Array.from(semesterMap.values()).filter((group) => {
+      if (group.timetables.length !== 1) return true
+      const timetable = timetables.find((t) => t.id === group.timetables[0].id)
+      return timetable !== undefined && timetable.timetable_timetable_lectures.length > 0
+    })
+
     return {
-      semesters: Array.from(semesterMap.values()),
+      semesters,
     }
   }
 
