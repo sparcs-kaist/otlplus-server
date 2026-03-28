@@ -1,4 +1,6 @@
-// main.ts
+// eslint-disable-next-line simple-import-sort/imports
+import './instrument'
+
 import { NestFactory } from '@nestjs/core'
 import settings from '@otl/notification-consumer/settings'
 import * as admin from 'firebase-admin'
@@ -8,7 +10,6 @@ import { AppModule } from '../app.module'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
-  // await appContext.startAllMicroservices()
   console.log('start')
   const serviceAccount: ServiceAccount = settings().getFirebaseConfig()
 

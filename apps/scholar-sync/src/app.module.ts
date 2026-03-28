@@ -9,6 +9,7 @@ import { AuthModule } from '@otl/scholar-sync/modules/auth/auth.module'
 import { AuthGuard } from '@otl/scholar-sync/modules/auth/guard/auth.guard'
 import { SyncModule } from '@otl/scholar-sync/modules/sync/sync.module'
 import settings from '@otl/scholar-sync/settings'
+import { SentryModule } from '@sentry/nestjs/setup'
 import { WinstonModule } from 'nest-winston'
 import { ClsModule } from 'nestjs-cls'
 
@@ -20,6 +21,7 @@ import { AppService } from './app.service'
 
 @Module({
   imports: [
+    SentryModule.forRoot(),
     PrismaModule.register(settings().ormconfig()),
     RmqModule,
     RmqConnectionModule.register(),

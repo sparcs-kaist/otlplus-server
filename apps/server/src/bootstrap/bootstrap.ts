@@ -1,6 +1,8 @@
+// eslint-disable-next-line simple-import-sort/imports
+import '../instrument'
+
 import { HttpException, ValidationPipe, VersioningType } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
-import * as Sentry from '@sentry/nestjs'
 import cookieParser from 'cookie-parser'
 import csrf from 'csurf'
 import { json } from 'express'
@@ -39,13 +41,6 @@ function initializeDB(prismaService: PrismaService) {
 }
 
 async function bootstrap() {
-  Sentry.init({
-    dsn: settings().getSentryConfig().dsn as string,
-    // Add Tracing by setting tracesSampleRate
-    // We recommend adjusting this value in production
-    tracesSampleRate: 1.0,
-  })
-
   const app = await NestFactory.create(AppModule)
 
   app.enableVersioning({
