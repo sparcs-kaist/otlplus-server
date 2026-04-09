@@ -13,6 +13,7 @@ const getPrismaConnectConfig = (): mariadb.PoolConfig => ({
   password: process.env.DATABASE_PASSWORD,
   database: process.env.DATABASE_NAME,
   connectionLimit: 5,
+  allowPublicKeyRetrieval: true,
 })
 
 const sentryConfig = () => ({
