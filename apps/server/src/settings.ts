@@ -52,6 +52,7 @@ const getPrismaConnectConfig = (): mariadb.PoolConfig => ({
   connectionLimit: 40,
   idleTimeout: 600,
   minDelayValidation: 10000,
+  allowPublicKeyRetrieval: true,
 })
 
 const getRedisConfig = () => ({

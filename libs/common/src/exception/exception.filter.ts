@@ -104,7 +104,7 @@ export class HttpExceptionFilter<T extends HttpException> implements ExceptionFi
       })
 
       scope.setContext('response', {
-        statusCode: 500,
+        statusCode: resStatus,
       })
       Sentry.captureException(exception)
     })
