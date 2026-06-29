@@ -14,7 +14,8 @@
 아래 값들은 기본값입니다.
 
 ```env
-OTLPLUS_DB_PORT=43306
+OTLPLUS_DB_PORT=45432
+OTLPLUS_DB_USER=otlplus
 OTLPLUS_DB_PASSWORD=password
 ```
 
@@ -24,7 +25,19 @@ OTLPLUS_DB_PASSWORD=password
 sudo docker compose up
 ```
 
-또는 로컬에서 MySQL 5.7을 설치하여 연결할 수 있습니다.
+Shadow database의 자동 생성 및 기존 볼륨에서의 수동 생성 절차는 `apps/server/README.md`의 DB 설정을 따르세요.
+
+PostgreSQL을 시작한 후 데이터베이스를 초기화합니다.
+
+```sh
+yarn db:init
+```
+
+또는 로컬에서 PostgreSQL 18을 설치하여 연결할 수 있습니다.
+
+#### 이미 스키마가 반영된 PostgreSQL로 전환할 때
+
+운영 데이터베이스를 pg_dump/restore 등으로 이미 동일한 스키마로 옮긴 경우, `apps/server/README.md`의 baseline 절차를 따르세요. 스키마 차이가 없으면 `prisma migrate resolve --applied 0_init`로 baseline를 표시합니다. MariaDB 데이터 이관은 이 PR 범위 밖입니다.
 
 ### Node.js 설치 및 버전 관리
 

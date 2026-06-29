@@ -333,11 +333,11 @@ export class ReviewsRepository implements ServerConsumerReviewRepository {
   }
 
   public async getRandomNHumanityBestReviews(n: number): Promise<review_humanitybestreview[]> {
-    // Prisma does not support RAND() in ORDER BY.
+    // Prisma does not support RANDOM() in ORDER BY.
     return await this.prisma.$queryRaw`
         SELECT *
         FROM review_humanitybestreview
-        ORDER BY RAND()
+        ORDER BY RANDOM()
             LIMIT ${n}`
   }
 
@@ -345,14 +345,14 @@ export class ReviewsRepository implements ServerConsumerReviewRepository {
     n: number,
     department: subject_department,
   ): Promise<review_majorbestreview[]> {
-    // Prisma does not support RAND() in ORDER BY.
+    // Prisma does not support RANDOM() in ORDER BY.
     return await this.prisma.$queryRaw`
         SELECT mbr.*
         FROM review_majorbestreview mbr
                  INNER JOIN review_review r ON r.id = mbr.review_id
                  INNER JOIN subject_lecture l ON l.id = r.lecture_id
         WHERE l.department_id = ${department.id}
-        ORDER BY RAND()
+        ORDER BY RANDOM()
             LIMIT ${n}`
   }
 

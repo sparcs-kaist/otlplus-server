@@ -1,5 +1,0 @@
-[client]
-user=exporter
-password=exporter_password
-host=db
-port=3306

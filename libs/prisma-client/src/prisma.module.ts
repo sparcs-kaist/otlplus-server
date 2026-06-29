@@ -1,7 +1,6 @@
 import {
   DynamicModule, Global, Module, OnModuleInit,
 } from '@nestjs/common'
-import * as mariadb from 'mariadb'
 
 import { CourseMiddleware } from '@otl/prisma-client/middleware/prisma.course'
 import { DepartmentMiddleware } from '@otl/prisma-client/middleware/prisma.department'
@@ -12,6 +11,7 @@ import { ReviewVoteMiddleware } from '@otl/prisma-client/middleware/prisma.revie
 import { SemesterMiddleware } from '@otl/prisma-client/middleware/prisma.semester'
 import { TimetableMiddleware } from '@otl/prisma-client/middleware/prisma.timetable'
 import { TimetableLectureMiddleware } from '@otl/prisma-client/middleware/prisma.timetablelecture'
+import { PrismaConnectionOptions } from '@otl/prisma-client/prisma.config'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 import {
   CourseRepository,
@@ -38,7 +38,7 @@ import { NotificationPrismaRepository } from '@otl/prisma-client/repositories/no
 @Module({})
 @Global()
 export class PrismaModule implements OnModuleInit {
-  static register(ormOptions: mariadb.PoolConfig): DynamicModule {
+  static register(ormOptions: PrismaConnectionOptions): DynamicModule {
     return {
       module: PrismaModule,
       providers: [

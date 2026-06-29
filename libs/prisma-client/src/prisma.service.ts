@@ -1,14 +1,17 @@
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common'
-import { PrismaMariaDb } from '@prisma/adapter-mariadb'
+import {
+  Inject, Injectable, OnModuleInit, Optional,
+} from '@nestjs/common'
 import { PrismaClient } from '@prisma/client'
-import * as mariadb from 'mariadb'
+
+import { PrismaConnectionOptions } from './prisma.config'
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
-  constructor(@Inject('ORM_OPTIONS') ormOption: mariadb.PoolConfig) {
-    const adapter = new PrismaMariaDb(ormOption)
+  constructor(@Optional() @Inject('ORM_OPTIONS') ormOptions?: PrismaConnectionOptions) {
+    const datasourceUrl = ormOptions?.datasourceUrl ?? process.env.DATABASE_URL
+
     super({
-      adapter,
+      ...(datasourceUrl ? { datasourceUrl } : {}),
       log: [
         {
           emit: 'event',

@@ -1,9 +1,10 @@
 import { DocumentBuilder } from '@nestjs/swagger'
 import dotenv from 'dotenv'
-import * as mariadb from 'mariadb'
 import { utilities } from 'nest-winston'
 import winston from 'winston'
 import DailyRotateFile from 'winston-daily-rotate-file'
+
+import { buildPostgresDatasourceUrl, PrismaConnectionOptions } from '@otl/prisma-client/prisma.config'
 
 import { dotEnvOptions } from './dotenv-options'
 
@@ -39,14 +40,16 @@ const getCorsConfig = () => {
   }
 }
 
-const getPrismaConnectConfig = (): mariadb.PoolConfig => ({
-  host: process.env.DATABASE_HOST,
-  port: Number(process.env.DATABASE_PORT) || 3306,
-  user: process.env.DATABASE_USER,
-  password: process.env.DATABASE_PASSWORD,
-  database: process.env.DATABASE_NAME,
-  connectionLimit: 10,
-  allowPublicKeyRetrieval: true,
+const getPrismaConnectConfig = (): PrismaConnectionOptions => ({
+  datasourceUrl: buildPostgresDatasourceUrl({
+    datasourceUrl: process.env.DATABASE_URL,
+    host: process.env.DATABASE_HOST,
+    port: Number(process.env.DATABASE_PORT) || 5432,
+    user: process.env.DATABASE_USER,
+    password: process.env.DATABASE_PASSWORD,
+    database: process.env.DATABASE_NAME,
+    connectionLimit: 10,
+  }),
 })
 
 const getSyncConfig = () => ({
