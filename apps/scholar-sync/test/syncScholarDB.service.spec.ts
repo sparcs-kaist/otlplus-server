@@ -34,8 +34,6 @@ const courseData = [...Array(2).keys()].map((i) => ({
   grade: 0,
   load: 0,
   speech: 0,
-  title_no_space: `과목${i}`,
-  title_en_no_space: `subject${i}`,
 }))
 const professorData = [...Array(2).keys()].map((i) => ({
   id: i + 1,
@@ -80,8 +78,6 @@ const lectureData = [...Array(2).keys()].map((i) => ({
   grade: 0,
   load: 0,
   speech: 0,
-  title_no_space: courseData[i].title_no_space,
-  title_en_no_space: courseData[i].title_en_no_space,
 }))
 
 const lectureBase = {

@@ -161,21 +161,23 @@ export class CourseRepositoryV2 {
     const title_filter = {
       title_no_space: {
         contains: keyword_space_removed,
+        mode: 'insensitive',
       },
     }
     const en_title_filter = {
       title_en_no_space: {
         contains: keyword_space_removed,
+        mode: 'insensitive',
       },
     }
     const department_name_filter = {
       subject_department: {
-        name: keyword_trimed,
+        name: { equals: keyword_trimed, mode: 'insensitive' },
       },
     }
     const department_name_en_filter = {
       subject_department: {
-        name_en: keyword_trimed,
+        name_en: { equals: keyword_trimed, mode: 'insensitive' },
       },
     }
     const professors_professor_name_filter = isCourse
@@ -185,6 +187,7 @@ export class CourseRepositoryV2 {
             professor: {
               professor_name: {
                 contains: keyword_trimed,
+                mode: 'insensitive',
               },
             },
           },
@@ -196,6 +199,7 @@ export class CourseRepositoryV2 {
             professor: {
               professor_name: {
                 contains: keyword_trimed,
+                mode: 'insensitive',
               },
             },
           },
@@ -208,6 +212,7 @@ export class CourseRepositoryV2 {
             professor: {
               professor_name_en: {
                 contains: keyword_trimed,
+                mode: 'insensitive',
               },
             },
           },
@@ -219,6 +224,7 @@ export class CourseRepositoryV2 {
             professor: {
               professor_name_en: {
                 contains: keyword_trimed,
+                mode: 'insensitive',
               },
             },
           },
@@ -228,12 +234,14 @@ export class CourseRepositoryV2 {
     const old_code_filter = {
       old_code: {
         contains: keyword_space_removed,
+        mode: 'insensitive',
       },
     }
 
     const new_code_filter = {
       new_code: {
         contains: formatNewLectureCodeWithDot(keyword_space_removed),
+        mode: 'insensitive',
       },
     }
     return {

@@ -1,1020 +1,1621 @@
--- CreateTable
-CREATE TABLE `auth_group` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `name` VARCHAR(150) NOT NULL,
+-- CreateSchema
+CREATE SCHEMA IF NOT EXISTS "public";
 
-    UNIQUE INDEX `name`(`name`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- CreateEnum
+CREATE TYPE "SyncType" AS ENUM ('DEPARTMENT', 'COURSE', 'LECTURE', 'PROFESSOR', 'MAJORS', 'DEGREE', 'EXAMTIME', 'CLASSTIME', 'TAKEN_LECTURES', 'CHARGE');
 
--- CreateTable
-CREATE TABLE `auth_group_permissions` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `group_id` INTEGER NOT NULL,
-    `permission_id` INTEGER NOT NULL,
+-- CreateEnum
+CREATE TYPE "DeviceType" AS ENUM ('ANDROID', 'IOS', 'WEB');
 
-    INDEX `auth_group__permission_id_1f49ccbbdc69d2fc_fk_auth_permission_id`(`permission_id`),
-    UNIQUE INDEX `group_id`(`group_id`, `permission_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- CreateEnum
+CREATE TYPE "AgreementType" AS ENUM ('INFO', 'MARKETING', 'NIGHT_MARKETING');
 
 -- CreateTable
-CREATE TABLE `auth_permission` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `name` VARCHAR(255) NOT NULL,
-    `content_type_id` INTEGER NOT NULL,
-    `codename` VARCHAR(100) NOT NULL,
+CREATE TABLE "auth_group" (
+    "id" SERIAL NOT NULL,
+    "name" VARCHAR(150) NOT NULL,
 
-    UNIQUE INDEX `content_type_id`(`content_type_id`, `codename`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "auth_group_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `auth_user` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `password` VARCHAR(128) NOT NULL,
-    `last_login` DATETIME(0) NULL,
-    `is_superuser` BOOLEAN NOT NULL,
-    `username` VARCHAR(150) NOT NULL,
-    `first_name` VARCHAR(30) NOT NULL,
-    `last_name` VARCHAR(150) NOT NULL,
-    `email` VARCHAR(254) NOT NULL,
-    `is_staff` BOOLEAN NOT NULL,
-    `is_active` BOOLEAN NOT NULL,
-    `date_joined` DATETIME(0) NOT NULL,
+CREATE TABLE "auth_group_permissions" (
+    "id" SERIAL NOT NULL,
+    "group_id" INTEGER NOT NULL,
+    "permission_id" INTEGER NOT NULL,
 
-    UNIQUE INDEX `username`(`username`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "auth_group_permissions_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `auth_user_groups` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `user_id` INTEGER NOT NULL,
-    `group_id` INTEGER NOT NULL,
+CREATE TABLE "auth_permission" (
+    "id" SERIAL NOT NULL,
+    "name" VARCHAR(255) NOT NULL,
+    "content_type_id" INTEGER NOT NULL,
+    "codename" VARCHAR(100) NOT NULL,
 
-    INDEX `auth_user_groups_group_id_33ac548dcf5f8e37_fk_auth_group_id`(`group_id`),
-    UNIQUE INDEX `user_id`(`user_id`, `group_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `auth_user_user_permissions` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `user_id` INTEGER NOT NULL,
-    `permission_id` INTEGER NOT NULL,
-
-    INDEX `auth_user_u_permission_id_384b62483d7071f0_fk_auth_permission_id`(`permission_id`),
-    UNIQUE INDEX `user_id`(`user_id`, `permission_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "auth_permission_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `django_admin_log` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `action_time` DATETIME(0) NOT NULL,
-    `object_id` LONGTEXT NULL,
-    `object_repr` VARCHAR(200) NOT NULL,
-    `action_flag` SMALLINT UNSIGNED NOT NULL,
-    `change_message` LONGTEXT NOT NULL,
-    `content_type_id` INTEGER NULL,
-    `user_id` INTEGER NOT NULL,
+CREATE TABLE "auth_user" (
+    "id" SERIAL NOT NULL,
+    "password" VARCHAR(128) NOT NULL,
+    "last_login" TIMESTAMP(0),
+    "is_superuser" BOOLEAN NOT NULL,
+    "username" VARCHAR(150) NOT NULL,
+    "first_name" VARCHAR(30) NOT NULL,
+    "last_name" VARCHAR(150) NOT NULL,
+    "email" VARCHAR(254) NOT NULL,
+    "is_staff" BOOLEAN NOT NULL,
+    "is_active" BOOLEAN NOT NULL,
+    "date_joined" TIMESTAMP(0) NOT NULL,
 
-    INDEX `djang_content_type_id_697914295151027a_fk_django_content_type_id`(`content_type_id`),
-    INDEX `django_admin_log_user_id_52fdd58701c5f563_fk_auth_user_id`(`user_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `django_content_type` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `app_label` VARCHAR(100) NOT NULL,
-    `model` VARCHAR(100) NOT NULL,
-
-    UNIQUE INDEX `django_content_type_app_label_45f3b1d93ec8c61c_uniq`(`app_label`, `model`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "auth_user_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `django_migrations` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `app` VARCHAR(255) NOT NULL,
-    `name` VARCHAR(255) NOT NULL,
-    `applied` DATETIME(0) NOT NULL,
+CREATE TABLE "auth_user_groups" (
+    "id" SERIAL NOT NULL,
+    "user_id" INTEGER NOT NULL,
+    "group_id" INTEGER NOT NULL,
 
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `django_session` (
-    `session_key` VARCHAR(40) NOT NULL,
-    `session_data` LONGTEXT NOT NULL,
-    `expire_date` DATETIME(0) NOT NULL,
-
-    INDEX `django_session_de54fa62`(`expire_date`),
-    PRIMARY KEY (`session_key`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "auth_user_groups_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `main_famoushumanityreviewdailyfeed` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `date` DATE NOT NULL,
-    `priority` DOUBLE NOT NULL,
-    `visible` BOOLEAN NOT NULL,
+CREATE TABLE "auth_user_user_permissions" (
+    "id" SERIAL NOT NULL,
+    "user_id" INTEGER NOT NULL,
+    "permission_id" INTEGER NOT NULL,
 
-    UNIQUE INDEX `main_famoushumanityreviewdailyfeed_date_0fbb607a_uniq`(`date`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "auth_user_user_permissions_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `main_famoushumanityreviewdailyfeed_reviews` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `famoushumanityreviewdailyfeed_id` INTEGER NOT NULL,
-    `review_id` INTEGER NOT NULL,
+CREATE TABLE "block_custom_blocks" (
+    "id" SERIAL NOT NULL,
+    "block_name" VARCHAR(255) NOT NULL,
+    "place" VARCHAR(255) NOT NULL,
+    "day" INTEGER NOT NULL,
+    "begin" INTEGER NOT NULL,
+    "end" INTEGER NOT NULL,
 
-    INDEX `main_famoushumanityreview_review_id_f305d8aa_fk_review_review_id`(`review_id`),
-    UNIQUE INDEX `main_famoushumani_famoushumanityreviewdailyfeed_id_97def4df_uniq`(`famoushumanityreviewdailyfeed_id`, `review_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `main_famousmajorreviewdailyfeed` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `date` DATE NOT NULL,
-    `priority` DOUBLE NOT NULL,
-    `department_id` INTEGER NOT NULL,
-    `visible` BOOLEAN NOT NULL,
-
-    INDEX `main_famousmajorrevi_department_id_a0a5a3a5_fk_subject_d`(`department_id`),
-    UNIQUE INDEX `main_famousreviewdailyfeed_date_94cf00dd_uniq`(`date`, `department_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "block_custom_blocks_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `main_famousmajorreviewdailyfeed_reviews` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `famousmajorreviewdailyfeed_id` INTEGER NOT NULL,
-    `review_id` INTEGER NOT NULL,
+CREATE TABLE "django_admin_log" (
+    "id" SERIAL NOT NULL,
+    "action_time" TIMESTAMP(0) NOT NULL,
+    "object_id" TEXT,
+    "object_repr" VARCHAR(200) NOT NULL,
+    "action_flag" SMALLINT NOT NULL,
+    "change_message" TEXT NOT NULL,
+    "content_type_id" INTEGER,
+    "user_id" INTEGER NOT NULL,
 
-    INDEX `main_famousmajorreviewdai_review_id_c0d3bbec_fk_review_review_id`(`review_id`),
-    UNIQUE INDEX `main_famousreviewdailyfee_famousreviewdailyfeed_id_12d71d0b_uniq`(`famousmajorreviewdailyfeed_id`, `review_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `main_rankedreviewdailyfeed` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `date` DATE NOT NULL,
-    `priority` DOUBLE NOT NULL,
-    `visible` BOOLEAN NOT NULL,
-    `semester_id` INTEGER NULL,
-
-    UNIQUE INDEX `main_rankedreviewdailyfeed_date_635bca2a_uniq`(`date`),
-    INDEX `main_rankedreviewdai_semester_id_f71e3a66_fk_subject_s`(`semester_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "django_admin_log_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `main_ratedailyuserfeed` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `date` DATE NOT NULL,
-    `priority` DOUBLE NOT NULL,
-    `visible` BOOLEAN NOT NULL,
-    `user_id` INTEGER NOT NULL,
+CREATE TABLE "django_content_type" (
+    "id" SERIAL NOT NULL,
+    "app_label" VARCHAR(100) NOT NULL,
+    "model" VARCHAR(100) NOT NULL,
 
-    INDEX `main_ratedailyuserfe_user_id_31a534d5_fk_session_u`(`user_id`),
-    UNIQUE INDEX `main_ratedailyuserfeed_date_user_id_4142794f_uniq`(`date`, `user_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "django_content_type_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `main_relatedcoursedailyuserfeed` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `date` DATE NOT NULL,
-    `priority` DOUBLE NOT NULL,
-    `course_id` INTEGER NOT NULL,
-    `user_id` INTEGER NOT NULL,
-    `visible` BOOLEAN NOT NULL,
+CREATE TABLE "django_migrations" (
+    "id" SERIAL NOT NULL,
+    "app" VARCHAR(255) NOT NULL,
+    "name" VARCHAR(255) NOT NULL,
+    "applied" TIMESTAMP(0) NOT NULL,
 
-    INDEX `main_relatedcourseda_course_id_129fc5e2_fk_subject_c`(`course_id`),
-    INDEX `main_relatedcoursedai_user_id_a1be2390_fk_session_userprofile_id`(`user_id`),
-    UNIQUE INDEX `main_relatedcoursedailyuserfeed_date_6043d8bb_uniq`(`date`, `user_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "django_migrations_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `main_reviewwritedailyuserfeed` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `date` DATE NOT NULL,
-    `priority` DOUBLE NOT NULL,
-    `lecture_id` INTEGER NOT NULL,
-    `user_id` INTEGER NOT NULL,
-    `visible` BOOLEAN NOT NULL,
+CREATE TABLE "django_session" (
+    "session_key" VARCHAR(40) NOT NULL,
+    "session_data" TEXT NOT NULL,
+    "expire_date" TIMESTAMP(0) NOT NULL,
 
-    INDEX `main_reviewwritedail_lecture_id_75ed0f87_fk_subject_l`(`lecture_id`),
-    INDEX `main_reviewwritedaily_user_id_9ffd0881_fk_session_userprofile_id`(`user_id`),
-    UNIQUE INDEX `main_reviewwritedailyuserfeed_date_1e7bc6d7_uniq`(`date`, `user_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "django_session_pkey" PRIMARY KEY ("session_key")
+);
 
 -- CreateTable
-CREATE TABLE `review_humanitybestreview` (
-    `review_id` INTEGER NOT NULL,
+CREATE TABLE "main_famoushumanityreviewdailyfeed" (
+    "id" SERIAL NOT NULL,
+    "date" DATE NOT NULL,
+    "priority" DOUBLE PRECISION NOT NULL,
+    "visible" BOOLEAN NOT NULL,
 
-    PRIMARY KEY (`review_id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `review_majorbestreview` (
-    `review_id` INTEGER NOT NULL,
-
-    PRIMARY KEY (`review_id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "main_famoushumanityreviewdailyfeed_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `review_review` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `course_id` INTEGER NOT NULL,
-    `lecture_id` INTEGER NOT NULL,
-    `content` MEDIUMTEXT NOT NULL,
-    `grade` SMALLINT NOT NULL DEFAULT 0,
-    `load` SMALLINT NOT NULL DEFAULT 0,
-    `speech` SMALLINT NOT NULL DEFAULT 0,
-    `writer_id` INTEGER NULL,
-    `writer_label` VARCHAR(200) NOT NULL,
-    `updated_datetime` DATETIME(0) NOT NULL,
-    `like` INTEGER NOT NULL DEFAULT 0,
-    `is_deleted` INTEGER NOT NULL DEFAULT 0,
-    `written_datetime` DATETIME(0) NULL,
+CREATE TABLE "main_famoushumanityreviewdailyfeed_reviews" (
+    "id" SERIAL NOT NULL,
+    "famoushumanityreviewdailyfeed_id" INTEGER NOT NULL,
+    "review_id" INTEGER NOT NULL,
 
-    INDEX `review_comment_e5e30a4a`(`written_datetime`),
-    INDEX `review_review_course_id_fkey`(`course_id`),
-    INDEX `review_review_lecture_id_fkey`(`lecture_id`),
-    UNIQUE INDEX `review_comment_writer_id_af700a5d_uniq`(`writer_id`, `lecture_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "main_famoushumanityreviewdailyfeed_reviews_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `review_reviewvote` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `review_id` INTEGER NOT NULL,
-    `userprofile_id` INTEGER NULL,
-    `created_datetime` DATETIME(6) NULL,
+CREATE TABLE "main_famousmajorreviewdailyfeed" (
+    "id" SERIAL NOT NULL,
+    "date" DATE NOT NULL,
+    "priority" DOUBLE PRECISION NOT NULL,
+    "department_id" INTEGER NOT NULL,
+    "visible" BOOLEAN NOT NULL,
 
-    INDEX `review_reviewvote_created_datetime_450f85e2`(`created_datetime`),
-    INDEX `review_reviewvote_userprofile_id_fkey`(`userprofile_id`),
-    UNIQUE INDEX `review_commentvote_comment_id_e4594aea_uniq`(`review_id`, `userprofile_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "main_famousmajorreviewdailyfeed_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `session_userprofile` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `user_id` INTEGER NULL,
-    `student_id` VARCHAR(10) NOT NULL,
-    `sid` VARCHAR(30) NOT NULL,
-    `language` VARCHAR(15) NULL,
-    `portal_check` INTEGER NULL DEFAULT 0,
-    `department_id` INTEGER NULL,
-    `email` VARCHAR(255) NULL,
-    `date_joined` DATETIME(0) NOT NULL,
-    `first_name` VARCHAR(30) NOT NULL,
-    `last_name` VARCHAR(150) NOT NULL,
-    `refresh_token` VARCHAR(255) NULL,
+CREATE TABLE "main_famousmajorreviewdailyfeed_reviews" (
+    "id" SERIAL NOT NULL,
+    "famousmajorreviewdailyfeed_id" INTEGER NOT NULL,
+    "review_id" INTEGER NOT NULL,
 
-    UNIQUE INDEX `session_userprofile_user_id_09dd6af1_uniq`(`user_id`),
-    INDEX `session_userprofile_department_id_fkey`(`department_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "main_famousmajorreviewdailyfeed_reviews_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `session_userprofile_favorite_departments` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `userprofile_id` INTEGER NOT NULL,
-    `department_id` INTEGER NOT NULL,
+CREATE TABLE "main_rankedreviewdailyfeed" (
+    "id" SERIAL NOT NULL,
+    "date" DATE NOT NULL,
+    "priority" DOUBLE PRECISION NOT NULL,
+    "visible" BOOLEAN NOT NULL,
+    "semester_id" INTEGER,
 
-    INDEX `session_userprofile_favorite_departments_department_id_fkey`(`department_id`),
-    UNIQUE INDEX `userprofile_id`(`userprofile_id`, `department_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `session_userprofile_majors` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `userprofile_id` INTEGER NOT NULL,
-    `department_id` INTEGER NOT NULL,
-
-    INDEX `session_userprof_department_id_db568678_fk_subject_department_id`(`department_id`),
-    UNIQUE INDEX `session_userprofile_majors_userprofile_id_12b76c49_uniq`(`userprofile_id`, `department_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "main_rankedreviewdailyfeed_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `session_userprofile_minors` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `userprofile_id` INTEGER NOT NULL,
-    `department_id` INTEGER NOT NULL,
+CREATE TABLE "main_ratedailyuserfeed" (
+    "id" SERIAL NOT NULL,
+    "date" DATE NOT NULL,
+    "priority" DOUBLE PRECISION NOT NULL,
+    "visible" BOOLEAN NOT NULL,
+    "user_id" INTEGER NOT NULL,
 
-    INDEX `session_userprof_department_id_7a7ea3ed_fk_subject_department_id`(`department_id`),
-    UNIQUE INDEX `session_userprofile_minors_userprofile_id_d01e3e38_uniq`(`userprofile_id`, `department_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `session_userprofile_specialized_major` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `userprofile_id` INTEGER NOT NULL,
-    `department_id` INTEGER NOT NULL,
-
-    INDEX `session_userprof_department_id_919e11be_fk_subject_department_id`(`department_id`),
-    UNIQUE INDEX `session_userprofile_specialized_maj_userprofile_id_3951a553_uniq`(`userprofile_id`, `department_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "main_ratedailyuserfeed_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `session_userprofile_taken_lectures` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `userprofile_id` INTEGER NOT NULL,
-    `lecture_id` INTEGER NOT NULL,
+CREATE TABLE "main_relatedcoursedailyuserfeed" (
+    "id" SERIAL NOT NULL,
+    "date" DATE NOT NULL,
+    "priority" DOUBLE PRECISION NOT NULL,
+    "course_id" INTEGER NOT NULL,
+    "user_id" INTEGER NOT NULL,
+    "visible" BOOLEAN NOT NULL,
 
-    INDEX `session_userprofile_taken_lectures_lecture_id_fkey`(`lecture_id`),
-    UNIQUE INDEX `userprofile_id`(`userprofile_id`, `lecture_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `subject_classtime` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `day` SMALLINT NOT NULL,
-    `begin` TIME(0) NOT NULL,
-    `end` TIME(0) NOT NULL,
-    `type` VARCHAR(1) NOT NULL,
-    `building_id` VARCHAR(10) NULL,
-    `building_full_name` VARCHAR(60) NULL,
-    `building_full_name_en` VARCHAR(60) NULL,
-    `room_name` VARCHAR(20) NULL,
-    `unit_time` SMALLINT NULL,
-    `lecture_id` INTEGER NULL,
-
-    INDEX `subject_classtime_72a11f01`(`lecture_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "main_relatedcoursedailyuserfeed_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `subject_course` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `old_code` VARCHAR(10) NOT NULL,
-    `department_id` INTEGER NOT NULL,
-    `type` VARCHAR(12) NOT NULL,
-    `type_en` VARCHAR(36) NOT NULL,
-    `title` VARCHAR(100) NOT NULL,
-    `title_en` VARCHAR(200) NOT NULL,
-    `summury` VARCHAR(400) NOT NULL,
-    `grade_sum` DOUBLE NOT NULL,
-    `load_sum` DOUBLE NOT NULL,
-    `speech_sum` DOUBLE NOT NULL,
-    `review_total_weight` DOUBLE NOT NULL,
-    `grade` DOUBLE NOT NULL,
-    `load` DOUBLE NOT NULL,
-    `speech` DOUBLE NOT NULL,
-    `latest_written_datetime` DATETIME(0) NULL,
-    `title_no_space` VARCHAR(100) NOT NULL,
-    `title_en_no_space` VARCHAR(200) NOT NULL,
+CREATE TABLE "main_reviewwritedailyuserfeed" (
+    "id" SERIAL NOT NULL,
+    "date" DATE NOT NULL,
+    "priority" DOUBLE PRECISION NOT NULL,
+    "lecture_id" INTEGER NOT NULL,
+    "user_id" INTEGER NOT NULL,
+    "visible" BOOLEAN NOT NULL,
 
-    INDEX `subject_course_department_id_fkey`(`department_id`),
-    INDEX `subject_course_title_en_no_space_index`(`title_en_no_space`),
-    INDEX `subject_course_title_index`(`title`),
-    INDEX `subject_course_title_no_space_index`(`title_no_space`),
-    INDEX `subject_course_title_en_index`(`title_en`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "main_reviewwritedailyuserfeed_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `subject_course_professors` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `course_id` INTEGER NOT NULL,
-    `professor_id` INTEGER NOT NULL,
+CREATE TABLE "review_humanitybestreview" (
+    "review_id" INTEGER NOT NULL,
 
-    INDEX `subject_course_professors_professor_id_fkey`(`professor_id`),
-    UNIQUE INDEX `course_id`(`course_id`, `professor_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "review_humanitybestreview_pkey" PRIMARY KEY ("review_id")
+);
 
 -- CreateTable
-CREATE TABLE `subject_course_related_courses_posterior` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `from_course_id` INTEGER NOT NULL,
-    `to_course_id` INTEGER NOT NULL,
+CREATE TABLE "review_majorbestreview" (
+    "review_id" INTEGER NOT NULL,
 
-    INDEX `subject_course_relat_to_course_id_5fbd4d28_fk_subject_c`(`to_course_id`),
-    UNIQUE INDEX `subject_course_related_c_from_course_id_to_course_eaec2f22_uniq`(`from_course_id`, `to_course_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "review_majorbestreview_pkey" PRIMARY KEY ("review_id")
+);
 
 -- CreateTable
-CREATE TABLE `subject_course_related_courses_prior` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `from_course_id` INTEGER NOT NULL,
-    `to_course_id` INTEGER NOT NULL,
+CREATE TABLE "review_review" (
+    "id" SERIAL NOT NULL,
+    "course_id" INTEGER NOT NULL,
+    "lecture_id" INTEGER NOT NULL,
+    "content" TEXT NOT NULL,
+    "grade" SMALLINT NOT NULL DEFAULT 0,
+    "load" SMALLINT NOT NULL DEFAULT 0,
+    "speech" SMALLINT NOT NULL DEFAULT 0,
+    "writer_id" INTEGER,
+    "writer_label" VARCHAR(200) NOT NULL,
+    "updated_datetime" TIMESTAMP(0) NOT NULL,
+    "like" INTEGER NOT NULL DEFAULT 0,
+    "is_deleted" INTEGER NOT NULL DEFAULT 0,
+    "written_datetime" TIMESTAMP(0),
 
-    INDEX `subject_course_relat_to_course_id_52f44705_fk_subject_c`(`to_course_id`),
-    UNIQUE INDEX `subject_course_related_c_from_course_id_to_course_74e1ae5f_uniq`(`from_course_id`, `to_course_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `subject_courseuser` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `latest_read_datetime` DATETIME(0) NOT NULL,
-    `course_id` INTEGER NOT NULL,
-    `user_profile_id` INTEGER NOT NULL,
-
-    INDEX `subject_courseuser_user_profile_id_4d15ef1b_fk_session_u`(`user_profile_id`),
-    UNIQUE INDEX `subject_courseuser_course_id_a26ac0b3_uniq`(`course_id`, `user_profile_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "review_review_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `subject_department` (
-    `id` INTEGER NOT NULL,
-    `num_id` VARCHAR(4) NOT NULL,
-    `code` VARCHAR(5) NOT NULL,
-    `name` VARCHAR(60) NOT NULL,
-    `name_en` VARCHAR(60) NULL,
-    `visible` BOOLEAN NOT NULL,
+CREATE TABLE "review_reviewvote" (
+    "id" SERIAL NOT NULL,
+    "review_id" INTEGER NOT NULL,
+    "userprofile_id" INTEGER,
+    "created_datetime" TIMESTAMP(6),
 
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "review_reviewvote_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `subject_examtime` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `day` SMALLINT NOT NULL,
-    `begin` TIME(0) NOT NULL,
-    `end` TIME(0) NOT NULL,
-    `lecture_id` INTEGER NOT NULL,
+CREATE TABLE "session_userprofile" (
+    "id" SERIAL NOT NULL,
+    "user_id" INTEGER,
+    "student_id" VARCHAR(10) NOT NULL,
+    "sid" VARCHAR(30) NOT NULL,
+    "language" VARCHAR(15),
+    "portal_check" INTEGER DEFAULT 0,
+    "department_id" INTEGER,
+    "email" VARCHAR(255),
+    "date_joined" TIMESTAMP(0) NOT NULL,
+    "first_name" VARCHAR(30) NOT NULL,
+    "last_name" VARCHAR(150) NOT NULL,
+    "degree" VARCHAR(100),
+    "refresh_token" VARCHAR(255),
+    "kaist_id" VARCHAR(30),
+    "last_login" TIMESTAMP(0),
+    "status" VARCHAR(30),
+    "uid" VARCHAR(30),
 
-    INDEX `subject_examtime_72a11f01`(`lecture_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `subject_lecture` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `code` VARCHAR(10) NOT NULL,
-    `old_code` VARCHAR(10) NOT NULL,
-    `year` INTEGER NOT NULL,
-    `semester` SMALLINT NOT NULL,
-    `department_id` INTEGER NOT NULL,
-    `class_no` VARCHAR(4) NOT NULL,
-    `title` VARCHAR(100) NOT NULL,
-    `title_en` VARCHAR(200) NOT NULL,
-    `type` VARCHAR(12) NOT NULL,
-    `type_en` VARCHAR(36) NOT NULL,
-    `audience` INTEGER NOT NULL,
-    `credit` INTEGER NOT NULL,
-    `num_classes` INTEGER NOT NULL,
-    `num_labs` INTEGER NOT NULL,
-    `credit_au` INTEGER NOT NULL,
-    `limit` INTEGER NOT NULL,
-    `num_people` INTEGER NULL,
-    `is_english` BOOLEAN NOT NULL,
-    `deleted` BOOLEAN NOT NULL,
-    `course_id` INTEGER NOT NULL,
-    `grade_sum` DOUBLE NOT NULL,
-    `load_sum` DOUBLE NOT NULL,
-    `speech_sum` DOUBLE NOT NULL,
-    `grade` DOUBLE NOT NULL,
-    `load` DOUBLE NOT NULL,
-    `speech` DOUBLE NOT NULL,
-    `review_total_weight` DOUBLE NOT NULL,
-    `class_title` VARCHAR(100) NULL,
-    `class_title_en` VARCHAR(100) NULL,
-    `common_title` VARCHAR(100) NULL,
-    `common_title_en` VARCHAR(100) NULL,
-    `title_no_space` VARCHAR(100) NOT NULL,
-    `title_en_no_space` VARCHAR(200) NOT NULL,
-
-    INDEX `subject_lecture_deleted_bedc6156_uniq`(`deleted`),
-    INDEX `subject_lecture_type_en_45ee2d3a_uniq`(`type_en`),
-    INDEX `subject_lecture_course_id_fkey`(`course_id`),
-    INDEX `subject_lecture_department_id_fkey`(`department_id`),
-    INDEX `subject_lecture_title_en_no_space_index`(`title_en_no_space`),
-    INDEX `subject_lecture_title_no_space_index`(`title_no_space`),
-    INDEX `subject_lecture_title_en_index`(`title_en`),
-    INDEX `subject_lecture_title_index`(`title`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "session_userprofile_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `subject_lecture_professors` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `lecture_id` INTEGER NOT NULL,
-    `professor_id` INTEGER NOT NULL,
+CREATE TABLE "sid_uid_map" (
+    "uid" TEXT NOT NULL,
+    "sid" TEXT NOT NULL,
 
-    INDEX `subject_lecture_professors_professor_id_fkey`(`professor_id`),
-    UNIQUE INDEX `lecture_id`(`lecture_id`, `professor_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "sid_uid_map_pkey" PRIMARY KEY ("uid","sid")
+);
 
 -- CreateTable
-CREATE TABLE `subject_professor` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `professor_name` VARCHAR(100) NOT NULL,
-    `professor_name_en` VARCHAR(100) NULL,
-    `professor_id` INTEGER NOT NULL,
-    `major` VARCHAR(30) NOT NULL,
-    `grade_sum` DOUBLE NOT NULL,
-    `load_sum` DOUBLE NOT NULL,
-    `speech_sum` DOUBLE NOT NULL,
-    `review_total_weight` DOUBLE NOT NULL,
-    `grade` DOUBLE NOT NULL,
-    `load` DOUBLE NOT NULL,
-    `speech` DOUBLE NOT NULL,
+CREATE TABLE "session_userprofile_device" (
+    "id" SERIAL NOT NULL,
+    "userprofile_id" INTEGER NOT NULL,
+    "token" VARCHAR(255) NOT NULL,
+    "is_active" BOOLEAN NOT NULL DEFAULT false,
+    "deviceType" "DeviceType",
+    "deviceOsVersion" VARCHAR(255),
+    "appVersion" VARCHAR(255),
 
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "session_userprofile_device_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `subject_semester` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `year` INTEGER NOT NULL,
-    `semester` INTEGER NOT NULL,
-    `beginning` DATETIME(0) NOT NULL,
-    `end` DATETIME(0) NOT NULL,
-    `courseRegistrationPeriodStart` DATETIME(0) NULL,
-    `courseRegistrationPeriodEnd` DATETIME(0) NULL,
-    `courseAddDropPeriodEnd` DATETIME(0) NULL,
-    `courseDropDeadline` DATETIME(0) NULL,
-    `courseEvaluationDeadline` DATETIME(0) NULL,
-    `gradePosting` DATETIME(0) NULL,
-    `courseDesciptionSubmission` DATETIME(0) NULL,
+CREATE TABLE "session_userprofile_agreement" (
+    "id" SERIAL NOT NULL,
+    "userprofile_id" INTEGER NOT NULL,
+    "agreement_id" INTEGER NOT NULL,
+    "agreement_status" BOOLEAN NOT NULL DEFAULT false,
+    "need_to_show" BOOLEAN NOT NULL DEFAULT true,
+    "created_at" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    INDEX `subject_semester_1b3810e0`(`semester`),
-    INDEX `subject_semester_84cdc76c`(`year`),
-    UNIQUE INDEX `subject_semester_year_680c861f_uniq`(`year`, `semester`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "session_userprofile_agreement_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `support_notice` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `start_time` DATETIME(0) NOT NULL,
-    `end_time` DATETIME(0) NOT NULL,
-    `title` VARCHAR(100) NOT NULL,
-    `content` LONGTEXT NOT NULL,
+CREATE TABLE "agreement" (
+    "id" SERIAL NOT NULL,
+    "name" "AgreementType" NOT NULL,
+    "created_at" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `support_rate` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `score` SMALLINT NOT NULL,
-    `year` SMALLINT NOT NULL,
-    `created_datetime` DATETIME(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0),
-    `user_id` INTEGER NOT NULL,
-    `version` VARCHAR(20) NOT NULL,
-
-    INDEX `support_rate_created_datetime_d38a29eb`(`created_datetime`),
-    UNIQUE INDEX `support_rate_user_id_year_a62fc7f7_uniq`(`user_id`, `year`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "agreement_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `timetable_oldtimetable` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `student_id` VARCHAR(10) NOT NULL,
-    `year` INTEGER NULL,
-    `semester` SMALLINT NULL,
-    `table_no` SMALLINT NULL,
+CREATE TABLE "session_userprofile_notification" (
+    "id" SERIAL NOT NULL,
+    "userprofile_id" INTEGER NOT NULL,
+    "notification_id" INTEGER NOT NULL,
+    "created_at" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "is_active" BOOLEAN NOT NULL DEFAULT false,
 
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `timetable_oldtimetable_lectures` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `oldtimetable_id` INTEGER NOT NULL,
-    `lecture_id` INTEGER NOT NULL,
-
-    INDEX `timetable_oldtimetable_lecture_id_b19d5300_fk_subject_lecture_id`(`lecture_id`),
-    UNIQUE INDEX `timetable_oldtimetable_lecture_oldtimetable_id_27bf3d09_uniq`(`oldtimetable_id`, `lecture_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "session_userprofile_notification_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `timetable_timetable` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `year` INTEGER NULL,
-    `semester` SMALLINT NULL,
-    `user_id` INTEGER NOT NULL,
-    `arrange_order` SMALLINT NOT NULL,
+CREATE TABLE "notification" (
+    "id" SERIAL NOT NULL,
+    "name" VARCHAR(200) NOT NULL,
+    "created_at" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "agreementType" "AgreementType" NOT NULL,
+    "description" TEXT NOT NULL,
 
-    INDEX `timetable_timetable_arrange_order_84c8935c`(`arrange_order`),
-    INDEX `timetable_timetable_semester_d8ce5d37_uniq`(`semester`),
-    INDEX `timetable_timetable_user_id_0d214170_fk_session_userprofile_id`(`user_id`),
-    INDEX `timetable_timetable_year_907cf59a_uniq`(`year`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "notification_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `timetable_timetable_lectures` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `timetable_id` INTEGER NOT NULL,
-    `lecture_id` INTEGER NOT NULL,
+CREATE TABLE "schedules" (
+    "id" SERIAL NOT NULL,
+    "year" INTEGER NOT NULL,
+    "from" TIMESTAMP(3) NOT NULL,
+    "to" TIMESTAMP(3) NOT NULL,
+    "name" VARCHAR(255) NOT NULL,
 
-    INDEX `timetable_timetable_le_lecture_id_79aa5f2e_fk_subject_lecture_id`(`lecture_id`),
-    UNIQUE INDEX `timetable_timetable_lecture_timetable_id_57195f56_uniq`(`timetable_id`, `lecture_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `timetable_wishlist` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `user_id` INTEGER NOT NULL,
-
-    UNIQUE INDEX `user_id`(`user_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "schedules_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `timetable_wishlist_lectures` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `wishlist_id` INTEGER NOT NULL,
-    `lecture_id` INTEGER NOT NULL,
+CREATE TABLE "session_userprofile_notification_history" (
+    "id" SERIAL NOT NULL,
+    "userprofile_id" INTEGER NOT NULL,
+    "notification_id" INTEGER NOT NULL,
+    "notification_req_id" TEXT NOT NULL,
+    "created_at" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "read_at" TIMESTAMP(0),
+    "content" TEXT NOT NULL,
+    "fcm_id" TEXT,
+    "to" TEXT,
 
-    INDEX `timetable_wishlist_lec_lecture_id_1ab5d523_fk_subject_lecture_id`(`lecture_id`),
-    UNIQUE INDEX `timetable_wishlist_lectures_wishlist_id_e4c47efe_uniq`(`wishlist_id`, `lecture_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `graduation_additionaltrack` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `start_year` INTEGER NOT NULL,
-    `end_year` INTEGER NOT NULL,
-    `type` VARCHAR(32) NOT NULL,
-    `major_required` INTEGER NOT NULL,
-    `major_elective` INTEGER NOT NULL,
-    `department_id` INTEGER NULL,
-
-    INDEX `graduation_additiona_department_id_788c5289_fk_subject_d`(`department_id`),
-    INDEX `graduation_additionaltrack_end_year_6af1030b`(`end_year`),
-    INDEX `graduation_additionaltrack_start_year_7a87318d`(`start_year`),
-    INDEX `graduation_additionaltrack_type_0fa38fc5`(`type`),
-    UNIQUE INDEX `graduation_additionaltra_end_year_type_department_9d873c1b_uniq`(`end_year`, `type`, `department_id`),
-    UNIQUE INDEX `graduation_additionaltra_start_year_type_departme_763552eb_uniq`(`start_year`, `type`, `department_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "session_userprofile_notification_history_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `graduation_generaltrack` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `start_year` INTEGER NOT NULL,
-    `end_year` INTEGER NOT NULL,
-    `is_foreign` BOOLEAN NOT NULL,
-    `total_credit` INTEGER NOT NULL,
-    `total_au` INTEGER NOT NULL,
-    `basic_required` INTEGER NOT NULL,
-    `basic_elective` INTEGER NOT NULL,
-    `thesis_study` INTEGER NOT NULL,
-    `thesis_study_doublemajor` INTEGER NOT NULL,
-    `general_required_credit` INTEGER NOT NULL,
-    `general_required_au` INTEGER NOT NULL,
-    `humanities` INTEGER NOT NULL,
-    `humanities_doublemajor` INTEGER NOT NULL,
+CREATE TABLE "session_userprofile_favorite_departments" (
+    "id" SERIAL NOT NULL,
+    "userprofile_id" INTEGER NOT NULL,
+    "department_id" INTEGER NOT NULL,
 
-    INDEX `graduation_generaltrack_end_year_3bba699e`(`end_year`),
-    INDEX `graduation_generaltrack_is_foreign_d38919a2`(`is_foreign`),
-    INDEX `graduation_generaltrack_start_year_00aee782`(`start_year`),
-    UNIQUE INDEX `graduation_generaltrack_end_year_is_foreign_1f062f8b_uniq`(`end_year`, `is_foreign`),
-    UNIQUE INDEX `graduation_generaltrack_start_year_is_foreign_c1eb425f_uniq`(`start_year`, `is_foreign`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "session_userprofile_favorite_departments_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `graduation_majortrack` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `start_year` INTEGER NOT NULL,
-    `end_year` INTEGER NOT NULL,
-    `basic_elective_doublemajor` INTEGER NOT NULL,
-    `major_required` INTEGER NOT NULL,
-    `major_elective` INTEGER NOT NULL,
-    `department_id` INTEGER NOT NULL,
+CREATE TABLE "session_userprofile_majors" (
+    "id" SERIAL NOT NULL,
+    "userprofile_id" INTEGER NOT NULL,
+    "department_id" INTEGER NOT NULL,
 
-    INDEX `graduation_majortrac_department_id_81bfc8fa_fk_subject_d`(`department_id`),
-    INDEX `graduation_majortrack_end_year_57017559`(`end_year`),
-    INDEX `graduation_majortrack_start_year_6281dc28`(`start_year`),
-    UNIQUE INDEX `graduation_majortrack_end_year_department_id_b3ef1bc8_uniq`(`end_year`, `department_id`),
-    UNIQUE INDEX `graduation_majortrack_start_year_department_id_59122c6d_uniq`(`start_year`, `department_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "session_userprofile_majors_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `planner_arbitraryplanneritem` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `is_excluded` BOOLEAN NOT NULL,
-    `year` INTEGER NOT NULL,
-    `semester` INTEGER NOT NULL,
-    `type` VARCHAR(12) NOT NULL,
-    `type_en` VARCHAR(36) NOT NULL,
-    `credit` INTEGER NOT NULL,
-    `credit_au` INTEGER NOT NULL,
-    `department_id` INTEGER NULL,
-    `planner_id` INTEGER NOT NULL,
+CREATE TABLE "session_userprofile_minors" (
+    "id" SERIAL NOT NULL,
+    "userprofile_id" INTEGER NOT NULL,
+    "department_id" INTEGER NOT NULL,
 
-    INDEX `planner_arbitrarypla_department_id_0dc7ce25_fk_subject_d`(`department_id`),
-    INDEX `planner_arbitrarypla_planner_id_d6069d2c_fk_planner_p`(`planner_id`),
-    INDEX `planner_arbitraryplanneritem_semester_7508baa5`(`semester`),
-    INDEX `planner_arbitraryplanneritem_year_5a0c7252`(`year`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "session_userprofile_minors_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `planner_futureplanneritem` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `is_excluded` BOOLEAN NOT NULL,
-    `year` INTEGER NOT NULL,
-    `semester` INTEGER NOT NULL,
-    `course_id` INTEGER NOT NULL,
-    `planner_id` INTEGER NOT NULL,
+CREATE TABLE "session_userprofile_specialized_major" (
+    "id" SERIAL NOT NULL,
+    "userprofile_id" INTEGER NOT NULL,
+    "department_id" INTEGER NOT NULL,
 
-    INDEX `planner_futureplanne_course_id_b1a06444_fk_subject_c`(`course_id`),
-    INDEX `planner_futureplanne_planner_id_dfd70193_fk_planner_p`(`planner_id`),
-    INDEX `planner_futureplanneritem_semester_cda6512e`(`semester`),
-    INDEX `planner_futureplanneritem_year_5e3a2d4e`(`year`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "session_userprofile_specialized_major_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `planner_planner` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `start_year` INTEGER NOT NULL,
-    `end_year` INTEGER NOT NULL,
-    `arrange_order` SMALLINT NOT NULL,
-    `general_track_id` INTEGER NOT NULL,
-    `major_track_id` INTEGER NOT NULL,
-    `user_id` INTEGER NOT NULL,
+CREATE TABLE "session_userprofile_taken_lectures" (
+    "id" SERIAL NOT NULL,
+    "userprofile_id" INTEGER NOT NULL,
+    "lecture_id" INTEGER NOT NULL,
 
-    INDEX `planner_planner_arrange_order_e50a3044`(`arrange_order`),
-    INDEX `planner_planner_end_year_e5fab7f3`(`end_year`),
-    INDEX `planner_planner_general_track_id_6d607973_fk_graduatio`(`general_track_id`),
-    INDEX `planner_planner_major_track_id_9f7204bd_fk_graduatio`(`major_track_id`),
-    INDEX `planner_planner_start_year_463173f3`(`start_year`),
-    INDEX `planner_planner_user_id_17740247_fk_session_userprofile_id`(`user_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "session_userprofile_taken_lectures_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `planner_planner_additional_tracks` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `planner_id` INTEGER NOT NULL,
-    `additionaltrack_id` INTEGER NOT NULL,
+CREATE TABLE "subject_classtime" (
+    "id" SERIAL NOT NULL,
+    "day" SMALLINT NOT NULL,
+    "begin" TIME(0) NOT NULL,
+    "end" TIME(0) NOT NULL,
+    "type" VARCHAR(1) NOT NULL,
+    "building_id" VARCHAR(10),
+    "building_full_name" VARCHAR(60),
+    "building_full_name_en" VARCHAR(60),
+    "room_name" VARCHAR(40),
+    "unit_time" SMALLINT,
+    "lecture_id" INTEGER,
 
-    INDEX `planner_planner_addi_additionaltrack_id_c46b8c4e_fk_graduatio`(`additionaltrack_id`),
-    UNIQUE INDEX `planner_planner_addition_planner_id_additionaltra_2298c5cd_uniq`(`planner_id`, `additionaltrack_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `planner_takenplanneritem` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `is_excluded` BOOLEAN NOT NULL,
-    `lecture_id` INTEGER NOT NULL,
-    `planner_id` INTEGER NOT NULL,
-
-    INDEX `planner_takenplanner_lecture_id_9b2d30d8_fk_subject_l`(`lecture_id`),
-    UNIQUE INDEX `planner_takenplanneritem_planner_id_lecture_id_4b39b432_uniq`(`planner_id`, `lecture_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CONSTRAINT "subject_classtime_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
-CREATE TABLE `subject_professor_course_list` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `professor_id` INTEGER NOT NULL,
-    `course_id` INTEGER NOT NULL,
+CREATE TABLE "subject_course" (
+    "id" SERIAL NOT NULL,
+    "old_code" VARCHAR(10) NOT NULL,
+    "department_id" INTEGER NOT NULL,
+    "type" VARCHAR(30) NOT NULL,
+    "type_en" VARCHAR(60) NOT NULL,
+    "title" VARCHAR(100) NOT NULL,
+    "title_en" VARCHAR(200) NOT NULL,
+    "summury" VARCHAR(400) NOT NULL,
+    "grade_sum" DOUBLE PRECISION NOT NULL,
+    "load_sum" DOUBLE PRECISION NOT NULL,
+    "speech_sum" DOUBLE PRECISION NOT NULL,
+    "review_total_weight" DOUBLE PRECISION NOT NULL,
+    "grade" DOUBLE PRECISION NOT NULL,
+    "load" DOUBLE PRECISION NOT NULL,
+    "speech" DOUBLE PRECISION NOT NULL,
+    "latest_written_datetime" TIMESTAMP(0),
+    "title_no_space" VARCHAR(100) GENERATED ALWAYS AS (regexp_replace("title", '[[:space:]]', '', 'g')) STORED NOT NULL,
+    "title_en_no_space" VARCHAR(200) GENERATED ALWAYS AS (regexp_replace("title_en", '[[:space:]]', '', 'g')) STORED NOT NULL,
+    "new_code" VARCHAR(20) NOT NULL,
+    "representative_lecture_id" INTEGER NOT NULL DEFAULT 0,
+    "level" VARCHAR(20) GENERATED ALWAYS AS (substr(regexp_replace("new_code", '[^0-9]', '', 'g'), 1, 1)) STORED,
+
+    CONSTRAINT "subject_course_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "subject_course_professors" (
+    "id" SERIAL NOT NULL,
+    "course_id" INTEGER NOT NULL,
+    "professor_id" INTEGER NOT NULL,
+
+    CONSTRAINT "subject_course_professors_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "subject_course_related_courses_posterior" (
+    "id" SERIAL NOT NULL,
+    "from_course_id" INTEGER NOT NULL,
+    "to_course_id" INTEGER NOT NULL,
+
+    CONSTRAINT "subject_course_related_courses_posterior_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "subject_course_related_courses_prior" (
+    "id" SERIAL NOT NULL,
+    "from_course_id" INTEGER NOT NULL,
+    "to_course_id" INTEGER NOT NULL,
+
+    CONSTRAINT "subject_course_related_courses_prior_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "subject_courseuser" (
+    "id" SERIAL NOT NULL,
+    "latest_read_datetime" TIMESTAMP(0) NOT NULL,
+    "course_id" INTEGER NOT NULL,
+    "user_profile_id" INTEGER NOT NULL,
+
+    CONSTRAINT "subject_courseuser_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "subject_department" (
+    "id" INTEGER NOT NULL,
+    "num_id" VARCHAR(4) NOT NULL,
+    "code" VARCHAR(5) NOT NULL,
+    "name" VARCHAR(60) NOT NULL,
+    "name_en" VARCHAR(100),
+    "visible" BOOLEAN NOT NULL,
+
+    CONSTRAINT "subject_department_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "subject_examtime" (
+    "id" SERIAL NOT NULL,
+    "day" SMALLINT NOT NULL,
+    "begin" TIME(0) NOT NULL,
+    "end" TIME(0) NOT NULL,
+    "lecture_id" INTEGER NOT NULL,
+
+    CONSTRAINT "subject_examtime_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "subject_lecture" (
+    "id" SERIAL NOT NULL,
+    "code" VARCHAR(10) NOT NULL,
+    "old_code" VARCHAR(10) NOT NULL,
+    "year" INTEGER NOT NULL,
+    "semester" SMALLINT NOT NULL,
+    "department_id" INTEGER NOT NULL,
+    "class_no" VARCHAR(4) NOT NULL,
+    "title" VARCHAR(100) NOT NULL,
+    "title_en" VARCHAR(200) NOT NULL,
+    "type" VARCHAR(30) NOT NULL,
+    "type_en" VARCHAR(60) NOT NULL,
+    "audience" INTEGER NOT NULL,
+    "credit" INTEGER NOT NULL,
+    "num_classes" INTEGER NOT NULL,
+    "num_labs" INTEGER NOT NULL,
+    "credit_au" INTEGER NOT NULL,
+    "limit" INTEGER NOT NULL,
+    "num_people" INTEGER,
+    "is_english" BOOLEAN NOT NULL,
+    "deleted" BOOLEAN NOT NULL,
+    "course_id" INTEGER NOT NULL,
+    "grade_sum" DOUBLE PRECISION NOT NULL,
+    "load_sum" DOUBLE PRECISION NOT NULL,
+    "speech_sum" DOUBLE PRECISION NOT NULL,
+    "grade" DOUBLE PRECISION NOT NULL,
+    "load" DOUBLE PRECISION NOT NULL,
+    "speech" DOUBLE PRECISION NOT NULL,
+    "review_total_weight" DOUBLE PRECISION NOT NULL,
+    "class_title" VARCHAR(100),
+    "class_title_en" VARCHAR(100),
+    "common_title" VARCHAR(100),
+    "common_title_en" VARCHAR(100),
+    "title_no_space" VARCHAR(100) GENERATED ALWAYS AS (regexp_replace("title", '[[:space:]]', '', 'g')) STORED NOT NULL,
+    "title_en_no_space" VARCHAR(200) GENERATED ALWAYS AS (regexp_replace("title_en", '[[:space:]]', '', 'g')) STORED NOT NULL,
+    "new_code" VARCHAR(20) NOT NULL,
+    "level" VARCHAR(20) GENERATED ALWAYS AS (substr(regexp_replace("new_code", '[^0-9]', '', 'g'), 1, 1)) STORED,
+
+    CONSTRAINT "subject_lecture_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "subject_lecture_professors" (
+    "id" SERIAL NOT NULL,
+    "lecture_id" INTEGER NOT NULL,
+    "professor_id" INTEGER NOT NULL,
+
+    CONSTRAINT "subject_lecture_professors_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "subject_professor" (
+    "id" SERIAL NOT NULL,
+    "professor_name" VARCHAR(100) NOT NULL,
+    "professor_name_en" VARCHAR(100),
+    "professor_id" INTEGER NOT NULL,
+    "major" VARCHAR(30) NOT NULL,
+    "grade_sum" DOUBLE PRECISION NOT NULL,
+    "load_sum" DOUBLE PRECISION NOT NULL,
+    "speech_sum" DOUBLE PRECISION NOT NULL,
+    "review_total_weight" DOUBLE PRECISION NOT NULL,
+    "grade" DOUBLE PRECISION NOT NULL,
+    "load" DOUBLE PRECISION NOT NULL,
+    "speech" DOUBLE PRECISION NOT NULL,
+
+    CONSTRAINT "subject_professor_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "subject_semester" (
+    "id" SERIAL NOT NULL,
+    "year" INTEGER NOT NULL,
+    "semester" INTEGER NOT NULL,
+    "beginning" TIMESTAMP(0) NOT NULL,
+    "end" TIMESTAMP(0) NOT NULL,
+    "courseRegistrationPeriodStart" TIMESTAMP(0),
+    "courseRegistrationPeriodEnd" TIMESTAMP(0),
+    "courseAddDropPeriodEnd" TIMESTAMP(0),
+    "courseDropDeadline" TIMESTAMP(0),
+    "courseEvaluationDeadline" TIMESTAMP(0),
+    "gradePosting" TIMESTAMP(0),
+    "courseDesciptionSubmission" TIMESTAMP(0),
+
+    CONSTRAINT "subject_semester_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "support_notice" (
+    "id" SERIAL NOT NULL,
+    "start_time" TIMESTAMP(0) NOT NULL,
+    "end_time" TIMESTAMP(0) NOT NULL,
+    "title" VARCHAR(100) NOT NULL,
+    "content" TEXT NOT NULL,
+
+    CONSTRAINT "support_notice_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "support_rate" (
+    "id" SERIAL NOT NULL,
+    "score" SMALLINT NOT NULL,
+    "year" SMALLINT NOT NULL,
+    "created_datetime" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "user_id" INTEGER NOT NULL,
+    "version" VARCHAR(20) NOT NULL,
+
+    CONSTRAINT "support_rate_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "timetable_oldtimetable" (
+    "id" SERIAL NOT NULL,
+    "student_id" VARCHAR(10) NOT NULL,
+    "year" INTEGER,
+    "semester" SMALLINT,
+    "table_no" SMALLINT,
+
+    CONSTRAINT "timetable_oldtimetable_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "timetable_oldtimetable_lectures" (
+    "id" SERIAL NOT NULL,
+    "oldtimetable_id" INTEGER NOT NULL,
+    "lecture_id" INTEGER NOT NULL,
+
+    CONSTRAINT "timetable_oldtimetable_lectures_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "timetable_timetable" (
+    "id" SERIAL NOT NULL,
+    "year" INTEGER,
+    "semester" SMALLINT,
+    "user_id" INTEGER NOT NULL,
+    "arrange_order" SMALLINT NOT NULL,
+    "name" VARCHAR(255),
+
+    CONSTRAINT "timetable_timetable_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "timetable_timetable_lectures" (
+    "id" SERIAL NOT NULL,
+    "timetable_id" INTEGER NOT NULL,
+    "lecture_id" INTEGER NOT NULL,
+
+    CONSTRAINT "timetable_timetable_lectures_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "timetable_timetable_customblocks" (
+    "id" SERIAL NOT NULL,
+    "timetable_id" INTEGER NOT NULL,
+    "custom_block_id" INTEGER NOT NULL,
+
+    CONSTRAINT "timetable_timetable_customblocks_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "timetable_wishlist" (
+    "id" SERIAL NOT NULL,
+    "user_id" INTEGER NOT NULL,
+
+    CONSTRAINT "timetable_wishlist_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "timetable_wishlist_lectures" (
+    "id" SERIAL NOT NULL,
+    "wishlist_id" INTEGER NOT NULL,
+    "lecture_id" INTEGER NOT NULL,
+
+    CONSTRAINT "timetable_wishlist_lectures_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "graduation_additionaltrack" (
+    "id" SERIAL NOT NULL,
+    "start_year" INTEGER NOT NULL,
+    "end_year" INTEGER NOT NULL,
+    "type" VARCHAR(32) NOT NULL,
+    "major_required" INTEGER NOT NULL,
+    "major_elective" INTEGER NOT NULL,
+    "department_id" INTEGER,
+
+    CONSTRAINT "graduation_additionaltrack_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "graduation_generaltrack" (
+    "id" SERIAL NOT NULL,
+    "start_year" INTEGER NOT NULL,
+    "end_year" INTEGER NOT NULL,
+    "is_foreign" BOOLEAN NOT NULL,
+    "total_credit" INTEGER NOT NULL,
+    "total_au" INTEGER NOT NULL,
+    "basic_required" INTEGER NOT NULL,
+    "basic_elective" INTEGER NOT NULL,
+    "thesis_study" INTEGER NOT NULL,
+    "thesis_study_doublemajor" INTEGER NOT NULL,
+    "general_required_credit" INTEGER NOT NULL,
+    "general_required_au" INTEGER NOT NULL,
+    "humanities" INTEGER NOT NULL,
+    "humanities_doublemajor" INTEGER NOT NULL,
+
+    CONSTRAINT "graduation_generaltrack_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "graduation_majortrack" (
+    "id" SERIAL NOT NULL,
+    "start_year" INTEGER NOT NULL,
+    "end_year" INTEGER NOT NULL,
+    "basic_elective_doublemajor" INTEGER NOT NULL,
+    "major_required" INTEGER NOT NULL,
+    "major_elective" INTEGER NOT NULL,
+    "department_id" INTEGER NOT NULL,
+
+    CONSTRAINT "graduation_majortrack_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "planner_arbitraryplanneritem" (
+    "id" SERIAL NOT NULL,
+    "is_excluded" BOOLEAN NOT NULL,
+    "year" INTEGER NOT NULL,
+    "semester" INTEGER NOT NULL,
+    "type" VARCHAR(12) NOT NULL,
+    "type_en" VARCHAR(36) NOT NULL,
+    "credit" INTEGER NOT NULL,
+    "credit_au" INTEGER NOT NULL,
+    "department_id" INTEGER,
+    "planner_id" INTEGER NOT NULL,
+
+    CONSTRAINT "planner_arbitraryplanneritem_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "planner_futureplanneritem" (
+    "id" SERIAL NOT NULL,
+    "is_excluded" BOOLEAN NOT NULL,
+    "year" INTEGER NOT NULL,
+    "semester" INTEGER NOT NULL,
+    "course_id" INTEGER NOT NULL,
+    "planner_id" INTEGER NOT NULL,
+
+    CONSTRAINT "planner_futureplanneritem_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "planner_planner" (
+    "id" SERIAL NOT NULL,
+    "start_year" INTEGER NOT NULL,
+    "end_year" INTEGER NOT NULL,
+    "arrange_order" SMALLINT NOT NULL,
+    "general_track_id" INTEGER NOT NULL,
+    "major_track_id" INTEGER NOT NULL,
+    "user_id" INTEGER NOT NULL,
+
+    CONSTRAINT "planner_planner_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "planner_planner_additional_tracks" (
+    "id" SERIAL NOT NULL,
+    "planner_id" INTEGER NOT NULL,
+    "additionaltrack_id" INTEGER NOT NULL,
+
+    CONSTRAINT "planner_planner_additional_tracks_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "planner_takenplanneritem" (
+    "id" SERIAL NOT NULL,
+    "is_excluded" BOOLEAN NOT NULL,
+    "lecture_id" INTEGER NOT NULL,
+    "planner_id" INTEGER NOT NULL,
+
+    CONSTRAINT "planner_takenplanneritem_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "subject_professor_course_list" (
+    "id" SERIAL NOT NULL,
+    "professor_id" INTEGER NOT NULL,
+    "course_id" INTEGER NOT NULL,
+
+    CONSTRAINT "subject_professor_course_list_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "sync_taken_lectures" (
+    "id" SERIAL NOT NULL,
+    "year" INTEGER NOT NULL,
+    "semester" INTEGER NOT NULL,
+    "student_id" INTEGER NOT NULL,
+    "lecture_id" INTEGER NOT NULL,
+
+    CONSTRAINT "sync_taken_lectures_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "sync_history" (
+    "id" SERIAL NOT NULL,
+    "type" "SyncType" NOT NULL,
+    "startTime" TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "endTime" TIMESTAMP(3),
+    "data" VARCHAR(500),
+    "year" INTEGER,
+    "semester" INTEGER,
+
+    CONSTRAINT "sync_history_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "paper_prof_to_subject_prof" (
+    "id" SERIAL NOT NULL,
+    "subject_professor_id" INTEGER NOT NULL,
+    "paper_professor_id" INTEGER NOT NULL,
+
+    CONSTRAINT "paper_prof_to_subject_prof_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "paper_professor_department" (
+    "id" SERIAL NOT NULL,
+    "paper_professor_id" INTEGER NOT NULL,
+    "subject_department_id" INTEGER NOT NULL,
+
+    CONSTRAINT "paper_professor_department_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "paper_professor" (
+    "id" SERIAL NOT NULL,
+    "department" VARCHAR(60),
+    "first_conference_title" VARCHAR(255),
+    "first_journal_title" VARCHAR(255),
+    "lab_link" VARCHAR(255),
+    "orcid_id" VARCHAR(20),
+    "prof_name" VARCHAR(255),
+    "rid" VARCHAR(20),
+
+    CONSTRAINT "paper_professor_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "paper" (
+    "id" SERIAL NOT NULL,
+    "professor_id" INTEGER,
+    "title" VARCHAR(1000),
+    "abstract" TEXT,
+    "keywords" TEXT,
+    "doi" VARCHAR(100),
+    "pdf_link" VARCHAR(300),
+    "xml_link" VARCHAR(255),
+    "aggregationType" VARCHAR(30),
+    "article_number" VARCHAR(50),
+    "cited_count" DOUBLE PRECISION,
+    "citedby_count" DOUBLE PRECISION,
+    "coverDate" DATE,
+    "coverDisplayDate" VARCHAR(100),
+    "description" TEXT,
+    "eIssn" VARCHAR(10),
+    "issn" VARCHAR(10),
+    "issueIdentifier" VARCHAR(20),
+    "pageRange" VARCHAR(20),
+    "page_range" VARCHAR(20),
+    "publicationName" VARCHAR(500),
+    "publish_month" VARCHAR(8),
+    "publish_year" DOUBLE PRECISION,
+    "source_id" DOUBLE PRECISION,
+    "source_title" VARCHAR(255),
+    "volume" VARCHAR(100),
+
+    CONSTRAINT "paper_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "auth_group_name_key" ON "auth_group"("name");
+
+-- CreateIndex
+CREATE INDEX "auth_group_permissions_permission_id_idx" ON "auth_group_permissions"("permission_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "auth_group_permissions_group_id_permission_id_key" ON "auth_group_permissions"("group_id", "permission_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "auth_permission_content_type_id_codename_key" ON "auth_permission"("content_type_id", "codename");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "auth_user_username_key" ON "auth_user"("username");
+
+-- CreateIndex
+CREATE INDEX "auth_user_groups_group_id_idx" ON "auth_user_groups"("group_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "auth_user_groups_user_id_group_id_key" ON "auth_user_groups"("user_id", "group_id");
+
+-- CreateIndex
+CREATE INDEX "auth_user_user_permissions_permission_id_idx" ON "auth_user_user_permissions"("permission_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "auth_user_user_permissions_user_id_permission_id_key" ON "auth_user_user_permissions"("user_id", "permission_id");
+
+-- CreateIndex
+CREATE INDEX "django_admin_log_content_type_id_idx" ON "django_admin_log"("content_type_id");
+
+-- CreateIndex
+CREATE INDEX "django_admin_log_user_id_idx" ON "django_admin_log"("user_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "django_content_type_app_label_model_key" ON "django_content_type"("app_label", "model");
+
+-- CreateIndex
+CREATE INDEX "django_session_expire_date_idx" ON "django_session"("expire_date");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "main_famoushumanityreviewdailyfeed_date_key" ON "main_famoushumanityreviewdailyfeed"("date");
+
+-- CreateIndex
+CREATE INDEX "main_famoushumanityreviewdailyfeed_reviews_review_id_idx" ON "main_famoushumanityreviewdailyfeed_reviews"("review_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "main_famoushumanityreviewdailyfeed_reviews_famoushumanityre_key" ON "main_famoushumanityreviewdailyfeed_reviews"("famoushumanityreviewdailyfeed_id", "review_id");
+
+-- CreateIndex
+CREATE INDEX "main_famousmajorreviewdailyfeed_department_id_idx" ON "main_famousmajorreviewdailyfeed"("department_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "main_famousmajorreviewdailyfeed_date_department_id_key" ON "main_famousmajorreviewdailyfeed"("date", "department_id");
+
+-- CreateIndex
+CREATE INDEX "main_famousmajorreviewdailyfeed_reviews_review_id_idx" ON "main_famousmajorreviewdailyfeed_reviews"("review_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "main_famousmajorreviewdailyfeed_reviews_famousmajorreviewda_key" ON "main_famousmajorreviewdailyfeed_reviews"("famousmajorreviewdailyfeed_id", "review_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "main_rankedreviewdailyfeed_date_key" ON "main_rankedreviewdailyfeed"("date");
+
+-- CreateIndex
+CREATE INDEX "main_rankedreviewdailyfeed_semester_id_idx" ON "main_rankedreviewdailyfeed"("semester_id");
+
+-- CreateIndex
+CREATE INDEX "main_ratedailyuserfeed_user_id_idx" ON "main_ratedailyuserfeed"("user_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "main_ratedailyuserfeed_date_user_id_key" ON "main_ratedailyuserfeed"("date", "user_id");
+
+-- CreateIndex
+CREATE INDEX "main_relatedcoursedailyuserfeed_course_id_idx" ON "main_relatedcoursedailyuserfeed"("course_id");
+
+-- CreateIndex
+CREATE INDEX "main_relatedcoursedailyuserfeed_user_id_idx" ON "main_relatedcoursedailyuserfeed"("user_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "main_relatedcoursedailyuserfeed_date_user_id_key" ON "main_relatedcoursedailyuserfeed"("date", "user_id");
+
+-- CreateIndex
+CREATE INDEX "main_reviewwritedailyuserfeed_lecture_id_idx" ON "main_reviewwritedailyuserfeed"("lecture_id");
+
+-- CreateIndex
+CREATE INDEX "main_reviewwritedailyuserfeed_user_id_idx" ON "main_reviewwritedailyuserfeed"("user_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "main_reviewwritedailyuserfeed_date_user_id_key" ON "main_reviewwritedailyuserfeed"("date", "user_id");
+
+-- CreateIndex
+CREATE INDEX "review_review_written_datetime_idx" ON "review_review"("written_datetime");
+
+-- CreateIndex
+CREATE INDEX "review_review_course_id_idx" ON "review_review"("course_id");
+
+-- CreateIndex
+CREATE INDEX "review_review_lecture_id_idx" ON "review_review"("lecture_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "review_review_writer_id_lecture_id_key" ON "review_review"("writer_id", "lecture_id");
+
+-- CreateIndex
+CREATE INDEX "review_reviewvote_created_datetime_idx" ON "review_reviewvote"("created_datetime");
+
+-- CreateIndex
+CREATE INDEX "review_reviewvote_userprofile_id_idx" ON "review_reviewvote"("userprofile_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "review_reviewvote_review_id_userprofile_id_key" ON "review_reviewvote"("review_id", "userprofile_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "session_userprofile_user_id_key" ON "session_userprofile"("user_id");
+
+-- CreateIndex
+CREATE INDEX "session_userprofile_department_id_idx" ON "session_userprofile"("department_id");
+
+-- CreateIndex
+CREATE INDEX "session_userprofile_student_id_idx" ON "session_userprofile"("student_id");
+
+-- CreateIndex
+CREATE INDEX "session_userprofile_device_token_idx" ON "session_userprofile_device"("token");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "session_userprofile_device_userprofile_id_token_key" ON "session_userprofile_device"("userprofile_id", "token");
+
+-- CreateIndex
+CREATE INDEX "session_userprofile_agreement_agreement_id_idx" ON "session_userprofile_agreement"("agreement_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "session_userprofile_agreement_userprofile_id_agreement_id_key" ON "session_userprofile_agreement"("userprofile_id", "agreement_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "agreement_name_key" ON "agreement"("name");
+
+-- CreateIndex
+CREATE INDEX "session_userprofile_notification_notification_id_idx" ON "session_userprofile_notification"("notification_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "session_userprofile_notification_userprofile_id_notificatio_key" ON "session_userprofile_notification"("userprofile_id", "notification_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "notification_name_key" ON "notification"("name");
+
+-- CreateIndex
+CREATE INDEX "session_userprofile_notification_history_notification_id_idx" ON "session_userprofile_notification_history"("notification_id");
+
+-- CreateIndex
+CREATE INDEX "session_userprofile_notification_history_userprofile_id_idx" ON "session_userprofile_notification_history"("userprofile_id");
+
+-- CreateIndex
+CREATE INDEX "session_userprofile_favorite_departments_department_id_idx" ON "session_userprofile_favorite_departments"("department_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "session_userprofile_favorite_departments_userprofile_id_dep_key" ON "session_userprofile_favorite_departments"("userprofile_id", "department_id");
+
+-- CreateIndex
+CREATE INDEX "session_userprofile_majors_department_id_idx" ON "session_userprofile_majors"("department_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "session_userprofile_majors_userprofile_id_department_id_key" ON "session_userprofile_majors"("userprofile_id", "department_id");
+
+-- CreateIndex
+CREATE INDEX "session_userprofile_minors_department_id_idx" ON "session_userprofile_minors"("department_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "session_userprofile_minors_userprofile_id_department_id_key" ON "session_userprofile_minors"("userprofile_id", "department_id");
+
+-- CreateIndex
+CREATE INDEX "session_userprofile_specialized_major_department_id_idx" ON "session_userprofile_specialized_major"("department_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "session_userprofile_specialized_major_userprofile_id_depart_key" ON "session_userprofile_specialized_major"("userprofile_id", "department_id");
+
+-- CreateIndex
+CREATE INDEX "session_userprofile_taken_lectures_lecture_id_idx" ON "session_userprofile_taken_lectures"("lecture_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "session_userprofile_taken_lectures_userprofile_id_lecture_i_key" ON "session_userprofile_taken_lectures"("userprofile_id", "lecture_id");
+
+-- CreateIndex
+CREATE INDEX "subject_classtime_lecture_id_idx" ON "subject_classtime"("lecture_id");
+
+-- CreateIndex
+CREATE INDEX "subject_course_department_id_idx" ON "subject_course"("department_id");
+
+-- CreateIndex
+CREATE INDEX "subject_course_title_en_no_space_idx" ON "subject_course"("title_en_no_space");
+
+-- CreateIndex
+CREATE INDEX "subject_course_title_idx" ON "subject_course"("title");
+
+-- CreateIndex
+CREATE INDEX "subject_course_title_no_space_idx" ON "subject_course"("title_no_space");
+
+-- CreateIndex
+CREATE INDEX "subject_course_title_en_idx" ON "subject_course"("title_en");
+
+-- CreateIndex
+CREATE INDEX "subject_course_professors_professor_id_idx" ON "subject_course_professors"("professor_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "subject_course_professors_course_id_professor_id_key" ON "subject_course_professors"("course_id", "professor_id");
+
+-- CreateIndex
+CREATE INDEX "subject_course_related_courses_posterior_to_course_id_idx" ON "subject_course_related_courses_posterior"("to_course_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "subject_course_related_courses_posterior_from_course_id_to__key" ON "subject_course_related_courses_posterior"("from_course_id", "to_course_id");
+
+-- CreateIndex
+CREATE INDEX "subject_course_related_courses_prior_to_course_id_idx" ON "subject_course_related_courses_prior"("to_course_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "subject_course_related_courses_prior_from_course_id_to_cour_key" ON "subject_course_related_courses_prior"("from_course_id", "to_course_id");
+
+-- CreateIndex
+CREATE INDEX "subject_courseuser_user_profile_id_idx" ON "subject_courseuser"("user_profile_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "subject_courseuser_course_id_user_profile_id_key" ON "subject_courseuser"("course_id", "user_profile_id");
+
+-- CreateIndex
+CREATE INDEX "subject_examtime_lecture_id_idx" ON "subject_examtime"("lecture_id");
+
+-- CreateIndex
+CREATE INDEX "subject_lecture_deleted_idx" ON "subject_lecture"("deleted");
+
+-- CreateIndex
+CREATE INDEX "subject_lecture_type_en_idx" ON "subject_lecture"("type_en");
+
+-- CreateIndex
+CREATE INDEX "subject_lecture_course_id_idx" ON "subject_lecture"("course_id");
+
+-- CreateIndex
+CREATE INDEX "subject_lecture_department_id_idx" ON "subject_lecture"("department_id");
+
+-- CreateIndex
+CREATE INDEX "subject_lecture_title_en_no_space_idx" ON "subject_lecture"("title_en_no_space");
+
+-- CreateIndex
+CREATE INDEX "subject_lecture_title_no_space_idx" ON "subject_lecture"("title_no_space");
+
+-- CreateIndex
+CREATE INDEX "subject_lecture_title_en_idx" ON "subject_lecture"("title_en");
+
+-- CreateIndex
+CREATE INDEX "subject_lecture_title_idx" ON "subject_lecture"("title");
+
+-- CreateIndex
+CREATE INDEX "subject_lecture_year_semester_deleted_idx" ON "subject_lecture"("year", "semester", "deleted");
+
+-- CreateIndex
+CREATE INDEX "subject_lecture_semester_year_deleted_type_en_id_idx" ON "subject_lecture"("semester", "year", "deleted", "type_en", "id");
+
+-- CreateIndex
+CREATE INDEX "subject_lecture_year_semester_type_en_department_id_deleted_idx" ON "subject_lecture"("year", "semester", "type_en", "department_id", "deleted");
+
+-- CreateIndex
+CREATE INDEX "subject_lecture_professors_professor_id_idx" ON "subject_lecture_professors"("professor_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "subject_lecture_professors_lecture_id_professor_id_key" ON "subject_lecture_professors"("lecture_id", "professor_id");
+
+-- CreateIndex
+CREATE INDEX "subject_semester_semester_idx" ON "subject_semester"("semester");
+
+-- CreateIndex
+CREATE INDEX "subject_semester_year_idx" ON "subject_semester"("year");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "subject_semester_year_semester_key" ON "subject_semester"("year", "semester");
+
+-- CreateIndex
+CREATE INDEX "support_rate_created_datetime_idx" ON "support_rate"("created_datetime");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "support_rate_user_id_year_key" ON "support_rate"("user_id", "year");
+
+-- CreateIndex
+CREATE INDEX "timetable_oldtimetable_lectures_lecture_id_idx" ON "timetable_oldtimetable_lectures"("lecture_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "timetable_oldtimetable_lectures_oldtimetable_id_lecture_id_key" ON "timetable_oldtimetable_lectures"("oldtimetable_id", "lecture_id");
+
+-- CreateIndex
+CREATE INDEX "timetable_timetable_arrange_order_idx" ON "timetable_timetable"("arrange_order");
+
+-- CreateIndex
+CREATE INDEX "timetable_timetable_semester_idx" ON "timetable_timetable"("semester");
+
+-- CreateIndex
+CREATE INDEX "timetable_timetable_user_id_idx" ON "timetable_timetable"("user_id");
+
+-- CreateIndex
+CREATE INDEX "timetable_timetable_year_idx" ON "timetable_timetable"("year");
+
+-- CreateIndex
+CREATE INDEX "timetable_timetable_user_id_name_idx" ON "timetable_timetable"("user_id", "name");
+
+-- CreateIndex
+CREATE INDEX "timetable_timetable_lectures_lecture_id_idx" ON "timetable_timetable_lectures"("lecture_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "timetable_timetable_lectures_timetable_id_lecture_id_key" ON "timetable_timetable_lectures"("timetable_id", "lecture_id");
+
+-- CreateIndex
+CREATE INDEX "timetable_timetable_customblocks_custom_block_id_idx" ON "timetable_timetable_customblocks"("custom_block_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "timetable_timetable_customblocks_timetable_id_custom_block__key" ON "timetable_timetable_customblocks"("timetable_id", "custom_block_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "timetable_wishlist_user_id_key" ON "timetable_wishlist"("user_id");
+
+-- CreateIndex
+CREATE INDEX "timetable_wishlist_lectures_lecture_id_idx" ON "timetable_wishlist_lectures"("lecture_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "timetable_wishlist_lectures_wishlist_id_lecture_id_key" ON "timetable_wishlist_lectures"("wishlist_id", "lecture_id");
+
+-- CreateIndex
+CREATE INDEX "graduation_additionaltrack_department_id_idx" ON "graduation_additionaltrack"("department_id");
+
+-- CreateIndex
+CREATE INDEX "graduation_additionaltrack_end_year_idx" ON "graduation_additionaltrack"("end_year");
 
-    UNIQUE INDEX `professor_id`(`professor_id`, `course_id`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- CreateIndex
+CREATE INDEX "graduation_additionaltrack_start_year_idx" ON "graduation_additionaltrack"("start_year");
 
+-- CreateIndex
+CREATE INDEX "graduation_additionaltrack_type_idx" ON "graduation_additionaltrack"("type");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "graduation_additionaltrack_end_year_type_department_id_key" ON "graduation_additionaltrack"("end_year", "type", "department_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "graduation_additionaltrack_start_year_type_department_id_key" ON "graduation_additionaltrack"("start_year", "type", "department_id");
+
+-- CreateIndex
+CREATE INDEX "graduation_generaltrack_end_year_idx" ON "graduation_generaltrack"("end_year");
+
+-- CreateIndex
+CREATE INDEX "graduation_generaltrack_is_foreign_idx" ON "graduation_generaltrack"("is_foreign");
+
+-- CreateIndex
+CREATE INDEX "graduation_generaltrack_start_year_idx" ON "graduation_generaltrack"("start_year");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "graduation_generaltrack_end_year_is_foreign_key" ON "graduation_generaltrack"("end_year", "is_foreign");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "graduation_generaltrack_start_year_is_foreign_key" ON "graduation_generaltrack"("start_year", "is_foreign");
+
+-- CreateIndex
+CREATE INDEX "graduation_majortrack_department_id_idx" ON "graduation_majortrack"("department_id");
+
+-- CreateIndex
+CREATE INDEX "graduation_majortrack_end_year_idx" ON "graduation_majortrack"("end_year");
+
+-- CreateIndex
+CREATE INDEX "graduation_majortrack_start_year_idx" ON "graduation_majortrack"("start_year");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "graduation_majortrack_end_year_department_id_key" ON "graduation_majortrack"("end_year", "department_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "graduation_majortrack_start_year_department_id_key" ON "graduation_majortrack"("start_year", "department_id");
+
+-- CreateIndex
+CREATE INDEX "planner_arbitraryplanneritem_department_id_idx" ON "planner_arbitraryplanneritem"("department_id");
+
+-- CreateIndex
+CREATE INDEX "planner_arbitraryplanneritem_planner_id_idx" ON "planner_arbitraryplanneritem"("planner_id");
+
+-- CreateIndex
+CREATE INDEX "planner_arbitraryplanneritem_semester_idx" ON "planner_arbitraryplanneritem"("semester");
+
+-- CreateIndex
+CREATE INDEX "planner_arbitraryplanneritem_year_idx" ON "planner_arbitraryplanneritem"("year");
+
+-- CreateIndex
+CREATE INDEX "planner_futureplanneritem_course_id_idx" ON "planner_futureplanneritem"("course_id");
+
+-- CreateIndex
+CREATE INDEX "planner_futureplanneritem_planner_id_idx" ON "planner_futureplanneritem"("planner_id");
+
+-- CreateIndex
+CREATE INDEX "planner_futureplanneritem_semester_idx" ON "planner_futureplanneritem"("semester");
+
+-- CreateIndex
+CREATE INDEX "planner_futureplanneritem_year_idx" ON "planner_futureplanneritem"("year");
+
+-- CreateIndex
+CREATE INDEX "planner_planner_arrange_order_idx" ON "planner_planner"("arrange_order");
+
+-- CreateIndex
+CREATE INDEX "planner_planner_end_year_idx" ON "planner_planner"("end_year");
+
+-- CreateIndex
+CREATE INDEX "planner_planner_general_track_id_idx" ON "planner_planner"("general_track_id");
+
+-- CreateIndex
+CREATE INDEX "planner_planner_major_track_id_idx" ON "planner_planner"("major_track_id");
+
+-- CreateIndex
+CREATE INDEX "planner_planner_start_year_idx" ON "planner_planner"("start_year");
+
+-- CreateIndex
+CREATE INDEX "planner_planner_user_id_idx" ON "planner_planner"("user_id");
+
+-- CreateIndex
+CREATE INDEX "planner_planner_additional_tracks_additionaltrack_id_idx" ON "planner_planner_additional_tracks"("additionaltrack_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "planner_planner_additional_tracks_planner_id_additionaltrac_key" ON "planner_planner_additional_tracks"("planner_id", "additionaltrack_id");
+
+-- CreateIndex
+CREATE INDEX "planner_takenplanneritem_lecture_id_idx" ON "planner_takenplanneritem"("lecture_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "planner_takenplanneritem_planner_id_lecture_id_key" ON "planner_takenplanneritem"("planner_id", "lecture_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "subject_professor_course_list_professor_id_course_id_key" ON "subject_professor_course_list"("professor_id", "course_id");
+
+-- CreateIndex
+CREATE INDEX "sync_taken_lectures_year_semester_idx" ON "sync_taken_lectures"("year", "semester");
+
+-- CreateIndex
+CREATE INDEX "sync_taken_lectures_lecture_id_idx" ON "sync_taken_lectures"("lecture_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "sync_taken_lectures_student_id_lecture_id_key" ON "sync_taken_lectures"("student_id", "lecture_id");
+
+-- CreateIndex
+CREATE INDEX "paper_prof_to_subject_prof_paper_professor_id_idx" ON "paper_prof_to_subject_prof"("paper_professor_id");
+
+-- CreateIndex
+CREATE INDEX "paper_prof_to_subject_prof_subject_professor_id_idx" ON "paper_prof_to_subject_prof"("subject_professor_id");
+
+-- CreateIndex
+CREATE INDEX "paper_professor_department_paper_professor_id_idx" ON "paper_professor_department"("paper_professor_id");
+
+-- CreateIndex
+CREATE INDEX "paper_professor_department_subject_department_id_idx" ON "paper_professor_department"("subject_department_id");
+
+-- CreateIndex
+CREATE INDEX "paper_professor_id_idx" ON "paper"("professor_id");
+
+-- AddForeignKey
+ALTER TABLE "auth_group_permissions" ADD CONSTRAINT "auth_group_permissions_permission_id_fkey" FOREIGN KEY ("permission_id") REFERENCES "auth_permission"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE "auth_group_permissions" ADD CONSTRAINT "auth_group_permissions_group_id_fkey" FOREIGN KEY ("group_id") REFERENCES "auth_group"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE "auth_permission" ADD CONSTRAINT "auth_permission_content_type_id_fkey" FOREIGN KEY ("content_type_id") REFERENCES "django_content_type"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE "auth_user_groups" ADD CONSTRAINT "auth_user_groups_group_id_fkey" FOREIGN KEY ("group_id") REFERENCES "auth_group"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE "auth_user_groups" ADD CONSTRAINT "auth_user_groups_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth_user"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE "auth_user_user_permissions" ADD CONSTRAINT "auth_user_user_permissions_permission_id_fkey" FOREIGN KEY ("permission_id") REFERENCES "auth_permission"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE "auth_user_user_permissions" ADD CONSTRAINT "auth_user_user_permissions_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth_user"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
+
 -- AddForeignKey
-ALTER TABLE `auth_group_permissions` ADD CONSTRAINT `auth_group__permission_id_1f49ccbbdc69d2fc_fk_auth_permission_id` FOREIGN KEY (`permission_id`) REFERENCES `auth_permission`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "django_admin_log" ADD CONSTRAINT "django_admin_log_content_type_id_fkey" FOREIGN KEY ("content_type_id") REFERENCES "django_content_type"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `auth_group_permissions` ADD CONSTRAINT `auth_group_permission_group_id_689710a9a73b7457_fk_auth_group_id` FOREIGN KEY (`group_id`) REFERENCES `auth_group`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "django_admin_log" ADD CONSTRAINT "django_admin_log_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth_user"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `auth_permission` ADD CONSTRAINT `auth__content_type_id_508cf46651277a81_fk_django_content_type_id` FOREIGN KEY (`content_type_id`) REFERENCES `django_content_type`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "main_famoushumanityreviewdailyfeed_reviews" ADD CONSTRAINT "main_famoushumanityreviewdailyfeed_reviews_famoushumanityr_fkey" FOREIGN KEY ("famoushumanityreviewdailyfeed_id") REFERENCES "main_famoushumanityreviewdailyfeed"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `auth_user_groups` ADD CONSTRAINT `auth_user_groups_group_id_33ac548dcf5f8e37_fk_auth_group_id` FOREIGN KEY (`group_id`) REFERENCES `auth_group`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "main_famoushumanityreviewdailyfeed_reviews" ADD CONSTRAINT "main_famoushumanityreviewdailyfeed_reviews_review_id_fkey" FOREIGN KEY ("review_id") REFERENCES "review_review"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `auth_user_groups` ADD CONSTRAINT `auth_user_groups_user_id_4b5ed4ffdb8fd9b0_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "main_famousmajorreviewdailyfeed" ADD CONSTRAINT "main_famousmajorreviewdailyfeed_department_id_fkey" FOREIGN KEY ("department_id") REFERENCES "subject_department"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `auth_user_user_permissions` ADD CONSTRAINT `auth_user_u_permission_id_384b62483d7071f0_fk_auth_permission_id` FOREIGN KEY (`permission_id`) REFERENCES `auth_permission`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "main_famousmajorreviewdailyfeed_reviews" ADD CONSTRAINT "main_famousmajorreviewdailyfeed_reviews_famousmajorreviewd_fkey" FOREIGN KEY ("famousmajorreviewdailyfeed_id") REFERENCES "main_famousmajorreviewdailyfeed"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `auth_user_user_permissions` ADD CONSTRAINT `auth_user_user_permissi_user_id_7f0938558328534a_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "main_famousmajorreviewdailyfeed_reviews" ADD CONSTRAINT "main_famousmajorreviewdailyfeed_reviews_review_id_fkey" FOREIGN KEY ("review_id") REFERENCES "review_review"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `django_admin_log` ADD CONSTRAINT `djang_content_type_id_697914295151027a_fk_django_content_type_id` FOREIGN KEY (`content_type_id`) REFERENCES `django_content_type`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "main_rankedreviewdailyfeed" ADD CONSTRAINT "main_rankedreviewdailyfeed_semester_id_fkey" FOREIGN KEY ("semester_id") REFERENCES "subject_semester"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `django_admin_log` ADD CONSTRAINT `django_admin_log_user_id_52fdd58701c5f563_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "main_ratedailyuserfeed" ADD CONSTRAINT "main_ratedailyuserfeed_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "session_userprofile"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `main_famoushumanityreviewdailyfeed_reviews` ADD CONSTRAINT `e567529fdfd543a96610b342fea2bb84` FOREIGN KEY (`famoushumanityreviewdailyfeed_id`) REFERENCES `main_famoushumanityreviewdailyfeed`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "main_relatedcoursedailyuserfeed" ADD CONSTRAINT "main_relatedcoursedailyuserfeed_course_id_fkey" FOREIGN KEY ("course_id") REFERENCES "subject_course"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `main_famoushumanityreviewdailyfeed_reviews` ADD CONSTRAINT `main_famoushumanityreview_review_id_f305d8aa_fk_review_review_id` FOREIGN KEY (`review_id`) REFERENCES `review_review`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "main_relatedcoursedailyuserfeed" ADD CONSTRAINT "main_relatedcoursedailyuserfeed_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "session_userprofile"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `main_famousmajorreviewdailyfeed` ADD CONSTRAINT `main_famousmajorrevi_department_id_a0a5a3a5_fk_subject_d` FOREIGN KEY (`department_id`) REFERENCES `subject_department`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "main_reviewwritedailyuserfeed" ADD CONSTRAINT "main_reviewwritedailyuserfeed_lecture_id_fkey" FOREIGN KEY ("lecture_id") REFERENCES "subject_lecture"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `main_famousmajorreviewdailyfeed_reviews` ADD CONSTRAINT `D122ed8a8adef1dafa8cd66f142ebb40` FOREIGN KEY (`famousmajorreviewdailyfeed_id`) REFERENCES `main_famousmajorreviewdailyfeed`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "main_reviewwritedailyuserfeed" ADD CONSTRAINT "main_reviewwritedailyuserfeed_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "session_userprofile"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `main_famousmajorreviewdailyfeed_reviews` ADD CONSTRAINT `main_famousmajorreviewdai_review_id_c0d3bbec_fk_review_review_id` FOREIGN KEY (`review_id`) REFERENCES `review_review`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "review_humanitybestreview" ADD CONSTRAINT "review_humanitybestreview_review_id_fkey" FOREIGN KEY ("review_id") REFERENCES "review_review"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `main_rankedreviewdailyfeed` ADD CONSTRAINT `main_rankedreviewdai_semester_id_f71e3a66_fk_subject_s` FOREIGN KEY (`semester_id`) REFERENCES `subject_semester`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "review_majorbestreview" ADD CONSTRAINT "review_majorbestreview_review_id_fkey" FOREIGN KEY ("review_id") REFERENCES "review_review"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `main_ratedailyuserfeed` ADD CONSTRAINT `main_ratedailyuserfe_user_id_31a534d5_fk_session_u` FOREIGN KEY (`user_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "review_review" ADD CONSTRAINT "review_review_course_id_fkey" FOREIGN KEY ("course_id") REFERENCES "subject_course"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `main_relatedcoursedailyuserfeed` ADD CONSTRAINT `main_relatedcourseda_course_id_129fc5e2_fk_subject_c` FOREIGN KEY (`course_id`) REFERENCES `subject_course`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "review_review" ADD CONSTRAINT "review_review_lecture_id_fkey" FOREIGN KEY ("lecture_id") REFERENCES "subject_lecture"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `main_relatedcoursedailyuserfeed` ADD CONSTRAINT `main_relatedcoursedai_user_id_a1be2390_fk_session_userprofile_id` FOREIGN KEY (`user_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "review_review" ADD CONSTRAINT "review_review_writer_id_fkey" FOREIGN KEY ("writer_id") REFERENCES "session_userprofile"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `main_reviewwritedailyuserfeed` ADD CONSTRAINT `main_reviewwritedail_lecture_id_75ed0f87_fk_subject_l` FOREIGN KEY (`lecture_id`) REFERENCES `subject_lecture`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "review_reviewvote" ADD CONSTRAINT "review_reviewvote_review_id_fkey" FOREIGN KEY ("review_id") REFERENCES "review_review"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `main_reviewwritedailyuserfeed` ADD CONSTRAINT `main_reviewwritedaily_user_id_9ffd0881_fk_session_userprofile_id` FOREIGN KEY (`user_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "review_reviewvote" ADD CONSTRAINT "review_reviewvote_userprofile_id_fkey" FOREIGN KEY ("userprofile_id") REFERENCES "session_userprofile"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `review_review` ADD CONSTRAINT `review_review_course_id_fkey` FOREIGN KEY (`course_id`) REFERENCES `subject_course`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "session_userprofile" ADD CONSTRAINT "session_userprofile_department_id_fkey" FOREIGN KEY ("department_id") REFERENCES "subject_department"("id") ON DELETE SET NULL ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `review_review` ADD CONSTRAINT `review_review_lecture_id_fkey` FOREIGN KEY (`lecture_id`) REFERENCES `subject_lecture`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "session_userprofile_device" ADD CONSTRAINT "session_userprofile_device_userprofile_id_fkey" FOREIGN KEY ("userprofile_id") REFERENCES "session_userprofile"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `review_review` ADD CONSTRAINT `review_review_writer_id_fkey` FOREIGN KEY (`writer_id`) REFERENCES `session_userprofile`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "session_userprofile_agreement" ADD CONSTRAINT "session_userprofile_agreement_agreement_id_fkey" FOREIGN KEY ("agreement_id") REFERENCES "agreement"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `review_reviewvote` ADD CONSTRAINT `review_reviewvote_review_id_fkey` FOREIGN KEY (`review_id`) REFERENCES `review_review`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "session_userprofile_agreement" ADD CONSTRAINT "session_userprofile_agreement_userprofile_id_fkey" FOREIGN KEY ("userprofile_id") REFERENCES "session_userprofile"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `review_reviewvote` ADD CONSTRAINT `review_reviewvote_userprofile_id_fkey` FOREIGN KEY (`userprofile_id`) REFERENCES `session_userprofile`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "session_userprofile_notification" ADD CONSTRAINT "session_userprofile_notification_notification_id_fkey" FOREIGN KEY ("notification_id") REFERENCES "notification"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `session_userprofile` ADD CONSTRAINT `session_userprofile_department_id_fkey` FOREIGN KEY (`department_id`) REFERENCES `subject_department`(`id`) ON DELETE SET NULL ON UPDATE RESTRICT;
+ALTER TABLE "session_userprofile_notification" ADD CONSTRAINT "session_userprofile_notification_userprofile_id_fkey" FOREIGN KEY ("userprofile_id") REFERENCES "session_userprofile"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `session_userprofile_favorite_departments` ADD CONSTRAINT `session_userprofile_favorite_departments_department_id_fkey` FOREIGN KEY (`department_id`) REFERENCES `subject_department`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "session_userprofile_notification_history" ADD CONSTRAINT "session_userprofile_notification_history_notification_id_fkey" FOREIGN KEY ("notification_id") REFERENCES "notification"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `session_userprofile_favorite_departments` ADD CONSTRAINT `session_userprofile_favorite_departments_userprofile_id_fkey` FOREIGN KEY (`userprofile_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "session_userprofile_notification_history" ADD CONSTRAINT "session_userprofile_notification_history_userprofile_id_fkey" FOREIGN KEY ("userprofile_id") REFERENCES "session_userprofile"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `session_userprofile_majors` ADD CONSTRAINT `session_userpr_userprofile_id_20f3742a_fk_session_userprofile_id` FOREIGN KEY (`userprofile_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "session_userprofile_favorite_departments" ADD CONSTRAINT "session_userprofile_favorite_departments_department_id_fkey" FOREIGN KEY ("department_id") REFERENCES "subject_department"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `session_userprofile_majors` ADD CONSTRAINT `session_userprof_department_id_db568678_fk_subject_department_id` FOREIGN KEY (`department_id`) REFERENCES `subject_department`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "session_userprofile_favorite_departments" ADD CONSTRAINT "session_userprofile_favorite_departments_userprofile_id_fkey" FOREIGN KEY ("userprofile_id") REFERENCES "session_userprofile"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `session_userprofile_minors` ADD CONSTRAINT `session_userpr_userprofile_id_dad5ef83_fk_session_userprofile_id` FOREIGN KEY (`userprofile_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "session_userprofile_majors" ADD CONSTRAINT "session_userprofile_majors_userprofile_id_fkey" FOREIGN KEY ("userprofile_id") REFERENCES "session_userprofile"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `session_userprofile_minors` ADD CONSTRAINT `session_userprof_department_id_7a7ea3ed_fk_subject_department_id` FOREIGN KEY (`department_id`) REFERENCES `subject_department`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "session_userprofile_majors" ADD CONSTRAINT "session_userprofile_majors_department_id_fkey" FOREIGN KEY ("department_id") REFERENCES "subject_department"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `session_userprofile_specialized_major` ADD CONSTRAINT `session_userpr_userprofile_id_ca859cbe_fk_session_userprofile_id` FOREIGN KEY (`userprofile_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "session_userprofile_minors" ADD CONSTRAINT "session_userprofile_minors_userprofile_id_fkey" FOREIGN KEY ("userprofile_id") REFERENCES "session_userprofile"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `session_userprofile_specialized_major` ADD CONSTRAINT `session_userprof_department_id_919e11be_fk_subject_department_id` FOREIGN KEY (`department_id`) REFERENCES `subject_department`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "session_userprofile_minors" ADD CONSTRAINT "session_userprofile_minors_department_id_fkey" FOREIGN KEY ("department_id") REFERENCES "subject_department"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `session_userprofile_taken_lectures` ADD CONSTRAINT `session_userprofile_taken_lectures_lecture_id_fkey` FOREIGN KEY (`lecture_id`) REFERENCES `subject_lecture`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "session_userprofile_specialized_major" ADD CONSTRAINT "session_userprofile_specialized_major_userprofile_id_fkey" FOREIGN KEY ("userprofile_id") REFERENCES "session_userprofile"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `session_userprofile_taken_lectures` ADD CONSTRAINT `session_userprofile_taken_lectures_userprofile_id_fkey` FOREIGN KEY (`userprofile_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "session_userprofile_specialized_major" ADD CONSTRAINT "session_userprofile_specialized_major_department_id_fkey" FOREIGN KEY ("department_id") REFERENCES "subject_department"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `subject_classtime` ADD CONSTRAINT `subject_classtime_lecture_id_bf773e65_fk_subject_lecture_id` FOREIGN KEY (`lecture_id`) REFERENCES `subject_lecture`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "session_userprofile_taken_lectures" ADD CONSTRAINT "session_userprofile_taken_lectures_lecture_id_fkey" FOREIGN KEY ("lecture_id") REFERENCES "subject_lecture"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `subject_course` ADD CONSTRAINT `subject_course_department_id_fkey` FOREIGN KEY (`department_id`) REFERENCES `subject_department`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "session_userprofile_taken_lectures" ADD CONSTRAINT "session_userprofile_taken_lectures_userprofile_id_fkey" FOREIGN KEY ("userprofile_id") REFERENCES "session_userprofile"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `subject_course_professors` ADD CONSTRAINT `subject_course_professors_course_id_fkey` FOREIGN KEY (`course_id`) REFERENCES `subject_course`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "subject_classtime" ADD CONSTRAINT "subject_classtime_lecture_id_fkey" FOREIGN KEY ("lecture_id") REFERENCES "subject_lecture"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `subject_course_professors` ADD CONSTRAINT `subject_course_professors_professor_id_fkey` FOREIGN KEY (`professor_id`) REFERENCES `subject_professor`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "subject_course" ADD CONSTRAINT "subject_course_department_id_fkey" FOREIGN KEY ("department_id") REFERENCES "subject_department"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `subject_course_related_courses_posterior` ADD CONSTRAINT `subject_course_relat_from_course_id_f520f461_fk_subject_c` FOREIGN KEY (`from_course_id`) REFERENCES `subject_course`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "subject_course_professors" ADD CONSTRAINT "subject_course_professors_course_id_fkey" FOREIGN KEY ("course_id") REFERENCES "subject_course"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `subject_course_related_courses_posterior` ADD CONSTRAINT `subject_course_relat_to_course_id_5fbd4d28_fk_subject_c` FOREIGN KEY (`to_course_id`) REFERENCES `subject_course`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "subject_course_professors" ADD CONSTRAINT "subject_course_professors_professor_id_fkey" FOREIGN KEY ("professor_id") REFERENCES "subject_professor"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `subject_course_related_courses_prior` ADD CONSTRAINT `subject_course_relat_from_course_id_e994f30a_fk_subject_c` FOREIGN KEY (`from_course_id`) REFERENCES `subject_course`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "subject_course_related_courses_posterior" ADD CONSTRAINT "subject_course_related_courses_posterior_from_course_id_fkey" FOREIGN KEY ("from_course_id") REFERENCES "subject_course"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `subject_course_related_courses_prior` ADD CONSTRAINT `subject_course_relat_to_course_id_52f44705_fk_subject_c` FOREIGN KEY (`to_course_id`) REFERENCES `subject_course`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "subject_course_related_courses_posterior" ADD CONSTRAINT "subject_course_related_courses_posterior_to_course_id_fkey" FOREIGN KEY ("to_course_id") REFERENCES "subject_course"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `subject_courseuser` ADD CONSTRAINT `subject_courseuser_course_id_2e4ccc6e_fk_subject_course_id` FOREIGN KEY (`course_id`) REFERENCES `subject_course`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "subject_course_related_courses_prior" ADD CONSTRAINT "subject_course_related_courses_prior_from_course_id_fkey" FOREIGN KEY ("from_course_id") REFERENCES "subject_course"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `subject_courseuser` ADD CONSTRAINT `subject_courseuser_user_profile_id_4d15ef1b_fk_session_u` FOREIGN KEY (`user_profile_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "subject_course_related_courses_prior" ADD CONSTRAINT "subject_course_related_courses_prior_to_course_id_fkey" FOREIGN KEY ("to_course_id") REFERENCES "subject_course"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `subject_examtime` ADD CONSTRAINT `subject_examtime_lecture_id_a35fa20c_fk_subject_lecture_id` FOREIGN KEY (`lecture_id`) REFERENCES `subject_lecture`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "subject_courseuser" ADD CONSTRAINT "subject_courseuser_course_id_fkey" FOREIGN KEY ("course_id") REFERENCES "subject_course"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `subject_lecture` ADD CONSTRAINT `subject_lecture_course_id_fkey` FOREIGN KEY (`course_id`) REFERENCES `subject_course`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "subject_courseuser" ADD CONSTRAINT "subject_courseuser_user_profile_id_fkey" FOREIGN KEY ("user_profile_id") REFERENCES "session_userprofile"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `subject_lecture` ADD CONSTRAINT `subject_lecture_department_id_fkey` FOREIGN KEY (`department_id`) REFERENCES `subject_department`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "subject_examtime" ADD CONSTRAINT "subject_examtime_lecture_id_fkey" FOREIGN KEY ("lecture_id") REFERENCES "subject_lecture"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `subject_lecture_professors` ADD CONSTRAINT `subject_lecture_professors_lecture_id_fkey` FOREIGN KEY (`lecture_id`) REFERENCES `subject_lecture`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "subject_lecture" ADD CONSTRAINT "subject_lecture_course_id_fkey" FOREIGN KEY ("course_id") REFERENCES "subject_course"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `subject_lecture_professors` ADD CONSTRAINT `subject_lecture_professors_professor_id_fkey` FOREIGN KEY (`professor_id`) REFERENCES `subject_professor`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "subject_lecture" ADD CONSTRAINT "subject_lecture_department_id_fkey" FOREIGN KEY ("department_id") REFERENCES "subject_department"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `support_rate` ADD CONSTRAINT `support_rate_user_id_6d69ec9d_fk_session_userprofile_id` FOREIGN KEY (`user_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "subject_lecture_professors" ADD CONSTRAINT "subject_lecture_professors_lecture_id_fkey" FOREIGN KEY ("lecture_id") REFERENCES "subject_lecture"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `timetable_oldtimetable_lectures` ADD CONSTRAINT `timetable_oldtimetab_lecture_id_530c66bb_fk_subject_l` FOREIGN KEY (`lecture_id`) REFERENCES `subject_lecture`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "subject_lecture_professors" ADD CONSTRAINT "subject_lecture_professors_professor_id_fkey" FOREIGN KEY ("professor_id") REFERENCES "subject_professor"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `timetable_oldtimetable_lectures` ADD CONSTRAINT `timetable_oldtimetab_oldtimetable_id_88e61f89_fk_timetable` FOREIGN KEY (`oldtimetable_id`) REFERENCES `timetable_oldtimetable`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "support_rate" ADD CONSTRAINT "support_rate_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "session_userprofile"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `timetable_timetable` ADD CONSTRAINT `timetable_timetable_user_id_0d214170_fk_session_userprofile_id` FOREIGN KEY (`user_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "timetable_oldtimetable_lectures" ADD CONSTRAINT "timetable_oldtimetable_lectures_lecture_id_fkey" FOREIGN KEY ("lecture_id") REFERENCES "subject_lecture"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `timetable_timetable_lectures` ADD CONSTRAINT `timetable_timetable__lecture_id_0aa33315_fk_subject_l` FOREIGN KEY (`lecture_id`) REFERENCES `subject_lecture`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "timetable_oldtimetable_lectures" ADD CONSTRAINT "timetable_oldtimetable_lectures_oldtimetable_id_fkey" FOREIGN KEY ("oldtimetable_id") REFERENCES "timetable_oldtimetable"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `timetable_timetable_lectures` ADD CONSTRAINT `timetable_timetable__timetable_id_733ab103_fk_timetable` FOREIGN KEY (`timetable_id`) REFERENCES `timetable_timetable`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "timetable_timetable" ADD CONSTRAINT "timetable_timetable_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "session_userprofile"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `timetable_wishlist` ADD CONSTRAINT `timetable_wishlist_user_id_d057a6e4_fk_session_userprofile_id` FOREIGN KEY (`user_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "timetable_timetable_lectures" ADD CONSTRAINT "timetable_timetable_lectures_lecture_id_fkey" FOREIGN KEY ("lecture_id") REFERENCES "subject_lecture"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `timetable_wishlist_lectures` ADD CONSTRAINT `timetable_wishlist_lec_lecture_id_1ab5d523_fk_subject_lecture_id` FOREIGN KEY (`lecture_id`) REFERENCES `subject_lecture`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "timetable_timetable_lectures" ADD CONSTRAINT "timetable_timetable_lectures_timetable_id_fkey" FOREIGN KEY ("timetable_id") REFERENCES "timetable_timetable"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `timetable_wishlist_lectures` ADD CONSTRAINT `timetable_wishlist_wishlist_id_efc7ae12_fk_timetable_wishlist_id` FOREIGN KEY (`wishlist_id`) REFERENCES `timetable_wishlist`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "timetable_timetable_customblocks" ADD CONSTRAINT "timetable_timetable_customblocks_custom_block_id_fkey" FOREIGN KEY ("custom_block_id") REFERENCES "block_custom_blocks"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `graduation_additionaltrack` ADD CONSTRAINT `graduation_additiona_department_id_788c5289_fk_subject_d` FOREIGN KEY (`department_id`) REFERENCES `subject_department`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "timetable_timetable_customblocks" ADD CONSTRAINT "timetable_timetable_customblocks_timetable_id_fkey" FOREIGN KEY ("timetable_id") REFERENCES "timetable_timetable"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `graduation_majortrack` ADD CONSTRAINT `graduation_majortrac_department_id_81bfc8fa_fk_subject_d` FOREIGN KEY (`department_id`) REFERENCES `subject_department`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "timetable_wishlist" ADD CONSTRAINT "timetable_wishlist_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "session_userprofile"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `planner_arbitraryplanneritem` ADD CONSTRAINT `planner_arbitrarypla_department_id_0dc7ce25_fk_subject_d` FOREIGN KEY (`department_id`) REFERENCES `subject_department`(`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "timetable_wishlist_lectures" ADD CONSTRAINT "timetable_wishlist_lectures_lecture_id_fkey" FOREIGN KEY ("lecture_id") REFERENCES "subject_lecture"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `planner_arbitraryplanneritem` ADD CONSTRAINT `planner_arbitrarypla_planner_id_d6069d2c_fk_planner_p` FOREIGN KEY (`planner_id`) REFERENCES `planner_planner`(`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "timetable_wishlist_lectures" ADD CONSTRAINT "timetable_wishlist_lectures_wishlist_id_fkey" FOREIGN KEY ("wishlist_id") REFERENCES "timetable_wishlist"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `planner_futureplanneritem` ADD CONSTRAINT `planner_futureplanne_course_id_b1a06444_fk_subject_c` FOREIGN KEY (`course_id`) REFERENCES `subject_course`(`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "graduation_additionaltrack" ADD CONSTRAINT "graduation_additionaltrack_department_id_fkey" FOREIGN KEY ("department_id") REFERENCES "subject_department"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `planner_futureplanneritem` ADD CONSTRAINT `planner_futureplanne_planner_id_dfd70193_fk_planner_p` FOREIGN KEY (`planner_id`) REFERENCES `planner_planner`(`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "graduation_majortrack" ADD CONSTRAINT "graduation_majortrack_department_id_fkey" FOREIGN KEY ("department_id") REFERENCES "subject_department"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `planner_planner` ADD CONSTRAINT `planner_planner_general_track_id_6d607973_fk_graduatio` FOREIGN KEY (`general_track_id`) REFERENCES `graduation_generaltrack`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "planner_arbitraryplanneritem" ADD CONSTRAINT "planner_arbitraryplanneritem_department_id_fkey" FOREIGN KEY ("department_id") REFERENCES "subject_department"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE `planner_planner` ADD CONSTRAINT `planner_planner_major_track_id_9f7204bd_fk_graduatio` FOREIGN KEY (`major_track_id`) REFERENCES `graduation_majortrack`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "planner_arbitraryplanneritem" ADD CONSTRAINT "planner_arbitraryplanneritem_planner_id_fkey" FOREIGN KEY ("planner_id") REFERENCES "planner_planner"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE `planner_planner` ADD CONSTRAINT `planner_planner_user_id_17740247_fk_session_userprofile_id` FOREIGN KEY (`user_id`) REFERENCES `session_userprofile`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE "planner_futureplanneritem" ADD CONSTRAINT "planner_futureplanneritem_course_id_fkey" FOREIGN KEY ("course_id") REFERENCES "subject_course"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE `planner_planner_additional_tracks` ADD CONSTRAINT `planner_planner_addi_additionaltrack_id_c46b8c4e_fk_graduatio` FOREIGN KEY (`additionaltrack_id`) REFERENCES `graduation_additionaltrack`(`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "planner_futureplanneritem" ADD CONSTRAINT "planner_futureplanneritem_planner_id_fkey" FOREIGN KEY ("planner_id") REFERENCES "planner_planner"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE `planner_planner_additional_tracks` ADD CONSTRAINT `planner_planner_addi_planner_id_e439a309_fk_planner_p` FOREIGN KEY (`planner_id`) REFERENCES `planner_planner`(`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "planner_planner" ADD CONSTRAINT "planner_planner_general_track_id_fkey" FOREIGN KEY ("general_track_id") REFERENCES "graduation_generaltrack"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `planner_takenplanneritem` ADD CONSTRAINT `planner_takenplanner_lecture_id_9b2d30d8_fk_subject_l` FOREIGN KEY (`lecture_id`) REFERENCES `subject_lecture`(`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "planner_planner" ADD CONSTRAINT "planner_planner_major_track_id_fkey" FOREIGN KEY ("major_track_id") REFERENCES "graduation_majortrack"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `planner_takenplanneritem` ADD CONSTRAINT `planner_takenplanner_planner_id_b725ff83_fk_planner_p` FOREIGN KEY (`planner_id`) REFERENCES `planner_planner`(`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "planner_planner" ADD CONSTRAINT "planner_planner_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "session_userprofile"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
 
+-- AddForeignKey
+ALTER TABLE "planner_planner_additional_tracks" ADD CONSTRAINT "planner_planner_additional_tracks_additionaltrack_id_fkey" FOREIGN KEY ("additionaltrack_id") REFERENCES "graduation_additionaltrack"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "planner_planner_additional_tracks" ADD CONSTRAINT "planner_planner_additional_tracks_planner_id_fkey" FOREIGN KEY ("planner_id") REFERENCES "planner_planner"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "planner_takenplanneritem" ADD CONSTRAINT "planner_takenplanneritem_lecture_id_fkey" FOREIGN KEY ("lecture_id") REFERENCES "subject_lecture"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "planner_takenplanneritem" ADD CONSTRAINT "planner_takenplanneritem_planner_id_fkey" FOREIGN KEY ("planner_id") REFERENCES "planner_planner"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+
+-- AddForeignKey
+ALTER TABLE "sync_taken_lectures" ADD CONSTRAINT "sync_taken_lectures_lecture_id_fkey" FOREIGN KEY ("lecture_id") REFERENCES "subject_lecture"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "paper_prof_to_subject_prof" ADD CONSTRAINT "paper_prof_to_subject_prof_paper_professor_id_fkey" FOREIGN KEY ("paper_professor_id") REFERENCES "paper_professor"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE "paper_prof_to_subject_prof" ADD CONSTRAINT "paper_prof_to_subject_prof_subject_professor_id_fkey" FOREIGN KEY ("subject_professor_id") REFERENCES "subject_professor"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE "paper_professor_department" ADD CONSTRAINT "paper_professor_department_paper_professor_id_fkey" FOREIGN KEY ("paper_professor_id") REFERENCES "paper_professor"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE "paper_professor_department" ADD CONSTRAINT "paper_professor_department_subject_department_id_fkey" FOREIGN KEY ("subject_department_id") REFERENCES "subject_department"("id") ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+-- AddForeignKey
+ALTER TABLE "paper" ADD CONSTRAINT "paper_professor_id_fkey" FOREIGN KEY ("professor_id") REFERENCES "paper_professor"("id") ON DELETE SET NULL ON UPDATE RESTRICT;

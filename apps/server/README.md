@@ -14,7 +14,8 @@
 아래 값들은 기본값입니다.
 
 ```env
-OTLPLUS_DB_PORT=43306
+OTLPLUS_DB_PORT=45432
+OTLPLUS_DB_USER=otlplus
 OTLPLUS_DB_PASSWORD=password
 ```
 
@@ -24,7 +25,46 @@ OTLPLUS_DB_PASSWORD=password
 sudo docker compose up
 ```
 
-또는 로컬에서 MySQL 5.7을 설치하여 연결할 수 있습니다.
+빈 Docker 볼륨으로 처음 시작하면 PostgreSQL entrypoint가 `shadow_otlplus` shadow database를 자동으로 생성합니다. Shadow database는 main database인 `otlplus`와 반드시 달라야 합니다.
+
+기존 `apps/server/volumes/db`가 있으면 Docker entrypoint 초기화 스크립트가 다시 실행되지 않습니다. 이 경우 `shadow_otlplus`가 없을 때만 아래 명령어로 생성합니다.
+
+```sh
+docker compose exec db psql -U otlplus -d otlplus -c 'CREATE DATABASE shadow_otlplus;'
+```
+
+PostgreSQL을 시작한 후 데이터베이스를 초기화합니다.
+
+```sh
+yarn db:init
+```
+
+또는 로컬에서 PostgreSQL 18을 설치하여 연결할 수 있습니다.
+
+#### 이미 스키마가 반영된 PostgreSQL로 전환할 때
+
+운영 데이터베이스를 pg_dump/restore 등으로 이미 동일한 스키마로 옮긴 경우, 아래 절차를 따르세요.
+
+1. 스키마 차이가 없는지 확인합니다.
+
+   ```sh
+   npx prisma migrate diff \
+     --from-url "$DATABASE_URL" \
+     --to-schema-datamodel ./libs/prisma-client/src/schema.prisma \
+     --exit-code
+   ```
+
+   차이가 보고되면 `0_init` baseline와 맞춘 뒤 진행하세요.
+
+2. 차이가 없으면 baseline를 적용된 것으로 표시합니다.
+
+   ```sh
+   npx prisma migrate resolve \
+     --applied 0_init \
+     --schema ./libs/prisma-client/src/schema.prisma
+   ```
+
+MariaDB/MySQL에서 PostgreSQL로의 데이터 이관은 이 PR 범위 밖입니다. 운영 데이터 덤프, 시퀀스 보정, 검증, 롤백 절차는 별도의 운영 작업으로 수행해야 합니다.
 
 ### Node.js 설치 및 버전 관리
 

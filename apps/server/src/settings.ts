@@ -1,6 +1,7 @@
 import { DocumentBuilder } from '@nestjs/swagger'
 import dotenv from 'dotenv'
-import * as mariadb from 'mariadb'
+
+import { buildPostgresDatasourceUrl, PrismaConnectionOptions } from '@otl/prisma-client/prisma.config'
 
 import { dotEnvOptions } from './dotenv-options'
 
@@ -43,16 +44,16 @@ const getCorsConfig = () => {
   }
 }
 
-const getPrismaConnectConfig = (): mariadb.PoolConfig => ({
-  host: process.env.DATABASE_HOST,
-  port: Number(process.env.DATABASE_PORT) || 3306,
-  user: process.env.DATABASE_USER,
-  password: process.env.DATABASE_PASSWORD,
-  database: process.env.DATABASE_NAME,
-  connectionLimit: 40,
-  idleTimeout: 600,
-  minDelayValidation: 10000,
-  allowPublicKeyRetrieval: true,
+const getPrismaConnectConfig = (): PrismaConnectionOptions => ({
+  datasourceUrl: buildPostgresDatasourceUrl({
+    datasourceUrl: process.env.DATABASE_URL,
+    host: process.env.DATABASE_HOST,
+    port: Number(process.env.DATABASE_PORT) || 5432,
+    user: process.env.DATABASE_USER,
+    password: process.env.DATABASE_PASSWORD,
+    database: process.env.DATABASE_NAME,
+    connectionLimit: 40,
+  }),
 })
 
 const getRedisConfig = () => ({

@@ -242,21 +242,23 @@ export class CourseRepository implements ServerConsumerCourseRepository {
     const title_filter = {
       title_no_space: {
         contains: keyword_space_removed,
+        mode: 'insensitive',
       },
     }
     const en_title_filter = {
       title_en_no_space: {
         contains: keyword_space_removed,
+        mode: 'insensitive',
       },
     }
     const department_name_filter = {
       subject_department: {
-        name: keyword_trimed,
+        name: { equals: keyword_trimed, mode: 'insensitive' },
       },
     }
     const department_name_en_filter = {
       subject_department: {
-        name_en: keyword_trimed,
+        name_en: { equals: keyword_trimed, mode: 'insensitive' },
       },
     }
     const professors_professor_name_filter = isCourse
@@ -266,6 +268,7 @@ export class CourseRepository implements ServerConsumerCourseRepository {
             professor: {
               professor_name: {
                 contains: keyword_trimed,
+                mode: 'insensitive',
               },
             },
           },
@@ -277,6 +280,7 @@ export class CourseRepository implements ServerConsumerCourseRepository {
             professor: {
               professor_name: {
                 contains: keyword_trimed,
+                mode: 'insensitive',
               },
             },
           },
@@ -289,6 +293,7 @@ export class CourseRepository implements ServerConsumerCourseRepository {
             professor: {
               professor_name_en: {
                 contains: keyword_trimed,
+                mode: 'insensitive',
               },
             },
           },
@@ -300,6 +305,7 @@ export class CourseRepository implements ServerConsumerCourseRepository {
             professor: {
               professor_name_en: {
                 contains: keyword_trimed,
+                mode: 'insensitive',
               },
             },
           },
@@ -309,12 +315,14 @@ export class CourseRepository implements ServerConsumerCourseRepository {
     const old_code_filter = {
       old_code: {
         contains: keyword_space_removed,
+        mode: 'insensitive',
       },
     }
 
     const new_code_filter = {
       new_code: {
         contains: formatNewLectureCodeWithDot(keyword_space_removed),
+        mode: 'insensitive',
       },
     }
     return {
@@ -423,19 +431,19 @@ export class CourseRepository implements ServerConsumerCourseRepository {
     const candidate = await this.prisma.subject_course.findFirst({
       where: {
         OR: [
-          { subject_department: { name: { startsWith: keyword } } },
-          { subject_department: { name_en: { startsWith: keyword } } },
-          { title: { startsWith: keyword } },
-          { title_en: { startsWith: keyword } },
+          { subject_department: { name: { startsWith: keyword, mode: 'insensitive' } } },
+          { subject_department: { name_en: { startsWith: keyword, mode: 'insensitive' } } },
+          { title: { startsWith: keyword, mode: 'insensitive' } },
+          { title_en: { startsWith: keyword, mode: 'insensitive' } },
           {
             subject_course_professors: {
-              some: { professor: { professor_name: { startsWith: keyword } } },
+              some: { professor: { professor_name: { startsWith: keyword, mode: 'insensitive' } } },
             },
           },
           {
             subject_course_professors: {
               some: {
-                professor: { professor_name_en: { startsWith: keyword } },
+                professor: { professor_name_en: { startsWith: keyword, mode: 'insensitive' } },
               },
             },
           },

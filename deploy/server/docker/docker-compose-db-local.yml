@@ -1,34 +1,18 @@
-version: "3.4"
+version: '3.4'
 
 services:
   db:
     container_name: otlplus-server-db
-    image: mysql:8.0.36
+    image: postgres:18
     restart: on-failure
     ports:
-      - "${OTLPLUS_DB_PORT:-43306}:3306"
+      - '${OTLPLUS_DB_PORT:-45432}:5432'
     environment:
-      - MYSQL_ROOT_HOSTS=admin
-      - MYSQL_ROOT_PASSWORD=${OTLPLUS_DB_PASSWORD:-password}
-      - MYSQL_DATABASE=otlplus
+      - POSTGRES_USER=${OTLPLUS_DB_USER:-otlplus}
+      - POSTGRES_PASSWORD=${OTLPLUS_DB_PASSWORD:-password}
+      - POSTGRES_DB=otlplus
       - TZ=Asia/Seoul
     volumes:
-      - ../../../apps/server/volumes/db:/var/lib/mysql
+      - ../../../apps/server/volumes/db:/var/lib/postgresql
       - ../../../apps/server/volumes/dump:/dump
-    command: |
-      --sql_mode=NO_ENGINE_SUBSTITUTION --default_storage_engine=InnoDB 
-      --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
-
-#  mysqld-exporter:
-#    image: prom/mysqld-exporter
-#    container_name: mysqld-exporter
-#    restart: unless-stopped
-#    ports:
-#      - '9104:9104'
-#    volumes:
-#      - ./exporter.my.cnf:/cfg/.my.cnf:ro
-#    command:
-#      - '--config.my-cnf=/cfg/.my.cnf'
-#      - '--mysqld.address=db:3306'
-#    depends_on:
-#      - db
+      - ./init-shadow-db.sql:/docker-entrypoint-initdb.d/10-init-shadow-db.sql:ro

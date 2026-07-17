@@ -238,19 +238,19 @@ export class LectureRepository implements ServerConsumerLectureRepository {
         year,
         semester,
         OR: [
-          { subject_department: { name: { startsWith: keyword } } },
-          { subject_department: { name_en: { startsWith: keyword } } },
-          { title: { startsWith: keyword } },
-          { title_en: { startsWith: keyword } },
+          { subject_department: { name: { startsWith: keyword, mode: 'insensitive' } } },
+          { subject_department: { name_en: { startsWith: keyword, mode: 'insensitive' } } },
+          { title: { startsWith: keyword, mode: 'insensitive' } },
+          { title_en: { startsWith: keyword, mode: 'insensitive' } },
           {
             subject_lecture_professors: {
-              some: { professor: { professor_name: { startsWith: keyword } } },
+              some: { professor: { professor_name: { startsWith: keyword, mode: 'insensitive' } } },
             },
           },
           {
             subject_lecture_professors: {
               some: {
-                professor: { professor_name_en: { startsWith: keyword } },
+                professor: { professor_name_en: { startsWith: keyword, mode: 'insensitive' } },
               },
             },
           },

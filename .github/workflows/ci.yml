@@ -44,6 +44,62 @@ jobs:
       - name: Check lint
         run: yarn run lint:check
 
+  postgres-migration:
+    name: PostgreSQL 18 migration
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://otlplus:password@localhost:5432/otlplus?connection_limit=5
+      SHADOW_DATABASE_URL: postgresql://otlplus:password@localhost:5432/shadow_otlplus?connection_limit=1
+      PGURL: postgresql://otlplus:password@localhost:5432/otlplus
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: otlplus
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: otlplus
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U otlplus -d otlplus"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'yarn'
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Create shadow database
+        run: |
+          set -euo pipefail
+          psql "$PGURL" -v ON_ERROR_STOP=1 --file deploy/server/docker/init-shadow-db.sql
+          test "$(psql "$PGURL" -v ON_ERROR_STOP=1 -tAc "SELECT count(*) FROM pg_database WHERE datname = 'shadow_otlplus';")" = "1"
+      - name: Generate PrismaClient
+        run: yarn client:generate
+      - name: Validate Prisma schema
+        run: npx prisma validate --schema ./libs/prisma-client/src/schema.prisma
+      - name: Deploy Prisma migrations
+        run: npx prisma migrate deploy --schema ./libs/prisma-client/src/schema.prisma
+      - name: Verify migration deployment is idempotent
+        run: npx prisma migrate deploy --schema ./libs/prisma-client/src/schema.prisma
+      - name: Check Prisma migration status
+        run: npx prisma migrate status --schema ./libs/prisma-client/src/schema.prisma
+      - name: Check deployed schema drift
+        run: >-
+          npx prisma migrate diff
+          --from-url "$DATABASE_URL"
+          --to-schema-datamodel ./libs/prisma-client/src/schema.prisma
+          --exit-code
+      - name: Run PostgreSQL migration spec
+        run: npx jest libs/prisma-client/src/postgres-migration.spec.ts --runInBand
+
   build:
     name: Build
     runs-on: ubuntu-latest
