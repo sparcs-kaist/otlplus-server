@@ -46,6 +46,7 @@ const getPrismaConnectConfig = (): mariadb.PoolConfig => ({
   password: process.env.DATABASE_PASSWORD,
   database: process.env.DATABASE_NAME,
   connectionLimit: 10,
+  allowPublicKeyRetrieval: true,
 })
 
 const getSyncConfig = () => ({

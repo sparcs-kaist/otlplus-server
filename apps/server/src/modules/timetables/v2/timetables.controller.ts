@@ -3,6 +3,7 @@ import {
 } from '@nestjs/common'
 import { GetLanguage, Language } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
+import { ICustomblock } from '@otl/server-nest/common/interfaces/ICustomblock'
 import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
 import { session_userprofile } from '@prisma/client'
 
@@ -75,5 +76,47 @@ export class TimetablesControllerV2 {
     @Body() body: ITimetableV2.UpdateLectureReqDto,
   ): Promise<ITimetableV2.UpdateLectureResDto> {
     return await this.timetablesService.updateTimetableLecture(user, body, timetableId)
+  }
+
+  @Get('/:timetableId/custom-blocks')
+  async getCustomblocks(
+    @Param('timetableId') timetableId: number,
+    @GetUser() user: session_userprofile,
+  ): Promise<ICustomblock.ListResponse> {
+    const custom_blocks = await this.timetablesService.getCustomblockList(timetableId, user)
+    return { custom_blocks }
+  }
+
+  // 특정 timetable에 custom block 추가하기
+  @Post('/:timetableId/custom-blocks')
+  async addCustomblock(
+    @Param('timetableId') timetableId: number,
+    @Body() body: ICustomblock.CreateDto,
+    @GetUser() user: session_userprofile,
+  ): Promise<ICustomblock.CreateResponse> {
+    const created = await this.timetablesService.addCustomblockToTimetable(timetableId, body, user)
+    return { id: created.id }
+  }
+
+  // 특정 custom block 수정하기 (place, block_name)
+  @Patch('/:timetableId/custom-blocks/:customblockId')
+  async updateCustomblock(
+    @Param('timetableId') timetableId: number,
+    @Param('customblockId') customblockId: number,
+    @Body() body: ICustomblock.UpdateDto,
+    @GetUser() user: session_userprofile,
+  ): Promise<ICustomblock.Basic> {
+    return this.timetablesService.updateCustomblock(timetableId, customblockId, body, user)
+  }
+
+  // 특정 custom block 삭제하기
+  @Delete('/:timetableId/custom-blocks/:customblockId')
+  async removeCustomblock(
+    @Param('timetableId') timetableId: number,
+    @Param('customblockId') customblockId: number,
+    @GetUser() user: session_userprofile,
+  ): Promise<ICustomblock.DeleteDto> {
+    await this.timetablesService.removeCustomblockFromTimetable(timetableId, customblockId, user)
+    return { id: customblockId }
   }
 }
