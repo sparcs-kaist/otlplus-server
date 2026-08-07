@@ -2,8 +2,7 @@ import { subject_examtime } from '@prisma/client'
 
 import { getTimeNumeric } from '@otl/common'
 
-const timeFormatter = (time: Date) =>
-  `${time.getUTCHours().toString().padStart(2, '0')}:${time.getUTCMinutes().toString().padStart(2, '0')}`
+const timeFormatter = (time: Date) => `${time.getUTCHours().toString().padStart(2, '0')}:${time.getUTCMinutes().toString().padStart(2, '0')}`
 
 export const toJsonExamtime = (examtime: subject_examtime) => {
   const DAY_STR = ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일']

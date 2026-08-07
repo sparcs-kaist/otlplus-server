@@ -134,9 +134,11 @@ async function update_sid(email1: string, email2: string) {
       console.log('Complete Swap Sid')
       return true
     })
-  } catch (e) {
+  }
+  catch (e) {
     console.error(e)
-  } finally {
+  }
+  finally {
     await prisma.$disconnect()
   }
 }

@@ -16,9 +16,7 @@ export const toJsonFeedDetails = (feed: EFeed.Details, user: session_userprofile
       type: FeedType.FamousHumanityReview,
       date: feed.date,
       priority: feed.priority,
-      reviews: feed.main_famoushumanityreviewdailyfeed_reviews.map((feedReview) =>
-        toJsonReview(feedReview.review_review, user),
-      ),
+      reviews: feed.main_famoushumanityreviewdailyfeed_reviews.map((feedReview) => toJsonReview(feedReview.review_review, user)),
     }
   }
   if (EFeed.isFamousMajorReview(feed)) {
@@ -26,9 +24,7 @@ export const toJsonFeedDetails = (feed: EFeed.Details, user: session_userprofile
       type: FeedType.FamousMajorReview,
       date: feed.date,
       priority: feed.priority,
-      reviews: feed.main_famousmajorreviewdailyfeed_reviews.map((feedReview) =>
-        toJsonReview(feedReview.review_review, user),
-      ),
+      reviews: feed.main_famousmajorreviewdailyfeed_reviews.map((feedReview) => toJsonReview(feedReview.review_review, user)),
       department: toJsonDepartment(feed.subject_department),
     }
   }

@@ -1,4 +1,6 @@
-import { Body, Controller, Delete, Get, Inject, Patch, Post, Query } from '@nestjs/common'
+import {
+  Body, Controller, Delete, Get, Inject, Patch, Post, Query,
+} from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { IDevice } from '@otl/server-nest/common/interfaces/IDevice'
 import { DEVICE_IN_PORT, DeviceInPort } from '@otl/server-nest/modules/device/domain/device.in.port'
@@ -19,7 +21,9 @@ export class DeviceController {
     @GetUser() user: any,
     @Body() registerDeviceDto: IDevice.RegisterDeviceDto,
   ): Promise<IDevice.Response.DeviceResponseDto> {
-    const { deviceToken, deviceType, deviceOsVersion, appVersion, isActive } = registerDeviceDto
+    const {
+      deviceToken, deviceType, deviceOsVersion, appVersion, isActive,
+    } = registerDeviceDto
     return await this.notificationInPort.registerDevice(
       user.id,
       deviceToken,
@@ -67,7 +71,9 @@ export class DeviceController {
     @GetUser() user: any,
     @Body() updateDeviceDto: IDevice.UpdateDeviceDto,
   ): Promise<IDevice.Response.UserDeviceResponseDto> {
-    const { deviceToken, deviceOsVersion, appVersion, isActive } = updateDeviceDto
+    const {
+      deviceToken, deviceOsVersion, appVersion, isActive,
+    } = updateDeviceDto
     const device = await this.notificationInPort.checkExistDevice(deviceToken)
     if (device == null) {
       throw new UserException(StatusCodes.NOT_FOUND, UserException.DEVICE_NOT_FOUND, getCurrentMethodName())
@@ -75,7 +81,8 @@ export class DeviceController {
 
     if (isActive) {
       await this.notificationInPort.makeDeviceTokenActive(user.id, deviceToken)
-    } else {
+    }
+    else {
       await this.notificationInPort.makeDeviceTokenInactive(user.id, deviceToken)
     }
     return await this.notificationInPort.registerDevice(

@@ -199,7 +199,7 @@ export class LectureRepositoryV2 {
 
     // 3) professors: lecture_id -> ProfessorBasic[]
     const profByLecture = new Map<number, EProfessorV2.Basic[]>()
-    for (const link of professorLinks as Array<{ lecture_id: number; professor: EProfessorV2.Basic }>) {
+    for (const link of professorLinks as Array<{ lecture_id: number, professor: EProfessorV2.Basic }>) {
       const arr = profByLecture.get(link.lecture_id) ?? []
       arr.push(link.professor)
       profByLecture.set(link.lecture_id, arr)

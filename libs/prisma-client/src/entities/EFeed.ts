@@ -72,11 +72,9 @@ export namespace EFeed {
     | RelatedCourseDetails
     | RateDailyDetails
 
-  export const isFamousHumanityReview = (feed: Details): feed is FamousHumanityReviewDetails =>
-    'main_famoushumanityreviewdailyfeed_reviews' in feed
+  export const isFamousHumanityReview = (feed: Details): feed is FamousHumanityReviewDetails => 'main_famoushumanityreviewdailyfeed_reviews' in feed
 
-  export const isFamousMajorReview = (feed: Details): feed is FamousMajorReviewDetails =>
-    'main_famousmajorreviewdailyfeed_reviews' in feed
+  export const isFamousMajorReview = (feed: Details): feed is FamousMajorReviewDetails => 'main_famousmajorreviewdailyfeed_reviews' in feed
 
   export const isReviewWrite = (feed: Details): feed is ReviewWriteDetails => 'subject_lecture' in feed
 

@@ -1,4 +1,6 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common'
+import {
+  Body, Controller, Delete, Get, Param, Patch, Post, Query,
+} from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { ITimetable } from '@otl/server-nest/common/interfaces'
 import { ICustomblock } from '@otl/server-nest/common/interfaces/ICustomblock'

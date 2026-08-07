@@ -93,22 +93,25 @@ export class Client {
       const r: AxiosResponse = await axios.post(url, querystring.stringify(data))
       if (r.status === 400) {
         throw new Error('INVALID_REQUEST')
-      } else if (r.status === 403) {
+      }
+      else if (r.status === 403) {
         throw new Error('NO_PERMISSION')
-      } else if (r.status !== 200) {
+      }
+      else if (r.status !== 200) {
         throw new Error('UNKNOWN_ERROR')
       }
 
       const result = r.data
       result.kaist_info = result.kaist_info ? JSON.parse(result.kaist_info) : {}
       return result as ESSOUser.SSOUser
-    } catch (e) {
+    }
+    catch (e) {
       console.error(e)
       throw new Error('INVALID_OBJECT')
     }
   }
 
-  public get_login_params(request_url: string): { url: string; state: string } {
+  public get_login_params(request_url: string): { url: string, state: string } {
     /*
     Get login parameters for SPARCS SSO login
     :returns: [url, state] where url is a url to redirect user,
@@ -197,7 +200,8 @@ export class Client {
 
     if (client_id !== this.client_id) {
       throw new Error('INVALID_REQUEST')
-    } else if (!this.validate_sign([sid], timestamp, sign)) {
+    }
+    else if (!this.validate_sign([sid], timestamp, sign)) {
       throw new Error('INVALID_REQUEST')
     }
 

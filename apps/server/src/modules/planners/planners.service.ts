@@ -172,7 +172,7 @@ export class PlannersService {
         break
       }
       default: {
-        throw new BadRequestException("Wrong field 'item_type' in request data")
+        throw new BadRequestException('Wrong field \'item_type\' in request data')
       }
     }
 
@@ -201,12 +201,12 @@ export class PlannersService {
   ): Promise<IPlanner.IItem.Future> {
     const planner = await this.plannerRepository.checkPlannerExists(plannerId)
     if (!planner) {
-      throw new HttpException("Planner Doesn't exist", HttpStatus.NOT_FOUND)
+      throw new HttpException('Planner Doesn\'t exist', HttpStatus.NOT_FOUND)
     }
 
     const course = await this.courseRepository.getCourseById(courseId)
     if (!course) {
-      throw new HttpException("Wrong field 'course' in request data", HttpStatus.BAD_REQUEST)
+      throw new HttpException('Wrong field \'course\' in request data', HttpStatus.BAD_REQUEST)
     }
     const item: EPlanners.EItems.Future.Extended = await this.plannerRepository.createPlannerItem(
       plannerId,
@@ -232,7 +232,8 @@ export class PlannersService {
 
     if (oldOrder < order) {
       await this.plannerRepository.decrementOrders(relatedPlannerIds, oldOrder + 1, order)
-    } else if (oldOrder > order) {
+    }
+    else if (oldOrder > order) {
       await this.plannerRepository.incrementOrders(relatedPlannerIds, order, oldOrder - 1)
     }
 
@@ -248,7 +249,7 @@ export class PlannersService {
   ): Promise<EPlanners.EItems.Taken.Details | EPlanners.EItems.Future.Extended | EPlanners.EItems.Arbitrary.Extended> {
     const planner = await this.plannerRepository.checkPlannerExists(plannerId)
     if (!planner) {
-      throw new HttpException("Planner Doesn't exist", HttpStatus.NOT_FOUND)
+      throw new HttpException('Planner Doesn\'t exist', HttpStatus.NOT_FOUND)
     }
     const { item_type, item, ...updatedFields } = updateItemDto
     return await this.plannerRepository.updatePlannerItem(item_type, item, updatedFields)
@@ -268,8 +269,7 @@ export class PlannersService {
       takenLectures.map((takenLecture) => takenLecture.lecture_id),
     )
     const needToAddTakenLectures = takenLectures.filter(
-      (takenLecture) =>
-        !existedTakenItems.find((existedTakenItem) => existedTakenItem.lecture_id === takenLecture.lecture_id),
+      (takenLecture) => !existedTakenItems.find((existedTakenItem) => existedTakenItem.lecture_id === takenLecture.lecture_id),
     )
     await this.plannerRepository.createTakenPlannerItem(
       plannerId,

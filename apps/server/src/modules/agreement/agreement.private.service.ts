@@ -16,8 +16,7 @@ import { OtlException } from '@otl/common/exception/otl.exception'
 @Injectable()
 export class AgreementPrivateService
   extends AgreementPublicService
-  implements AgreementInPublicPort, AgreementInPrivatePort
-{
+  implements AgreementInPublicPort, AgreementInPrivatePort {
   constructor(
     @Inject(AGREEMENT_REPOSITORY)
     protected readonly agreementRepository: AgreementRepository,

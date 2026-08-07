@@ -24,9 +24,9 @@ export class ExamtimeInfo {
 
   public static equals(examtime: ExamtimeInfo, existing: ELecture.Details['subject_examtime'][number]) {
     return (
-      examtime.day === existing.day &&
-      examtime.begin.getHours() === existing.begin.getHours() &&
-      examtime.begin.getMinutes() === existing.begin.getMinutes()
+      examtime.day === existing.day
+      && examtime.begin.getHours() === existing.begin.getHours()
+      && examtime.begin.getMinutes() === existing.begin.getMinutes()
     )
   }
 }

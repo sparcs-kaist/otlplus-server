@@ -1,4 +1,6 @@
-import { Body, Controller, Delete, Get, Inject, Param, Patch, Post } from '@nestjs/common'
+import {
+  Body, Controller, Delete, Get, Inject, Param, Patch, Post,
+} from '@nestjs/common'
 import { Admin } from '@otl/server-nest/common/decorators/admin.decorator'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator'

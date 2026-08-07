@@ -46,7 +46,8 @@ export class MockAuthGuard implements CanActivate {
       const user = this.authService.findBySid(payload.sid)
       request.user = user
       return true
-    } catch (e: any) {
+    }
+    catch (e: any) {
       if (e.message === 'jwt expired') {
         try {
           const refreshToken = this.extractTokenFromCookie(request, 'refreshToken')
@@ -70,7 +71,8 @@ export class MockAuthGuard implements CanActivate {
             return this.determineAuth(context, true)
           }
           return this.determineAuth(context, false)
-        } catch (_e) {
+        }
+        catch (_e) {
           const result = this.determineAuth(context, false)
           if (result) {
             return result

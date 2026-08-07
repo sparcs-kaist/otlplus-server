@@ -1,4 +1,6 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common'
+import {
+  Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query,
+} from '@nestjs/common'
 import { GetLanguage, Language } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { ICustomblock } from '@otl/server-nest/common/interfaces/ICustomblock'

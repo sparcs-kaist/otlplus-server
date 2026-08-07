@@ -14,7 +14,9 @@ import { SCHOLAR_MQ, ScholarMQ } from '@otl/scholar-sync/domain/out/ScholarMQ'
 import { STATISTICS_MQ, SyncServerStatisticsMQ } from '@otl/scholar-sync/domain/out/StatisticsMQ'
 import { summarizeSyncResult } from '@otl/scholar-sync/modules/sync/util'
 import { review_review, subject_lecture, SyncType } from '@prisma/client'
-import { catchError, from, lastValueFrom, of, retry, timer } from 'rxjs'
+import {
+  catchError, from, lastValueFrom, of, retry, timer,
+} from 'rxjs'
 
 import { groupBy, normalizeArray } from '@otl/common/utils/util'
 
@@ -95,7 +97,8 @@ export class SyncService {
           await Promise.all(
             deptsToMakeInvisible.map((l) => this.syncRepository.updateDepartment(l.id, { visible: false })),
           )
-        } else if (!DepartmentInfo.equals(departmentInfo, foundDepartment)) {
+        }
+        else if (!DepartmentInfo.equals(departmentInfo, foundDepartment)) {
           const updated = await this.syncRepository.updateDepartment(foundDepartment.id, {
             num_id: departmentInfo.num_id,
             code: departmentInfo.code,
@@ -105,7 +108,8 @@ export class SyncService {
           departmentMap[foundDepartment.id] = updated
           departmentSyncResultDetail.updated.push([foundDepartment, updated])
         }
-      } catch (e: any) {
+      }
+      catch (e: any) {
         departmentSyncResultDetail.errors.push({
           dept_id: lecture.DEPT_ID,
           error: e.message || 'Unknown error',
@@ -140,12 +144,14 @@ export class SyncService {
           const newCourse = await this.syncRepository.createCourse(derivedCourse)
           courseSyncResultDetail.created.push(newCourse)
           courseMap.set(new_code, newCourse)
-        } else if (!CourseInfo.equals(derivedCourse, foundCourse)) {
+        }
+        else if (!CourseInfo.equals(derivedCourse, foundCourse)) {
           const updatedCourse = await this.syncRepository.updateCourse(foundCourse.id, derivedCourse)
           courseSyncResultDetail.updated.push([foundCourse, updatedCourse])
           courseMap.set(new_code, updatedCourse)
         }
-      } catch (e: any) {
+      }
+      catch (e: any) {
         courseSyncResultDetail.errors.push({
           new_code,
           error: e.message || 'Unknown error',
@@ -199,12 +205,14 @@ export class SyncService {
           const newProfessor: EProfessor.Basic = await this.syncRepository.createProfessor(derivedProfessor)
           professorMap.set(charge.PROF_ID, newProfessor)
           professorSyncResultDetail.created.push(newProfessor)
-        } else if (!ProfessorInfo.equals(professor, derivedProfessor)) {
+        }
+        else if (!ProfessorInfo.equals(professor, derivedProfessor)) {
           const updatedProfessor = await this.syncRepository.updateProfessor(professor.id, derivedProfessor)
           professorMap.set(charge.PROF_ID, updatedProfessor)
           professorSyncResultDetail.updated.push([professor, updatedProfessor])
         }
-      } catch (e: any) {
+      }
+      catch (e: any) {
         professorSyncResultDetail.errors.push({
           prof_id: charge.PROF_ID,
           error: e.message || 'Unknown error',
@@ -241,11 +249,10 @@ export class SyncService {
         if (!course_id) throw new Error(`Course not found for lecture ${lecture.SUBJECT_NO}`)
         const derivedLecture = LectureInfo.deriveLectureInfo(lecture, course_id)
         const professorCharges = data.charges.filter(
-          (c) =>
-            c.LECTURE_YEAR === lecture.LECTURE_YEAR &&
-            c.LECTURE_TERM === lecture.LECTURE_TERM &&
-            c.SUBJECT_NO === lecture.SUBJECT_NO &&
-            c.LECTURE_CLASS.trim() === lecture.LECTURE_CLASS.trim(),
+          (c) => c.LECTURE_YEAR === lecture.LECTURE_YEAR
+            && c.LECTURE_TERM === lecture.LECTURE_TERM
+            && c.SUBJECT_NO === lecture.SUBJECT_NO
+            && c.LECTURE_CLASS.trim() === lecture.LECTURE_CLASS.trim(),
         )
 
         if (foundLecture) {
@@ -284,7 +291,8 @@ export class SyncService {
               this.logger.error(`Failed to publish LectureScoreUpdate for lecture ${foundLecture.id}`, e)
             })
           }
-        } else {
+        }
+        else {
           const newLecture = await this.syncRepository.createLecture(derivedLecture)
           // @Todo : Message(LectureTitleUpdate) 보내기
           await this.SyncMQ.publishLectureTitleUpdate(newLecture.id, newLecture.course_id)
@@ -306,7 +314,8 @@ export class SyncService {
             this.logger.error(`Failed to publish LectureScoreUpdate for lecture ${newLecture.id}`, e)
           })
         }
-      } catch (e: any) {
+      }
+      catch (e: any) {
         lecturesSyncResultDetail.errors.push({
           lecture: {
             code: lecture.SUBJECT_NO,
@@ -321,7 +330,8 @@ export class SyncService {
     try {
       await this.syncRepository.markLecturesDeleted(Array.from(notExistingLectures))
       lecturesSyncResultDetail.deleted = Array.from(notExistingLectures)
-    } catch (e: any) {
+    }
+    catch (e: any) {
       lecturesSyncResultDetail.errors.push({
         lecturesToDelete: Array.from(notExistingLectures),
         error: e.message || 'Unknown error',
@@ -354,7 +364,7 @@ export class SyncService {
     lecture: ELecture.Details,
     charges: IScholar.ScholarChargeType[],
     professorMap: Map<number, EProfessor.Basic>,
-  ): { addedIds: number[]; removedIds: number[] } {
+  ): { addedIds: number[], removedIds: number[] } {
     const addedIds = charges
       .filter((charge) => !lecture.subject_lecture_professors.find((p) => p.professor.professor_id === charge.PROF_ID))
       .map((charge) => professorMap.get(charge.PROF_ID)!.id)
@@ -451,7 +461,8 @@ export class SyncService {
             added: timesToAdd,
             removed: timesToRemove,
           })
-        } else {
+        }
+        else {
           await this.syncRepository.updateLectureClasstimes(lecture.id, {
             added: timesToAdd as any,
             removed: timesToRemove,
@@ -467,7 +478,8 @@ export class SyncService {
             removed: timesToRemove,
           })
         }
-      } catch (e: any) {
+      }
+      catch (e: any) {
         timeResultDetail.errors.push({
           lecture: {
             code: lecture.code,
@@ -544,7 +556,8 @@ export class SyncService {
       if (lectureId) {
         const pair = studentPairMap.get(attend.STUDENT_NO)!
         pair[1].push(lectureId)
-      } else {
+      }
+      else {
         resultDetail.errors.push({
           student_no: attend.STUDENT_NO,
           attend,
@@ -599,7 +612,8 @@ export class SyncService {
             })
           }
         }
-      } catch (e: any) {
+      }
+      catch (e: any) {
         resultDetail.errors.push({ studentId, error: e.message || 'Unknown error' })
       }
     }
@@ -746,7 +760,8 @@ export class SyncService {
             try {
               await this.syncRepository.updateUserDepartment(item.userId, item.departmentId)
               degreeSyncResultDetail.updated.push(item)
-            } catch (_e) {
+            }
+            catch (_e) {
               degreeSyncResultDetail.errors.push(item)
             }
           }),
@@ -802,11 +817,9 @@ export class SyncService {
     )
 
     // get users with majors
-    const existingUsersWithMajors: EUser.WithMajors[] =
-      await this.syncRepository.getUsersWithMajorsByStudentIds(studentIds)
+    const existingUsersWithMajors: EUser.WithMajors[] = await this.syncRepository.getUsersWithMajorsByStudentIds(studentIds)
     const existingUsersWithMajorsMap = normalizeArray(existingUsersWithMajors, (user) => user.id)
-    const existingUsersWithMinors: EUser.WithMinors[] =
-      await this.syncRepository.getUsersWithMinorsByStudentIds(studentIds)
+    const existingUsersWithMinors: EUser.WithMinors[] = await this.syncRepository.getUsersWithMinorsByStudentIds(studentIds)
     const existingUsersWithMinorsMap = normalizeArray(existingUsersWithMinors, (user) => user.id)
 
     const curYear = new Date().getFullYear()
@@ -845,8 +858,8 @@ export class SyncService {
     }
 
     const majorUpdate = {
-      add: [] as { userId: number; departmentId: number }[],
-      remove: [] as { userId: number; departmentId: number }[],
+      add: [] as { userId: number, departmentId: number }[],
+      remove: [] as { userId: number, departmentId: number }[],
     }
     toUpdate.major.forEach((userMajorInfo) => {
       const { userId } = userMajorInfo
@@ -876,8 +889,8 @@ export class SyncService {
       }
     })
     const minorUpdate = {
-      add: [] as { userId: number; departmentId: number }[],
-      remove: [] as { userId: number; departmentId: number }[],
+      add: [] as { userId: number, departmentId: number }[],
+      remove: [] as { userId: number, departmentId: number }[],
     }
     toUpdate.minor.forEach((userMinorInfo) => {
       const { userId } = userMinorInfo
@@ -918,12 +931,14 @@ export class SyncService {
           // Your single-row update method
           if (update === majorUpdate) {
             await this.syncRepository.createManyUserMajor(chunk)
-          } else {
+          }
+          else {
             await this.syncRepository.createManyUserMinor(chunk)
           }
           majorSyncResultDetail.updated = majorSyncResultDetail.updated.concat(chunk)
           majorSyncResultDetail.created = majorSyncResultDetail.created.concat(chunk)
-        } catch (_e) {
+        }
+        catch (_e) {
           majorSyncResultDetail.errors = majorSyncResultDetail.errors.concat(chunk)
         }
       }
@@ -940,11 +955,13 @@ export class SyncService {
               // Your single-row update method
               if (update === majorUpdate) {
                 await this.syncRepository.deleteUserMajor(item.userId, item.departmentId)
-              } else {
+              }
+              else {
                 await this.syncRepository.deleteUserMinor(item.userId, item.departmentId)
               }
               majorSyncResultDetail.updated.push(item)
-            } catch (_e) {
+            }
+            catch (_e) {
               majorSyncResultDetail.errors.push(item)
             }
           })
@@ -961,14 +978,12 @@ export class SyncService {
   }
 
   private checkClassTitleUpdateRequired(lecture: subject_lecture) {
-    const isTitleEqual =
-      lecture.common_title &&
-      lecture.class_title &&
-      [lecture.common_title + lecture.class_title, lecture.common_title].includes(lecture.title)
-    const isTitleEnEqual =
-      lecture.common_title_en &&
-      lecture.class_title_en &&
-      [lecture.common_title_en + lecture.class_title_en, lecture.common_title_en].includes(lecture.title_en)
+    const isTitleEqual = lecture.common_title
+      && lecture.class_title
+      && [lecture.common_title + lecture.class_title, lecture.common_title].includes(lecture.title)
+    const isTitleEnEqual = lecture.common_title_en
+      && lecture.class_title_en
+      && [lecture.common_title_en + lecture.class_title_en, lecture.common_title_en].includes(lecture.title_en)
     return !(isTitleEqual && isTitleEnEqual)
   }
 

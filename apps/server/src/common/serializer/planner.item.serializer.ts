@@ -57,8 +57,7 @@ export function toJsonPlannerItem<IT extends PlannerItemType>(
 ): IPlanner.IItem.IMutate {
   const handlers = {
     [PlannerItemType.Taken]: (e: EPlanners.EItems.Taken.Details) => toJsonTakenItem(e),
-    [PlannerItemType.Future]: (e: EPlanners.EItems.Future.Extended) =>
-      toJsonFutureItem(e, representative_lecture as ELecture.Basic),
+    [PlannerItemType.Future]: (e: EPlanners.EItems.Future.Extended) => toJsonFutureItem(e, representative_lecture as ELecture.Basic),
     [PlannerItemType.Arbitrary]: (e: EPlanners.EItems.Arbitrary.Extended) => toJsonArbitraryItem(e),
   } satisfies Record<PlannerItemType, (e: any) => IPlanner.IItem.IMutate>
 

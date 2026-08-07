@@ -47,14 +47,12 @@ export class LectureMiddleware implements IPrismaMiddleware.Middleware {
   }
 
   private checkClassTitleUpdateRequired(lecture: subject_lecture) {
-    const isTitleEqual =
-      lecture.common_title &&
-      lecture.class_title &&
-      [lecture.common_title + lecture.class_title, lecture.common_title].includes(lecture.title)
-    const isTitleEnEqual =
-      lecture.common_title_en &&
-      lecture.class_title_en &&
-      [lecture.common_title_en + lecture.class_title_en, lecture.common_title_en].includes(lecture.title_en)
+    const isTitleEqual = lecture.common_title
+      && lecture.class_title
+      && [lecture.common_title + lecture.class_title, lecture.common_title].includes(lecture.title)
+    const isTitleEnEqual = lecture.common_title_en
+      && lecture.class_title_en
+      && [lecture.common_title_en + lecture.class_title_en, lecture.common_title_en].includes(lecture.title_en)
     return !(isTitleEqual && isTitleEnEqual)
   }
 
@@ -76,7 +74,8 @@ export class LectureMiddleware implements IPrismaMiddleware.Middleware {
       const { title } = lectures[0]
       const commonTitle = title.endsWith('>') ? title.substring(0, title.indexOf('<')) : title
       await this.update(lectures, commonTitle, 'title')
-    } else {
+    }
+    else {
       const commonTitle = this.lcsFront(lectures.map((lecture) => lecture.title))
       await this.update(lectures, commonTitle, 'title')
     }
@@ -87,7 +86,8 @@ export class LectureMiddleware implements IPrismaMiddleware.Middleware {
       const title = lectures[0].title_en
       const commonTitle = title.endsWith('>') ? title.substring(0, title.indexOf('<')) : title
       await this.update(lectures, commonTitle, 'title_en')
-    } else {
+    }
+    else {
       const commonTitle = this.lcsFront(lectures.map((lecture) => lecture.title_en))
       await this.update(lectures, commonTitle, 'title_en')
     }
@@ -102,9 +102,11 @@ export class LectureMiddleware implements IPrismaMiddleware.Middleware {
         let classTitle: string
         if (titleField !== commonTitle) {
           classTitle = titleField.substring(commonTitle.length)
-        } else if (lecture.class_no.length > 0) {
+        }
+        else if (lecture.class_no.length > 0) {
           classTitle = lecture.class_no
-        } else {
+        }
+        else {
           classTitle = 'A'
         }
         return await this.prisma.subject_lecture.update({

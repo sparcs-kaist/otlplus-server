@@ -37,14 +37,15 @@ export class ScholarApiClient {
       const fullUrl = `${this.baseUrl}${path}`
       const response = await axios.get(fullUrl, {
         headers: {
-          AUTH_KEY: this.apiKey,
+          'AUTH_KEY': this.apiKey,
           'Content-Type': 'application/json',
         },
         params,
         httpsAgent: new https.Agent({ rejectUnauthorized: false }), // if ignoring SSL errors
       })
       return response.data
-    } catch (error) {
+    }
+    catch (error) {
       this.logger.error(`Failed to GET from ${path}`, error)
       throw error
     }

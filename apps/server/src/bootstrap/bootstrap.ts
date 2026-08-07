@@ -1,4 +1,6 @@
-import { HttpException, HttpStatus, ValidationPipe, VersioningType } from '@nestjs/common'
+import {
+  HttpException, HttpStatus, ValidationPipe, VersioningType,
+} from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
 import * as Sentry from '@sentry/nestjs'
 import cookieParser from 'cookie-parser'
@@ -47,8 +49,8 @@ async function bootstrap() {
     beforeSend(event, hint) {
       const error = hint?.originalException
       if (
-        error instanceof HttpException &&
-        (error.getStatus() === HttpStatus.UNAUTHORIZED || error.getStatus() === HttpStatus.NOT_FOUND)
+        error instanceof HttpException
+        && (error.getStatus() === HttpStatus.UNAUTHORIZED || error.getStatus() === HttpStatus.NOT_FOUND)
       ) {
         return null
       }

@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common'
 import { ISync } from '@otl/server-nest/common/interfaces/ISync'
 
-import { ECourse, EDepartment, ELecture, EProfessor } from '@otl/prisma-client/entities'
+import {
+  ECourse, EDepartment, ELecture, EProfessor,
+} from '@otl/prisma-client/entities'
 import { SyncRepository } from '@otl/prisma-client/repositories'
 
 import { SlackNotiService } from './slackNoti.service'
@@ -87,7 +89,8 @@ export class SyncScholarDBService {
           await Promise.all(
             deptsToMakeInvisible.map((l) => this.syncRepository.updateDepartment(l.id, { visible: false })),
           )
-        } else if (this.departmentChanged(foundDepartment, departmentInfo)) {
+        }
+        else if (this.departmentChanged(foundDepartment, departmentInfo)) {
           const updated = await this.syncRepository.updateDepartment(foundDepartment.id, {
             num_id: departmentInfo.num_id,
             code: departmentInfo.code,
@@ -97,7 +100,8 @@ export class SyncScholarDBService {
           departmentMap[foundDepartment.id] = updated
           result.departments.updated.push([foundDepartment, updated])
         }
-      } catch (e: any) {
+      }
+      catch (e: any) {
         result.departments.errors.push({
           dept_id: lecture.DEPT_ID,
           error: e.message || 'Unknown error',
@@ -123,12 +127,14 @@ export class SyncScholarDBService {
           const newCourse = await this.syncRepository.createCourse(derivedCourse)
           result.courses.created.push(newCourse)
           courseMap.set(new_code, newCourse)
-        } else if (this.courseChanged(foundCourse, derivedCourse)) {
+        }
+        else if (this.courseChanged(foundCourse, derivedCourse)) {
           const updatedCourse = await this.syncRepository.updateCourse(foundCourse.id, derivedCourse)
           result.courses.updated.push([foundCourse, updatedCourse])
           courseMap.set(new_code, updatedCourse)
         }
-      } catch (e: any) {
+      }
+      catch (e: any) {
         result.courses.errors.push({
           new_code,
           error: e.message || 'Unknown error',
@@ -160,12 +166,14 @@ export class SyncScholarDBService {
           const newProfessor = await this.syncRepository.createProfessor(derivedProfessor)
           professorMap.set(charge.PROF_ID, newProfessor)
           result.professors.created.push(newProfessor)
-        } else if (this.professorChanged(professor, derivedProfessor)) {
+        }
+        else if (this.professorChanged(professor, derivedProfessor)) {
           const updatedProfessor = await this.syncRepository.updateProfessor(professor.id, derivedProfessor)
           professorMap.set(charge.PROF_ID, updatedProfessor)
           result.professors.updated.push([professor, updatedProfessor])
         }
-      } catch (e: any) {
+      }
+      catch (e: any) {
         result.professors.errors.push({
           prof_id: charge.PROF_ID,
           error: e.message || 'Unknown error',
@@ -192,11 +200,10 @@ export class SyncScholarDBService {
         if (!course_id) throw new Error(`Course not found for lecture ${lecture.SUBJECT_NO}`)
         const derivedLecture = this.deriveLectureInfo(lecture, course_id)
         const professorCharges = data.charges.filter(
-          (c) =>
-            c.LECTURE_YEAR === lecture.LECTURE_YEAR &&
-            c.LECTURE_TERM === lecture.LECTURE_TERM &&
-            c.SUBJECT_NO === lecture.SUBJECT_NO &&
-            c.LECTURE_CLASS.trim() === lecture.LECTURE_CLASS.trim(),
+          (c) => c.LECTURE_YEAR === lecture.LECTURE_YEAR
+            && c.LECTURE_TERM === lecture.LECTURE_TERM
+            && c.SUBJECT_NO === lecture.SUBJECT_NO
+            && c.LECTURE_CLASS.trim() === lecture.LECTURE_CLASS.trim(),
         )
 
         if (foundLecture) {
@@ -218,7 +225,8 @@ export class SyncScholarDBService {
               removed: removedIds.map((id) => professorMap.get(id) || { id }),
             })
           }
-        } else {
+        }
+        else {
           const newLecture = await this.syncRepository.createLecture(derivedLecture)
           const addedIds = professorCharges.map((charge) => professorMap.get(charge.PROF_ID)!.id)
 
@@ -228,7 +236,8 @@ export class SyncScholarDBService {
           })
           result.lectures.created.push({ ...newLecture, professors: addedIds })
         }
-      } catch (e: any) {
+      }
+      catch (e: any) {
         result.lectures.errors.push({
           lecture: {
             code: lecture.SUBJECT_NO,
@@ -243,7 +252,8 @@ export class SyncScholarDBService {
     try {
       await this.syncRepository.markLecturesDeleted(Array.from(notExistingLectures))
       result.lectures.deleted = Array.from(notExistingLectures)
-    } catch (e: any) {
+    }
+    catch (e: any) {
       result.lectures.errors.push({
         lecturesToDelete: Array.from(notExistingLectures),
         error: e.message || 'Unknown error',
@@ -275,10 +285,10 @@ export class SyncScholarDBService {
 
   departmentChanged(dept: EDepartment.Basic, newData: LectureDerivedDepartmentInfo) {
     return (
-      dept.num_id !== newData.num_id ||
-      dept.code !== newData.code ||
-      dept.name !== newData.name ||
-      dept.name_en !== newData.name_en
+      dept.num_id !== newData.num_id
+      || dept.code !== newData.code
+      || dept.name !== newData.name
+      || dept.name_en !== newData.name_en
     )
   }
 
@@ -296,11 +306,11 @@ export class SyncScholarDBService {
 
   courseChanged(course: ECourse.Basic, newData: LectureDerivedCourseInfo) {
     return (
-      course.department_id !== newData.department_id ||
-      course.type !== newData.type ||
-      course.type_en !== newData.type_en ||
-      course.title !== newData.title ||
-      course.title_en !== newData.title_en
+      course.department_id !== newData.department_id
+      || course.type !== newData.type
+      || course.type_en !== newData.type_en
+      || course.title !== newData.title
+      || course.title_en !== newData.title_en
     )
   }
 
@@ -315,9 +325,9 @@ export class SyncScholarDBService {
 
   professorChanged(professor: EProfessor.Basic, newData: ChargeDerivedProfessorInfo) {
     return (
-      professor.professor_name !== newData.professor_name ||
-      professor.professor_name_en !== newData.professor_name_en ||
-      professor.major !== newData.major
+      professor.professor_name !== newData.professor_name
+      || professor.professor_name_en !== newData.professor_name_en
+      || professor.major !== newData.major
     )
   }
 
@@ -349,24 +359,24 @@ export class SyncScholarDBService {
     return (
       // TODO: This can be problematic if multiple lectures have the same old code
       // -> new_code(=code)를 기준으로 lecture 구분하므로 code가 다르면 다른 lecture로 취급해야 함
-      lecture.year !== newData.year ||
-      lecture.semester !== newData.semester ||
-      lecture.class_no !== newData.class_no ||
-      lecture.department_id !== newData.department_id ||
-      lecture.old_code !== newData.old_code ||
-      lecture.title !== newData.title ||
-      lecture.title_en !== newData.title_en ||
-      lecture.type !== newData.type ||
-      lecture.type_en !== newData.type_en ||
-      lecture.audience !== newData.audience ||
-      lecture.limit !== newData.limit ||
-      lecture.credit !== newData.credit ||
-      lecture.credit_au !== newData.credit_au ||
-      lecture.num_classes !== newData.num_classes ||
-      lecture.num_labs !== newData.num_labs ||
-      lecture.is_english !== newData.is_english ||
-      lecture.course_id !== newData.course_id ||
-      lecture.new_code !== newData.code
+      lecture.year !== newData.year
+      || lecture.semester !== newData.semester
+      || lecture.class_no !== newData.class_no
+      || lecture.department_id !== newData.department_id
+      || lecture.old_code !== newData.old_code
+      || lecture.title !== newData.title
+      || lecture.title_en !== newData.title_en
+      || lecture.type !== newData.type
+      || lecture.type_en !== newData.type_en
+      || lecture.audience !== newData.audience
+      || lecture.limit !== newData.limit
+      || lecture.credit !== newData.credit
+      || lecture.credit_au !== newData.credit_au
+      || lecture.num_classes !== newData.num_classes
+      || lecture.num_labs !== newData.num_labs
+      || lecture.is_english !== newData.is_english
+      || lecture.course_id !== newData.course_id
+      || lecture.new_code !== newData.code
     )
   }
 
@@ -374,7 +384,7 @@ export class SyncScholarDBService {
     lecture: ELecture.Details,
     charges: ISync.ScholarChargeType[],
     professorMap: Map<number, EProfessor.Basic>,
-  ): { addedIds: number[]; removedIds: number[] } {
+  ): { addedIds: number[], removedIds: number[] } {
     const addedIds = charges
       .filter((charge) => !lecture.subject_lecture_professors.find((p) => p.professor.professor_id === charge.PROF_ID))
       .map((charge) => professorMap.get(charge.PROF_ID)!.id)
@@ -471,7 +481,8 @@ export class SyncScholarDBService {
             added: timesToAdd,
             removed: timesToRemove,
           })
-        } else {
+        }
+        else {
           await this.syncRepository.updateLectureClasstimes(lecture.id, {
             added: timesToAdd as any,
             removed: timesToRemove,
@@ -487,7 +498,8 @@ export class SyncScholarDBService {
             removed: timesToRemove,
           })
         }
-      } catch (e: any) {
+      }
+      catch (e: any) {
         result.errors.push({
           lecture: {
             code: lecture.code,
@@ -522,9 +534,9 @@ export class SyncScholarDBService {
 
   examtimeMatches(examtime: DerivedExamtimeInfo, existing: ELecture.Details['subject_examtime'][number]) {
     return (
-      examtime.day === existing.day &&
-      examtime.begin.getHours() === existing.begin.getHours() &&
-      examtime.begin.getMinutes() === existing.begin.getMinutes()
+      examtime.day === existing.day
+      && examtime.begin.getHours() === existing.begin.getHours()
+      && examtime.begin.getMinutes() === existing.begin.getMinutes()
     )
   }
 
@@ -558,15 +570,15 @@ export class SyncScholarDBService {
 
   classtimeMatches(classtime: DerivedClasstimeInfo, existing: ELecture.Details['subject_classtime'][number]) {
     return (
-      classtime.day === existing.day &&
-      classtime.begin.getHours() === existing.begin.getHours() &&
-      classtime.begin.getMinutes() === existing.begin.getMinutes() &&
-      classtime.type === existing.type &&
-      classtime.building_id === existing.building_id &&
-      classtime.room_name === existing.room_name &&
-      classtime.building_full_name === existing.building_full_name &&
-      classtime.building_full_name_en === existing.building_full_name_en &&
-      classtime.unit_time === existing.unit_time
+      classtime.day === existing.day
+      && classtime.begin.getHours() === existing.begin.getHours()
+      && classtime.begin.getMinutes() === existing.begin.getMinutes()
+      && classtime.type === existing.type
+      && classtime.building_id === existing.building_id
+      && classtime.room_name === existing.room_name
+      && classtime.building_full_name === existing.building_full_name
+      && classtime.building_full_name_en === existing.building_full_name_en
+      && classtime.unit_time === existing.unit_time
     )
   }
 }

@@ -1,5 +1,7 @@
 import { Transform, Type } from 'class-transformer'
-import { IsIn, IsInt, IsNumber, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator'
+import {
+  IsIn, IsInt, IsNumber, IsObject, IsOptional, IsString, ValidateNested,
+} from 'class-validator'
 
 export namespace IScholar {
   /** 동기화 대상 수업시간 정보

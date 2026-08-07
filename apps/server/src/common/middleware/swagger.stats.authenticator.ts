@@ -27,7 +27,8 @@ export function createSwaggerStatsAuthenticator(authService: AuthService, jwtSer
       if (user?.refresh_token && (await bcrypt.compare(refreshToken, user.refresh_token))) {
         return true
       }
-    } catch {
+    }
+    catch {
       return false
     }
     return false
@@ -43,7 +44,8 @@ export function createSwaggerStatsAuthenticator(authService: AuthService, jwtSer
 
       if (!user) return false
       return true
-    } catch (e: any) {
+    }
+    catch (e: any) {
       if (e.message === 'jwt expired' && refreshToken) {
         return handleRefreshToken(refreshToken)
       }

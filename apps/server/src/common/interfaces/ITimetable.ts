@@ -4,7 +4,9 @@ import {
   PROHIBITED_FIELD_PATTERN,
 } from '@otl/server-nest/common/interfaces/validators.decorator'
 import { Transform, Type } from 'class-transformer'
-import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator'
+import {
+  IsArray, IsNumber, IsOptional, IsString,
+} from 'class-validator'
 
 export const TIMETABLE_MAX_LIMIT = 50
 

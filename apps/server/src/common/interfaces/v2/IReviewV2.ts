@@ -1,7 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { StringStripLength } from '@otl/server-nest/common/interfaces/validators.decorator'
 import { Type } from 'class-transformer'
-import { IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min, Validate } from 'class-validator'
+import {
+  IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min, Validate,
+} from 'class-validator'
 
 import { IDepartmentV2 } from './IDepartmentV2'
 import { IProfessorV2 } from './IProfessorV2'

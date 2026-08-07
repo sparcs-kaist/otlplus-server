@@ -341,12 +341,11 @@ export class LectureRepository implements ServerConsumerLectureRepository {
     for (const lecture of lectures) {
       const titleField = getTitle(lecture)
 
-      const classTitle =
-        titleField !== commonTitle
-          ? titleField.substring(commonTitle.length)
-          : lecture.classNo.length > 0
-            ? lecture.classNo
-            : 'A'
+      const classTitle = titleField !== commonTitle
+        ? titleField.substring(commonTitle.length)
+        : lecture.classNo.length > 0
+          ? lecture.classNo
+          : 'A'
       // classNo: 분반
 
       await this.prisma.subject_lecture.update({

@@ -114,7 +114,9 @@ export class AppService {
   }
 
   async sendFCM(msg: FCMNotificationRequest) {
-    const { content, userId, scheduleAt, notificationName, requestId, deviceToken } = msg
+    const {
+      content, userId, scheduleAt, notificationName, requestId, deviceToken,
+    } = msg
     const { title, body } = content
 
     const message: Message = {

@@ -1,4 +1,6 @@
-import { Body, Controller, Get, Post, Query, Req, Res, Session } from '@nestjs/common'
+import {
+  Body, Controller, Get, Post, Query, Req, Res, Session,
+} from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { Public, Public as PublicForGuard } from '@otl/server-nest/common/decorators/skip-auth.decorator'
 import { IAuth, IUser } from '@otl/server-nest/common/interfaces'
@@ -33,12 +35,10 @@ export class AuthController {
     @Res() res: IAuth.Response,
   ): void {
     if (req.user) {
-      const accessToken =
-        this.authService.extractTokenFromHeader(req, 'accessToken') ??
-        this.authService.extractTokenFromCookie(req, 'accessToken')
-      const refreshToken =
-        this.authService.extractTokenFromHeader(req, 'refreshToken') ??
-        this.authService.extractTokenFromCookie(req, 'refreshToken')
+      const accessToken = this.authService.extractTokenFromHeader(req, 'accessToken')
+        ?? this.authService.extractTokenFromCookie(req, 'accessToken')
+      const refreshToken = this.authService.extractTokenFromHeader(req, 'refreshToken')
+        ?? this.authService.extractTokenFromCookie(req, 'refreshToken')
       const picked = accessToken ?? refreshToken
       if (!picked) {
         throw new Error('No token found for extracting sid and uid')
@@ -76,8 +76,9 @@ export class AuthController {
   ): Promise<void> {
     const ssoProfile: ESSOUser.SSOUser = await this.ssoClient.get_user_info(code)
     // const studentDegree = req.session.ssoProfile?.kaist_v2_info?.std_status_kor
-    const { accessToken, accessTokenOptions, refreshToken, refreshTokenOptions } =
-      await this.authService.ssoLogin(ssoProfile)
+    const {
+      accessToken, accessTokenOptions, refreshToken, refreshTokenOptions,
+    } = await this.authService.ssoLogin(ssoProfile)
 
     const user_db = await this.authService.findByUid(ssoProfile.uid)
     const user_db2 = await this.authService.findBySid(ssoProfile.sid)
@@ -120,7 +121,8 @@ export class AuthController {
           base_url = parsedOrigin
         }
       }
-    } catch (_) {
+    }
+    catch (_) {
       console.warn('Invalid preferred_url received:', preferred_url)
     }
 
@@ -196,8 +198,9 @@ export class AuthController {
     @Res({ passthrough: true }) res: IAuth.Response,
   ): Promise<IUser.TokenResponse> {
     const { token } = body
-    const { accessToken, accessTokenOptions, refreshToken, refreshTokenOptions } =
-      await this.authService.tokenRefresh(token)
+    const {
+      accessToken, accessTokenOptions, refreshToken, refreshTokenOptions,
+    } = await this.authService.tokenRefresh(token)
     res.cookie('accessToken', accessToken, accessTokenOptions)
     res.cookie('refreshToken', refreshToken, refreshTokenOptions)
     res.status(200)

@@ -29,7 +29,7 @@ export class NotificationRequest {
 
   userId!: number
 
-  content!: { title: string; body: string }
+  content!: { title: string, body: string }
 
   requestId!: string
 

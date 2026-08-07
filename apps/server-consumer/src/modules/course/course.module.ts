@@ -6,7 +6,9 @@ import { COURSE_REPOSITORY } from '@otl/server-consumer/out/course.repository'
 import { LECTURE_REPOSITORY } from '@otl/server-consumer/out/lecture.repository'
 import { REVIEW_REPOSITORY } from '@otl/server-consumer/out/review.repository'
 
-import { CourseRepository, LectureRepository, PrismaModule, ReviewsRepository } from '@otl/prisma-client'
+import {
+  CourseRepository, LectureRepository, PrismaModule, ReviewsRepository,
+} from '@otl/prisma-client'
 
 @Module({
   imports: [PrismaModule, RmqConnectionModule.register(), LectureModule],

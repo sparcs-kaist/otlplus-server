@@ -3,7 +3,9 @@ import { IDepartment } from '@otl/server-nest/common/interfaces/IDepartment'
 import { IProfessor } from '@otl/server-nest/common/interfaces/IProfessor'
 import { ITimetable } from '@otl/server-nest/common/interfaces/ITimetable'
 import { Transform, Type } from 'class-transformer'
-import { IsInt, IsNumber, IsOptional, IsString } from 'class-validator'
+import {
+  IsInt, IsNumber, IsOptional, IsString,
+} from 'class-validator'
 
 export namespace ILecture {
   export interface Classtime {

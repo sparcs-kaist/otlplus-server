@@ -1,4 +1,6 @@
-import { Controller, Get, Query, Res } from '@nestjs/common'
+import {
+  Controller, Get, Query, Res,
+} from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { IShare } from '@otl/server-nest/common/interfaces'
 import { session_userprofile } from '@prisma/client'

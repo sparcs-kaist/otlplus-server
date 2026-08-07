@@ -92,7 +92,7 @@ export function toJsonLectureBasic(lecture: ELecture.Extended): ILecture.Basic {
 
 export function toJsonLectureDetail(lecture: ELecture.Details): ILecture.Detail {
   const basic = toJsonLectureBasic(lecture)
-  if (!ELecture.isDetails(lecture)) throw new Error("Lecture is not of type 'ELecture.Details'")
+  if (!ELecture.isDetails(lecture)) throw new Error('Lecture is not of type \'ELecture.Details\'')
 
   return Object.assign(basic, {
     grade: lecture.grade + 0.000001,

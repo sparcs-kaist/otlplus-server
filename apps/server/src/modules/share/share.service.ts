@@ -2,7 +2,9 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { ILecture, IShare } from '@otl/server-nest/common/interfaces'
 import settings from '@otl/server-nest/settings'
 import { session_userprofile, subject_semester } from '@prisma/client'
-import { CanvasRenderingContext2D, createCanvas, loadImage, registerFont } from 'canvas'
+import {
+  CanvasRenderingContext2D, createCanvas, loadImage, registerFont,
+} from 'canvas'
 import ical, { ICalAlarmType, ICalCalendar, ICalEventRepeatingFreq } from 'ical-generator'
 import moment from 'moment-timezone'
 import { join } from 'path'
@@ -76,7 +78,9 @@ export class ShareService {
   }
 
   private drawRoundedRectangle(options: RoundedRectangleOptions) {
-    const { ctx, x, y, width, height, radius, color } = options
+    const {
+      ctx, x, y, width, height, radius, color,
+    } = options
     ctx.fillStyle = color
     ctx.beginPath()
     ctx.moveTo(x + radius, y)
@@ -107,7 +111,8 @@ export class ShareService {
       if (testWidth > maxWidth && currentLine !== '') {
         lines.push(currentLine)
         currentLine = char
-      } else {
+      }
+      else {
         currentLine = testLine
       }
     }
@@ -120,7 +125,9 @@ export class ShareService {
   }
 
   private drawText(options: TextOptions) {
-    const { ctx, x, y, text, font, fontSize, color, align = 'left' } = options
+    const {
+      ctx, x, y, text, font, fontSize, color, align = 'left',
+    } = options
     ctx.fillStyle = color
     ctx.font = `${fontSize}px '${font}'`
     ctx.textAlign = align || 'left'
@@ -128,7 +135,9 @@ export class ShareService {
   }
 
   private drawTile(options: DrawTileOptions) {
-    const { ctx, x, y, width, height, title, professor, location, font, fontSize } = options
+    const {
+      ctx, x, y, width, height, title, professor, location, font, fontSize,
+    } = options
     const slicedTitle = this.sliceTextToFitWidth(title, width, font, fontSize)
     const slicedProfessor = this.sliceTextToFitWidth(professor, width, font, fontSize)
     const slicedLocation = this.sliceTextToFitWidth(location, width, font, fontSize)
@@ -156,14 +165,17 @@ export class ShareService {
           color: `rgba(0, 0, 0, ${index < slicedTitle.length ? 0.8 : 0.5})`,
         })
         offsetY += fontSize + 5
-      } else {
+      }
+      else {
         offsetY += 2
       }
     })
   }
 
   private async drawTimetable(drawTimetableData: DrawTimetableDatas): Promise<Buffer> {
-    const { lectures, timetableType, semesterName, isEnglish, semesterFontSize, tileFontSize } = drawTimetableData
+    const {
+      lectures, timetableType, semesterName, isEnglish, semesterFontSize, tileFontSize,
+    } = drawTimetableData
 
     const lectureIds = lectures.map((lecture) => lecture.id)
     const lectureDetailsMap = await this.lecturesService.getLectureDetailsForTimetable(lectureIds, isEnglish)
@@ -278,7 +290,9 @@ export class ShareService {
     semesterObject: subject_semester
     isEnglish: boolean
   }): Promise<ICalCalendar> {
-    const { name, lectures, semesterObject, isEnglish } = timetableIcalData
+    const {
+      name, lectures, semesterObject, isEnglish,
+    } = timetableIcalData
 
     const calendar = ical({
       name,

@@ -1,4 +1,4 @@
-export function semesterFilter(year: number, semester: number): { year?: number; semester?: number } {
+export function semesterFilter(year: number, semester: number): { year?: number, semester?: number } {
   let semesterFilters: object = {}
   if (year) {
     semesterFilters = { ...semesterFilters, year }

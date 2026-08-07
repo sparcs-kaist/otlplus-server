@@ -1,4 +1,6 @@
-import { Controller, Get, HttpException, Param, Query } from '@nestjs/common'
+import {
+  Controller, Get, HttpException, Param, Query,
+} from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { ICourse, IReview, IUser } from '@otl/server-nest/common/interfaces'
 import { session_userprofile } from '@prisma/client'
@@ -18,7 +20,7 @@ export class UserController {
     if (userId === user.id) {
       return await this.userService.getUserTakenCourses(query, user)
     }
-    throw new HttpException("Can't find user", 401)
+    throw new HttpException('Can\'t find user', 401)
   }
 
   @Get(':userId/liked-reviews')
@@ -30,6 +32,6 @@ export class UserController {
     if (userId === user.id) {
       return await this.userService.getUserLikedReviews(user, userId, query)
     }
-    throw new HttpException("Can't find user", 401)
+    throw new HttpException('Can\'t find user', 401)
   }
 }

@@ -42,15 +42,15 @@ export class ClassTimeInfo {
 
   public static equals(classtime: ClassTimeInfo, existing: ELecture.Details['subject_classtime'][number]) {
     return (
-      classtime.day === existing.day &&
-      classtime.begin.getHours() === existing.begin.getHours() &&
-      classtime.begin.getMinutes() === existing.begin.getMinutes() &&
-      classtime.type === existing.type &&
-      classtime.building_id === existing.building_id &&
-      classtime.room_name === existing.room_name &&
-      classtime.building_full_name === existing.building_full_name &&
-      classtime.building_full_name_en === existing.building_full_name_en &&
-      classtime.unit_time === existing.unit_time
+      classtime.day === existing.day
+      && classtime.begin.getHours() === existing.begin.getHours()
+      && classtime.begin.getMinutes() === existing.begin.getMinutes()
+      && classtime.type === existing.type
+      && classtime.building_id === existing.building_id
+      && classtime.room_name === existing.room_name
+      && classtime.building_full_name === existing.building_full_name
+      && classtime.building_full_name_en === existing.building_full_name_en
+      && classtime.unit_time === existing.unit_time
     )
   }
 }

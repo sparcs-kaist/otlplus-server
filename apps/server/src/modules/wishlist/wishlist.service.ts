@@ -19,8 +19,9 @@ export class WishlistService {
   async addLecture(userId: number, body: IWishlist.AddLectureDto) {
     const wishlist = await this.wishlistRepository.getOrCreateWishlist(userId)
 
-    if (await this.wishlistRepository.getLectureInWishlist(wishlist.id, body.lecture))
-      throw new BadRequestException("Wrong field 'lecture' in request data")
+    if (await this.wishlistRepository.getLectureInWishlist(wishlist.id, body.lecture)) {
+      throw new BadRequestException('Wrong field \'lecture\' in request data')
+    }
 
     const lecture = await this.lectureRepository.getLectureDetailById(body.lecture)
     if (!lecture) throw new NotFoundException(`Lecture with id ${body.lecture} does not exist`)
@@ -35,8 +36,9 @@ export class WishlistService {
   async removeLecture(userId: number, body: IWishlist.RemoveLectureDto) {
     const wishlist = await this.wishlistRepository.getOrCreateWishlist(userId)
 
-    if (!(await this.wishlistRepository.getLectureInWishlist(wishlist.id, body.lecture)))
-      throw new BadRequestException("Wrong field 'lecture' in request data")
+    if (!(await this.wishlistRepository.getLectureInWishlist(wishlist.id, body.lecture))) {
+      throw new BadRequestException('Wrong field \'lecture\' in request data')
+    }
 
     await this.wishlistRepository.removeLecture(wishlist.id, body.lecture)
     const updatedWishlist = await this.wishlistRepository.getWishlistWithLectures(wishlist.id)

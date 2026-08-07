@@ -1,5 +1,7 @@
 // @otl/rmq/rmq.service.ts
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common'
+import {
+  Injectable, Logger, OnModuleDestroy, OnModuleInit,
+} from '@nestjs/common'
 import settings from '@otl/rmq/settings'
 import * as amqplib from 'amqplib'
 
@@ -16,7 +18,8 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
       this.connection = await this.createConnection()
       this.channel = await this.createChannel()
       this.logger.log('✅ RabbitMQ connection initialized')
-    } catch (err) {
+    }
+    catch (err) {
       this.logger.error('❌ Failed to initialize RabbitMQ connection', err)
       // 연결 실패 시 프로세스를 종료하거나 재시도 로직을 구현할 수 있습니다.
       throw err
@@ -50,7 +53,8 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
       })
       this.logger.log('✅ Connected to RabbitMQ')
       return this.connection
-    } catch (err) {
+    }
+    catch (err) {
       this.logger.error('❌ Failed to connect to RabbitMQ', err)
       // 연결 실패 시 프로세스를 종료하거나 재시도 로직을 구현할 수 있습니다.
       throw err
@@ -83,7 +87,8 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
       })
       this.logger.log('✅ RabbitMQ Channel created')
       return this.channel
-    } catch (err) {
+    }
+    catch (err) {
       this.logger.error('❌ Failed to create RabbitMQ channel', err)
       throw err
     }

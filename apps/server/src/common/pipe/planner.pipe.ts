@@ -1,4 +1,6 @@
-import { ArgumentMetadata, BadRequestException, Injectable, PipeTransform } from '@nestjs/common'
+import {
+  ArgumentMetadata, BadRequestException, Injectable, PipeTransform,
+} from '@nestjs/common'
 
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 

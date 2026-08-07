@@ -65,7 +65,8 @@ export class SyncTakenLectureService {
       if (lectureId) {
         const pair = studentPairMap.get(attend.STUDENT_NO)!
         pair[1].push(lectureId)
-      } else {
+      }
+      else {
         result.errors.push({
           student_no: attend.STUDENT_NO,
           attend,
@@ -120,7 +121,8 @@ export class SyncTakenLectureService {
             })
           }
         }
-      } catch (e: unknown) {
+      }
+      catch (e: unknown) {
         result.errors.push({ studentId, error: e instanceof Error ? e.message : 'Unknown error' })
       }
     }

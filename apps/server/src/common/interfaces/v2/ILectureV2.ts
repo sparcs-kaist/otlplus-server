@@ -1,7 +1,9 @@
 import { ApiPropertyOptional } from '@nestjs/swagger'
 import { CourseOrderQuery, CourseType, level } from '@otl/server-nest/common/interfaces/v2/ICourseV2'
 import { Transform } from 'class-transformer'
-import { IsArray, IsDefined, IsIn, IsInt, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator'
+import {
+  IsArray, IsDefined, IsIn, IsInt, IsNumber, IsOptional, IsString, Max, Min,
+} from 'class-validator'
 
 import { IDepartmentV2, IProfessorV2 } from '.'
 
@@ -82,7 +84,8 @@ export namespace ILectureV2 {
           }
           // 콤마 구분일 때
           return value.split(',').map(Number)
-        } catch {
+        }
+        catch {
           return [Number(value)]
         }
       }
@@ -104,7 +107,8 @@ export namespace ILectureV2 {
           }
           // 콤마 구분일 때
           return value.split(',').map(Number)
-        } catch {
+        }
+        catch {
           return [Number(value)]
         }
       }
@@ -151,7 +155,7 @@ export namespace ILectureV2 {
 
     @IsOptional()
     @IsString()
-    @IsIn(['code', 'popular', 'studentCount'], { message: "order must be one of 'code', 'popular', 'studentCount'" })
+    @IsIn(['code', 'popular', 'studentCount'], { message: 'order must be one of \'code\', \'popular\', \'studentCount\'' })
     order?: CourseOrderQuery
 
     @IsOptional()

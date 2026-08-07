@@ -62,13 +62,15 @@ async function createCacheStoreWithFallback(): Promise<Keyv> {
     const redisStore = createKeyv({ url, password })
     logger.info('[CacheModule] Redis 연결 성공')
     return redisStore
-  } catch (err) {
+  }
+  catch (err) {
     logger.error('[CacheModule] Redis 연결 실패, In-Memory Cache로 대체합니다:', err)
     Sentry.captureException(err)
     return new Keyv({
       store: new CacheableMemory({ ttl: '60m', lruSize: 5000 }),
     }) // fallback: 메모리 캐시
-  } finally {
+  }
+  finally {
     redisClient.disconnect()
   }
 }

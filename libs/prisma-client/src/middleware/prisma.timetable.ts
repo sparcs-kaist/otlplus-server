@@ -40,23 +40,22 @@ export class TimetableMiddleware implements IPrismaMiddleware.Middleware {
     return TimetableMiddleware.instance
   }
 
-  private async countNumPeopleBatch(lectures: { id: number; timetable_id: number; lecture_id: number }[]) {
+  private async countNumPeopleBatch(lectures: { id: number, timetable_id: number, lecture_id: number }[]) {
     const lectureIds = lectures.map((lecture) => lecture.lecture_id)
     Promise.all(
       lectureIds.map(async (id) => {
-        const numPeople =
-          (
-            await this.prisma.timetable_timetable.findMany({
-              distinct: ['user_id'],
-              where: {
-                timetable_timetable_lectures: {
-                  some: {
-                    lecture_id: id,
-                  },
+        const numPeople = (
+          await this.prisma.timetable_timetable.findMany({
+            distinct: ['user_id'],
+            where: {
+              timetable_timetable_lectures: {
+                some: {
+                  lecture_id: id,
                 },
               },
-            })
-          )?.length ?? 0
+            },
+          })
+        )?.length ?? 0
         await this.prisma.subject_lecture.update({
           where: { id },
           data: {

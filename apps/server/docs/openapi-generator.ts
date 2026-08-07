@@ -1,10 +1,14 @@
 import 'tsconfig-paths/register'
 import { targetConstructorToSchema } from 'class-validator-jsonschema'
 import fs from 'fs'
-import { OpenAPIObject, OperationObject, PathItemObject, SchemaObject } from 'openapi3-ts/oas31'
+import {
+  OpenAPIObject, OperationObject, PathItemObject, SchemaObject,
+} from 'openapi3-ts/oas31'
 import path from 'path'
 import { createGenerator, SchemaGenerator } from 'ts-json-schema-generator'
-import { Decorator, Project, SourceFile, SyntaxKind } from 'ts-morph'
+import {
+  Decorator, Project, SourceFile, SyntaxKind,
+} from 'ts-morph'
 
 /** 간단 path normalize */
 function normalizePath(p: string) {
@@ -78,7 +82,8 @@ function replaceRefs(obj: any) {
     const value = obj[key]
     if (typeof value === 'object') {
       replaceRefs(value)
-    } else if (key === '$ref' && typeof value === 'string') {
+    }
+    else if (key === '$ref' && typeof value === 'string') {
       if (value.startsWith('#/definitions/')) {
         // eslint-disable-next-line no-param-reassign
         obj[key] = value.replace('#/definitions/', '#/components/schemas/')
@@ -266,7 +271,8 @@ async function main() {
               schemaRef: paramTypeName, // 실제는 $ref를 찾는 로직 필요
               required: !param.isOptional(),
             })
-          } else if (dName === 'param') {
+          }
+          else if (dName === 'param') {
             // Try to infer schema type from TS type or pipes like ParseIntPipe
             const callExpr = deco.getCallExpression()
             const decoArgs = callExpr ? callExpr.getArguments() : []
@@ -275,9 +281,11 @@ async function main() {
             let inferredType: any = { type: 'string' }
             if (hasParseIntPipe) {
               inferredType = { type: 'integer' }
-            } else if (paramType.isNumber()) {
+            }
+            else if (paramType.isNumber()) {
               inferredType = { type: 'number' }
-            } else if (paramType.isBoolean()) {
+            }
+            else if (paramType.isBoolean()) {
               inferredType = { type: 'boolean' }
             }
 
@@ -287,14 +295,16 @@ async function main() {
               required: !param.isOptional(),
               schema: inferredType,
             })
-          } else {
+          }
+          else {
             let schemaObject = {}
             if (!paramType.isClassOrInterface() || !paramType.isObject()) {
               schemaObject = {
                 ...schemaObject,
                 type: paramType.getText(),
               }
-            } else {
+            }
+            else {
               schemaObject = {
                 ...schemaObject,
                 $ref: `#/components/schemas/${paramTypeName}`,
@@ -320,26 +330,31 @@ async function main() {
 
         let schemaObject = {}
         if (
-          !returnType ||
-          returnType.isVoid() ||
-          returnType.isNever() ||
-          returnType.isNull() ||
-          returnType.isUndefined()
+          !returnType
+          || returnType.isVoid()
+          || returnType.isNever()
+          || returnType.isNull()
+          || returnType.isUndefined()
         ) {
           schemaObject = {
             type: 'null',
           }
-        } else if (returnType.isAny()) {
+        }
+        else if (returnType.isAny()) {
           schemaObject = {
             type: 'object',
           }
-        } else if (returnType.isString()) {
+        }
+        else if (returnType.isString()) {
           schemaObject = { type: 'string' }
-        } else if (returnType.isNumber()) {
+        }
+        else if (returnType.isNumber()) {
           schemaObject = { type: 'number' }
-        } else if (returnType.isBoolean()) {
+        }
+        else if (returnType.isBoolean()) {
           schemaObject = { type: 'boolean' }
-        } else if (returnType.isUnion()) {
+        }
+        else if (returnType.isUnion()) {
           const unionTypes = returnType.getUnionTypes()
           const typeSchemas = unionTypes.map((type) => {
             if (!type || type.isUndefined() || type.isVoid() || type.isNever() || type.isNull()) {
@@ -389,7 +404,8 @@ async function main() {
           schemaObject = {
             oneOf: typeSchemas,
           }
-        } else if (returnType.isArray()) {
+        }
+        else if (returnType.isArray()) {
           let currentType = returnType
           let depth = 0
 
@@ -414,7 +430,8 @@ async function main() {
           }
 
           schemaObject = itemsSchema
-        } else if (returnType.isObject() && !returnType.isClassOrInterface()) {
+        }
+        else if (returnType.isObject() && !returnType.isClassOrInterface()) {
           const props = returnType.getProperties()
           const properties: Record<string, any> = {}
           const required: string[] = []
@@ -429,11 +446,14 @@ async function main() {
             // 기본 타입 분기
             if (propType.isString()) {
               properties[propName] = { type: 'string' }
-            } else if (propType.isNumber()) {
+            }
+            else if (propType.isNumber()) {
               properties[propName] = { type: 'number' }
-            } else if (propType.isBoolean()) {
+            }
+            else if (propType.isBoolean()) {
               properties[propName] = { type: 'boolean' }
-            } else if (propType.isArray()) {
+            }
+            else if (propType.isArray()) {
               const elemType = propType.getArrayElementTypeOrThrow()
               const elemTypeText = elemType.getText(method)
               if (elemType.isString() || elemType.isNumber() || elemType.isBoolean()) {
@@ -441,16 +461,19 @@ async function main() {
                   type: 'array',
                   items: { type: elemType.getText(method) },
                 }
-              } else {
+              }
+              else {
                 properties[propName] = {
                   type: 'array',
                   items: { $ref: `#/components/schemas/${elemTypeText}` },
                 }
               }
-            } else if (propType.isClassOrInterface()) {
+            }
+            else if (propType.isClassOrInterface()) {
               const refName = typeText.replace(/^import\(".*?"\)\./, '')
               properties[propName] = { $ref: `#/components/schemas/${refName}` }
-            } else {
+            }
+            else {
               properties[propName] = { type: 'string' }
             }
 
@@ -462,12 +485,14 @@ async function main() {
             properties,
             required,
           }
-        } else if (!returnType.isClassOrInterface()) {
+        }
+        else if (!returnType.isClassOrInterface()) {
           schemaObject = {
             ...schemaObject,
             type: returnType.getText(),
           }
-        } else {
+        }
+        else {
           schemaObject = {
             ...schemaObject,
             $ref: `#/components/schemas/${returnTypeName}`,
@@ -516,7 +541,7 @@ async function main() {
           if (!openapiDoc.paths[fullPath]) {
             openapiDoc.paths[fullPath] = {} as PathItemObject
           }
-          ;(openapiDoc.paths[fullPath] as PathItemObject)[httpMethod] = operation
+          (openapiDoc.paths[fullPath] as PathItemObject)[httpMethod] = operation
         }
       }
     }

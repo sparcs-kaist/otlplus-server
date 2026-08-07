@@ -12,7 +12,8 @@ export const toJsonReview = (review: EReview.Extended, user?: session_userprofil
   let isLiked = true
   if (!user || !review.review_reviewvote) {
     isLiked = false
-  } else if (!review.review_reviewvote.find((reviewvote) => reviewvote.userprofile_id === user.id)) {
+  }
+  else if (!review.review_reviewvote.find((reviewvote) => reviewvote.userprofile_id === user.id)) {
     isLiked = false
   }
 

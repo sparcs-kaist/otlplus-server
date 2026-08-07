@@ -1,4 +1,6 @@
-import { review_review, subject_course, subject_lecture, subject_professor } from '@prisma/client'
+import {
+  review_review, subject_course, subject_lecture, subject_professor,
+} from '@prisma/client'
 
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 import { reCalcScoreReturn } from '@otl/prisma-client/types'
@@ -235,7 +237,8 @@ export class ReviewMiddleware implements IPrismaMiddleware.Middleware {
           latest_written_datetime: result.written_datetime,
         },
       })
-    } else {
+    }
+    else {
       // todo: caches
     }
   }

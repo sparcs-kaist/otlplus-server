@@ -61,7 +61,7 @@ export class NotificationPublicService implements NotificationInPublicPort {
     to: string,
     title: string,
     body: string,
-    other: { userId: number; scheduleAt: Date; notificationName: string },
+    other: { userId: number, scheduleAt: Date, notificationName: string },
   ): Promise<FCMNotificationRequest> {
     const { userId, scheduleAt, notificationName } = other
     if (!(await this.checkNotificationPermission(userId, notificationName))) {

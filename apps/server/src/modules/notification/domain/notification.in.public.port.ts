@@ -6,7 +6,7 @@ export interface NotificationInPublicPort {
     to: string,
     title: string,
     body: string,
-    metadata: { userId: number; scheduleAt: Date; notificationName: string },
+    metadata: { userId: number, scheduleAt: Date, notificationName: string },
   ): Promise<NotificationRequest>
 
   // 모두에게 알림 전송

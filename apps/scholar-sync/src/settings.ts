@@ -101,9 +101,9 @@ function getLoggingConfig() {
           NODE_ENV === 'prod'
             ? winston.format.simple()
             : winston.format.combine(
-                winston.format.timestamp(),
-                utilities.format.nestLike('@otl/scholar-sync', { prettyPrint: true }),
-              ),
+              winston.format.timestamp(),
+              utilities.format.nestLike('@otl/scholar-sync', { prettyPrint: true }),
+            ),
       }),
       // info, warn, error 로그는 파일로 관리
       new DailyRotateFile(dailyOptions('info')),

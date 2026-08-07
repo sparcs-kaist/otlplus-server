@@ -1,4 +1,6 @@
-import { IsBoolean, IsIn, IsNotEmpty, IsOptional } from 'class-validator'
+import {
+  IsBoolean, IsIn, IsNotEmpty, IsOptional,
+} from 'class-validator'
 
 import { AgreementType } from '@otl/common/enum/agreement'
 

@@ -93,7 +93,8 @@ export class RabbitConsumerExplorer implements OnModuleInit {
       this.logger.info(
         `🐇 Consumer setup successful for ${instance.constructor.name}.${methodName} on queue: ${queueConfig.queue}`,
       )
-    } catch (err: any) {
+    }
+    catch (err: any) {
       this.logger.error(`❌ Failed to setup consumer for queue ${queueConfig.queue}`, err.stack)
     }
   }
@@ -122,7 +123,8 @@ export class RabbitConsumerExplorer implements OnModuleInit {
           }),
         ])
         channel.ack(msg)
-      } catch (err: any) {
+      }
+      catch (err: any) {
         const exchangeName = this.config.exchangeConfig.exchangeMap[queueConfig.exchange].name
 
         if (currentRetry < MAX_RETRIES) {
@@ -140,7 +142,8 @@ export class RabbitConsumerExplorer implements OnModuleInit {
               'x-delay': delay, // x-delayed-message 플러그인
             },
           })
-        } else {
+        }
+        else {
           this.logger.error(`Max retries reached. Sending to DLQ for queue ${queueConfig.queue}`)
           channel.nack(msg, false, false)
           return

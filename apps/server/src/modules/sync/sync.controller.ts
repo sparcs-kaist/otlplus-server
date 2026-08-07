@@ -1,4 +1,6 @@
-import { Body, Controller, Get, InternalServerErrorException, Post } from '@nestjs/common'
+import {
+  Body, Controller, Get, InternalServerErrorException, Post,
+} from '@nestjs/common'
 import { SyncApiKeyAuth } from '@otl/server-nest/common/decorators/sync-api-key-auth.decorator'
 import { ISemester } from '@otl/server-nest/common/interfaces'
 import { ISync } from '@otl/server-nest/common/interfaces/ISync'

@@ -10,7 +10,7 @@ import { EVENT_TYPE } from '@otl/server-consumer/messages/message'
 export class ScholarUpdatePublisher implements ScholarMQ {
   constructor(private readonly rabbitPublisherService: RabbitPublisherService) {}
 
-  private getExchangeAndRouting(): { exchange: string; routingKey: string } {
+  private getExchangeAndRouting(): { exchange: string, routingKey: string } {
     const config = settings().getRabbitMQConfig()
     const exchange = config.exchangeConfig.exchangeMap[ExchangeNames.SCHOLAR_SYNC]
     const routingKey = config.queueConfig[QueueSymbols.SCHOLAR_SYNC].routingKey as string

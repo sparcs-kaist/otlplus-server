@@ -1,5 +1,7 @@
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager'
-import { Controller, ExecutionContext, Get, Param, Query, UseInterceptors } from '@nestjs/common'
+import {
+  Controller, ExecutionContext, Get, Param, Query, UseInterceptors,
+} from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator'
 import { ILecture, IReview } from '@otl/server-nest/common/interfaces'

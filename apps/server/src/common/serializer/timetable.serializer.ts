@@ -8,10 +8,9 @@ export const toJsonTimetable = (
   timetable: ETimetable.Details | ETimetable.Basic,
   lectures?: ELecture.Details[],
 ): ITimetable.Response => {
-  const lecturesList =
-    'timetable_timetable_lectures' in timetable
-      ? timetable.timetable_timetable_lectures.map((x) => x.subject_lecture)
-      : lectures
+  const lecturesList = 'timetable_timetable_lectures' in timetable
+    ? timetable.timetable_timetable_lectures.map((x) => x.subject_lecture)
+    : lectures
 
   return {
     id: timetable.id,

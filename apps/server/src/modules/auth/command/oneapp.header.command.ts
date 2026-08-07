@@ -32,7 +32,8 @@ export class OneAppHeaderCommand implements AuthCommand {
 
       request.user = user
       return this.setAuthenticated(prevResult)
-    } catch (e: any) {
+    }
+    catch (e: any) {
       if (e.message === 'jwt expired' && refreshToken) {
         return this.handleRefreshToken(refreshToken, request, response, prevResult)
       }
@@ -66,8 +67,7 @@ export class OneAppHeaderCommand implements AuthCommand {
       const sid: string | undefined = (user as any)?.sid
       if (sid) {
         const { accessToken: newAccessToken, ...accessTokenOptions } = this.authService.getCookieWithAccessToken(sid)
-        const { refreshToken: newRefreshToken, ...refreshTokenOptions } =
-          this.authService.getCookieWithRefreshToken(sid)
+        const { refreshToken: newRefreshToken, ...refreshTokenOptions } = this.authService.getCookieWithRefreshToken(sid)
 
         response.cookie('accessToken', newAccessToken, accessTokenOptions)
         response.cookie('refreshToken', newRefreshToken, refreshTokenOptions)
@@ -75,7 +75,8 @@ export class OneAppHeaderCommand implements AuthCommand {
 
       request.user = user
       return this.setAuthenticated(result)
-    } catch {
+    }
+    catch {
       return result
     }
   }

@@ -1,4 +1,6 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common'
+import {
+  HttpException, HttpStatus, Inject, Injectable,
+} from '@nestjs/common'
 import { Transactional } from '@nestjs-cls/transactional'
 import { Language } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { IReviewV2 } from '@otl/server-nest/common/interfaces/v2'
@@ -51,7 +53,7 @@ export class ReviewsServiceV2 {
         reviews = await this.getHallOfFameReviews(reviewsParam, MAX_LIMIT)
         break
       case 'popular-feed':
-        ;({ reviews, department } = await this.getPopularFeedReviews(reviewsParam, user, MAX_LIMIT))
+        ({ reviews, department } = await this.getPopularFeedReviews(reviewsParam, user, MAX_LIMIT))
         break
       default:
         reviews = await this.getDefaultReviews(reviewsParam, DEFAULT_ORDER, MAX_LIMIT)
@@ -133,7 +135,7 @@ export class ReviewsServiceV2 {
     reviewsParam: IReviewV2.QueryDto,
     user: EUser.Basic | null,
     maxLimit: number,
-  ): Promise<{ reviews: EReview.Basic[]; department: EDepartment.Basic | null }> {
+  ): Promise<{ reviews: EReview.Basic[], department: EDepartment.Basic | null }> {
     // randomly select between HSS or other departments
     const isHSS = Math.random() < 0.2
     if (isHSS) {
@@ -154,7 +156,8 @@ export class ReviewsServiceV2 {
       // 로그인: 관심 전공
       const relatedDepartments = await this.departmentRepository.getRelatedDepartments(user)
       departments = relatedDepartments.filter((d) => UNDERGRADUATE_DEPARTMENTS.includes(d.code))
-    } else {
+    }
+    else {
       const allDepartments = await this.departmentRepository.getAllDepartmentOptions([])
       departments = allDepartments.filter((d) => UNDERGRADUATE_DEPARTMENTS.includes(d.code))
     }
@@ -193,7 +196,7 @@ export class ReviewsServiceV2 {
     const lecture = await this.lectureRepository.getLectureDetailById(reviewBody.lectureId)
 
     if (!lecture) {
-      throw new HttpException("didn't take class or invalid params", HttpStatus.BAD_REQUEST)
+      throw new HttpException('didn\'t take class or invalid params', HttpStatus.BAD_REQUEST)
     }
 
     // 해당 강의에 대한 후기 작성 권한 확인
@@ -201,7 +204,7 @@ export class ReviewsServiceV2 {
     const reviewLecture = reviewWritableLectures.find((l) => l.id === lecture.id)
 
     if (!reviewLecture) {
-      throw new HttpException("didn't take class or invalid params", HttpStatus.BAD_REQUEST)
+      throw new HttpException('didn\'t take class or invalid params', HttpStatus.BAD_REQUEST)
     }
 
     // 후기 생성
@@ -219,9 +222,7 @@ export class ReviewsServiceV2 {
     const tasks = [
       this.reviewMQ.publishCourseScoreUpdate(review.course_id),
       this.reviewMQ.publishLectureScoreUpdate(review.lecture_id),
-      ...review.lecture.subject_lecture_professors.map((professor) =>
-        this.reviewMQ.publishProfessorScoreUpdate(professor.id),
-      ),
+      ...review.lecture.subject_lecture_professors.map((professor) => this.reviewMQ.publishProfessorScoreUpdate(professor.id)),
     ]
 
     const results = await Promise.allSettled(tasks)
@@ -264,9 +265,7 @@ export class ReviewsServiceV2 {
     await Promise.all([
       this.reviewMQ.publishCourseScoreUpdate(updatedReview.course_id),
       this.reviewMQ.publishLectureScoreUpdate(updatedReview.lecture_id),
-      ...updatedReview.lecture.subject_lecture_professors.map((professor) =>
-        this.reviewMQ.publishProfessorScoreUpdate(professor.id),
-      ),
+      ...updatedReview.lecture.subject_lecture_professors.map((professor) => this.reviewMQ.publishProfessorScoreUpdate(professor.id)),
     ]).catch((e) => {
       logger.error(`Error while publishing review score update: ${e.message}`, e)
     })
@@ -278,7 +277,7 @@ export class ReviewsServiceV2 {
   async updateReviewLiked(body: IReviewV2.PatchLikedDto, user: EUser.Basic): Promise<IReviewV2.UpdateResponseDto> {
     const review = await this.reviewsRepository.getReviewById(body.reviewId)
     if (!review) {
-      throw new HttpException("Can't find review", HttpStatus.BAD_REQUEST)
+      throw new HttpException('Can\'t find review', HttpStatus.BAD_REQUEST)
     }
 
     const alreadyLiked = await this.reviewsRepository.isLiked(body.reviewId, user.id)
