@@ -97,6 +97,6 @@ export class StringStripLength implements ValidatorConstraintInterface {
   }
 
   defaultMessage(_args: ValidationArguments): string {
-    return 'Body \'content\' did not pass validator: content must not be empty'
+    return "Body 'content' did not pass validator: content must not be empty"
   }
 }

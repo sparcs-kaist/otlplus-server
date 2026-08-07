@@ -25,8 +25,7 @@ export class DevicePrismaRepository implements DeviceRepository {
     })
     if (target == null) {
       throw new UserException(404, UserException.DEVICE_NOT_FOUND, getCurrentMethodName())
-    }
-    else {
+    } else {
       await this.prisma.session_userprofile_device.delete({
         where: {
           id: target.id,

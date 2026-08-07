@@ -30,9 +30,8 @@ export class TimetableLectureMiddleware implements IPrismaMiddleware.Middleware 
         if (res) return true
         throw new Error('Could not decrease num_people')
       }
-      throw new Error('can\'t find user')
-    }
-    else if (operations === 'createMany') {
+      throw new Error("can't find user")
+    } else if (operations === 'createMany') {
       const timetableId = args?.data?.timetable_id
       const lectures = args?.data // nested createMany 에 대해서는 작동 안함.
       const userId: number | undefined = (
@@ -46,9 +45,8 @@ export class TimetableLectureMiddleware implements IPrismaMiddleware.Middleware 
         if (!res) throw new Error('Could not increase num_people')
         return true
       }
-      throw new Error('can\'t find user')
-    }
-    else if (operations === 'delete') {
+      throw new Error("can't find user")
+    } else if (operations === 'delete') {
       const timetableId = args?.where?.timetable_id_lecture_id?.timetable_id // todo : args에 where이 들거가나?
       const lectureId = args?.where?.timetable_id_lecture_id?.lecture_id
       const userId: number | undefined = (
@@ -62,9 +60,8 @@ export class TimetableLectureMiddleware implements IPrismaMiddleware.Middleware 
         if (res) return true
         throw new Error('Could not decrease num_people')
       }
-      throw new Error('can\'t find user')
-    }
-    else if (operations === 'deleteMany') {
+      throw new Error("can't find user")
+    } else if (operations === 'deleteMany') {
       const timetableId = args?.where?.timetable_id
       const lectures = await this.prisma.timetable_timetable_lectures.findMany({
         where: {
@@ -82,7 +79,7 @@ export class TimetableLectureMiddleware implements IPrismaMiddleware.Middleware 
         if (!res) throw new Error('Could not decrease num_people')
         return true
       }
-      throw new Error('can\'t find user')
+      throw new Error("can't find user")
     }
     return true
   }
@@ -121,7 +118,7 @@ export class TimetableLectureMiddleware implements IPrismaMiddleware.Middleware 
     return true
   }
 
-  private async countNumPeopleBatch(lectures: { id: number, timetable_id: number, lecture_id: number }[]) {
+  private async countNumPeopleBatch(lectures: { id: number; timetable_id: number; lecture_id: number }[]) {
     const lectureIds = lectures.map((lecture) => lecture.lecture_id)
     Promise.all(
       lectureIds.map(async (id) => {

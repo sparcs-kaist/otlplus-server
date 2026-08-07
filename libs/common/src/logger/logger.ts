@@ -13,9 +13,8 @@ const baseFormat = format.combine(
 )
 
 const finalFormat = format.printf(
-  ({
-    level, message, timestamp, stack,
-  }) => `${timestamp} [${level}]: ${message} ${level === 'error' && stack ? stack : ''}`,
+  ({ level, message, timestamp, stack }) =>
+    `${timestamp} [${level}]: ${message} ${level === 'error' && stack ? stack : ''}`,
 )
 
 const uncolorizedFormat = format.combine(baseFormat, format.uncolorize(), finalFormat)
@@ -56,8 +55,7 @@ if (NODE_ENV === 'prod') {
       new transports.Console(),
     ],
   })
-}
-else if (NODE_ENV === 'dev') {
+} else if (NODE_ENV === 'dev') {
   logger = createLogger({
     level: 'debug',
     format: uncolorizedFormat,
@@ -87,8 +85,7 @@ else if (NODE_ENV === 'dev') {
       new transports.Console({ format: colorizedFormat }),
     ],
   })
-}
-else {
+} else {
   logger = createLogger({
     level: 'debug',
     format: colorizedFormat,

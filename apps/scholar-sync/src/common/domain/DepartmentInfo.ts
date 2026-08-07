@@ -31,10 +31,10 @@ export class DepartmentInfo {
 
   public static equals(department: DepartmentInfo, existing: EDepartment.Basic) {
     return (
-      existing.num_id === department.num_id
-      && existing.code === department.code
-      && existing.name === department.name
-      && existing.name_en === department.name_en
+      existing.num_id === department.num_id &&
+      existing.code === department.code &&
+      existing.name === department.name &&
+      existing.name_en === department.name_en
     )
   }
 }

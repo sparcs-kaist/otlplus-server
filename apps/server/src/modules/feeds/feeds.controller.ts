@@ -1,7 +1,5 @@
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager'
-import {
-  Controller, ExecutionContext, Get, Query, UseInterceptors,
-} from '@nestjs/common'
+import { Controller, ExecutionContext, Get, Query, UseInterceptors } from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { IFeed } from '@otl/server-nest/common/interfaces'
 import { toJsonFeedDetails } from '@otl/server-nest/common/serializer/feeds.serializer'

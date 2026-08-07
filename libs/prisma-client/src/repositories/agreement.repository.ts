@@ -24,8 +24,7 @@ export class AgreementPrismaRepository implements AgreementRepository, ConsumerA
     })
     if (target == null) {
       throw new OtlException(404, 'User with that Agreement not found')
-    }
-    else {
+    } else {
       await this.prisma.agreement.delete({
         where: {
           id,
@@ -261,25 +260,27 @@ export class AgreementPrismaRepository implements AgreementRepository, ConsumerA
       }
     })
     const upsertUserAgreements = await Promise.all(
-      agreementCreate.map((e) => this.prisma.session_userprofile_agreement.upsert({
-        where: {
-          userprofile_id_agreement_id: {
+      agreementCreate.map((e) =>
+        this.prisma.session_userprofile_agreement.upsert({
+          where: {
+            userprofile_id_agreement_id: {
+              userprofile_id: e.userId,
+              agreement_id: e.agreementId,
+            },
+          },
+          create: {
             userprofile_id: e.userId,
             agreement_id: e.agreementId,
+            agreement_status: e.agreementStatus,
+            need_to_show: e.modal,
           },
-        },
-        create: {
-          userprofile_id: e.userId,
-          agreement_id: e.agreementId,
-          agreement_status: e.agreementStatus,
-          need_to_show: e.modal,
-        },
-        update: {
-          agreement_status: e.agreementStatus,
-          need_to_show: e.modal,
-        },
-        include: EAgreement.UserAgreement.include,
-      })),
+          update: {
+            agreement_status: e.agreementStatus,
+            need_to_show: e.modal,
+          },
+          include: EAgreement.UserAgreement.include,
+        }),
+      ),
     )
     return upsertUserAgreements.map((e) => mapUserAgreement(e))
   }

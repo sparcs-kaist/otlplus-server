@@ -1,6 +1,4 @@
-import {
-  Body, Controller, Get, Param, Post, UnauthorizedException,
-} from '@nestjs/common'
+import { Body, Controller, Get, Param, Post, UnauthorizedException } from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { IWishlist } from '@otl/server-nest/common/interfaces'
 import { toJsonWishlist } from '@otl/server-nest/common/serializer/wishlist.serializer'

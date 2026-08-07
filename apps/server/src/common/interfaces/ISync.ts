@@ -1,7 +1,5 @@
 import { Transform, Type } from 'class-transformer'
-import {
-  IsIn, IsInt, IsNumber, IsObject, IsOptional, IsString, ValidateNested,
-} from 'class-validator'
+import { IsIn, IsInt, IsNumber, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator'
 
 export namespace ISync {
   /** 동기화 대상 강의 정보

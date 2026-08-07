@@ -1,12 +1,12 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { AppModule } from '@otl/scholar-sync/app.module';
-import { SyncService } from '@otl/scholar-sync/modules/sync/sync.service';
+import { Test, TestingModule } from '@nestjs/testing'
+import { AppModule } from '@otl/scholar-sync/app.module'
+import { SyncService } from '@otl/scholar-sync/modules/sync/sync.service'
 
-import { PrismaService } from '@otl/prisma-client';
+import { PrismaService } from '@otl/prisma-client'
 
 // This tests on test database only. Add `DATABASE_URL` with `otlplus_test` database to run this test.
 
-const maybe = process.env.DATABASE_URL?.includes('/otlplus_test?') ? describe : describe.skip;
+const maybe = process.env.DATABASE_URL?.includes('/otlplus_test?') ? describe : describe.skip
 
 const userData = [...Array(5).keys()].map((i) => ({
   id: i + 1,
@@ -15,7 +15,7 @@ const userData = [...Array(5).keys()].map((i) => ({
   date_joined: new Date(),
   first_name: 'test',
   last_name: 'test',
-}));
+}))
 
 const departmentData = [...Array(2).keys()].map((i) => ({
   id: i + 1,
@@ -24,7 +24,7 @@ const departmentData = [...Array(2).keys()].map((i) => ({
   name: `학과${i}`,
   name_en: `department${i}`,
   visible: true,
-}));
+}))
 const courseData = [...Array(2).keys()].map((i) => ({
   id: i + 1,
   old_code: `${departmentData[i].code}10${i}`,
@@ -44,7 +44,7 @@ const courseData = [...Array(2).keys()].map((i) => ({
   speech: 0,
   title_no_space: `과목${i}`,
   title_en_no_space: `subject${i}`,
-}));
+}))
 
 const lectureData = [...Array(2).keys()].map((i) => ({
   id: i + 1,
@@ -77,13 +77,13 @@ const lectureData = [...Array(2).keys()].map((i) => ({
   speech: 0,
   title_no_space: courseData[i].title_no_space,
   title_en_no_space: courseData[i].title_en_no_space,
-}));
+}))
 
 const takenLectureData = [...Array(2).keys()].map((i) => ({
   id: i + 1,
   userprofile_id: userData[i].id,
   lecture_id: lectureData[i].id,
-}));
+}))
 
 const attendBase = {
   LECTURE_YEAR: 3000,
@@ -93,55 +93,55 @@ const attendBase = {
   DEPT_ID: departmentData[0].id,
   STUDENT_NO: parseInt(userData[0].student_id),
   PROCESS_TYPE: 'I',
-} as const;
+} as const
 
 maybe('SyncTakenLectureService', () => {
-  let service: SyncService;
-  let prisma: PrismaService;
+  let service: SyncService
+  let prisma: PrismaService
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
       providers: [],
-    }).compile();
+    }).compile()
 
-    service = module.get<SyncService>(SyncService);
-    prisma = module.get<PrismaService>(PrismaService);
+    service = module.get<SyncService>(SyncService)
+    prisma = module.get<PrismaService>(PrismaService)
 
-    await prisma.session_userprofile_taken_lectures.deleteMany();
-    await prisma.session_userprofile.deleteMany();
-    await prisma.subject_lecture_professors.deleteMany();
-    await prisma.subject_lecture.deleteMany();
-    await prisma.subject_course.deleteMany();
-    await prisma.subject_department.deleteMany();
+    await prisma.session_userprofile_taken_lectures.deleteMany()
+    await prisma.session_userprofile.deleteMany()
+    await prisma.subject_lecture_professors.deleteMany()
+    await prisma.subject_lecture.deleteMany()
+    await prisma.subject_course.deleteMany()
+    await prisma.subject_department.deleteMany()
 
-    await prisma.session_userprofile.createMany({ data: userData });
-    await prisma.subject_department.createMany({ data: departmentData });
-    await prisma.subject_course.createMany({ data: courseData });
-    await prisma.subject_lecture.createMany({ data: lectureData });
-  });
+    await prisma.session_userprofile.createMany({ data: userData })
+    await prisma.subject_department.createMany({ data: departmentData })
+    await prisma.subject_course.createMany({ data: courseData })
+    await prisma.subject_lecture.createMany({ data: lectureData })
+  })
 
   afterAll(async () => {
-    await prisma.session_userprofile_taken_lectures.deleteMany();
-    await prisma.session_userprofile.deleteMany();
-    await prisma.subject_lecture_professors.deleteMany();
-    await prisma.subject_lecture.deleteMany();
-    await prisma.subject_course.deleteMany();
-    await prisma.subject_department.deleteMany();
-  });
+    await prisma.session_userprofile_taken_lectures.deleteMany()
+    await prisma.session_userprofile.deleteMany()
+    await prisma.subject_lecture_professors.deleteMany()
+    await prisma.subject_lecture.deleteMany()
+    await prisma.subject_course.deleteMany()
+    await prisma.subject_department.deleteMany()
+  })
 
   beforeEach(async () => {
     await prisma.session_userprofile_taken_lectures.createMany({
       data: takenLectureData,
-    });
-  });
+    })
+  })
 
   afterEach(async () => {
-    await prisma.session_userprofile_taken_lectures.deleteMany();
-  });
+    await prisma.session_userprofile_taken_lectures.deleteMany()
+  })
 
   it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
+    expect(service).toBeDefined()
+  })
 
   it('should update taken lectures', async () => {
     const result = await service.syncTakenLecture({
@@ -155,28 +155,28 @@ maybe('SyncTakenLectureService', () => {
           DEPT_ID: departmentData[1].id,
         },
       ],
-    });
+    })
 
-    expect(result.updated).toHaveLength(2);
-    expect(result.errors).toHaveLength(0);
+    expect(result.updated).toHaveLength(2)
+    expect(result.errors).toHaveLength(0)
     expect(result.updated.filter((u: any) => u.studentId.toString() === userData[0].student_id)[0]).toMatchObject({
       studentId: parseInt(userData[0].student_id),
       add: [lectureData[1].id],
       remove: [takenLectureData[0].id],
-    });
+    })
     expect(result.updated.filter((u: any) => u.studentId.toString() === userData[1].student_id)[0]).toMatchObject({
       studentId: parseInt(userData[1].student_id),
       add: [],
       remove: [takenLectureData[1].id],
-    });
+    })
 
-    const takenLectures = await prisma.session_userprofile_taken_lectures.findMany();
-    expect(takenLectures).toHaveLength(1);
+    const takenLectures = await prisma.session_userprofile_taken_lectures.findMany()
+    expect(takenLectures).toHaveLength(1)
     expect(takenLectures[0]).toMatchObject({
       userprofile_id: 1,
       lecture_id: 2,
-    });
-  });
+    })
+  })
 
   it('should handle error', async () => {
     const result = await service.syncTakenLecture({
@@ -188,9 +188,9 @@ maybe('SyncTakenLectureService', () => {
           SUBJECT_NO: 'invalid',
         },
       ],
-    });
+    })
 
-    expect(result.errors).toHaveLength(1);
+    expect(result.errors).toHaveLength(1)
     expect(result.errors[0]).toMatchObject({
       student_no: parseInt(userData[0].student_id),
       attend: {
@@ -198,8 +198,8 @@ maybe('SyncTakenLectureService', () => {
         SUBJECT_NO: 'invalid',
       },
       error: 'lecture not found',
-    });
-  });
+    })
+  })
 
   it('should not update if no change', async () => {
     const result = await service.syncTakenLecture({
@@ -217,9 +217,9 @@ maybe('SyncTakenLectureService', () => {
           DEPT_ID: departmentData[1].id,
         },
       ],
-    });
+    })
 
-    expect(result.updated).toHaveLength(0);
-    expect(result.errors).toHaveLength(0);
-  });
-});
+    expect(result.updated).toHaveLength(0)
+    expect(result.errors).toHaveLength(0)
+  })
+})

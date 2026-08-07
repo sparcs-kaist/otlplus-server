@@ -32,8 +32,7 @@ export class OneAppCookieCommand implements AuthCommand {
 
       request.user = user
       return this.setAuthenticated(prevResult)
-    }
-    catch (e: any) {
+    } catch (e: any) {
       if (e.message === 'jwt expired' && refreshToken) {
         return this.handleRefreshToken(refreshToken, request, response, prevResult)
       }
@@ -73,8 +72,7 @@ export class OneAppCookieCommand implements AuthCommand {
       response.cookie('refreshToken', newRefreshToken, refreshTokenOptions)
       request.user = user
       return this.setAuthenticated(result)
-    }
-    catch {
+    } catch {
       return result
     }
   }

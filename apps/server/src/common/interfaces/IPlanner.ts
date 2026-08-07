@@ -6,9 +6,7 @@ import {
   PROHIBITED_FIELD_PATTERN,
 } from '@otl/server-nest/common/interfaces/validators.decorator'
 import { Transform, Type } from 'class-transformer'
-import {
-  IsArray, IsBoolean, IsEnum, IsIn, IsInt, IsNumber, IsOptional, IsString,
-} from 'class-validator'
+import { IsArray, IsBoolean, IsEnum, IsIn, IsInt, IsNumber, IsOptional, IsString } from 'class-validator'
 
 import { AdditionalTrackType } from '@otl/common/enum/additional.track.response.dto'
 import { PlannerItemType, PlannerItemTypeEnum } from '@otl/common/enum/planner'

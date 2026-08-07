@@ -22,7 +22,7 @@ export class LectureProfessorsMiddleware implements IPrismaMiddleware.Middleware
     if (operations === 'create' || operations === 'delete' || operations === 'deleteMany') {
       const lectureId = result.lecture_id || args?.where?.lecture_id
       if (!lectureId) {
-        console.warn('lecture_id not found. Can\'t recalculate lecture score.')
+        console.warn("lecture_id not found. Can't recalculate lecture score.")
       }
       const lecture = await this.prisma.subject_lecture.findUniqueOrThrow({
         where: { id: lectureId },

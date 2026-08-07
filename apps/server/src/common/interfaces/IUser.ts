@@ -6,9 +6,7 @@ import {
   PROHIBITED_FIELD_PATTERN,
 } from '@otl/server-nest/common/interfaces/validators.decorator'
 import { Transform, Type } from 'class-transformer'
-import {
-  IsArray, IsNotEmpty, IsNumber, IsOptional, IsString,
-} from 'class-validator'
+import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator'
 
 export namespace IUser {
   export interface SsoInfoOneApp {

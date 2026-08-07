@@ -1,6 +1,4 @@
-import {
-  Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post, Query,
-} from '@nestjs/common'
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { ReviewProhibited } from '@otl/server-nest/common/decorators/prohibit-review.decorator'
 import { Public } from '@otl/server-nest/common/decorators/skip-auth.decorator'
@@ -41,7 +39,7 @@ export class ReviewsController {
       const result = await this.reviewsService.createReviews(reviewsBody, user)
       return result
     }
-    throw new HttpException('Can\'t find user', 401)
+    throw new HttpException("Can't find user", 401)
   }
 
   @Public()
@@ -62,7 +60,7 @@ export class ReviewsController {
     if (user) {
       return await this.reviewsService.updateReviewById(reviewId, user, reviewsBody)
     }
-    throw new HttpException('Can\'t find user', 401)
+    throw new HttpException("Can't find user", 401)
   }
 
   @Post(':reviewId/like')
@@ -73,8 +71,7 @@ export class ReviewsController {
     const reviewVote = await this.reviewsService.findReviewVote(reviewId, user)
     if (reviewVote) {
       throw new HttpException('Already Liked', HttpStatus.BAD_REQUEST)
-    }
-    else {
+    } else {
       // @Todo : Message(REVIEW_LIKE) 보내기
       const result = await this.reviewsService.createReviewVote(reviewId, user)
       return toJsonReviewVote(result)
@@ -90,8 +87,7 @@ export class ReviewsController {
     // @Todo : Message(REVIEW_LIKE) 보내기
     if (!reviewVote) {
       throw new HttpException('Already UnLiked', HttpStatus.BAD_REQUEST)
-    }
-    else {
+    } else {
       const result = await this.reviewsService.deleteReviewVote(reviewId, user)
       return toJsonReviewVote(result)
     }

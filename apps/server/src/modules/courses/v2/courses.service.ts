@@ -22,7 +22,8 @@ type courseHistory = {
   myLectureId: number | null
 }
 
-const fallbackEmpty = (preferred?: string | null, fallback?: string | null) => (preferred ?? '').trim() || (fallback ?? '')
+const fallbackEmpty = (preferred?: string | null, fallback?: string | null) =>
+  (preferred ?? '').trim() || (fallback ?? '')
 
 function toICourseBasic(c: ECourseV2.BasicWithProfessors, lang: language, completed: boolean): ICourseV2.Basic {
   return {
@@ -63,9 +64,7 @@ export class CoursesServiceV2 {
     user: session_userprofile | null,
     lang: language,
   ): Promise<ICourseV2.GETCoursesResponse> {
-    const {
-      department, type, level, keyword, term, order, offset, limit,
-    } = query
+    const { department, type, level, keyword, term, order, offset, limit } = query
     const { queryResult, totalCount } = await this.courseRepository.getCourses(
       department,
       type,
@@ -79,7 +78,9 @@ export class CoursesServiceV2 {
 
     const userTakenCourseIds = !user ? [] : await this.courseRepository.getTakenCourseIdsByUser(user.id)
 
-    const localizedResult = queryResult.map((course) => toICourseBasic(course, lang, userTakenCourseIds.includes(course.id)))
+    const localizedResult = queryResult.map((course) =>
+      toICourseBasic(course, lang, userTakenCourseIds.includes(course.id)),
+    )
     return {
       courses: localizedResult,
       totalCount,
@@ -124,9 +125,10 @@ export class CoursesServiceV2 {
             }
           }),
         )
-        const subtitle: string = user_language === 'en'
-          ? lec.title_en.replace(lec.common_title_en ?? '', '')
-          : lec.title.replace(lec.common_title ?? '', '')
+        const subtitle: string =
+          user_language === 'en'
+            ? lec.title_en.replace(lec.common_title_en ?? '', '')
+            : lec.title.replace(lec.common_title ?? '', '')
         const existing = Histories.find((h) => h.year === lec.year && h.semester === lec.semester)
         // year, semester가 이미 있는 경우 : 분반 (classNo)만 추가
         if (existing) {
@@ -140,8 +142,7 @@ export class CoursesServiceV2 {
             existing.myLectureId = lec.id
           }
           // year, semester가 없는 경우 : 새로 추가
-        }
-        else {
+        } else {
           Histories.push({
             year: lec.year,
             semester: lec.semester,
@@ -157,8 +158,7 @@ export class CoursesServiceV2 {
           })
         }
         // year, semester가 없는 경우 : 에러
-      }
-      else {
+      } else {
         throw new Error('Unexpected Error')
       }
     }

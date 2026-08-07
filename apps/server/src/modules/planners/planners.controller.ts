@@ -1,6 +1,4 @@
-import {
-  Body, Controller, Delete, Get, Param, Patch, Post, Query, UnauthorizedException,
-} from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UnauthorizedException } from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { IPlanner } from '@otl/server-nest/common/interfaces'
 import { PlannerPipe } from '@otl/server-nest/common/pipe/planner.pipe'

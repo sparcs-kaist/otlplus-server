@@ -1,9 +1,7 @@
 import { IDepartment } from '@otl/server-nest/common/interfaces/IDepartment'
 import { IProfessor } from '@otl/server-nest/common/interfaces/IProfessor'
 import { Transform } from 'class-transformer'
-import {
-  IsArray, IsNumber, IsOptional, IsString, Max, Min,
-} from 'class-validator'
+import { IsArray, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator'
 
 export namespace ICourse {
   export interface Basic {

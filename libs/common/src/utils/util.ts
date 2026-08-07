@@ -18,7 +18,7 @@ export function groupBy<T, K extends keyof any>(arr: T[], selector: (i: T) => K)
   return arr.reduce(
     (groups: Record<K, T[] | undefined>, item) => {
       // eslint-disable-next-line no-param-reassign
-      (groups[selector(item)] ??= []).push(item)
+      ;(groups[selector(item)] ??= []).push(item)
       return groups
     },
     {} as Record<K, T[] | undefined>,

@@ -39,37 +39,40 @@ export class AuthConfig {
     return this.getProdGuardConfig()
   }
 
-  private getLocalGuardConfig = () => this.authChain
-    .register(this.isPublicCommand)
-    .register(this.studentHeaderCommand)
-    .register(this.jwtHeaderCommand)
-    .register(this.sidHeaderCommand)
-    .register(this.sidCookieCommand)
-    .register(this.jwtCookieCommand)
-    .register(this.syncApiKeyCommand)
-    .register(this.isReviewProhibitedCommand)
-    .register(this.isAdminCommand)
+  private getLocalGuardConfig = () =>
+    this.authChain
+      .register(this.isPublicCommand)
+      .register(this.studentHeaderCommand)
+      .register(this.jwtHeaderCommand)
+      .register(this.sidHeaderCommand)
+      .register(this.sidCookieCommand)
+      .register(this.jwtCookieCommand)
+      .register(this.syncApiKeyCommand)
+      .register(this.isReviewProhibitedCommand)
+      .register(this.isAdminCommand)
 
-  private getDevGuardConfig = () => this.authChain
-    .register(this.isPublicCommand)
-    .register(this.studentHeaderCommand)
-    .register(this.jwtHeaderCommand)
-    .register(this.sidHeaderCommand)
-    .register(this.sidCookieCommand)
-    .register(this.jwtCookieCommand)
-    .register(this.syncApiKeyCommand)
-    .register(this.isReviewProhibitedCommand)
-    .register(this.isAdminCommand)
-    .register(this.oneappHeaderCommand)
-    .register(this.sidAuthTokenCommand)
-    .register(this.ipRangeCommand)
+  private getDevGuardConfig = () =>
+    this.authChain
+      .register(this.isPublicCommand)
+      .register(this.studentHeaderCommand)
+      .register(this.jwtHeaderCommand)
+      .register(this.sidHeaderCommand)
+      .register(this.sidCookieCommand)
+      .register(this.jwtCookieCommand)
+      .register(this.syncApiKeyCommand)
+      .register(this.isReviewProhibitedCommand)
+      .register(this.isAdminCommand)
+      .register(this.oneappHeaderCommand)
+      .register(this.sidAuthTokenCommand)
+      .register(this.ipRangeCommand)
 
-  private getProdGuardConfig = () => this.authChain
-    .register(this.jwtHeaderCommand)
-    .register(this.jwtCookieCommand)
-    .register(this.isPublicCommand)
-    .register(this.syncApiKeyCommand)
-    .register(this.isReviewProhibitedCommand)
-    .register(this.isAdminCommand)
-    .register(this.oneappHeaderCommand)
+  private getProdGuardConfig = () =>
+    this.authChain
+      .register(this.jwtHeaderCommand)
+      .register(this.jwtCookieCommand)
+      .register(this.isPublicCommand)
+      .register(this.syncApiKeyCommand)
+      .register(this.isReviewProhibitedCommand)
+      .register(this.isAdminCommand)
+      .register(this.oneappHeaderCommand)
 }

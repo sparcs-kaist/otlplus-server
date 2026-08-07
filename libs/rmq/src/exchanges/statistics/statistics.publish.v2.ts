@@ -13,7 +13,7 @@ import { TimetableMQ } from '@otl/server-nest/modules/timetables/domain/out/Time
 export class StatisticsUpdatePublisher implements SyncServerStatisticsMQ, TimetableMQ, ReviewMQ {
   constructor(private readonly rabbitPublisherService: RabbitPublisherService) {}
 
-  private getExchangeAndRouting(): { exchange: string, routingKey: string } {
+  private getExchangeAndRouting(): { exchange: string; routingKey: string } {
     const config = settings().getRabbitMQConfig()
     const exchange = config.exchangeConfig.exchangeMap[ExchangeNames.STATISTICS]
     const routingKey = config.queueConfig[QueueSymbols.STATISTICS].routingKey as string

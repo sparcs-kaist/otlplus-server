@@ -1,6 +1,4 @@
-import {
-  Inject, Injectable, NotFoundException, UnauthorizedException,
-} from '@nestjs/common'
+import { Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { IAuth } from '@otl/server-nest/common/interfaces'
 import { AGREEMENT_IN_PUBLIC_PORT } from '@otl/server-nest/modules/agreement/domain/agreement.in.port'
@@ -64,11 +62,9 @@ export class AuthService {
     const degreeNum = rawDegree !== null ? Number(rawDegree) : null
     if (degreeNum === 0) {
       degree = '학사과정'
-    }
-    else if (degreeNum === 1) {
+    } else if (degreeNum === 1) {
       degree = '석사과정'
-    }
-    else if (degreeNum === 2) {
+    } else if (degreeNum === 2) {
       degree = '박사과정'
     }
     const studentId = (v2?.std_no ?? '') as string
@@ -93,10 +89,10 @@ export class AuthService {
       // department는 스키마가 nullable/옵션이므로 값 있을 때만 설정
       ...(departmentId
         ? {
-          department: {
-            connect: { id: departmentId },
-          },
-        }
+            department: {
+              connect: { id: departmentId },
+            },
+          }
         : {}),
     }
 
@@ -130,7 +126,7 @@ export class AuthService {
     {
       allowExpired = false,
       allowDecodeFallback = process.env.NODE_ENV !== 'prod',
-    }: { allowExpired?: boolean, allowDecodeFallback?: boolean } = {},
+    }: { allowExpired?: boolean; allowDecodeFallback?: boolean } = {},
   ): Promise<T> {
     const { oneAppSecret } = settings().getJwtConfig()
 
@@ -151,8 +147,7 @@ export class AuthService {
       //    -> settings().getSsoVerifyConfig() 기반으로 jose jwtVerify 사용
       //    지금은 필요없다면 아래로 진행
       throw new Error('ALG_MISMATCH_OR_RS_ALG')
-    }
-    catch (e: any) {
+    } catch (e: any) {
       // 만료만 무시
       if (allowExpired && (e?.name === 'TokenExpiredError' || /expired|exp|jwt expired/i.test(e?.message))) {
         if (!alg || /^HS\d+$/i.test(alg)) {
@@ -197,11 +192,9 @@ export class AuthService {
     const degreeNum = rawDegree !== null ? Number(rawDegree) : null
     if (degreeNum === 0) {
       degree = '학사과정'
-    }
-    else if (degreeNum === 1) {
+    } else if (degreeNum === 1) {
       degree = '석사과정'
-    }
-    else if (degreeNum === 2) {
+    } else if (degreeNum === 2) {
       degree = '박사과정'
     }
 
@@ -220,8 +213,7 @@ export class AuthService {
         degree,
       )
       await this.syncTakenLecturesService.repopulateTakenLectureForStudent(user.id)
-    }
-    else {
+    } else {
       const prev_student_id = user.student_id
       const updateData = {
         email: ssoProfile.email,
@@ -395,8 +387,7 @@ export class AuthService {
         uid: payload?.uid != null ? String(payload.uid) : undefined,
         payload,
       }
-    }
-    catch {
+    } catch {
       // 2) exp 무시 추가 시도 (옵션을 켰는데도 검증 실패할 경우 대비)
       if (opts?.allowExpired) {
         try {
@@ -406,8 +397,7 @@ export class AuthService {
             uid: payload?.uid != null ? String(payload.uid) : undefined,
             payload,
           }
-        }
-        catch {
+        } catch {
           /* fall through */
         }
       }

@@ -1,6 +1,4 @@
-import {
-  ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus,
-} from '@nestjs/common'
+import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus } from '@nestjs/common'
 import { session_userprofile } from '@prisma/client'
 import * as Sentry from '@sentry/node'
 

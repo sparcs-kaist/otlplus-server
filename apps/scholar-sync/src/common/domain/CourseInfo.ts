@@ -31,11 +31,11 @@ export class CourseInfo {
 
   public static equals(course: CourseInfo, existing: ECourse.Basic) {
     return (
-      existing.department_id === course.department_id
-      && existing.type === course.type
-      && existing.type_en === course.type_en
-      && existing.title === course.title
-      && existing.title_en === course.title_en
+      existing.department_id === course.department_id &&
+      existing.type === course.type &&
+      existing.type_en === course.type_en &&
+      existing.title === course.title &&
+      existing.title_en === course.title_en
     )
   }
 }

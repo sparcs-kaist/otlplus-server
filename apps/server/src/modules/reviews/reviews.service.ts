@@ -1,6 +1,4 @@
-import {
-  HttpException, HttpStatus, Inject, Injectable,
-} from '@nestjs/common'
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { Transactional } from '@nestjs-cls/transactional'
 import { IReview } from '@otl/server-nest/common/interfaces'
 import { toJsonReview } from '@otl/server-nest/common/serializer/review.serializer'
@@ -27,7 +25,7 @@ export class ReviewsService {
     user: session_userprofile,
   ): Promise<IReview.Basic & { userspecific_is_liked: boolean }> {
     const review = await this.reviewsRepository.getReviewById(reviewId)
-    if (!review) throw new HttpException('Can\'t find review', 404)
+    if (!review) throw new HttpException("Can't find review", 404)
     const result = toJsonReview(review)
     if (user) {
       const isLiked: boolean = await this.reviewsRepository.isLiked(review.id, user.id)
@@ -80,7 +78,7 @@ export class ReviewsService {
   ): Promise<IReview.Basic & { userspecific_is_liked: boolean }> {
     const reviewWritableLectures = await this.lectureRepository.findReviewWritableLectures(user, new Date())
     const reviewLecture = reviewWritableLectures.find((lecture) => lecture.id === reviewsBody.lecture)
-    if (reviewLecture === undefined) throw new HttpException('Can\'t find lecture', 404)
+    if (reviewLecture === undefined) throw new HttpException("Can't find lecture", 404)
     const review = await this.reviewsRepository.upsertReview(
       reviewLecture.course_id,
       reviewLecture.id,
@@ -120,8 +118,8 @@ export class ReviewsService {
     reviewBody: IReview.UpdateDto,
   ): Promise<IReview.Basic & { userspecific_is_liked: boolean }> {
     const review = await this.reviewsRepository.getReviewById(reviewId)
-    if (!review) throw new HttpException('Can\'t find review', 404)
-    if (review.writer_id !== user.id) throw new HttpException('Can\'t find user', 401)
+    if (!review) throw new HttpException("Can't find review", 404)
+    if (review.writer_id !== user.id) throw new HttpException("Can't find user", 401)
     if (review.is_deleted) throw new HttpException('Target review deleted by admin', HttpStatus.BAD_REQUEST)
     const updateReview = await this.reviewsRepository.updateReview(
       review.id,
@@ -155,7 +153,7 @@ export class ReviewsService {
 
   async findReviewVote(reviewId: number, user: session_userprofile): Promise<boolean> {
     const review = await this.reviewsRepository.getReviewById(reviewId)
-    if (!review) throw new HttpException('Can\'t find review', 404)
+    if (!review) throw new HttpException("Can't find review", 404)
     const isLiked: boolean = await this.reviewsRepository.isLiked(review.id, user.id)
     return isLiked
   }
@@ -171,7 +169,7 @@ export class ReviewsService {
 
   async deleteReviewVote(reviewId: number, user: session_userprofile) {
     const review = await this.reviewsRepository.getReviewById(reviewId)
-    if (!review) throw new HttpException('Can\'t find review', 404)
+    if (!review) throw new HttpException("Can't find review", 404)
     const isLiked: boolean = await this.reviewsRepository.isLiked(review.id, user.id)
     if (!isLiked) throw new HttpException('Already UnLiked', HttpStatus.BAD_REQUEST)
     const result = await this.reviewsRepository.deleteReviewVote(reviewId, user.id)

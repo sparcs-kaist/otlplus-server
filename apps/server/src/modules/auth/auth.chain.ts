@@ -1,6 +1,4 @@
-import {
-  ExecutionContext, ForbiddenException, Injectable, UnauthorizedException,
-} from '@nestjs/common'
+import { ExecutionContext, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common'
 
 import { AuthCommand, AuthResult } from './auth.command'
 

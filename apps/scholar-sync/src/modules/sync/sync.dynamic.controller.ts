@@ -1,6 +1,4 @@
-import {
-  Body, Controller, Get, Inject, Logger, Param, Patch, Post, Query,
-} from '@nestjs/common'
+import { Body, Controller, Get, Inject, Logger, Param, Patch, Post, Query } from '@nestjs/common'
 import { SchedulerRegistry } from '@nestjs/schedule'
 import { ApiQuery, ApiSecurity } from '@nestjs/swagger'
 import { Public } from '@otl/scholar-sync/common/decorators/skip-auth.decorator'
@@ -28,13 +26,12 @@ export class SyncDynamicController {
   @Public()
   getCrons() {
     const jobs = this.schedulerRegistry.getCronJobs()
-    const jobResults: { key: string, running: boolean, next: string | Date }[] = []
+    const jobResults: { key: string; running: boolean; next: string | Date }[] = []
     jobs.forEach((value, key, _map) => {
       let next
       try {
         next = value.nextDate().toJSDate()
-      }
-      catch (_e) {
+      } catch (_e) {
         next = 'error: next fire date is in the past!'
       }
       const { running } = value
@@ -131,8 +128,7 @@ export class SyncDynamicController {
     if (job.running) {
       job.stop()
       this.logger.log(`Job ${jobName} stopped`)
-    }
-    else {
+    } else {
       job.start()
       this.logger.log(`Job ${jobName} started`)
     }
@@ -147,8 +143,7 @@ export class SyncDynamicController {
       if (value.running) {
         value.stop()
         this.logger.log(`Job ${key} stopped`)
-      }
-      else {
+      } else {
         value.start()
         this.logger.log(`Job ${key} started`)
       }

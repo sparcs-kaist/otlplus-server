@@ -1,6 +1,4 @@
-import {
-  Body, Controller, Get, Post,
-} from '@nestjs/common'
+import { Body, Controller, Get, Post } from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { IDepartment, ISession, IUser } from '@otl/server-nest/common/interfaces'
 import { toJsonDepartment } from '@otl/server-nest/common/serializer/department.serializer'

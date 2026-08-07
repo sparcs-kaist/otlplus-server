@@ -38,9 +38,10 @@ export class MajorInfo<TYPE extends APPLICATION_TYPE> {
     T extends APPLICATION_TYPE,
     U extends T extends typeof APPLICATION_TYPE.MAJOR ? EUser.WithMajors : EUser.WithMinors,
   >(majorInfo: MajorInfo<T>[], user: U) {
-    const userDepartmentIds = 'session_userprofile_majors' in user
-      ? user.session_userprofile_majors.map((major) => major.department_id).sort()
-      : user.session_userprofile_minors.map((minor) => minor.department_id).sort()
+    const userDepartmentIds =
+      'session_userprofile_majors' in user
+        ? user.session_userprofile_majors.map((major) => major.department_id).sort()
+        : user.session_userprofile_minors.map((minor) => minor.department_id).sort()
     const majorInfoDepartmentIds = majorInfo.map((major) => major.department_id).sort()
     return majorInfoDepartmentIds.every((id, index) => id === userDepartmentIds[index])
   }

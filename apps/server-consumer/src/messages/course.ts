@@ -17,10 +17,10 @@ export class CourseRepresentativeLectureUpdateMessage extends CourseUpdateMessag
 
   public static isValid(msg: any): msg is CourseRepresentativeLectureUpdateMessage {
     return (
-      msg
-      && typeof msg.courseId === 'number'
-      && typeof msg.type === 'string'
-      && msg.type === EVENT_TYPE.COURSE_REPRESENTATIVE_LECTURE
+      msg &&
+      typeof msg.courseId === 'number' &&
+      typeof msg.type === 'string' &&
+      msg.type === EVENT_TYPE.COURSE_REPRESENTATIVE_LECTURE
     )
   }
 }

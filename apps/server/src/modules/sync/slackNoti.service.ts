@@ -18,7 +18,6 @@ export class SlackNotiService {
         channel: '#otl-db-sync',
         text,
       })
-    }
-    else console.info(text)
+    } else console.info(text)
   }
 }

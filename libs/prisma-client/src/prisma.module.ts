@@ -1,6 +1,4 @@
-import {
-  DynamicModule, Global, Module, OnModuleInit,
-} from '@nestjs/common'
+import { DynamicModule, Global, Module, OnModuleInit } from '@nestjs/common'
 import * as mariadb from 'mariadb'
 
 import { CourseMiddleware } from '@otl/prisma-client/middleware/prisma.course'

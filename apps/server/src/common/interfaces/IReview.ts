@@ -7,9 +7,7 @@ import {
   StringStripLength,
 } from '@otl/server-nest/common/interfaces/validators.decorator'
 import { Transform, Type } from 'class-transformer'
-import {
-  IsArray, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min, Validate,
-} from 'class-validator'
+import { IsArray, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min, Validate } from 'class-validator'
 
 export namespace IReview {
   export interface Basic {

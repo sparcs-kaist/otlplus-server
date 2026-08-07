@@ -1,8 +1,6 @@
 import * as fs from 'fs'
 import { resolve } from 'path'
-import {
-  ImportDeclaration, ModuleDeclaration, Project, SourceFile, VariableDeclarationKind,
-} from 'ts-morph'
+import { ImportDeclaration, ModuleDeclaration, Project, SourceFile, VariableDeclarationKind } from 'ts-morph'
 
 // 프로젝트 초기화
 const project = new Project({
@@ -18,9 +16,7 @@ project.addSourceFilesAtPaths(resolve(__dirname, '../../../../../apps/server/src
 const sourceFiles = project.getSourceFiles('/**/*.controller.ts')
 
 function hasParameterDecorator(parameter: any, decoratorName: string) {
-  return parameter
-    .getDecorators()
-    .some((decorator: { getName: () => string }) => decorator.getName() === decoratorName)
+  return parameter.getDecorators().some((decorator: { getName: () => string }) => decorator.getName() === decoratorName)
 }
 
 function isInterfaceImport(importPath: string, namedImports: string[]): boolean {
@@ -47,8 +43,8 @@ interface ApiModule {
 function convertObjectToTypeString(obj: Record<string, string>): string {
   return Object.keys(obj).length > 0
     ? `{ ${Object.entries(obj)
-      .map(([key, value]) => `${key}: ${value}`)
-      .join('; ')} }`
+        .map(([key, value]) => `${key}: ${value}`)
+        .join('; ')} }`
     : 'never'
 }
 
@@ -155,7 +151,9 @@ sourceFiles.forEach((sourceFile: SourceFile) => {
     })
     classDeclaration.getMethods().forEach((method) => {
       const decorators = method.getDecorators()
-      const httpMethodDecorator = decorators.find((decorator) => ['Post', 'Get', 'Put', 'Patch', 'Delete'].includes(decorator.getName()))
+      const httpMethodDecorator = decorators.find((decorator) =>
+        ['Post', 'Get', 'Put', 'Patch', 'Delete'].includes(decorator.getName()),
+      )
       if (!httpMethodDecorator) return
 
       const methodType = httpMethodDecorator.getName().toLowerCase() as 'post' | 'get' | 'put' | 'patch' | 'delete'

@@ -34,16 +34,14 @@ export class LectureService {
         throw new Error(`Failed to update lecture title for lectureId: ${lectureId}`)
       }
       return await this.addTitleFormatEn(lectures)
-    }
-    catch (err: any) {
+    } catch (err: any) {
       if (err instanceof ExecutionError || err instanceof ResourceLockedError) {
         // 일단 락을 획득하지 못하면 그저 넘어가도록 함 (다르게 획득된 락이 3번 retry를 시도하기 때문)
         logger.warn(`Failed to acquire lock for courseId: ${courseId}. Reason: ${err.message}`)
         return false
       }
       throw err
-    }
-    finally {
+    } finally {
       if (lock) {
         await lock.release()
       }

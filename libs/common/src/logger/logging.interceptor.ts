@@ -1,10 +1,6 @@
-import {
-  CallHandler, ExecutionContext, Injectable, NestInterceptor,
-} from '@nestjs/common'
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common'
 import { Response } from 'express'
-import {
-  catchError, Observable, tap, throwError,
-} from 'rxjs'
+import { catchError, Observable, tap, throwError } from 'rxjs'
 
 import logger from '@otl/common/logger/logger'
 

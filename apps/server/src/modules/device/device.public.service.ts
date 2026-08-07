@@ -21,8 +21,7 @@ export class DevicePublicService implements DeviceInPublicPort {
     const userDevices = await this.deviceRepository.findByToken(deviceToken)
     if (userDevices === null) {
       throw new UserException(StatusCodes.INTERNAL_SERVER_ERROR, UserException.DEVICE_NOT_FOUND, getCurrentMethodName())
-    }
-    else if (userDevices.length > 1) {
+    } else if (userDevices.length > 1) {
       throw new UserException(StatusCodes.INTERNAL_SERVER_ERROR, UserException.DEVICE_DUPLICATE, getCurrentMethodName())
     }
     return userDevices[0]

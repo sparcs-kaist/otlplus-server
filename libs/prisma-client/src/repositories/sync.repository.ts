@@ -10,9 +10,7 @@ import {
 import { Prisma, SyncType } from '@prisma/client'
 import { Result } from '@prisma/client/runtime/library'
 
-import {
-  EDepartment, ELecture, EProfessor, EReview, ESemester, ESync, EUser,
-} from '@otl/prisma-client/entities'
+import { EDepartment, ELecture, EProfessor, EReview, ESemester, ESync, EUser } from '@otl/prisma-client/entities'
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 import { STAFF_ID } from '@otl/prisma-client/types'
 
@@ -184,7 +182,7 @@ export class SyncRepository {
     })
   }
 
-  async updateLectureProfessors(id: number, { added, removed }: { added: number[], removed: number[] }) {
+  async updateLectureProfessors(id: number, { added, removed }: { added: number[]; removed: number[] }) {
     if (removed.length) {
       await this.prisma.subject_lecture_professors.deleteMany({
         where: {
@@ -210,7 +208,7 @@ export class SyncRepository {
     })
   }
 
-  async updateLectureExamtimes(id: number, { added, removed }: { added: ExamtimeInfo[], removed: number[] }) {
+  async updateLectureExamtimes(id: number, { added, removed }: { added: ExamtimeInfo[]; removed: number[] }) {
     if (removed.length) {
       await this.prisma.subject_examtime.deleteMany({
         where: { id: { in: removed } },
@@ -226,7 +224,7 @@ export class SyncRepository {
     }
   }
 
-  async updateLectureClasstimes(id: number, { added, removed }: { added: ClassTimeInfo[], removed: number[] }) {
+  async updateLectureClasstimes(id: number, { added, removed }: { added: ClassTimeInfo[]; removed: number[] }) {
     if (removed.length) {
       await this.prisma.subject_classtime.deleteMany({
         where: { id: { in: removed } },
@@ -286,7 +284,7 @@ export class SyncRepository {
       studentId: number
       lectureId: number
     }[],
-    { year, semester }: { year: number, semester: number },
+    { year, semester }: { year: number; semester: number },
   ) {
     await this.prisma.sync_taken_lectures.deleteMany({
       where: { year, semester },
@@ -427,7 +425,7 @@ export class SyncRepository {
     })
   }
 
-  async createManyUserMajor(records: { userId: number, departmentId: number }[]) {
+  async createManyUserMajor(records: { userId: number; departmentId: number }[]) {
     return this.prisma.session_userprofile_majors.createMany({
       data: records.map((record) => ({
         userprofile_id: record.userId,
@@ -436,7 +434,7 @@ export class SyncRepository {
     })
   }
 
-  async createManyUserMinor(records: { userId: number, departmentId: number }[]) {
+  async createManyUserMinor(records: { userId: number; departmentId: number }[]) {
     return this.prisma.session_userprofile_minors.createMany({
       data: records.map((record) => ({
         userprofile_id: record.userId,

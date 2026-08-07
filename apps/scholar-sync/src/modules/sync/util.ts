@@ -13,8 +13,7 @@ export function putPreviousSemester(semesters: [number, number][], count: number
   if (semester === 1) {
     newYear -= 1
     newSemester = 4
-  }
-  else {
+  } else {
     newSemester -= 1
   }
   semesters.push([newYear, newSemester])

@@ -53,7 +53,9 @@ export class DepartmentsServiceV2 {
       this.departmentRepository.getDepartmentCodesOfRecentLectures(yearThreshold),
     ])
 
-    if (recentDepartmentCodes.length === 0) console.error('recentDepartmentCodes is empty, which indicates something is wrong')
+    if (recentDepartmentCodes.length === 0) {
+      console.error('recentDepartmentCodes is empty, which indicates something is wrong')
+    }
 
     const result = {
       undergraduate: [] as EDepartment.Basic[],
@@ -64,11 +66,9 @@ export class DepartmentsServiceV2 {
     departments.forEach((department) => {
       if (UNDERGRADUATE_DEPARTMENTS.includes(department.code)) {
         result.undergraduate.push(department)
-      }
-      else if (recentDepartmentCodes.includes(department.code)) {
+      } else if (recentDepartmentCodes.includes(department.code)) {
         result.recent.push(department)
-      }
-      else {
+      } else {
         result.other.push(department)
       }
     })
