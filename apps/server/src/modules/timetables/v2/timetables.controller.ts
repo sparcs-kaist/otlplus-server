@@ -98,7 +98,7 @@ export class TimetablesControllerV2 {
     return { id: created.id }
   }
 
-  // 특정 custom block 수정하기 (place, block_name)
+  // 특정 custom block 수정하기
   @Patch('/:timetableId/custom-blocks/:customblockId')
   async updateCustomblock(
     @Param('timetableId') timetableId: number,

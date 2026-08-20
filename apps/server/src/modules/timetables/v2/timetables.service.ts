@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Inject,
   Injectable,
@@ -21,6 +22,7 @@ import { Prisma, session_userprofile } from '@prisma/client'
 import logger from '@otl/common/logger/logger'
 
 import { CustomblockRepository, LectureRepository, TimetableRepository } from '@otl/prisma-client'
+import { ECustomblock } from '@otl/prisma-client/entities/ECustomblock'
 
 @Injectable()
 export class TimetablesServiceV2 {
@@ -383,9 +385,35 @@ export class TimetablesServiceV2 {
     return timetable
   }
 
+  private async validateCustomblockTime(
+    timetableId: number,
+    candidate: ECustomblock.Time,
+    customblocks: ECustomblock.Basic[],
+  ) {
+    if (candidate.begin >= candidate.end) {
+      throw new BadRequestException('Custom block end must be later than begin')
+    }
+
+    const timetableLectures = await this.timetableRepository.getLecturesWithClassTimes(timetableId)
+    const lectureTimes = timetableLectures
+      .flatMap(({ subject_lecture }) => subject_lecture.subject_classtime)
+      .map(({ day, begin, end }) => ({
+        day,
+        begin: begin.getUTCHours() * 60 + begin.getUTCMinutes(),
+        end: end.getUTCHours() * 60 + end.getUTCMinutes(),
+      }))
+    const timetableEntries = [...customblocks, ...lectureTimes]
+
+    if (timetableEntries.some((time) => ECustomblock.overlaps(candidate, time))) {
+      throw new ConflictException('Custom block overlaps an existing timetable entry')
+    }
+  }
+
   @Transactional()
   async addCustomblockToTimetable(timetableId: number, body: ICustomblock.CreateDto, user: session_userprofile) {
     await this.TimetableValidation(user, timetableId)
+    const customblocks = await this.customblockRepository.getCustomblocksList(timetableId)
+    await this.validateCustomblockTime(timetableId, body, customblocks)
     const customBlock = await this.customblockRepository.createCustomblock({
       block_name: body.block_name,
       place: body.place,
@@ -412,6 +440,16 @@ export class TimetablesServiceV2 {
     user: session_userprofile,
   ) {
     await this.TimetableValidation(user, timetableId)
+    const customblocks = await this.customblockRepository.getCustomblocksList(timetableId)
+    const current = customblocks.find((customblock) => customblock.id === customblockId)
+    if (!current) {
+      throw new NotFoundException('No such custom block in timetable')
+    }
+    await this.validateCustomblockTime(
+      timetableId,
+      { ...current, ...body },
+      customblocks.filter((customblock) => customblock.id !== customblockId),
+    )
     return this.customblockRepository.updateCustomblock(customblockId, body)
   }
 
