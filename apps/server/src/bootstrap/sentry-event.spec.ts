@@ -53,6 +53,8 @@ describe('sanitizeSentryEvent', () => {
           trace_id: '0'.repeat(32),
           span_id: '1'.repeat(16),
           data: {
+            url: 'https://otl.example.com/FuNcTiOnS/v1?secret=root-url',
+            'url.full': 'https://otl.example.com/FuNcTiOnS/v1?secret=root-full',
             'http.target': '/FuNcTiOnS/v1?secret=root-target',
             'http.query': 'secret=root-query',
             safe: 'preserved',
@@ -66,6 +68,7 @@ describe('sanitizeSentryEvent', () => {
           start_timestamp: 1,
           timestamp: 2,
           data: {
+            url: 'https://otl.example.com/FuNcTiOnS/v1?secret=span-url',
             'http.url': 'https://otl.example.com/FuNcTiOnS/v1?secret=span-url',
             'url.query': 'secret=span-query',
             safe: 'preserved',
@@ -75,10 +78,13 @@ describe('sanitizeSentryEvent', () => {
     } satisfies TransactionEvent)
 
     expect(sanitized.contexts?.trace?.data).toEqual({
+      url: 'https://otl.example.com/FuNcTiOnS/v1',
+      'url.full': 'https://otl.example.com/FuNcTiOnS/v1',
       'http.target': '/FuNcTiOnS/v1',
       safe: 'preserved',
     })
     expect(sanitized.spans?.[0].data).toEqual({
+      url: 'https://otl.example.com/FuNcTiOnS/v1',
       'http.url': 'https://otl.example.com/FuNcTiOnS/v1',
       safe: 'preserved',
     })
@@ -92,7 +98,7 @@ describe('sanitizeSentryEvent', () => {
           trace_id: '0'.repeat(32),
           span_id: '1'.repeat(16),
           data: {
-            'url.full': 'https://otl.example.com/FUNCTIONS/v1?secret=trace-only',
+            url: 'https://otl.example.com/FUNCTIONS/v1?secret=trace-only',
             'url.query': 'secret=trace-only-query',
           },
         },
@@ -100,7 +106,7 @@ describe('sanitizeSentryEvent', () => {
     } satisfies TransactionEvent)
 
     expect(sanitized.contexts?.trace?.data).toEqual({
-      'url.full': 'https://otl.example.com/FUNCTIONS/v1',
+      url: 'https://otl.example.com/FUNCTIONS/v1',
     })
   })
 

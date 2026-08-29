@@ -3,7 +3,7 @@ import type { Event } from '@sentry/core'
 import { isChannelTalkFunctionUrl, withoutQuery } from '@otl/common/utils/request'
 
 const SENSITIVE_HEADERS = new Set(['authorization', 'cookie', 'x-signature'])
-const TRACE_URL_KEYS = new Set(['http.url', 'http.target', 'url.full', 'url.path'])
+const TRACE_URL_KEYS = new Set(['http.url', 'http.target', 'url', 'url.full', 'url.path'])
 const TRACE_QUERY_KEYS = new Set(['http.query', 'http.fragment', 'url.query', 'url.fragment'])
 
 function getString(value: unknown): string | undefined {
