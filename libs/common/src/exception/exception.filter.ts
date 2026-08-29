@@ -6,6 +6,40 @@ import * as Sentry from '@sentry/node'
 
 import logger from '../logger/logger'
 
+type ExceptionRequest = {
+  readonly method: string
+  readonly originalUrl?: string
+  readonly url: string
+  readonly body?: {
+    readonly method?: unknown
+    readonly systemVersion?: unknown
+  }
+  readonly query: unknown
+  readonly headers: unknown
+}
+
+function getSentryRequestContext(request: ExceptionRequest): Record<string, unknown> {
+  const url = request.originalUrl || request.url
+  if (url === '/functions' || url.startsWith('/functions/')) {
+    return {
+      method: request.method,
+      url,
+      body: {
+        method: request.body?.method,
+        systemVersion: request.body?.systemVersion,
+      },
+    }
+  }
+
+  return {
+    method: request.method,
+    url,
+    body: request.body,
+    query: request.query,
+    headers: request.headers,
+  }
+}
+
 @Catch() // BaseException을 상속한 exception에 대해서 실행됨.
 export class UnexpectedExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
@@ -42,13 +76,7 @@ export class UnexpectedExceptionFilter implements ExceptionFilter {
       scope.setTag('url', request.originalUrl)
       scope.setTag('status_code', response.statusCode)
 
-      scope.setContext('request', {
-        method: request.method,
-        url: request.originalUrl,
-        body: request.body,
-        query: request.query,
-        headers: request.headers,
-      })
+      scope.setContext('request', getSentryRequestContext(request))
 
       scope.setContext('response', {
         statusCode: response.statusCode,
@@ -95,13 +123,7 @@ export class HttpExceptionFilter<T extends HttpException> implements ExceptionFi
       scope.setTag('url', request.originalUrl)
       scope.setTag('status_code', response.statusCode)
 
-      scope.setContext('request', {
-        method: request.method,
-        url: request.originalUrl,
-        body: request.body,
-        query: request.query,
-        headers: request.headers,
-      })
+      scope.setContext('request', getSentryRequestContext(request))
 
       scope.setContext('response', {
         statusCode: resStatus,
