@@ -17,7 +17,7 @@ export class CoursesService {
     private readonly lectureRepository: LectureRepository,
   ) {}
 
-  public async getCourses(query: ICourse.Query, user: session_userprofile): Promise<ICourse.DetailWithIsRead[]> {
+  public async getCourses(query: ICourse.Query, user?: session_userprofile): Promise<ICourse.DetailWithIsRead[]> {
     const {
       department, type, level, group, keyword, term, order, offset, limit,
     } = query
@@ -52,8 +52,6 @@ export class CoursesService {
 
     for (const course of queryResult) {
       const representativeLecture = courseLectureMap.get(course.id)
-      if (!representativeLecture) continue
-
       const professorRaw = course.subject_course_professors.map((x) => x.professor)
       const result = toJsonCourseDetail(course, representativeLecture, professorRaw)
       const userspecific_is_read = courseReads[course.id] ?? false
