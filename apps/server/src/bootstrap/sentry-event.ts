@@ -1,39 +1,62 @@
 import type { Event } from '@sentry/core'
 
+import { isChannelTalkFunctionUrl, withoutQuery } from '@otl/common/utils/request'
+
 const SENSITIVE_HEADERS = new Set(['authorization', 'cookie', 'x-signature'])
 
-function withoutQuery(url: string): string {
-  return url.split('?')[0]
-}
-
-function isChannelTalkFunctionUrl(url: string): boolean {
-  const sanitizedUrl = withoutQuery(url)
-  const protocolIndex = sanitizedUrl.indexOf('://')
-  const pathname = protocolIndex === -1 ? sanitizedUrl : sanitizedUrl.slice(sanitizedUrl.indexOf('/', protocolIndex + 3))
-  return pathname === '/functions' || pathname.startsWith('/functions/')
+function getString(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined
 }
 
 export function sanitizeSentryEvent<T extends Event>(event: T): T {
-  if (!event.request) return event
-
+  const { contexts: eventContexts, request: eventRequest, tags: eventTags } = event
   const headers = Object.fromEntries(
-    Object.entries(event.request.headers ?? {}).filter(([name]) => !SENSITIVE_HEADERS.has(name.toLowerCase())),
+    Object.entries(eventRequest?.headers ?? {}).filter(([name]) => !SENSITIVE_HEADERS.has(name.toLowerCase())),
+  )
+  const requestContext = eventContexts?.request
+  const requestUrl = eventRequest?.url
+  const contextUrl = getString(requestContext?.url)
+  const tagUrl = getString(eventTags?.url)
+  const isChannelTalkEvent = [requestUrl, contextUrl, tagUrl].some(
+    (url) => url !== undefined && isChannelTalkFunctionUrl(url),
   )
 
-  if (!event.request.url || !isChannelTalkFunctionUrl(event.request.url)) {
+  if (!isChannelTalkEvent) {
     return {
       ...event,
-      request: { ...event.request, headers },
+      request: eventRequest ? { ...eventRequest, headers } : undefined,
     }
   }
 
-  return {
-    ...event,
-    request: {
-      url: withoutQuery(event.request.url),
-      method: event.request.method,
-      env: event.request.env,
+  let request = eventRequest
+  if (eventRequest) {
+    request = {
+      url: requestUrl ? withoutQuery(requestUrl) : undefined,
+      method: eventRequest.method,
+      env: eventRequest.env,
       headers,
-    },
+    }
   }
+
+  let contexts = eventContexts
+  if (eventContexts && requestContext) {
+    contexts = {
+      ...eventContexts,
+      request: {
+        method: requestContext.method,
+        url: contextUrl ? withoutQuery(contextUrl) : undefined,
+      },
+    }
+  }
+
+  let tags = eventTags
+  if (eventTags) {
+    tags = {
+      ...eventTags,
+      url: tagUrl ? withoutQuery(tagUrl) : undefined,
+    }
+  }
+
+  const sanitizedEvent = { ...event, request, contexts }
+  return { ...sanitizedEvent, tags }
 }
