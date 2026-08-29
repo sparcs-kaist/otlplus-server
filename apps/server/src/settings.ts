@@ -82,6 +82,13 @@ const getSyncConfig = () => ({
   slackKey: process.env.SLACK_KEY,
 })
 
+const getChannelTalkConfig = () => ({
+  appId: process.env.CHANNELTALK_APP_ID,
+  appSecret: process.env.CHANNELTALK_APP_SECRET,
+  signingKey: process.env.CHANNELTALK_SIGNING_KEY,
+  appStoreUrl: process.env.CHANNELTALK_APP_STORE_URL ?? 'https://app-store.channel.io',
+})
+
 const getVersion = () => String(process.env.npm_package_version)
 
 const getSwaggerConfig = () => {
@@ -115,6 +122,7 @@ export default () => ({
   getSsoConfig: () => getSsoConfig(),
   getCorsConfig: () => getCorsConfig(),
   syncConfig: () => getSyncConfig(),
+  getChannelTalkConfig: () => getChannelTalkConfig(),
   getVersion: () => getVersion(),
   getStaticConfig: () => staticConfig(),
   getSwaggerConfig: () => getSwaggerConfig(),
