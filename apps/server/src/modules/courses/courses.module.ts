@@ -11,5 +11,6 @@ import { CoursesServiceV2 } from './v2/courses.service'
   imports: [PrismaModule],
   controllers: [CourseController, CourseControllerV2],
   providers: [CoursesService, CoursesServiceV2],
+  exports: [CoursesService],
 })
 export class CoursesModule {}
