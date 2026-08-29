@@ -10,6 +10,10 @@ import { ECourse, ELecture } from '@otl/prisma-client/entities'
 import { CourseRepository, LectureRepository } from '@otl/prisma-client/repositories'
 import ECourseUser = ECourse.ECourseUser
 
+export type CourseListOptions = {
+  readonly includeMissingRepresentativeLecture?: boolean
+}
+
 @Injectable()
 export class CoursesService {
   constructor(
@@ -17,7 +21,11 @@ export class CoursesService {
     private readonly lectureRepository: LectureRepository,
   ) {}
 
-  public async getCourses(query: ICourse.Query, user?: session_userprofile): Promise<ICourse.DetailWithIsRead[]> {
+  public async getCourses(
+    query: ICourse.Query,
+    user?: session_userprofile,
+    options: CourseListOptions = {},
+  ): Promise<ICourse.DetailWithIsRead[]> {
     const {
       department, type, level, group, keyword, term, order, offset, limit,
     } = query
@@ -52,6 +60,7 @@ export class CoursesService {
 
     for (const course of queryResult) {
       const representativeLecture = courseLectureMap.get(course.id)
+      if (!representativeLecture && !options.includeMissingRepresentativeLecture) continue
       const professorRaw = course.subject_course_professors.map((x) => x.professor)
       const result = toJsonCourseDetail(course, representativeLecture, professorRaw)
       const userspecific_is_read = courseReads[course.id] ?? false
@@ -92,7 +101,7 @@ export class CoursesService {
   public async getReviewsByCourseId(
     query: ICourse.ReviewQueryDto,
     id: number,
-    user: session_userprofile,
+    user?: session_userprofile,
   ): Promise<IReview.Basic[]> {
     const limit = query.limit ?? 100
     const offset = query.offset ?? 0
