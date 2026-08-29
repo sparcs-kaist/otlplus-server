@@ -2,6 +2,7 @@ import { HttpException, HttpStatus } from '@nestjs/common'
 import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-host'
 import * as Sentry from '@sentry/node'
 
+import logger from '../logger/logger'
 import { HttpExceptionFilter, UnexpectedExceptionFilter } from './exception.filter'
 
 jest.mock('@sentry/node', () => ({
@@ -11,6 +12,8 @@ jest.mock('@sentry/node', () => ({
 
 describe('ChannelTalk exception reporting', () => {
   const setContext = jest.spyOn(Sentry.Scope.prototype, 'setContext')
+  const setTag = jest.spyOn(Sentry.Scope.prototype, 'setTag')
+  const logError = jest.spyOn(logger, 'error').mockImplementation()
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -22,8 +25,8 @@ describe('ChannelTalk exception reporting', () => {
   ])('redacts ChannelTalk request secrets from Sentry for %s', (_name, filter, exception) => {
     const request = {
       method: 'PUT',
-      originalUrl: '/functions/v1',
-      url: '/functions/v1',
+      originalUrl: 'http://otl.example.com/FuNcTiOnS/v1?secret=query',
+      url: '/FuNcTiOnS/v1?secret=query',
       body: {
         method: 'otl.course.search',
         params: { input: { keyword: 'secret query' } },
@@ -48,11 +51,9 @@ describe('ChannelTalk exception reporting', () => {
 
     expect(setContext).toHaveBeenCalledWith('request', {
       method: 'PUT',
-      url: '/functions/v1',
-      body: {
-        method: 'otl.course.search',
-        systemVersion: 'v1',
-      },
+      url: 'http://otl.example.com/FuNcTiOnS/v1',
     })
+    expect(setTag).toHaveBeenCalledWith('url', 'http://otl.example.com/FuNcTiOnS/v1')
+    expect(logError).not.toHaveBeenCalledWith(expect.stringContaining('secret=query'))
   })
 })

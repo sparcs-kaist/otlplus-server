@@ -5,6 +5,7 @@ import { session_userprofile } from '@prisma/client'
 import * as Sentry from '@sentry/node'
 
 import logger from '../logger/logger'
+import { isChannelTalkFunctionUrl, redactRequestUrl } from '../utils/request'
 
 type ExceptionRequest = {
   readonly method: string
@@ -19,15 +20,11 @@ type ExceptionRequest = {
 }
 
 function getSentryRequestContext(request: ExceptionRequest): Record<string, unknown> {
-  const url = request.originalUrl || request.url
-  if (url === '/functions' || url.startsWith('/functions/')) {
+  const url = redactRequestUrl(request.originalUrl || request.url)
+  if (isChannelTalkFunctionUrl(url)) {
     return {
       method: request.method,
       url,
-      body: {
-        method: request.body?.method,
-        systemVersion: request.body?.systemVersion,
-      },
     }
   }
 
@@ -49,7 +46,7 @@ export class UnexpectedExceptionFilter implements ExceptionFilter {
 
     const resStatus = HttpStatus.INTERNAL_SERVER_ERROR
     const { method } = request
-    const url = request.originalUrl || request.url
+    const url = redactRequestUrl(request.originalUrl || request.url)
     const clientOs = request.headers['client-os'] || '-'
     const apiVersion = request.headers['client-api-version'] || '-'
     const userId = request?.user?.id ?? 'Anonymous'
@@ -73,7 +70,7 @@ export class UnexpectedExceptionFilter implements ExceptionFilter {
       }
 
       scope.setTag('method', request.method)
-      scope.setTag('url', request.originalUrl)
+      scope.setTag('url', url)
       scope.setTag('status_code', response.statusCode)
 
       scope.setContext('request', getSentryRequestContext(request))
@@ -96,7 +93,7 @@ export class HttpExceptionFilter<T extends HttpException> implements ExceptionFi
     const resStatus = exception.getStatus()
 
     const { method } = request
-    const url = request.originalUrl || request.url
+    const url = redactRequestUrl(request.originalUrl || request.url)
     const clientOs = request.headers['client-os'] || '-'
     const apiVersion = request.headers['client-api-version'] || '-'
     const userId = request?.user?.id ?? 'Anonymous'
@@ -120,7 +117,7 @@ export class HttpExceptionFilter<T extends HttpException> implements ExceptionFi
       }
 
       scope.setTag('method', request.method)
-      scope.setTag('url', request.originalUrl)
+      scope.setTag('url', url)
       scope.setTag('status_code', response.statusCode)
 
       scope.setContext('request', getSentryRequestContext(request))

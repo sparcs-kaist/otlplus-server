@@ -7,6 +7,7 @@ import {
 } from 'rxjs'
 
 import logger from '@otl/common/logger/logger'
+import { redactRequestUrl } from '@otl/common/utils/request'
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
@@ -17,7 +18,7 @@ export class LoggingInterceptor implements NestInterceptor {
     const response = context.switchToHttp().getResponse<Response>()
 
     const { method } = request
-    const url = request.originalUrl || request.url
+    const url = redactRequestUrl(request.originalUrl || request.url)
     const clientOs = request.headers['client-os'] || '-'
     const apiVersion = request.headers['client-api-version'] || '-'
     const userId = request?.user?.id ?? 'Anonymous'
