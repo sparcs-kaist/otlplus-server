@@ -1,17 +1,16 @@
 // @ts-check
 
-import { FlatCompat } from '@eslint/eslintrc'; // 👴 airbnb를 위해 임시 사용
-import eslint from '@eslint/js';
-import tseslint from 'typescript-eslint';
-import globals from 'globals';
+import { FlatCompat } from '@eslint/eslintrc' // 👴 airbnb를 위해 임시 사용
+import eslint from '@eslint/js'
+import tseslint from 'typescript-eslint'
+import globals from 'globals'
 
-import eslintPluginStylistic from '@stylistic/eslint-plugin';
-import eslintPluginSimpleImportSort from 'eslint-plugin-simple-import-sort';
-import eslintPluginJest from 'eslint-plugin-jest';
+import eslintPluginStylistic from '@stylistic/eslint-plugin'
+import eslintPluginSimpleImportSort from 'eslint-plugin-simple-import-sort'
+import eslintPluginJest from 'eslint-plugin-jest'
 
-const compat = new FlatCompat({});
+const compat = new FlatCompat({})
 
-/** @type {import('eslint').Linter.FlatConfig[]} */
 export default tseslint.config(
   eslint.configs.recommended,
   tseslint.configs.recommended,
@@ -41,9 +40,6 @@ export default tseslint.config(
       globals: {
         ...globals.node,
         ...globals.es2021,
-      },
-      parserOptions: {
-        project: true,
       },
     },
     rules: {
@@ -89,6 +85,11 @@ export default tseslint.config(
   {
     name: 'TypeScript Custom Rules',
     files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {
+      parserOptions: {
+        project: true,
+      },
+    },
     rules: {
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': [
@@ -108,7 +109,7 @@ export default tseslint.config(
   },
   {
     name: 'Import Sorting Rules',
-    files: ['**/*.ts', '**/*.tsx', '*.mjs'],
+    files: ['**/*.ts', '**/*.tsx', '**/*.mjs'],
     plugins: { 'simple-import-sort': eslintPluginSimpleImportSort },
     rules: {
       'import/order': 'off',
@@ -171,4 +172,4 @@ export default tseslint.config(
       'jest/valid-expect': 'error',
     },
   },
-);
+)
