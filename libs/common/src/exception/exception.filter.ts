@@ -5,6 +5,37 @@ import { session_userprofile } from '@prisma/client'
 import * as Sentry from '@sentry/node'
 
 import logger from '../logger/logger'
+import { isChannelTalkFunctionUrl, redactRequestUrl } from '../utils/request'
+
+type ExceptionRequest = {
+  readonly method: string
+  readonly originalUrl?: string
+  readonly url: string
+  readonly body?: {
+    readonly method?: unknown
+    readonly systemVersion?: unknown
+  }
+  readonly query: unknown
+  readonly headers: unknown
+}
+
+function getSentryRequestContext(request: ExceptionRequest): Record<string, unknown> {
+  const url = redactRequestUrl(request.originalUrl || request.url)
+  if (isChannelTalkFunctionUrl(url)) {
+    return {
+      method: request.method,
+      url,
+    }
+  }
+
+  return {
+    method: request.method,
+    url,
+    body: request.body,
+    query: request.query,
+    headers: request.headers,
+  }
+}
 
 @Catch() // BaseException을 상속한 exception에 대해서 실행됨.
 export class UnexpectedExceptionFilter implements ExceptionFilter {
@@ -15,7 +46,7 @@ export class UnexpectedExceptionFilter implements ExceptionFilter {
 
     const resStatus = HttpStatus.INTERNAL_SERVER_ERROR
     const { method } = request
-    const url = request.originalUrl || request.url
+    const url = redactRequestUrl(request.originalUrl || request.url)
     const clientOs = request.headers['client-os'] || '-'
     const apiVersion = request.headers['client-api-version'] || '-'
     const userId = request?.user?.id ?? 'Anonymous'
@@ -39,16 +70,10 @@ export class UnexpectedExceptionFilter implements ExceptionFilter {
       }
 
       scope.setTag('method', request.method)
-      scope.setTag('url', request.originalUrl)
+      scope.setTag('url', url)
       scope.setTag('status_code', response.statusCode)
 
-      scope.setContext('request', {
-        method: request.method,
-        url: request.originalUrl,
-        body: request.body,
-        query: request.query,
-        headers: request.headers,
-      })
+      scope.setContext('request', getSentryRequestContext(request))
 
       scope.setContext('response', {
         statusCode: response.statusCode,
@@ -68,7 +93,7 @@ export class HttpExceptionFilter<T extends HttpException> implements ExceptionFi
     const resStatus = exception.getStatus()
 
     const { method } = request
-    const url = request.originalUrl || request.url
+    const url = redactRequestUrl(request.originalUrl || request.url)
     const clientOs = request.headers['client-os'] || '-'
     const apiVersion = request.headers['client-api-version'] || '-'
     const userId = request?.user?.id ?? 'Anonymous'
@@ -92,16 +117,10 @@ export class HttpExceptionFilter<T extends HttpException> implements ExceptionFi
       }
 
       scope.setTag('method', request.method)
-      scope.setTag('url', request.originalUrl)
+      scope.setTag('url', url)
       scope.setTag('status_code', response.statusCode)
 
-      scope.setContext('request', {
-        method: request.method,
-        url: request.originalUrl,
-        body: request.body,
-        query: request.query,
-        headers: request.headers,
-      })
+      scope.setContext('request', getSentryRequestContext(request))
 
       scope.setContext('response', {
         statusCode: resStatus,

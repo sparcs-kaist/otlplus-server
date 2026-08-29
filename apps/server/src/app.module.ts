@@ -29,6 +29,7 @@ import { AuthModule } from './modules/auth/auth.module'
 import { AuthGuard } from './modules/auth/guard/auth.guard'
 import { JwtCookieGuard } from './modules/auth/guard/jwt-cookie.guard'
 import { MockAuthGuard } from './modules/auth/guard/mock-auth-guard'
+import { ChannelTalkModule } from './modules/channel-talk/channel-talk.module'
 import { CoursesModule } from './modules/courses/courses.module'
 import { DepartmentsModule } from './modules/departments/departments.module'
 import { DepartmentsModuleV2 } from './modules/departments/v2/departments.module'
@@ -82,6 +83,7 @@ async function createCacheStoreWithFallback(): Promise<Keyv> {
     RmqModule,
     DiscoveryModule,
     AuthModule,
+    ChannelTalkModule,
     CoursesModule,
     LecturesModule,
     ReviewsModule,

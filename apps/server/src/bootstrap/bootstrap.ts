@@ -5,7 +5,6 @@ import { NestFactory } from '@nestjs/core'
 import * as Sentry from '@sentry/nestjs'
 import cookieParser from 'cookie-parser'
 import csrf from 'csurf'
-import { json } from 'express'
 import session from 'express-session'
 import fs from 'fs'
 import { join } from 'path'
@@ -18,6 +17,8 @@ import { PrismaService } from '@otl/prisma-client'
 
 import { AppModule } from '../app.module'
 import settings from '../settings'
+import { useLargeSyncBodyParser } from './body-parser'
+import { sanitizeSentryEvent } from './sentry-event'
 
 function initializeDB(prismaService: PrismaService) {
   const agreementTypes = Object.values(AgreementType)
@@ -48,17 +49,16 @@ async function bootstrap() {
     tracesSampleRate: 1.0,
     beforeSend(event, hint) {
       const error = hint?.originalException
-      if (
-        error instanceof HttpException
-        && (error.getStatus() === HttpStatus.UNAUTHORIZED || error.getStatus() === HttpStatus.NOT_FOUND)
-      ) {
+      const status = error instanceof HttpException ? error.getStatus() : undefined
+      if (status === HttpStatus.UNAUTHORIZED || status === HttpStatus.NOT_FOUND) {
         return null
       }
-      return event
+      return sanitizeSentryEvent(event)
     },
+    beforeSendTransaction: sanitizeSentryEvent,
   })
 
-  const app = await NestFactory.create(AppModule)
+  const app = await NestFactory.create(AppModule, { rawBody: true })
 
   app.enableVersioning({
     type: VersioningType.URI,
@@ -101,8 +101,7 @@ async function bootstrap() {
     )
   }
 
-  app.use('/api/sync', json({ limit: '50mb' }))
-  app.use(json({ limit: '100kb' }))
+  useLargeSyncBodyParser(app)
   app.useGlobalFilters(new UnexpectedExceptionFilter(), new HttpExceptionFilter<HttpException>())
   initializeDB(app.get(PrismaService))
   app.enableShutdownHooks()
