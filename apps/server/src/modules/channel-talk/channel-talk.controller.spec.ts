@@ -1,7 +1,9 @@
-import type { INestApplication } from '@nestjs/common'
+import { type INestApplication, VersioningType } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import { createHmac } from 'crypto'
 import request from 'supertest'
+
+import { useLargeSyncBodyParser } from '@otl/server-nest/bootstrap/body-parser'
 
 import { ChannelTalkSignatureGuard } from './channel-talk-signature.guard'
 import { CHANNEL_TALK_COURSE_CATALOG, CHANNEL_TALK_FUNCTION, CHANNEL_TALK_SIGNING_KEY } from './channel-talk.contract'
@@ -30,6 +32,8 @@ describe('ChannelTalk function endpoint', () => {
     }).compile()
 
     app = moduleFixture.createNestApplication({ rawBody: true })
+    app.enableVersioning({ type: VersioningType.URI })
+    useLargeSyncBodyParser(app)
     await app.init()
   })
 
