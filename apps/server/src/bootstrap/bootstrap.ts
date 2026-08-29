@@ -18,6 +18,7 @@ import { PrismaService } from '@otl/prisma-client'
 
 import { AppModule } from '../app.module'
 import settings from '../settings'
+import { sanitizeSentryEvent } from './sentry-event'
 
 function initializeDB(prismaService: PrismaService) {
   const agreementTypes = Object.values(AgreementType)
@@ -54,8 +55,9 @@ async function bootstrap() {
       ) {
         return null
       }
-      return event
+      return sanitizeSentryEvent(event)
     },
+    beforeSendTransaction: sanitizeSentryEvent,
   })
 
   const app = await NestFactory.create(AppModule, { rawBody: true })
