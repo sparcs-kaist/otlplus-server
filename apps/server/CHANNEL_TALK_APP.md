@@ -60,7 +60,7 @@ CHANNELTALK_APP_STORE_URL=https://app-store.channel.io
 3. Command Extension을 한 번 등록합니다.
 
 ```bash
-dotenv -e env/.env.dev -- yarn register:channel-talk-app
+yarn dotenv -e env/.env.dev -- yarn register:channel-talk-app
 ```
 
 운영 등록 시에는 `env/.env.prod`를 사용합니다. 등록 스크립트는 공식
