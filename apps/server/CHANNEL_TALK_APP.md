@@ -2,6 +2,9 @@
 
 이 서버는 ChannelTalk Function Endpoint와 ALF 추천용 Command Extension을 제공합니다.
 
+서버는 CommonJS로 빌드되지만 SDK 0.22.0은 ESM 전용이므로 Function endpoint는 공식 wire protocol과
+schema를 따르는 호환 구현을 사용합니다. AppStore 등록은 공식 SDK의 `NativeFunctionClient`를 사용합니다.
+
 ## 제공 Function
 
 | Function | 용도 |
