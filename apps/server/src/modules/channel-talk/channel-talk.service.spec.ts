@@ -1,4 +1,5 @@
 import { ICourse, IReview } from '@otl/server-nest/common/interfaces'
+import type { CourseListOptions } from '@otl/server-nest/modules/courses/courses.service'
 
 import { CHANNEL_TALK_FUNCTION } from './channel-talk.contract'
 import { ChannelTalkService } from './channel-talk.service'
@@ -71,17 +72,28 @@ const review: IReview.Basic = {
 }
 
 class FakeCourseCatalog {
-  async getCourses(query: ICourse.Query, _user: undefined): Promise<ICourse.DetailWithIsRead[]> {
+  courseOptions?: CourseListOptions
+
+  reviewQuery?: ICourse.ReviewQueryDto
+
+  async getCourses(
+    query: ICourse.Query,
+    _user: undefined,
+    options?: CourseListOptions,
+  ): Promise<ICourse.DetailWithIsRead[]> {
+    this.courseOptions = options
     return query.keyword === '프로그래밍' ? [course] : []
   }
 
-  async getReviewsByCourseId(_query: ICourse.ReviewQueryDto, id: number, _user: undefined): Promise<IReview.Basic[]> {
+  async getReviewsByCourseId(query: ICourse.ReviewQueryDto, id: number, _user: undefined): Promise<IReview.Basic[]> {
+    this.reviewQuery = query
     return id === course.id ? [review] : []
   }
 }
 
 describe('ChannelTalkService', () => {
-  const service = new ChannelTalkService(new FakeCourseCatalog())
+  const courseCatalog = new FakeCourseCatalog()
+  const service = new ChannelTalkService(courseCatalog)
 
   it('discovers the command metadata and ALF action functions', async () => {
     const response = await service.handle('v1', {
@@ -103,6 +115,19 @@ describe('ChannelTalkService', () => {
     })
   })
 
+  it('uses the endpoint version when systemVersion is omitted', async () => {
+    const response = await service.handle('v1', {
+      method: CHANNEL_TALK_FUNCTION.discover,
+      params: {},
+    })
+
+    expect(response).toEqual(
+      expect.objectContaining({
+        result: expect.objectContaining({ success: true }),
+      }),
+    )
+  })
+
   it('returns a text command result for a course search', async () => {
     const response = await service.handle('v1', {
       method: CHANNEL_TALK_FUNCTION.searchCourses,
@@ -118,6 +143,7 @@ describe('ChannelTalkService', () => {
         },
       },
     })
+    expect(courseCatalog.courseOptions).toEqual({ includeMissingRepresentativeLecture: true })
   })
 
   it('returns a text command result for course reviews', async () => {
@@ -135,6 +161,7 @@ describe('ChannelTalkService', () => {
         },
       },
     })
+    expect(courseCatalog.reviewQuery).toEqual({ limit: 5, order: ['-written_datetime', '-id'] })
   })
 
   it('returns an invalidParams error for an empty keyword', async () => {

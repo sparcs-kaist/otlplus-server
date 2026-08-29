@@ -79,14 +79,14 @@ export class ChannelTalkService {
     if (!this.isRecord(body) || typeof body.method !== 'string') {
       throw new ChannelTalkInputError('method must be a string')
     }
-    if (body.systemVersion !== version) {
+    if (body.systemVersion !== undefined && body.systemVersion !== version) {
       throw new ChannelTalkInputError('systemVersion must match the endpoint version')
     }
     return {
       method: body.method,
       params: body.params ?? {},
       context: body.context,
-      systemVersion: body.systemVersion,
+      systemVersion: version,
     }
   }
 
@@ -101,7 +101,9 @@ export class ChannelTalkService {
       throw new ChannelTalkInputError('keyword must be 100 characters or fewer')
     }
     const limit = this.getLimit(input.limit)
-    const courses = await this.coursesService.getCourses({ keyword: normalizedKeyword, limit }, undefined)
+    const courses = await this.coursesService.getCourses({ keyword: normalizedKeyword, limit }, undefined, {
+      includeMissingRepresentativeLecture: true,
+    })
 
     return {
       result: {
@@ -123,7 +125,11 @@ export class ChannelTalkService {
       throw new ChannelTalkInputError('courseId must be a positive integer')
     }
     const limit = this.getLimit(input.limit)
-    const reviews = await this.coursesService.getReviewsByCourseId({ limit }, courseId, undefined)
+    const reviews = await this.coursesService.getReviewsByCourseId(
+      { limit, order: ['-written_datetime', '-id'] },
+      courseId,
+      undefined,
+    )
 
     return {
       result: {

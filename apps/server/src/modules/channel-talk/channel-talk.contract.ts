@@ -1,4 +1,4 @@
-import type { ICourse, IReview } from '@otl/server-nest/common/interfaces'
+import type { CoursesService } from '@otl/server-nest/modules/courses/courses.service'
 
 export const CHANNEL_TALK_SYSTEM_VERSION = 'v1' as const
 
@@ -177,13 +177,4 @@ export const CHANNEL_TALK_COMMANDS = [
   },
 ] as const
 
-export type CourseCatalog = Pick<CoursesServiceContract, 'getCourses' | 'getReviewsByCourseId'>
-
-type CoursesServiceContract = {
-  readonly getCourses: (query: ICourse.Query, user: undefined) => Promise<ICourse.DetailWithIsRead[]>
-  readonly getReviewsByCourseId: (
-    query: ICourse.ReviewQueryDto,
-    id: number,
-    user: undefined,
-  ) => Promise<IReview.Basic[]>
-}
+export type CourseCatalog = Pick<CoursesService, 'getCourses' | 'getReviewsByCourseId'>
