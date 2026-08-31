@@ -11,5 +11,8 @@ export namespace ECustomblock {
 
   // Helper input shapes for service/repo methods (pair with ICustomblock DTOs)
   export type CreateInput = Pick<Basic, 'block_name' | 'place' | 'day' | 'begin' | 'end'>
-  export type UpdateInput = Partial<Pick<Basic, 'block_name' | 'place'>>
+  export type UpdateInput = Partial<CreateInput>
+  export type Time = Pick<Basic, 'day' | 'begin' | 'end'>
+
+  export const overlaps = (left: Time, right: Time) => left.day === right.day && left.begin < right.end && right.begin < left.end
 }

@@ -56,11 +56,8 @@ export class CustomblockRepository {
     })
   }
 
-  // block_name과 string만 업데이트
-  async updateCustomblock(
-    customblockId: number,
-    updateData: { block_name?: string, place?: string },
-  ): Promise<ECustomblock.Basic> {
+  // 커스텀 블록 업데이트
+  async updateCustomblock(customblockId: number, updateData: ECustomblock.UpdateInput): Promise<ECustomblock.Basic> {
     return this.prisma.block_custom_blocks.update({
       where: { id: customblockId },
       data: updateData,
