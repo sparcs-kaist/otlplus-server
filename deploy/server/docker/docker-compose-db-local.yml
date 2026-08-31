@@ -1,4 +1,4 @@
-version: "3.4"
+version: '3.4'
 
 services:
   db:
@@ -6,7 +6,7 @@ services:
     image: mysql:8.0.36
     restart: on-failure
     ports:
-      - "${OTLPLUS_DB_PORT:-43306}:3306"
+      - '${OTLPLUS_DB_PORT:-43306}:3306'
     environment:
       - MYSQL_ROOT_HOSTS=admin
       - MYSQL_ROOT_PASSWORD=${OTLPLUS_DB_PASSWORD:-password}

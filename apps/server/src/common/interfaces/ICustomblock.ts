@@ -19,13 +19,14 @@ export namespace ICustomblock {
     @Type(() => String)
     block_name!: string
 
-    @IsNotEmpty()
     @IsString()
     @Type(() => String)
     place!: string
 
     @IsNotEmpty()
     @IsInt()
+    @Min(0)
+    @Max(6)
     day!: number
 
     @IsNotEmpty()
@@ -36,8 +37,8 @@ export namespace ICustomblock {
 
     @IsNotEmpty()
     @IsInt()
-    @Min(0) // 00:00 = 0분
-    @Max(1439) // 23:59 = 1439분
+    @Min(1)
+    @Max(1440) // 24:00 = 1440분
     end!: number
   }
 
@@ -51,7 +52,6 @@ export namespace ICustomblock {
   }
 
   export class UpdateDto {
-    // PATCH: place, block_name만 수정 가능 (둘 다 optional)
     @IsOptional()
     @IsString()
     @Type(() => String)
@@ -61,6 +61,27 @@ export namespace ICustomblock {
     @IsString()
     @Type(() => String)
     place?: string
+
+    @IsOptional()
+    @IsInt()
+    @Min(0)
+    @Max(6)
+    @Type(() => Number)
+    day?: number
+
+    @IsOptional()
+    @IsInt()
+    @Min(0)
+    @Max(1439)
+    @Type(() => Number)
+    begin?: number
+
+    @IsOptional()
+    @IsInt()
+    @Min(1)
+    @Max(1440)
+    @Type(() => Number)
+    end?: number
   }
 
   export class DeleteDto {
