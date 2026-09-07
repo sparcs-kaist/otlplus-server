@@ -1,5 +1,6 @@
 export * from './ICourseV2'
 export * from './IDepartmentV2'
+export * from './IFriendV2'
 export * from './ILectureV2'
 export * from './IProfessorV2'
 export * from './IReviewV2'

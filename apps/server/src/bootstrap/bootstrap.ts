@@ -12,7 +12,11 @@ import { join } from 'path'
 import * as swaggerUi from 'swagger-ui-express'
 
 import { AgreementType } from '@otl/common/enum/agreement'
-import { HttpExceptionFilter, UnexpectedExceptionFilter } from '@otl/common/exception/exception.filter'
+import {
+  HttpExceptionFilter,
+  redactFriendInviteRequest,
+  UnexpectedExceptionFilter,
+} from '@otl/common/exception/exception.filter'
 
 import { PrismaService } from '@otl/prisma-client'
 
@@ -54,8 +58,9 @@ async function bootstrap() {
       ) {
         return null
       }
-      return event
+      return redactFriendInviteRequest(event)
     },
+    beforeSendTransaction: redactFriendInviteRequest,
   })
 
   const app = await NestFactory.create(AppModule)

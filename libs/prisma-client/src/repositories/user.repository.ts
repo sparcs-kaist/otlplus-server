@@ -9,6 +9,7 @@ export class UserRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async findBySid(sid: string) {
+    if (!sid) return null
     return this.prisma.session_userprofile.findFirst({
       where: { sid },
     })
@@ -18,6 +19,10 @@ export class UserRepository {
     return this.prisma.session_userprofile.findFirst({
       where: { uid },
     })
+  }
+
+  async findById(id: number) {
+    return this.prisma.session_userprofile.findUnique({ where: { id } })
   }
 
   async createUser(user: Prisma.session_userprofileCreateInput): Promise<session_userprofile> {

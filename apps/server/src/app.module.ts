@@ -33,6 +33,7 @@ import { CoursesModule } from './modules/courses/courses.module'
 import { DepartmentsModule } from './modules/departments/departments.module'
 import { DepartmentsModuleV2 } from './modules/departments/v2/departments.module'
 import { FeedsModule } from './modules/feeds/feeds.module'
+import { FriendsModule } from './modules/friends/friends.module'
 import { LecturesModule } from './modules/lectures/lectures.module'
 import { NoticesModule } from './modules/notices/notices.module'
 import { PlannersModule } from './modules/planners/planners.module'
@@ -94,6 +95,7 @@ async function createCacheStoreWithFallback(): Promise<Keyv> {
     RatesModule,
     StatusModule,
     FeedsModule,
+    FriendsModule,
     WishlistModule,
     NoticesModule,
     SessionModule,
