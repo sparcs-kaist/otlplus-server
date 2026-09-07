@@ -313,6 +313,8 @@ model session_userprofile {
   session_userprofile_notification      session_userprofile_notification[]
   session_userprofile_notification_hist session_userprofile_notification_history[]
   session_userprofile_specialized_major session_userprofile_specialized_major[]
+  friend_relations                     session_userprofile_friends[]             @relation("friend_owner")
+  friended_by                          session_userprofile_friends[]             @relation("friend_target")
   taken_lectures                        session_userprofile_taken_lectures[]
   subject_courseuser                    subject_courseuser[]
   support_rate                          support_rate[]
@@ -321,6 +323,20 @@ model session_userprofile {
 
   @@index([department_id], map: "session_userprofile_department_id_fkey")
   @@index([student_id], map: "session_userprofile_student_id_index")
+}
+
+model session_userprofile_friends {
+  id                    Int                 @id @default(autoincrement())
+  userprofile_id        Int
+  friend_userprofile_id Int
+  is_favorite           Boolean             @default(false)
+  created_at            DateTime            @default(now()) @db.DateTime(0)
+  userprofile           session_userprofile @relation("friend_owner", fields: [userprofile_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "session_friend_owner_fk")
+  friend_profile        session_userprofile @relation("friend_target", fields: [friend_userprofile_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "session_friend_target_fk")
+
+  @@unique([userprofile_id, friend_userprofile_id], map: "session_friend_owner_target_uniq")
+  @@index([friend_userprofile_id], map: "session_friend_target_idx")
+  @@index([userprofile_id, is_favorite, created_at], map: "session_friend_sort_idx")
 }
 
 model sid_uid_map {

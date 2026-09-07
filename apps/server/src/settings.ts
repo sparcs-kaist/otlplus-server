@@ -71,6 +71,18 @@ const getJwtConfig = () => ({
   oneAppSecret: process.env.ONEAPP_JWT_SECRET,
 })
 
+const getFriendInviteConfig = () => {
+  const secret = process.env.FRIEND_INVITE_SECRET
+  if (!secret || secret.length < 32 || secret === process.env.JWT_SECRET) {
+    throw new Error('FRIEND_INVITE_SECRET must be at least 32 characters and different from JWT_SECRET')
+  }
+  return {
+    secret,
+    expiresIn: '7d' as const,
+    audience: 'otl-web' as const,
+  }
+}
+
 const getSsoConfig = (): any => ({
   ssoIsBeta: process.env.SSO_IS_BETA !== 'false',
   ssoClientId: process.env.SSO_CLIENT_ID,
@@ -112,6 +124,7 @@ export default () => ({
   awsconfig: () => getAWSConfig(),
   getRedisConfig: () => getRedisConfig(),
   getJwtConfig: () => getJwtConfig(),
+  getFriendInviteConfig: () => getFriendInviteConfig(),
   getSsoConfig: () => getSsoConfig(),
   getCorsConfig: () => getCorsConfig(),
   syncConfig: () => getSyncConfig(),
