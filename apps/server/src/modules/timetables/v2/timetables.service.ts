@@ -1,8 +1,15 @@
 import {
-  BadRequestException, ForbiddenException, Inject, Injectable, UnauthorizedException,
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common'
 import { Transactional } from '@nestjs-cls/transactional'
 import { Language } from '@otl/server-nest/common/decorators/get-language.decorator'
+import { ICustomblock } from '@otl/server-nest/common/interfaces/ICustomblock'
 import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
 import {
   toJsonLectures,
@@ -14,7 +21,8 @@ import { Prisma, session_userprofile } from '@prisma/client'
 
 import logger from '@otl/common/logger/logger'
 
-import { LectureRepository, TimetableRepository } from '@otl/prisma-client'
+import { CustomblockRepository, LectureRepository, TimetableRepository } from '@otl/prisma-client'
+import { ECustomblock } from '@otl/prisma-client/entities/ECustomblock'
 
 @Injectable()
 export class TimetablesServiceV2 {
@@ -23,6 +31,7 @@ export class TimetablesServiceV2 {
     private readonly lectureRepository: LectureRepository,
     @Inject(TIMETABLE_MQ)
     private readonly timetableMQ: TimetableMQ,
+    private readonly customblockRepository: CustomblockRepository,
   ) {}
 
   async getTimetables(
@@ -363,6 +372,91 @@ export class TimetablesServiceV2 {
       }
       throw error
     }
+  }
+
+  private async TimetableValidation(user: session_userprofile, timetableId: number) {
+    const timetable = await this.timetableRepository.getTimeTableBasicById(timetableId)
+    if (!timetable) {
+      throw new NotFoundException('No such timetable')
+    }
+    if (timetable.user_id !== user.id) {
+      throw new ForbiddenException('User is not owner of timetable')
+    }
+    return timetable
+  }
+
+  private async validateCustomblockTime(
+    timetableId: number,
+    candidate: ECustomblock.Time,
+    customblocks: ECustomblock.Basic[],
+  ) {
+    if (candidate.begin >= candidate.end) {
+      throw new BadRequestException('Custom block end must be later than begin')
+    }
+
+    const timetableLectures = await this.timetableRepository.getLecturesWithClassTimes(timetableId)
+    const lectureTimes = timetableLectures
+      .flatMap(({ subject_lecture }) => subject_lecture.subject_classtime)
+      .map(({ day, begin, end }) => ({
+        day,
+        begin: begin.getUTCHours() * 60 + begin.getUTCMinutes(),
+        end: end.getUTCHours() * 60 + end.getUTCMinutes(),
+      }))
+    const timetableEntries = [...customblocks, ...lectureTimes]
+
+    if (timetableEntries.some((time) => ECustomblock.overlaps(candidate, time))) {
+      throw new ConflictException('Custom block overlaps an existing timetable entry')
+    }
+  }
+
+  @Transactional()
+  async addCustomblockToTimetable(timetableId: number, body: ICustomblock.CreateDto, user: session_userprofile) {
+    await this.TimetableValidation(user, timetableId)
+    const customblocks = await this.customblockRepository.getCustomblocksList(timetableId)
+    await this.validateCustomblockTime(timetableId, body, customblocks)
+    const customBlock = await this.customblockRepository.createCustomblock({
+      block_name: body.block_name,
+      place: body.place,
+      day: body.day,
+      begin: body.begin,
+      end: body.end,
+    })
+    // 시간표에 매핑 추가
+    await this.customblockRepository.addCustomblockToTimetable(timetableId, customBlock.id)
+    return customBlock
+  }
+
+  @Transactional()
+  async getCustomblockList(timetableId: number, user: session_userprofile) {
+    await this.TimetableValidation(user, timetableId)
+    return this.customblockRepository.getCustomblocksList(timetableId)
+  }
+
+  @Transactional()
+  async updateCustomblock(
+    timetableId: number,
+    customblockId: number,
+    body: ICustomblock.UpdateDto,
+    user: session_userprofile,
+  ) {
+    await this.TimetableValidation(user, timetableId)
+    const customblocks = await this.customblockRepository.getCustomblocksList(timetableId)
+    const current = customblocks.find((customblock) => customblock.id === customblockId)
+    if (!current) {
+      throw new NotFoundException('No such custom block in timetable')
+    }
+    await this.validateCustomblockTime(
+      timetableId,
+      { ...current, ...body },
+      customblocks.filter((customblock) => customblock.id !== customblockId),
+    )
+    return this.customblockRepository.updateCustomblock(customblockId, body)
+  }
+
+  @Transactional()
+  async removeCustomblockFromTimetable(timetableId: number, customblockId: number, user: session_userprofile) {
+    await this.TimetableValidation(user, timetableId)
+    await this.customblockRepository.removeCustomblockFromTimetable(timetableId, customblockId)
   }
 
   @Transactional()

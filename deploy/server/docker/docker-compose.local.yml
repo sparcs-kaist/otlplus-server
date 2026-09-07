@@ -1,13 +1,13 @@
-version: "3.4"
+version: '3.4'
 
 services:
   redis-cache:
     image: redis:7.2-alpine
     container_name: redis-otl
     ports:
-      - "6379:6379"
+      - '6379:6379'
     expose:
-      - "6379"
+      - '6379'
     volumes:
       - ../redis/redis.conf:/usr/local/etc/redis/redis.conf
       - ../redis/redis-data:/data
@@ -15,7 +15,7 @@ services:
       - ../../../env/.env.local
     restart: always
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "$${REDIS_PASSWORD}", "ping"]
+      test: ['CMD', 'redis-cli', '-a', '$${REDIS_PASSWORD}', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -32,11 +32,11 @@ services:
     image: rabbitmq:3.13-management
     container_name: rabbitmq-otl
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - '5672:5672'
+      - '15672:15672'
     expose:
-      - "5672"
-      - "15672"
+      - '5672'
+      - '15672'
     environment:
       - RABBITMQ_DEFAULT_USER=otlplus
       - RABBITMQ_DEFAULT_PASS=password
