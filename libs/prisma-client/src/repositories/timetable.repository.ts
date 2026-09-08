@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { Prisma, PrismaClient, session_userprofile } from '@prisma/client'
+import { Prisma, session_userprofile } from '@prisma/client'
 
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 
@@ -127,20 +127,17 @@ export class TimetableRepository {
     })
   }
 
-  async deleteById(timetableId: number, tx?: PrismaClient) {
-    let prismaClient: PrismaClient = this.prisma
-    if (tx) {
-      prismaClient = tx
-    }
-    await prismaClient.timetable_timetable_lectures.deleteMany({
-      where: {
-        timetable_id: timetableId,
-      },
-    })
-    return prismaClient.timetable_timetable.delete({
-      where: {
-        id: timetableId,
-      },
+  async deleteById(timetableId: number) {
+    return this.prisma.$transaction(async (tx) => {
+      await tx.timetable_timetable_lectures.deleteMany({
+        where: { timetable_id: timetableId },
+      })
+      await tx.timetable_timetable_customblocks.deleteMany({
+        where: { timetable_id: timetableId },
+      })
+      return tx.timetable_timetable.delete({
+        where: { id: timetableId },
+      })
     })
   }
 
