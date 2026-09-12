@@ -21,7 +21,7 @@ describe('FriendsService', () => {
   const jwtService = new JwtService()
   const friends = {
     getFriend: jest.fn(),
-    getFriendsWithTakenCourse: jest.fn(),
+    getFriendsWithCourse: jest.fn(),
     createPair: jest.fn(),
     getFriendByTarget: jest.fn(),
   }
@@ -138,7 +138,7 @@ describe('FriendsService', () => {
     expect(timetables.getTimeTableByIdAndUserId).toHaveBeenCalledWith(99, 43)
   })
 
-  it('groups each friend only once with exact-section matches taking priority', async () => {
+  it('includes any official or saved timetable and groups each friend once with exact-section priority', async () => {
     const lecture = {
       id: 10,
       course_id: 100,
@@ -149,44 +149,70 @@ describe('FriendsService', () => {
     const otherSection = { ...lecture, id: 11 }
     const priorTerm = { ...lecture, id: 12, year: 2025 }
     const otherProfessor = { ...priorTerm, id: 13, subject_lecture_professors: [{ professor_id: 6 }] }
-    const withLectures = (id: number, taken: (typeof lecture)[]) => ({
+    const withLectures = (id: number, taken: (typeof lecture)[], saved: (typeof lecture)[][] = []) => ({
       id,
       is_favorite: false,
       friend_profile: {
         first_name: `Friend ${id}`,
         last_name: '',
         taken_lectures: taken.map((item) => ({ lecture: item })),
+        timetable_timetable: saved.map((items) => ({
+          timetable_timetable_lectures: items.map((item) => ({ subject_lecture: item })),
+        })),
       },
     })
     lectures.getLectureDetailById.mockResolvedValue(lecture)
-    friends.getFriendsWithTakenCourse.mockResolvedValue([
+    friends.getFriendsWithCourse.mockResolvedValue([
       withLectures(1, [lecture, otherSection, priorTerm]),
       withLectures(2, [otherSection, priorTerm]),
       withLectures(3, [priorTerm]),
       withLectures(4, [otherProfessor]),
+      withLectures(5, [], [[otherSection], [lecture], [lecture]]),
+      withLectures(6, [], [[otherSection], [priorTerm]]),
+      withLectures(7, [], [[priorTerm]]),
+      withLectures(8, [otherSection], [[lecture]]),
+      withLectures(9, [priorTerm], [[otherSection]]),
+      withLectures(10, [], []),
+      withLectures(11, [], [[otherProfessor]]),
     ])
     const result = await service.getOverlaps(user, 10)
-    expect(friends.getFriendsWithTakenCourse).toHaveBeenCalledWith(42, 100)
-    expect(result.sameLecture.map(({ id }) => id)).toEqual([1])
-    expect(result.sameCourseDifferentSection.map(({ id }) => id)).toEqual([2])
-    expect(result.previousSemesterSameProfessor.map(({ id }) => id)).toEqual([3])
+    expect(friends.getFriendsWithCourse).toHaveBeenCalledWith(42, 100)
+    expect(result.sameLecture.map(({ id }) => id)).toEqual([1, 5, 8])
+    expect(result.sameCourseDifferentSection.map(({ id }) => id)).toEqual([2, 6, 9])
+    expect(result.previousSemesterSameProfessor.map(({ id }) => id)).toEqual([3, 7])
   })
 
   it('filters included lecture rows by course, not just the parent friend records', async () => {
     const findMany = jest.fn().mockResolvedValue([])
     const repository = new FriendRepository({ tx: { session_userprofile_friends: { findMany } } } as never)
-    await repository.getFriendsWithTakenCourse(42, 100)
+    await repository.getFriendsWithCourse(42, 100)
     expect(findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        ...EFriend.WithTakenLectures(100),
+        ...EFriend.WithCourseLectures(100),
         where: {
           userprofile_id: 42,
-          friend_profile: { taken_lectures: { some: { lecture: { course_id: 100 } } } },
+          friend_profile: {
+            OR: [
+              { taken_lectures: { some: { lecture: { course_id: 100 } } } },
+              {
+                timetable_timetable: {
+                  some: { timetable_timetable_lectures: { some: { subject_lecture: { course_id: 100 } } } },
+                },
+              },
+            ],
+          },
         },
       }),
     )
     expect(findMany.mock.calls[0][0].select.friend_profile.select.taken_lectures.where).toEqual({
       lecture: { course_id: 100 },
+    })
+    const savedTimetables = findMany.mock.calls[0][0].select.friend_profile.select.timetable_timetable
+    expect(savedTimetables.where).toEqual({
+      timetable_timetable_lectures: { some: { subject_lecture: { course_id: 100 } } },
+    })
+    expect(savedTimetables.select.timetable_timetable_lectures.where).toEqual({
+      subject_lecture: { course_id: 100 },
     })
   })
 

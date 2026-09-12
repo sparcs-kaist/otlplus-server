@@ -152,7 +152,7 @@ export class FriendsService {
     if (!lecture) throw new NotFoundException('Lecture not found')
 
     const professorIds = new Set(lecture.subject_lecture_professors.map(({ professor_id }) => professor_id))
-    const friends = await this.friendRepository.getFriendsWithTakenCourse(user.id, lecture.course_id)
+    const friends = await this.friendRepository.getFriendsWithCourse(user.id, lecture.course_id)
     const result: IFriendV2.GetOverlapsResDto = {
       sameLecture: [],
       sameCourseDifferentSection: [],
@@ -160,16 +160,20 @@ export class FriendsService {
     }
 
     for (const friend of friends) {
-      const taken = friend.friend_profile.taken_lectures.map(({ lecture: takenLecture }) => takenLecture)
+      const profile = friend.friend_profile
+      const matchingLectures = [
+        ...profile.taken_lectures.map(({ lecture: takenLecture }) => takenLecture),
+        ...profile.timetable_timetable.flatMap(({ timetable_timetable_lectures: savedLectures }) => savedLectures.map(({ subject_lecture: savedLecture }) => savedLecture)),
+      ]
       const serialized = this.toFriend(friend)
-      if (taken.some(({ id }) => id === lecture.id)) {
+      if (matchingLectures.some(({ id }) => id === lecture.id)) {
         result.sameLecture.push(serialized)
       }
-      else if (taken.some(({ year, semester }) => year === lecture.year && semester === lecture.semester)) {
+      else if (matchingLectures.some(({ year, semester }) => year === lecture.year && semester === lecture.semester)) {
         result.sameCourseDifferentSection.push(serialized)
       }
       else if (
-        taken.some(
+        matchingLectures.some(
           (takenLecture) => (takenLecture.year !== lecture.year || takenLecture.semester !== lecture.semester)
             && takenLecture.subject_lecture_professors.some(({ professor_id }) => professorIds.has(professor_id)),
         )
@@ -186,7 +190,7 @@ export class FriendsService {
     return friend
   }
 
-  private readonly toFriend = (friend: EFriend.Summary | EFriend.WithTakenLectures): IFriendV2.Friend => ({
+  private readonly toFriend = (friend: EFriend.Summary): IFriendV2.Friend => ({
     id: friend.id,
     name: [friend.friend_profile.first_name, friend.friend_profile.last_name].filter(Boolean).join(' '),
     isFavorite: friend.is_favorite,

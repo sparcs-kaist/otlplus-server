@@ -63,13 +63,20 @@ export class FriendRepository {
     })
   }
 
-  async getFriendsWithTakenCourse(userId: number, courseId: number): Promise<EFriend.WithTakenLectures[]> {
+  async getFriendsWithCourse(userId: number, courseId: number): Promise<EFriend.WithCourseLectures[]> {
     return this.txHost.tx.session_userprofile_friends.findMany({
-      ...EFriend.WithTakenLectures(courseId),
+      ...EFriend.WithCourseLectures(courseId),
       where: {
         userprofile_id: userId,
         friend_profile: {
-          taken_lectures: { some: { lecture: { course_id: courseId } } },
+          OR: [
+            { taken_lectures: { some: { lecture: { course_id: courseId } } } },
+            {
+              timetable_timetable: {
+                some: { timetable_timetable_lectures: { some: { subject_lecture: { course_id: courseId } } } },
+              },
+            },
+          ],
         },
       },
       orderBy: [{ is_favorite: 'desc' }, { created_at: 'asc' }, { id: 'asc' }],
