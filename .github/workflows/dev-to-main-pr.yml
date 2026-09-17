@@ -1,0 +1,41 @@
+name: Open dev to main PR
+
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: dev-to-main-pr
+  cancel-in-progress: false
+
+jobs:
+  open-pr:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Create PR if needed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          existing_pr=$(gh pr list --base main --head dev --state open --json number --jq '.[0].number // empty')
+          if [ -n "$existing_pr" ]; then
+            echo "dev to main PR #$existing_pr is already open."
+            exit 0
+          fi
+
+          ahead_by=$(gh api "repos/$GH_REPO/compare/main...dev" --jq '.ahead_by')
+          if [ "$ahead_by" -eq 0 ]; then
+            echo 'No new dev commits to merge.'
+            exit 0
+          fi
+
+          gh pr create --base main --head dev --title 'Dev to main' \
+            --body 'dev에 반영된 변경 사항을 main으로 병합하기 위한 자동 생성 PR입니다.'
