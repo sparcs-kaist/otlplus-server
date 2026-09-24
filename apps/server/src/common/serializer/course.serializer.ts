@@ -40,11 +40,8 @@ export function toJsonFeedRelated(course: subject_course): ICourse.FeedRelated {
 
 export function toJsonCourseBasic(
   course: Omit<ECourse.Extended, 'subject_course_professors'>,
-  lecture: subject_lecture,
+  lecture: subject_lecture | undefined,
 ): ICourse.Basic {
-  if (!lecture) {
-    console.log(course, lecture)
-  }
   return {
     id: course.id,
     old_old_code: course.old_code,
@@ -56,16 +53,16 @@ export function toJsonCourseBasic(
     title_en: course.title_en,
     summary: course.summury, // Todo: fix summury typo in db.
     review_total_weight: course.review_total_weight + 0.000001,
-    credit: lecture.credit ?? 0,
-    credit_au: lecture.credit_au ?? 0,
-    num_classes: lecture.num_classes ?? 0,
-    num_labs: lecture.num_labs ?? 0,
+    credit: lecture?.credit ?? 0,
+    credit_au: lecture?.credit_au ?? 0,
+    num_classes: lecture?.num_classes ?? 0,
+    num_labs: lecture?.num_labs ?? 0,
   }
 }
 
 export function toJsonCourseDetail(
   course: ECourse.Extended,
-  lecture: subject_lecture,
+  lecture: subject_lecture | undefined,
   professor: subject_professor[],
 ): ICourse.Detail {
   const basic = toJsonCourseBasic(course, lecture)
