@@ -327,6 +327,7 @@ model session_userprofile {
   session_userprofile_specialized_major session_userprofile_specialized_major[]
   friend_relations                     session_userprofile_friends[]             @relation("friend_owner")
   friended_by                          session_userprofile_friends[]             @relation("friend_target")
+  friend_code                          session_userprofile_friend_codes?
   taken_lectures                        session_userprofile_taken_lectures[]
   subject_courseuser                    subject_courseuser[]
   support_rate                          support_rate[]
@@ -336,6 +337,12 @@ model session_userprofile {
 
   @@index([department_id], map: "session_userprofile_department_id_fkey")
   @@index([student_id], map: "session_userprofile_student_id_index")
+}
+
+model session_userprofile_friend_codes {
+  userprofile_id Int                 @id
+  code           String              @unique(map: "session_friend_code_uniq") @db.VarChar(6)
+  userprofile    session_userprofile @relation(fields: [userprofile_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "session_friend_code_owner_fk")
 }
 
 model session_userprofile_friends {

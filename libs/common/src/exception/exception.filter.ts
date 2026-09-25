@@ -10,9 +10,14 @@ export function redactFriendInviteRequest<T extends Sentry.Event>(event: T): T {
   const { request } = event
   const requestContext = event.contexts?.request
   const urls = [request?.url, requestContext?.url]
-  if (urls.some((url) => typeof url === 'string' && /\/api\/v2\/friends\/invites\/accept\/?(?:\?|$)/i.test(url))) {
+  if (urls.some((url) => typeof url === 'string' && /\/api\/v2\/friends(?:\/(?:code|invites(?:\/accept)?))?\/?(?:\?|$)/i.test(url))) {
     if (request) delete request.data
-    if (requestContext) delete requestContext.body
+    for (const context of [requestContext, event.contexts?.response]) {
+      if (context) {
+        delete context.body
+        delete context.data
+      }
+    }
   }
   return event
 }

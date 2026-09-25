@@ -1,47 +1,37 @@
 import { NotFoundException, ValidationPipe } from '@nestjs/common'
-import { JwtService } from '@nestjs/jwt'
 import { Test } from '@nestjs/testing'
 import { TransactionHost } from '@nestjs-cls/transactional'
 import { IFriendV2 } from '@otl/server-nest/common/interfaces/v2'
-import settings from '@otl/server-nest/settings'
 import { session_userprofile } from '@prisma/client'
 
 import { EFriend } from '@otl/prisma-client/entities'
-import {
-  FriendRepository,
-  LectureRepository,
-  TimetableRepository,
-  UserRepository,
-} from '@otl/prisma-client/repositories'
+import { FriendRepository, LectureRepository, TimetableRepository } from '@otl/prisma-client/repositories'
 
 import { FriendsService } from './friends.service'
 
 describe('FriendsService', () => {
   const user = { id: 42 } as session_userprofile
-  const jwtService = new JwtService()
   const friends = {
+    getOrCreateCode: jest.fn(),
+    getUserIdByCode: jest.fn(),
     getFriend: jest.fn(),
     getFriendsWithCourse: jest.fn(),
     createPair: jest.fn(),
     getFriendByTarget: jest.fn(),
+    deletePair: jest.fn(),
   }
   const lectures = { getLectureDetailById: jest.fn() }
   const timetables = { getTimeTableByIdAndUserId: jest.fn() }
-  const users = { findById: jest.fn() }
   let service: FriendsService
-  const previousSecret = process.env.FRIEND_INVITE_SECRET
 
   beforeEach(async () => {
     jest.resetAllMocks()
-    process.env.FRIEND_INVITE_SECRET = 'test-friend-invite-secret-with-enough-entropy'
     const module = await Test.createTestingModule({
       providers: [
         FriendsService,
         { provide: FriendRepository, useValue: friends },
         { provide: LectureRepository, useValue: lectures },
         { provide: TimetableRepository, useValue: timetables },
-        { provide: UserRepository, useValue: users },
-        { provide: JwtService, useValue: jwtService },
         {
           provide: TransactionHost,
           useValue: { withTransaction: (_propagation: unknown, _options: unknown, work: () => unknown) => work() },
@@ -51,79 +41,59 @@ describe('FriendsService', () => {
     service = module.get(FriendsService)
   })
 
-  afterAll(() => {
-    if (previousSecret === undefined) delete process.env.FRIEND_INVITE_SECRET
-    else process.env.FRIEND_INVITE_SECRET = previousSecret
+  it('returns the caller code from the repository without issuing or expiring credentials', async () => {
+    friends.getOrCreateCode.mockResolvedValue('K7L4MX')
+    await expect(service.getCode(user)).resolves.toEqual({ code: 'K7L4MX' })
+    await expect(service.getCode(user)).resolves.toEqual({ code: 'K7L4MX' })
+    expect(friends.getOrCreateCode).toHaveBeenNthCalledWith(1, 42)
+    expect(friends.getOrCreateCode).toHaveBeenNthCalledWith(2, 42)
   })
 
-  it('rejects tampered, expired, wrong-purpose and self invites before creating a friendship', async () => {
-    const { token } = await service.createInvite(user)
-    const payload = await jwtService.verifyAsync(token, {
-      secret: process.env.FRIEND_INVITE_SECRET,
-      algorithms: ['HS256'],
-      audience: 'otl-web',
-    })
-
-    expect(payload).toMatchObject({ sub: '42', type: 'friend-invite', aud: 'otl-web' })
-    expect(payload.exp - payload.iat).toBe(7 * 24 * 60 * 60)
-    const [header, body, signature] = token.split('.')
-    const tampered = `${header}.${body}.${signature[0] === 'A' ? 'B' : 'A'}${signature.slice(1)}`
-    const invalidTokens = [
-      tampered,
-      await jwtService.signAsync(
-        { type: 'friend-invite', sub: '43' },
-        {
-          secret: process.env.FRIEND_INVITE_SECRET,
-          expiresIn: -1,
-          audience: 'otl-web',
-        },
-      ),
-      await jwtService.signAsync(
-        { type: 'access', sub: '43' },
-        {
-          secret: process.env.FRIEND_INVITE_SECRET,
-          audience: 'otl-web',
-        },
-      ),
-      await jwtService.signAsync(
-        { type: 'friend-invite', sub: '43' },
-        {
-          secret: process.env.FRIEND_INVITE_SECRET,
-          audience: 'another-app',
-        },
-      ),
-      token,
-    ]
-    for (const invalidToken of invalidTokens) {
-      await expect(service.acceptInvite(user, invalidToken)).rejects.toMatchObject({ status: 400 })
-    }
+  it.each([null, 42])('rejects an unknown or self code owner (%s) without creating a friendship', async (ownerId) => {
+    friends.getUserIdByCode.mockResolvedValue(ownerId)
+    await expect(service.addFriend(user, 'K7L4MX')).rejects.toMatchObject({ status: 400 })
+    expect(friends.getUserIdByCode).toHaveBeenCalledWith('K7L4MX')
     expect(friends.createPair).not.toHaveBeenCalled()
-  })
-
-  it('requires a separate invite signing key instead of accepting the auth key', () => {
-    delete process.env.FRIEND_INVITE_SECRET
-    expect(() => settings().getFriendInviteConfig()).toThrow('FRIEND_INVITE_SECRET')
-    const previousJwtSecret = process.env.JWT_SECRET
-    process.env.FRIEND_INVITE_SECRET = 'same-key-for-auth-and-invite-is-not-allowed'
-    process.env.JWT_SECRET = process.env.FRIEND_INVITE_SECRET
-    expect(() => settings().getFriendInviteConfig()).toThrow('different from JWT_SECRET')
-    if (previousJwtSecret === undefined) delete process.env.JWT_SECRET
-    else process.env.JWT_SECRET = previousJwtSecret
+    expect(friends.getFriendByTarget).not.toHaveBeenCalled()
   })
 
   it('creates both directions through the pair operation and returns the caller-owned relation', async () => {
-    const { token } = await service.createInvite({ id: 43 } as session_userprofile)
-    users.findById.mockResolvedValue({ id: 43 })
+    friends.getUserIdByCode.mockResolvedValue(43)
     friends.getFriendByTarget.mockResolvedValue({
       id: 100,
       is_favorite: false,
       friend_profile: { first_name: 'Test', last_name: 'Friend' },
     })
-    await expect(service.acceptInvite(user, token)).resolves.toEqual({
+    await expect(service.addFriend(user, 'K7L4MX')).resolves.toEqual({
       friend: { id: 100, name: 'Test Friend', isFavorite: false },
     })
     expect(friends.createPair).toHaveBeenCalledWith(42, 43)
     expect(friends.getFriendByTarget).toHaveBeenCalledWith(42, 43)
+  })
+
+  it('allows repeated addition and re-addition after deleting the mutual relationship', async () => {
+    friends.getUserIdByCode.mockResolvedValue(43)
+    const relation = {
+      id: 100,
+      friend_userprofile_id: 43,
+      is_favorite: false,
+      friend_profile: { first_name: 'Test', last_name: 'Friend' },
+    }
+    friends.getFriendByTarget.mockResolvedValue(relation)
+    friends.getFriend.mockResolvedValue(relation)
+
+    const first = await service.addFriend(user, 'K7L4MX')
+    await expect(service.addFriend(user, 'K7L4MX')).resolves.toEqual(first)
+    await expect(service.deleteFriend(user, 100)).resolves.toEqual({ id: 100 })
+    expect(friends.deletePair).toHaveBeenCalledWith(42, 43)
+    await expect(service.addFriend(user, 'K7L4MX')).resolves.toEqual(first)
+    expect(friends.createPair).toHaveBeenCalledTimes(3)
+  })
+
+  it('does not return success if the created caller-owned relation cannot be retrieved', async () => {
+    friends.getUserIdByCode.mockResolvedValue(43)
+    friends.getFriendByTarget.mockResolvedValue(null)
+    await expect(service.addFriend(user, 'K7L4MX')).rejects.toMatchObject({ status: 400 })
   })
 
   it('requires an owned friendship and scopes the timetable to that friend', async () => {
@@ -221,5 +191,29 @@ describe('FriendsService', () => {
     const metadata = { type: 'body' as const, metatype: IFriendV2.UpdateFavoriteReqDto }
     await expect(pipe.transform({ isFavorite: false }, metadata)).resolves.toMatchObject({ isFavorite: false })
     await expect(pipe.transform({ isFavorite: 'false' }, metadata)).rejects.toMatchObject({ status: 400 })
+  })
+
+  it('normalizes friend codes and strips caller identity supplied in the request body', async () => {
+    const pipe = new ValidationPipe({ whitelist: true, transform: true })
+    const metadata = { type: 'body' as const, metatype: IFriendV2.AddFriendReqDto }
+    const body = await pipe.transform({ code: '  k7l4mx\n', senderId: 999, userId: 999 }, metadata)
+    expect(body).toEqual({ code: 'K7L4MX' })
+  })
+
+  it.each([
+    undefined,
+    null,
+    123456,
+    '',
+    'K7L4M',
+    'K7L4MXX',
+    'K7 LMX',
+    'K7-LMX',
+    ...Array.from('01IOZ2S5B8G6', (character) => `${character}7L4MX`),
+    'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0MyJ9.signature',
+  ])('rejects invalid friend code %p', async (code) => {
+    const pipe = new ValidationPipe({ whitelist: true, transform: true })
+    const metadata = { type: 'body' as const, metatype: IFriendV2.AddFriendReqDto }
+    await expect(pipe.transform({ code }, metadata)).rejects.toMatchObject({ status: 400 })
   })
 })

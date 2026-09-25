@@ -1,6 +1,5 @@
-import {
-  IsBoolean, IsString, MaxLength, MinLength,
-} from 'class-validator'
+import { Transform } from 'class-transformer'
+import { IsBoolean, IsString, Matches } from 'class-validator'
 
 import { ITimetableV2 } from './ITimetableV2'
 
@@ -15,20 +14,19 @@ export namespace IFriendV2 {
     friends: Friend[]
   }
 
-  export interface CreateInviteResDto {
-    token: string
-    expiresAt: string
+  export interface GetCodeResDto {
+    code: string
   }
 
-  export interface AcceptInviteResDto {
+  export interface AddFriendResDto {
     friend: Friend
   }
 
-  export class AcceptInviteReqDto {
+  export class AddFriendReqDto {
+    @Transform(({ value }) => (typeof value === 'string' ? value.trim().toUpperCase() : value))
     @IsString()
-    @MinLength(1)
-    @MaxLength(2048)
-    token!: string
+    @Matches(/^[ACDEFHJKLMNPQRTUVWXY3479]{6}$/)
+    code!: string
   }
 
   export class UpdateFavoriteReqDto {

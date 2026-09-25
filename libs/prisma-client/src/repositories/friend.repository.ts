@@ -1,12 +1,42 @@
 import { Injectable } from '@nestjs/common'
 import { TransactionHost } from '@nestjs-cls/transactional'
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma'
+import { randomInt } from 'crypto'
 
 import { EFriend } from '@otl/prisma-client/entities/EFriend'
+
+export const FRIEND_CODE_ALPHABET = 'ACDEFHJKLMNPQRTUVWXY3479'
 
 @Injectable()
 export class FriendRepository {
   constructor(private readonly txHost: TransactionHost<TransactionalAdapterPrisma>) {}
+
+  async getOrCreateCode(userId: number): Promise<string> {
+    const codes = this.txHost.tx.session_userprofile_friend_codes
+    const existing = await codes.findUnique({ where: { userprofile_id: userId } })
+    if (existing) return existing.code
+
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      const code = Array.from({ length: 6 }, () => FRIEND_CODE_ALPHABET[randomInt(FRIEND_CODE_ALPHABET.length)]).join('')
+      // A no-op upsert handles both unique keys without overwriting an existing code.
+      await this.txHost.tx.$executeRaw`
+        INSERT INTO session_userprofile_friend_codes (userprofile_id, code)
+        VALUES (${userId}, ${code})
+        ON DUPLICATE KEY UPDATE userprofile_id = userprofile_id
+      `
+      const winner = await codes.findUnique({ where: { userprofile_id: userId } })
+      if (winner) return winner.code
+    }
+    throw new Error('Could not allocate a unique friend code')
+  }
+
+  async getUserIdByCode(code: string): Promise<number | null> {
+    const owner = await this.txHost.tx.session_userprofile_friend_codes.findUnique({
+      where: { code },
+      select: { userprofile_id: true },
+    })
+    return owner?.userprofile_id ?? null
+  }
 
   async getFriends(userId: number): Promise<EFriend.Summary[]> {
     return this.txHost.tx.session_userprofile_friends.findMany({

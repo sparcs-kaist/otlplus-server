@@ -1,11 +1,12 @@
 import {
-  Body, Controller, Delete, Get, Header, Param, ParseIntPipe, Patch, Post, Query,
+  Body, Controller, Delete, Get, Header, Param, ParseIntPipe, Patch, Post, Query, UseGuards,
 } from '@nestjs/common'
 import { GetLanguage, Language } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { IFriendV2, ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
 import { session_userprofile } from '@prisma/client'
 
+import { FriendCodeRateLimitGuard } from './friend-code-rate-limit.guard'
 import { FriendsService } from './friends.service'
 
 @Controller('/api/v2/friends')
@@ -18,16 +19,17 @@ export class FriendsController {
     return this.friendsService.getFriends(user)
   }
 
-  @Post('/invites')
+  @Get('/code')
   @Header('Cache-Control', 'private, no-store')
-  createInvite(@GetUser() user: session_userprofile) {
-    return this.friendsService.createInvite(user)
+  getCode(@GetUser() user: session_userprofile) {
+    return this.friendsService.getCode(user)
   }
 
-  @Post('/invites/accept')
+  @Post()
+  @UseGuards(FriendCodeRateLimitGuard)
   @Header('Cache-Control', 'private, no-store')
-  acceptInvite(@GetUser() user: session_userprofile, @Body() body: IFriendV2.AcceptInviteReqDto) {
-    return this.friendsService.acceptInvite(user, body.token)
+  addFriend(@GetUser() user: session_userprofile, @Body() body: IFriendV2.AddFriendReqDto) {
+    return this.friendsService.addFriend(user, body.code)
   }
 
   @Get('/lectures/:lectureId/overlaps')

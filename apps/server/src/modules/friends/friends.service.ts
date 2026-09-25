@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
-import { JwtService } from '@nestjs/jwt'
 import { Transactional } from '@nestjs-cls/transactional'
 import { Language } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { IFriendV2, ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
@@ -8,76 +7,36 @@ import {
   toJsonTimetableV2,
   toJsonTimetableV2WithLectures,
 } from '@otl/server-nest/common/serializer/v2/timetable.serializer'
-import settings from '@otl/server-nest/settings'
 import { session_userprofile } from '@prisma/client'
-import { randomUUID } from 'node:crypto'
 
 import { EFriend } from '@otl/prisma-client/entities'
 import {
   FriendRepository,
   LectureRepository,
   TimetableRepository,
-  UserRepository,
 } from '@otl/prisma-client/repositories'
-
-interface FriendInvitePayload {
-  sub: string
-  type: 'friend-invite'
-}
 
 @Injectable()
 export class FriendsService {
-  private readonly inviteConfig = settings().getFriendInviteConfig()
-
   constructor(
     private readonly friendRepository: FriendRepository,
     private readonly lectureRepository: LectureRepository,
     private readonly timetableRepository: TimetableRepository,
-    private readonly userRepository: UserRepository,
-    private readonly jwtService: JwtService,
   ) {}
 
   async getFriends(user: session_userprofile): Promise<IFriendV2.GetFriendsResDto> {
     return { friends: (await this.friendRepository.getFriends(user.id)).map(this.toFriend) }
   }
 
-  async createInvite(user: session_userprofile): Promise<IFriendV2.CreateInviteResDto> {
-    const token = await this.jwtService.signAsync(
-      { type: 'friend-invite' },
-      {
-        secret: this.inviteConfig.secret,
-        algorithm: 'HS256',
-        audience: this.inviteConfig.audience,
-        expiresIn: this.inviteConfig.expiresIn,
-        subject: String(user.id),
-        jwtid: randomUUID(),
-      },
-    )
-    return { token, expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() }
+  async getCode(user: session_userprofile): Promise<IFriendV2.GetCodeResDto> {
+    return { code: await this.friendRepository.getOrCreateCode(user.id) }
   }
 
   @Transactional()
-  async acceptInvite(user: session_userprofile, token: string): Promise<IFriendV2.AcceptInviteResDto> {
-    let payload: FriendInvitePayload
-    try {
-      payload = await this.jwtService.verifyAsync<FriendInvitePayload>(token, {
-        secret: this.inviteConfig.secret,
-        algorithms: ['HS256'],
-        audience: this.inviteConfig.audience,
-      })
-    }
-    catch {
-      throw new BadRequestException('Invalid or expired friend invite')
-    }
-
-    const inviterId = Number(payload.sub)
-    if (payload.type !== 'friend-invite' || !Number.isSafeInteger(inviterId) || inviterId <= 0) {
-      throw new BadRequestException('Invalid friend invite')
-    }
+  async addFriend(user: session_userprofile, code: string): Promise<IFriendV2.AddFriendResDto> {
+    const inviterId = await this.friendRepository.getUserIdByCode(code)
+    if (inviterId === null) throw new BadRequestException('Invalid friend code')
     if (inviterId === user.id) throw new BadRequestException('You cannot add yourself as a friend')
-    if (!(await this.userRepository.findById(inviterId))) {
-      throw new BadRequestException('Friend invite owner no longer exists')
-    }
 
     await this.friendRepository.createPair(user.id, inviterId)
     const friend = await this.friendRepository.getFriendByTarget(user.id, inviterId)
