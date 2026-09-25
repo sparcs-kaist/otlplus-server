@@ -669,6 +669,287 @@
         ]
       }
     },
+    "/api/v2/friends": {
+      "get": {
+        "summary": "FriendsController.getFriends",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IFriendV2.GetFriendsResDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "FriendsController.addFriend",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IFriendV2.AddFriendResDto"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IFriendV2.AddFriendReqDto"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/friends/code": {
+      "get": {
+        "summary": "FriendsController.getCode",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IFriendV2.GetCodeResDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/friends/lectures/{lectureId}/overlaps": {
+      "get": {
+        "summary": "FriendsController.getOverlaps",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IFriendV2.GetOverlapsResDto"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "lectureId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v2/friends/{friendId}/favorite": {
+      "patch": {
+        "summary": "FriendsController.updateFavorite",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IFriendV2.UpdateFavoriteResDto"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "friendId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IFriendV2.UpdateFavoriteReqDto"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/friends/{friendId}": {
+      "delete": {
+        "summary": "FriendsController.deleteFriend",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IFriendV2.DeleteFriendResDto"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "friendId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v2/friends/{friendId}/timetables": {
+      "get": {
+        "summary": "FriendsController.getTimetables",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IFriendV2.GetTimetablesResDto"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "friendId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ITimetableV2.GetTimetablesReqDto"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v2/friends/{friendId}/timetables/my-timetable": {
+      "get": {
+        "summary": "FriendsController.getMyTimetable",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ITimetableV2.MyTimetableResDto"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "friendId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ITimetableV2.MyTimetableReqDto"
+            }
+          },
+          {
+            "name": "accept-language",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en",
+                "ko"
+              ]
+            },
+            "description": "en/ko (기본: ko). 언어 헤더 파라미터"
+          }
+        ]
+      }
+    },
+    "/api/v2/friends/{friendId}/timetables/{timetableId}": {
+      "get": {
+        "summary": "FriendsController.getTimetable",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ITimetableV2.TimetableDetailResDto"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "friendId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "timetableId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "accept-language",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en",
+                "ko"
+              ]
+            },
+            "description": "en/ko (기본: ko). 언어 헤더 파라미터"
+          }
+        ]
+      }
+    },
     "/api/lectures": {
       "get": {
         "summary": "LecturesController.getLectures",
@@ -9622,6 +9903,288 @@
         ],
         "additionalProperties": false
       },
+      "IFriendV2.Friend": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "isFavorite": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "isFavorite"
+        ],
+        "additionalProperties": false
+      },
+      "IFriendV2.FriendListItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "isFavorite": {
+            "type": "boolean"
+          },
+          "hasScheduleNow": {
+            "oneOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "hasScheduleNow",
+          "id",
+          "isFavorite",
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "IFriendV2.GetFriendsResDto": {
+        "type": "object",
+        "properties": {
+          "checkedAt": {
+            "type": "string"
+          },
+          "friends": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IFriendV2.FriendListItem"
+            }
+          }
+        },
+        "required": [
+          "checkedAt",
+          "friends"
+        ],
+        "additionalProperties": false
+      },
+      "IFriendV2.GetCodeResDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "additionalProperties": false
+      },
+      "IFriendV2.AddFriendResDto": {
+        "type": "object",
+        "properties": {
+          "friend": {
+            "$ref": "#/components/schemas/IFriendV2.Friend"
+          }
+        },
+        "required": [
+          "friend"
+        ],
+        "additionalProperties": false
+      },
+      "IFriendV2.AddFriendReqDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^[ACDEFHJKLMNPQRTUVWXY3479]{6}$"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "additionalProperties": false
+      },
+      "IFriendV2.UpdateFavoriteReqDto": {
+        "type": "object",
+        "properties": {
+          "isFavorite": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "isFavorite"
+        ],
+        "additionalProperties": false
+      },
+      "IFriendV2.UpdateFavoriteResDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "isFavorite": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "isFavorite"
+        ],
+        "additionalProperties": false
+      },
+      "IFriendV2.DeleteFriendResDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "IFriendV2.GetTimetablesResDto": {
+        "type": "object",
+        "properties": {
+          "timetables": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ITimetableV2.TimetableSummary"
+            }
+          }
+        },
+        "required": [
+          "timetables"
+        ],
+        "additionalProperties": false
+      },
+      "ITimetableV2.TimetableSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "year": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "semester": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "timeTableOrder": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "year",
+          "semester",
+          "timeTableOrder"
+        ],
+        "additionalProperties": false
+      },
+      "IFriendV2.OverlapFriend": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "isFavorite": {
+            "type": "boolean"
+          },
+          "timetable": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "description": "null identifies the official academic timetable for this term.",
+                "oneOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "year": {
+                "type": "number"
+              },
+              "semester": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "id",
+              "year",
+              "semester"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "isFavorite",
+          "name",
+          "timetable"
+        ],
+        "additionalProperties": false
+      },
+      "IFriendV2.GetOverlapsResDto": {
+        "type": "object",
+        "properties": {
+          "sameLecture": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IFriendV2.OverlapFriend"
+            }
+          },
+          "sameCourseDifferentSection": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IFriendV2.OverlapFriend"
+            }
+          },
+          "previousSemesterSameProfessor": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IFriendV2.OverlapFriend"
+            }
+          }
+        },
+        "required": [
+          "sameLecture",
+          "sameCourseDifferentSection",
+          "previousSemesterSameProfessor"
+        ],
+        "additionalProperties": false
+      },
       "ILectureV2.Classtime": {
         "type": "object",
         "properties": {
@@ -10221,48 +10784,6 @@
         },
         "required": [
           "timetables"
-        ],
-        "additionalProperties": false
-      },
-      "ITimetableV2.TimetableSummary": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "number"
-          },
-          "name": {
-            "type": "string"
-          },
-          "year": {
-            "oneOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "semester": {
-            "oneOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "timeTableOrder": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "year",
-          "semester",
-          "timeTableOrder"
         ],
         "additionalProperties": false
       },

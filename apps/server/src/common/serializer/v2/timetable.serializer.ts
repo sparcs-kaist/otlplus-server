@@ -150,7 +150,7 @@ export const toJsonLectures = (lectures: ELecture.Details[], language: Language)
   })),
 })
 
-// Only owner-facing endpoints include private custom blocks.
+// Callers must authorize owner or friend access before serializing custom blocks.
 export const toJsonTimetableV2WithItems = (
   timetable: ETimetable.WithItems,
   language: Language,

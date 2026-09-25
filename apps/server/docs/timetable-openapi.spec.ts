@@ -27,3 +27,17 @@ it('documents unified items, change variants and required nullable home selectio
   expect(document.paths['/api/v2/timetables/home']).toHaveProperty('patch')
   expect(document.paths['/api/v2/timetables/{timetableId}/items']).toHaveProperty('patch')
 })
+
+it('documents the same unified item contract for authorized friend timetables', () => {
+  const document = JSON.parse(readFileSync(path.join(__dirname, 'swagger.json'), 'utf8'))
+  const paths = document.paths
+  const schemas = document.components.schemas
+  const response = (path: string) => paths[path].get.responses['200'].content['application/json'].schema.$ref
+  expect(response('/api/v2/friends/{friendId}/timetables/{timetableId}'))
+    .toBe('#/components/schemas/ITimetableV2.TimetableDetailResDto')
+  expect(response('/api/v2/friends/{friendId}/timetables/my-timetable'))
+    .toBe('#/components/schemas/ITimetableV2.MyTimetableResDto')
+  expect(schemas['IFriendV2.GetTimetablesResDto'].properties.timetables.items.$ref)
+    .toBe('#/components/schemas/ITimetableV2.TimetableSummary')
+  expect(schemas['IFriendV2.FriendListItem'].required).toContain('hasScheduleNow')
+})

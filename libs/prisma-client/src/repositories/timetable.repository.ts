@@ -57,6 +57,19 @@ export class TimetableRepository {
       take?: number
     },
   ): Promise<ETimetable.Details[]> {
+    return this.getTimetablesByUserId(user.id, year, semester, paginationAndSorting)
+  }
+
+  async getTimetablesByUserId(
+    userId: number,
+    year?: number | null,
+    semester?: number | null,
+    paginationAndSorting?: {
+      orderBy?: Prisma.timetable_timetableOrderByWithRelationInput[]
+      skip?: number
+      take?: number
+    },
+  ): Promise<ETimetable.Details[]> {
     const skip = paginationAndSorting?.skip
     const take = paginationAndSorting?.take
     const orderBy = paginationAndSorting?.orderBy
@@ -66,7 +79,7 @@ export class TimetableRepository {
       where: {
         year: year ?? undefined,
         semester: semester ?? undefined,
-        user_id: user.id,
+        user_id: userId,
       },
       skip,
       take,
@@ -150,6 +163,13 @@ export class TimetableRepository {
       where: {
         id: timeTableId,
       },
+    })
+  }
+
+  async getTimeTableWithItemsByIdAndUserId(timeTableId: number, userId: number): Promise<ETimetable.WithItems | null> {
+    return this.txHost.tx.timetable_timetable.findFirst({
+      include: ETimetable.WithItems.include,
+      where: { id: timeTableId, user_id: userId },
     })
   }
 
