@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { TransactionHost } from '@nestjs-cls/transactional'
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma'
+import { Prisma, subject_semester } from '@prisma/client'
 import { randomInt } from 'crypto'
 
 import { EFriend } from '@otl/prisma-client/entities/EFriend'
@@ -44,6 +45,68 @@ export class FriendRepository {
       where: { userprofile_id: userId },
       orderBy: [{ is_favorite: 'desc' }, { created_at: 'asc' }, { id: 'asc' }],
     })
+  }
+
+  async getFriendIdsWithScheduleAt(
+    userId: number,
+    friendIds: number[],
+    semesters: Pick<subject_semester, 'year' | 'semester'>[],
+    day: number,
+    minute: number,
+  ): Promise<number[]> {
+    if (friendIds.length === 0 || semesters.length === 0) return []
+
+    // Prisma represents MySQL TIME as a UTC Date, while custom blocks store minutes.
+    const time = new Date(Date.UTC(1970, 0, 1, 0, minute))
+    const classtime = { day, begin: { lte: time }, end: { gt: time } }
+    const customBlock = { day, begin: { lte: minute }, end: { gt: minute } }
+    const matches = await this.txHost.tx.session_userprofile_friends.findMany({
+      select: { id: true },
+      where: {
+        userprofile_id: userId,
+        id: { in: friendIds },
+        friend_profile: {
+          OR: semesters.flatMap((term): Prisma.session_userprofileWhereInput[] => {
+            const lecture = { ...term, deleted: false, subject_classtime: { some: classtime } }
+            return [
+              { taken_lectures: { some: { lecture } } },
+              {
+                timetable_timetable: {
+                  some: {
+                    ...term,
+                    OR: [
+                      { timetable_timetable_lectures: { some: { subject_lecture: lecture } } },
+                      { timetable_timetable_customblocks: { some: { block_custom_blocks: customBlock } } },
+                    ],
+                  },
+                },
+              },
+            ]
+          }),
+        },
+      },
+    })
+    // The parent is the canonical first occurrence, including legacy server edits.
+    // Only later child rows supplement it; the first child can be stale.
+    const extraMatches = await this.txHost.tx.$queryRaw<{ id: number }[]>(Prisma.sql`
+      SELECT friend.id
+      FROM session_userprofile_friends AS friend
+      WHERE friend.userprofile_id = ${userId}
+        AND friend.id IN (${Prisma.join(friendIds)})
+        AND EXISTS (
+          SELECT 1 FROM timetable_timetable AS timetable
+          JOIN timetable_timetable_customblocks AS mapping ON mapping.timetable_id = timetable.id
+          JOIN block_custom_block_times AS slot ON slot.custom_block_id = mapping.custom_block_id
+          WHERE timetable.user_id = friend.friend_userprofile_id
+            AND (${Prisma.join(semesters.map(({ year, semester }) => Prisma.sql`(timetable.year = ${year} AND timetable.semester = ${semester})`), ' OR ')})
+            AND slot.day = ${day} AND slot.begin <= ${minute} AND slot.end > ${minute}
+            AND EXISTS (
+              SELECT 1 FROM block_custom_block_times AS first_slot
+              WHERE first_slot.custom_block_id = slot.custom_block_id AND first_slot.id < slot.id
+            )
+        )
+    `)
+    return [...new Set([...matches, ...extraMatches].map(({ id }) => id))]
   }
 
   async getFriend(userId: number, friendId: number): Promise<EFriend.Summary | null> {

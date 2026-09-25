@@ -166,9 +166,9 @@ export class TimetableRepository {
     })
   }
 
-  async getTimeTableByIdAndUserId(timeTableId: number, userId: number): Promise<ETimetable.Details | null> {
-    return this.prisma.timetable_timetable.findFirst({
-      include: ETimetable.Details.include,
+  async getTimeTableWithItemsByIdAndUserId(timeTableId: number, userId: number): Promise<ETimetable.WithItems | null> {
+    return this.txHost.tx.timetable_timetable.findFirst({
+      include: ETimetable.WithItems.include,
       where: { id: timeTableId, user_id: userId },
     })
   }

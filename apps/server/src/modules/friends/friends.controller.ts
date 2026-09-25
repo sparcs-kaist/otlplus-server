@@ -71,7 +71,7 @@ export class FriendsController {
     @Param('friendId', ParseIntPipe) friendId: number,
     @Query() query: ITimetableV2.MyTimetableReqDto,
     @GetLanguage() language: Language,
-  ) {
+  ): Promise<ITimetableV2.MyTimetableResDto> {
     return this.friendsService.getMyTimetable(user, friendId, query, language)
   }
 
@@ -82,7 +82,7 @@ export class FriendsController {
     @Param('friendId', ParseIntPipe) friendId: number,
     @Param('timetableId', ParseIntPipe) timetableId: number,
     @GetLanguage() language: Language,
-  ) {
+  ): Promise<ITimetableV2.TimetableDetailResDto> {
     return this.friendsService.getTimetable(user, friendId, timetableId, language)
   }
 }

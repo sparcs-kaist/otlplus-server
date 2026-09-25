@@ -45,6 +45,13 @@ export class SemesterRepository {
     })
   }
 
+  async getActiveSemestersAt(now: Date): Promise<Pick<subject_semester, 'year' | 'semester'>[]> {
+    return this.prisma.subject_semester.findMany({
+      where: { beginning: { lte: now }, end: { gte: now } },
+      select: { year: true, semester: true },
+    })
+  }
+
   async findSemester(year: number, semester: number): Promise<subject_semester | null> {
     return await this.prisma.subject_semester.findUnique({
       where: {

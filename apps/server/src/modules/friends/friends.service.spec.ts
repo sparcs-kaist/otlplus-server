@@ -5,13 +5,15 @@ import { IFriendV2 } from '@otl/server-nest/common/interfaces/v2'
 import { session_userprofile } from '@prisma/client'
 
 import { EFriend } from '@otl/prisma-client/entities'
-import { FriendRepository, LectureRepository, TimetableRepository } from '@otl/prisma-client/repositories'
+import { FriendRepository, LectureRepository, SemesterRepository, TimetableRepository } from '@otl/prisma-client/repositories'
 
 import { FriendsService } from './friends.service'
 
 describe('FriendsService', () => {
   const user = { id: 42 } as session_userprofile
   const friends = {
+    getFriends: jest.fn(),
+    getFriendIdsWithScheduleAt: jest.fn(),
     getOrCreateCode: jest.fn(),
     getUserIdByCode: jest.fn(),
     getFriend: jest.fn(),
@@ -20,8 +22,9 @@ describe('FriendsService', () => {
     getFriendByTarget: jest.fn(),
     deletePair: jest.fn(),
   }
-  const lectures = { getLectureDetailById: jest.fn() }
-  const timetables = { getTimeTableByIdAndUserId: jest.fn() }
+  const lectures = { getLectureDetailById: jest.fn(), getTakenLecturesBySemester: jest.fn() }
+  const timetables = { getTimeTableWithItemsByIdAndUserId: jest.fn(), getTimetablesByUserId: jest.fn() }
+  const semesters = { getActiveSemestersAt: jest.fn() }
   let service: FriendsService
 
   beforeEach(async () => {
@@ -32,6 +35,7 @@ describe('FriendsService', () => {
         { provide: FriendRepository, useValue: friends },
         { provide: LectureRepository, useValue: lectures },
         { provide: TimetableRepository, useValue: timetables },
+        { provide: SemesterRepository, useValue: semesters },
         {
           provide: TransactionHost,
           useValue: { withTransaction: (_propagation: unknown, _options: unknown, work: () => unknown) => work() },
@@ -39,6 +43,79 @@ describe('FriendsService', () => {
       ],
     }).compile()
     service = module.get(FriendsService)
+  })
+
+  afterEach(() => jest.useRealTimers())
+
+  describe('current schedule', () => {
+    const now = new Date('2026-09-28T01:35:37.000Z')
+    const term = { year: 2026, semester: 3 }
+    const list = [
+      { id: 101, is_favorite: true, friend_profile: { first_name: 'One', last_name: 'Friend' } },
+      { id: 102, is_favorite: false, friend_profile: { first_name: 'Two', last_name: '' } },
+    ]
+
+    beforeEach(() => {
+      jest.useFakeTimers().setSystemTime(now)
+      friends.getFriends.mockResolvedValue(list)
+      semesters.getActiveSemestersAt.mockResolvedValue([term])
+      friends.getFriendIdsWithScheduleAt.mockResolvedValue([102])
+    })
+
+    it('batches only owned relation IDs, preserves order, and uses one exact KST minute for the entire request', async () => {
+      friends.getFriends.mockImplementation(async () => {
+        jest.setSystemTime(new Date('2026-09-28T01:36:02.000Z'))
+        return list
+      })
+      await expect(service.getFriends(user)).resolves.toEqual({
+        checkedAt: now.toISOString(),
+        friends: [
+          { id: 101, name: 'One Friend', isFavorite: true, hasScheduleNow: false },
+          { id: 102, name: 'Two', isFavorite: false, hasScheduleNow: true },
+        ],
+      })
+      expect(friends.getFriends).toHaveBeenCalledWith(42)
+      expect(semesters.getActiveSemestersAt).toHaveBeenCalledWith(now)
+      expect(friends.getFriendIdsWithScheduleAt).toHaveBeenCalledTimes(1)
+      expect(friends.getFriendIdsWithScheduleAt).toHaveBeenCalledWith(42, [101, 102], [term], 0, 635)
+    })
+
+    it.each([
+      ['2026-09-27T15:00:00.000Z', 0, 0],
+      ['2026-09-27T14:59:59.999Z', 6, 1439],
+      ['2026-09-25T15:00:00.000Z', 5, 0],
+    ])('uses Korean date/day independent of UTC day at %s', async (timestamp, day, minute) => {
+      jest.setSystemTime(new Date(timestamp))
+      await service.getFriends(user)
+      expect(friends.getFriendIdsWithScheduleAt).toHaveBeenCalledWith(42, [101, 102], [term], day, minute)
+    })
+
+    it('does not select a future term during vacation and returns unknown without a schedule query', async () => {
+      semesters.getActiveSemestersAt.mockResolvedValue([])
+      const result = await service.getFriends(user)
+      expect(result.friends.map(({ hasScheduleNow }) => hasScheduleNow)).toEqual([null, null])
+      expect(friends.getFriendIdsWithScheduleAt).not.toHaveBeenCalled()
+    })
+
+    it('checks all active terms in one query without mixing their year and semester', async () => {
+      const active = [term, { year: 2026, semester: 4 }]
+      semesters.getActiveSemestersAt.mockResolvedValue(active)
+      await service.getFriends(user)
+      expect(friends.getFriendIdsWithScheduleAt).toHaveBeenCalledWith(42, [101, 102], active, 0, 635)
+    })
+
+    it('skips schedule and semester queries for an empty friend list', async () => {
+      friends.getFriends.mockResolvedValue([])
+      await expect(service.getFriends(user)).resolves.toEqual({ checkedAt: now.toISOString(), friends: [] })
+      expect(semesters.getActiveSemestersAt).not.toHaveBeenCalled()
+      expect(friends.getFriendIdsWithScheduleAt).not.toHaveBeenCalled()
+    })
+
+    it('does not convert a failed schedule lookup into a false status', async () => {
+      const error = new Error('Database unavailable')
+      friends.getFriendIdsWithScheduleAt.mockRejectedValue(error)
+      await expect(service.getFriends(user)).rejects.toBe(error)
+    })
   })
 
   it('returns the caller code from the repository without issuing or expiring credentials', async () => {
@@ -109,12 +186,85 @@ describe('FriendsService', () => {
     friends.getFriend.mockResolvedValue(null)
     await expect(service.getTimetable(user, 7, 99, 'ko')).rejects.toBeInstanceOf(NotFoundException)
     expect(friends.getFriend).toHaveBeenCalledWith(42, 7)
-    expect(timetables.getTimeTableByIdAndUserId).not.toHaveBeenCalled()
+    expect(timetables.getTimeTableWithItemsByIdAndUserId).not.toHaveBeenCalled()
 
     friends.getFriend.mockResolvedValue({ friend_userprofile_id: 43 })
-    timetables.getTimeTableByIdAndUserId.mockResolvedValue(null)
+    timetables.getTimeTableWithItemsByIdAndUserId.mockResolvedValue(null)
     await expect(service.getTimetable(user, 7, 99, 'ko')).rejects.toBeInstanceOf(NotFoundException)
-    expect(timetables.getTimeTableByIdAndUserId).toHaveBeenCalledWith(99, 43)
+    expect(timetables.getTimeTableWithItemsByIdAndUserId).toHaveBeenCalledWith(99, 43)
+  })
+
+  describe('unified timetable items', () => {
+    const term = { year: 2026, semester: 3 }
+    const lecture = {
+      id: 10,
+      ...term,
+      common_title: '강의',
+      common_title_en: 'Lecture',
+      title: '강의',
+      title_en: 'Lecture',
+      subject_department: { id: 1, name: '학과', name_en: 'Department' },
+      subject_lecture_professors: [],
+      subject_examtime: [],
+      subject_classtime: [],
+    }
+    const first = { day: 0, begin: 635, end: 690 }
+    const second = { day: 2, begin: 710, end: 770 }
+    const block = { id: 10, block_name: 'Study', place: 'Library', ...first }
+
+    beforeEach(() => friends.getFriend.mockResolvedValue({ friend_userprofile_id: 43 }))
+
+    it('returns lectures and grouped custom blocks together, preserving kinds even when IDs match', async () => {
+      timetables.getTimeTableWithItemsByIdAndUserId.mockResolvedValue({
+        timetable_timetable_lectures: [{ subject_lecture: lecture }],
+        timetable_timetable_customblocks: [{ block_custom_blocks: {
+          ...block,
+          // A legacy edit changes the canonical parent but leaves the first child stale.
+          times: [{ id: 20, ...first, begin: 600 }, { id: 21, ...second }],
+        } }],
+      })
+      const result = await service.getTimetable(user, 7, 99, 'en')
+      expect(result.timetableItems).toEqual([
+        { kind: 'lecture', data: result.lectures[0] },
+        { kind: 'custom', data: { ...block, times: [first, second] } },
+      ])
+      expect(result.lectures[0]).toMatchObject({ id: 10, name: 'Lecture' })
+      expect(timetables.getTimeTableWithItemsByIdAndUserId).toHaveBeenCalledWith(99, 43)
+    })
+
+    it('normalizes legacy custom blocks without child times and handles an empty saved timetable', async () => {
+      timetables.getTimeTableWithItemsByIdAndUserId.mockResolvedValue({
+        timetable_timetable_lectures: [],
+        timetable_timetable_customblocks: [{ block_custom_blocks: { ...block, times: [] } }],
+      })
+      await expect(service.getTimetable(user, 7, 99, 'ko')).resolves.toEqual({
+        lectures: [], timetableItems: [{ kind: 'custom', data: { ...block, times: [first] } }],
+      })
+      timetables.getTimeTableWithItemsByIdAndUserId.mockResolvedValue({
+        timetable_timetable_lectures: [], timetable_timetable_customblocks: [],
+      })
+      await expect(service.getTimetable(user, 7, 99, 'ko')).resolves.toEqual({ lectures: [], timetableItems: [] })
+    })
+
+    it('uses the same item contract for enrolled timetables after checking the friendship', async () => {
+      friends.getFriend.mockResolvedValueOnce(null)
+      await expect(service.getMyTimetable(user, 7, term, 'ko')).rejects.toBeInstanceOf(NotFoundException)
+      expect(lectures.getTakenLecturesBySemester).not.toHaveBeenCalled()
+
+      lectures.getTakenLecturesBySemester.mockResolvedValue([lecture])
+      const result = await service.getMyTimetable(user, 7, term, 'ko')
+      expect(lectures.getTakenLecturesBySemester).toHaveBeenCalledWith(43, 2026, 3)
+      expect(result.timetableItems).toEqual([{ kind: 'lecture', data: result.lectures[0] }])
+      expect(timetables.getTimeTableWithItemsByIdAndUserId).not.toHaveBeenCalled()
+    })
+
+    it('keeps timetable list summaries distinct from the item union', async () => {
+      timetables.getTimetablesByUserId.mockResolvedValue([{ id: 99, name: 'Saved', ...term, arrange_order: 2 }])
+      await expect(service.getTimetables(user, 7, term)).resolves.toEqual({
+        timetables: [{ id: 99, name: 'Saved', ...term, timeTableOrder: 2 }],
+      })
+      expect(timetables.getTimetablesByUserId).toHaveBeenCalledWith(43, 2026, 3)
+    })
   })
 
   it('includes any official or saved timetable and groups each friend once with exact-section priority', async () => {

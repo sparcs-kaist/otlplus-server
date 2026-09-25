@@ -1,6 +1,16 @@
 import { TransactionHost } from '@nestjs-cls/transactional'
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma'
+import { ETimetable } from '../entities/ETimetable'
 import { TimetableRepository } from './timetable.repository'
+
+it('reads friend timetable items only for the authorized owner and orders child times canonically', async () => {
+  const findFirst = jest.fn().mockResolvedValue(null)
+  const repository = new TimetableRepository({ tx: { timetable_timetable: { findFirst } } } as never)
+  await expect(repository.getTimeTableWithItemsByIdAndUserId(99, 43)).resolves.toBeNull()
+  expect(findFirst).toHaveBeenCalledWith({ where: { id: 99, user_id: 43 }, include: ETimetable.WithItems.include })
+  expect(ETimetable.WithItems.include.timetable_timetable_customblocks.include.block_custom_blocks.include.times)
+    .toEqual({ orderBy: { id: 'asc' } })
+})
 
 it.each([false, true])('deletes timetable relations inside a transaction (failure: %s)', async (fail) => {
   const calls: string[] = []

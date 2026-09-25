@@ -5,14 +5,17 @@ import { IFriendV2, ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
 import {
   toJsonLectures,
   toJsonTimetableV2,
-  toJsonTimetableV2WithLectures,
+  toJsonTimetableV2WithItems,
 } from '@otl/server-nest/common/serializer/v2/timetable.serializer'
 import { session_userprofile } from '@prisma/client'
+
+import { TimetableItemKind } from '@otl/common/enum/timetable'
 
 import { EFriend } from '@otl/prisma-client/entities'
 import {
   FriendRepository,
   LectureRepository,
+  SemesterRepository,
   TimetableRepository,
 } from '@otl/prisma-client/repositories'
 
@@ -22,10 +25,34 @@ export class FriendsService {
     private readonly friendRepository: FriendRepository,
     private readonly lectureRepository: LectureRepository,
     private readonly timetableRepository: TimetableRepository,
+    private readonly semesterRepository: SemesterRepository,
   ) {}
 
   async getFriends(user: session_userprofile): Promise<IFriendV2.GetFriendsResDto> {
-    return { friends: (await this.friendRepository.getFriends(user.id)).map(this.toFriend) }
+    const now = new Date()
+    const friends = await this.friendRepository.getFriends(user.id)
+    if (friends.length === 0) return { checkedAt: now.toISOString(), friends: [] }
+
+    const semesters = await this.semesterRepository.getActiveSemestersAt(now)
+    const koreaTime = new Date(now.getTime() + 9 * 60 * 60 * 1000)
+    const day = (koreaTime.getUTCDay() + 6) % 7
+    const minute = koreaTime.getUTCHours() * 60 + koreaTime.getUTCMinutes()
+    const scheduledFriendIds = new Set(semesters.length === 0
+      ? []
+      : await this.friendRepository.getFriendIdsWithScheduleAt(
+        user.id,
+        friends.map(({ id }) => id),
+        semesters,
+        day,
+        minute,
+      ))
+    return {
+      checkedAt: now.toISOString(),
+      friends: friends.map((friend) => ({
+        ...this.toFriend(friend),
+        hasScheduleNow: semesters.length === 0 ? null : scheduledFriendIds.has(friend.id),
+      })),
+    }
   }
 
   async getCode(user: session_userprofile): Promise<IFriendV2.GetCodeResDto> {
@@ -93,7 +120,8 @@ export class FriendsService {
       query.year,
       query.semester,
     )
-    return toJsonLectures(lectures, language)
+    const serialized = toJsonLectures(lectures, language).lectures
+    return { lectures: serialized, timetableItems: serialized.map((data) => ({ kind: TimetableItemKind.LECTURE, data })) }
   }
 
   async getTimetable(
@@ -101,14 +129,14 @@ export class FriendsService {
     friendId: number,
     timetableId: number,
     language: Language,
-  ): Promise<ITimetableV2.GetResDto> {
+  ): Promise<ITimetableV2.TimetableDetailResDto> {
     const friend = await this.getFriend(user.id, friendId)
-    const timetable = await this.timetableRepository.getTimeTableByIdAndUserId(
+    const timetable = await this.timetableRepository.getTimeTableWithItemsByIdAndUserId(
       timetableId,
       friend.friend_userprofile_id,
     )
     if (!timetable) throw new NotFoundException('Timetable not found')
-    return toJsonTimetableV2WithLectures(timetable, language)
+    return toJsonTimetableV2WithItems(timetable, language)
   }
 
   async getOverlaps(user: session_userprofile, lectureId: number): Promise<IFriendV2.GetOverlapsResDto> {

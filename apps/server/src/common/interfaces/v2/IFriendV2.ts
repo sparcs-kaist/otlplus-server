@@ -10,8 +10,13 @@ export namespace IFriendV2 {
     isFavorite: boolean
   }
 
+  export interface FriendListItem extends Friend {
+    hasScheduleNow: boolean | null
+  }
+
   export interface GetFriendsResDto {
-    friends: Friend[]
+    checkedAt: string
+    friends: FriendListItem[]
   }
 
   export interface GetCodeResDto {
@@ -44,7 +49,7 @@ export namespace IFriendV2 {
   }
 
   export interface GetTimetablesResDto {
-    timetables: ITimetableV2.TimetableItem[]
+    timetables: ITimetableV2.TimetableSummary[]
   }
 
   export interface OverlapFriend extends Friend {
