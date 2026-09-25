@@ -871,7 +871,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").NotificationRequest"
+                  "$ref": "#/components/schemas/import(\"/Users/gerberasmacmini/developer/sparcs/otl/otlplus-server-timetable-items/apps/server/src/modules/notification/domain/notification\").NotificationRequest"
                 }
               }
             }
@@ -889,7 +889,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").FCMNotificationRequest"
+                  "$ref": "#/components/schemas/import(\"/Users/gerberasmacmini/developer/sparcs/otl/otlplus-server-timetable-items/apps/server/src/modules/notification/domain/notification\").FCMNotificationRequest"
                 }
               }
             }
@@ -916,7 +916,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").UserNotification"
+                  "$ref": "#/components/schemas/import(\"/Users/gerberasmacmini/developer/sparcs/otl/otlplus-server-timetable-items/apps/server/src/modules/notification/domain/notification\").UserNotification"
                 }
               }
             }
@@ -945,7 +945,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/agreement/domain/UserAgreement\").Agreement"
+                    "$ref": "#/components/schemas/import(\"/Users/gerberasmacmini/developer/sparcs/otl/otlplus-server-timetable-items/apps/server/src/modules/agreement/domain/UserAgreement\").Agreement"
                   }
                 }
               }
@@ -963,7 +963,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                  "$ref": "#/components/schemas/import(\"/Users/gerberasmacmini/developer/sparcs/otl/otlplus-server-timetable-items/apps/server/src/modules/notification/domain/notification\").Notification"
                 }
               }
             }
@@ -988,7 +988,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                  "$ref": "#/components/schemas/import(\"/Users/gerberasmacmini/developer/sparcs/otl/otlplus-server-timetable-items/apps/server/src/modules/notification/domain/notification\").Notification"
                 }
               }
             }
@@ -1040,7 +1040,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                    "$ref": "#/components/schemas/import(\"/Users/gerberasmacmini/developer/sparcs/otl/otlplus-server-timetable-items/apps/server/src/modules/notification/domain/notification\").Notification"
                   }
                 }
               }
@@ -1063,7 +1063,7 @@
                       "type": "null"
                     },
                     {
-                      "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                      "$ref": "#/components/schemas/import(\"/Users/gerberasmacmini/developer/sparcs/otl/otlplus-server-timetable-items/apps/server/src/modules/notification/domain/notification\").Notification"
                     }
                   ]
                 }
@@ -1206,7 +1206,9 @@
                       "type": "string"
                     }
                   },
-                  "required": ["message"]
+                  "required": [
+                    "message"
+                  ]
                 }
               }
             }
@@ -2385,7 +2387,11 @@
                       }
                     }
                   },
-                  "required": ["general", "major", "additional"]
+                  "required": [
+                    "general",
+                    "major",
+                    "additional"
+                  ]
                 }
               }
             }
@@ -2602,7 +2608,10 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": ["en", "ko"]
+              "enum": [
+                "en",
+                "ko"
+              ]
             },
             "description": "en/ko (기본: ko). 언어 헤더 파라미터"
           }
@@ -2640,7 +2649,10 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": ["en", "ko"]
+              "enum": [
+                "en",
+                "ko"
+              ]
             },
             "description": "en/ko (기본: ko). 언어 헤더 파라미터"
           }
@@ -2670,7 +2682,10 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": ["en", "ko"]
+              "enum": [
+                "en",
+                "ko"
+              ]
             },
             "description": "en/ko (기본: ko). 언어 헤더 파라미터"
           }
@@ -2708,7 +2723,10 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": ["en", "ko"]
+              "enum": [
+                "en",
+                "ko"
+              ]
             },
             "description": "en/ko (기본: ko). 언어 헤더 파라미터"
           }
@@ -2753,7 +2771,10 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": ["en", "ko"]
+              "enum": [
+                "en",
+                "ko"
+              ]
             },
             "description": "en/ko (기본: ko). 언어 헤더 파라미터"
           }
@@ -2942,7 +2963,10 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": ["en", "ko"]
+              "enum": [
+                "en",
+                "ko"
+              ]
             },
             "description": "en/ko (기본: ko). 언어 헤더 파라미터"
           }
@@ -3039,7 +3063,10 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": ["en", "ko"]
+              "enum": [
+                "en",
+                "ko"
+              ]
             },
             "description": "en/ko (기본: ko). 언어 헤더 파라미터"
           }
@@ -3073,6 +3100,86 @@
         ]
       }
     },
+    "/api/v2/timetables/home": {
+      "get": {
+        "summary": "TimetablesControllerV2.getHomeTimetable",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ITimetableV2.HomeTimetableResDto"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ITimetableV2.HomeTimetableReqDto"
+            }
+          },
+          {
+            "name": "accept-language",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en",
+                "ko"
+              ]
+            },
+            "description": "en/ko (기본: ko). 언어 헤더 파라미터"
+          }
+        ]
+      },
+      "patch": {
+        "summary": "TimetablesControllerV2.setHomeTimetable",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ITimetableV2.HomeTimetableResDto"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "accept-language",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en",
+                "ko"
+              ]
+            },
+            "description": "en/ko (기본: ko). 언어 헤더 파라미터"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ITimetableV2.SetHomeTimetableReqDto"
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v2/timetables/{timetableId}": {
       "get": {
         "summary": "TimetablesControllerV2.getTimetable",
@@ -3082,7 +3189,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ITimetableV2.GetResDto"
+                  "$ref": "#/components/schemas/ITimetableV2.TimetableDetailResDto"
                 }
               }
             }
@@ -3103,7 +3210,10 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": ["en", "ko"]
+              "enum": [
+                "en",
+                "ko"
+              ]
             },
             "description": "en/ko (기본: ko). 언어 헤더 파라미터"
           }
@@ -3145,6 +3255,196 @@
         }
       }
     },
+    "/api/v2/timetables/{timetableId}/items": {
+      "patch": {
+        "summary": "TimetablesControllerV2.updateTimetableItems",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ITimetableV2.UpdateItemsResDto"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "timetableId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "accept-language",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en",
+                "ko"
+              ]
+            },
+            "description": "en/ko (기본: ko). 언어 헤더 파라미터"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ITimetableV2.UpdateItemsReqDto"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/timetables/{timetableId}/custom-blocks": {
+      "get": {
+        "summary": "TimetablesControllerV2.getCustomblocks",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ICustomblock.ListResponse"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "timetableId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ]
+      },
+      "post": {
+        "summary": "TimetablesControllerV2.addCustomblock",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ICustomblock.CreateResponse"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "timetableId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ICustomblock.CreateDto"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/timetables/{timetableId}/custom-blocks/{customblockId}": {
+      "patch": {
+        "summary": "TimetablesControllerV2.updateCustomblock",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ICustomblock.Basic"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "timetableId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "customblockId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ICustomblock.UpdateDto"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "TimetablesControllerV2.removeCustomblock",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ICustomblock.DeleteDto"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "timetableId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "customblockId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ]
+      }
+    },
     "/api/v2/users/writable-review": {
       "get": {
         "summary": "UserControllerV2.getUserTakenCourses",
@@ -3174,7 +3474,10 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": ["en", "ko"]
+              "enum": [
+                "en",
+                "ko"
+              ]
             },
             "description": "en/ko (기본: ko). 언어 헤더 파라미터"
           }
@@ -3203,7 +3506,10 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": ["en", "ko"]
+              "enum": [
+                "en",
+                "ko"
+              ]
             },
             "description": "en/ko (기본: ko). 언어 헤더 파라미터"
           }
@@ -3301,7 +3607,10 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": ["en", "ko"]
+              "enum": [
+                "en",
+                "ko"
+              ]
             },
             "description": "en/ko (기본: ko). 언어 헤더 파라미터"
           }
@@ -3346,7 +3655,10 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": ["en", "ko"]
+              "enum": [
+                "en",
+                "ko"
+              ]
             },
             "description": "en/ko (기본: ko). 언어 헤더 파라미터"
           }
@@ -3406,7 +3718,9 @@
                       }
                     }
                   },
-                  "required": ["reviews"]
+                  "required": [
+                    "reviews"
+                  ]
                 }
               }
             }
@@ -3427,7 +3741,10 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": ["en", "ko"]
+              "enum": [
+                "en",
+                "ko"
+              ]
             },
             "description": "en/ko (기본: ko). 언어 헤더 파라미터"
           }
@@ -3438,20 +3755,29 @@
   "components": {
     "schemas": {
       "IAgreement.AgreementQueryDto": {
+        "type": "object",
         "properties": {
-          "modal": {},
-          "agreementStatus": {},
-          "agreementType": {}
+          "modal": {
+            "type": "boolean"
+          },
+          "agreementStatus": {
+            "type": "boolean"
+          },
+          "agreementType": {
+            "type": "string"
+          }
         },
-        "type": "object"
+        "additionalProperties": false
       },
       "IAgreement.AgreementModalQueryDto": {
+        "type": "object",
         "properties": {
           "modal": {
             "type": "boolean"
           }
         },
-        "type": "object"
+        "required": [],
+        "additionalProperties": false
       },
       "IAgreement.Response": {
         "type": "object",
@@ -3469,42 +3795,69 @@
             "type": "boolean"
           }
         },
-        "required": ["agreementId", "agreementType", "agreementStatus", "modal"],
+        "required": [
+          "agreementId",
+          "agreementType",
+          "agreementStatus",
+          "modal"
+        ],
         "additionalProperties": false
       },
       "AgreementType": {
         "type": "string",
-        "enum": ["INFO", "MARKETING", "NIGHT_MARKETING"]
+        "enum": [
+          "INFO",
+          "MARKETING",
+          "NIGHT_MARKETING"
+        ]
       },
       "IAgreement.AgreementAllowDto": {
+        "type": "object",
         "properties": {
           "allow": {
-            "minLength": 1,
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           },
           "agreementType": {
+            "$ref": "#/components/schemas/AgreementType",
             "minLength": 1,
             "type": "string",
-            "enum": ["INFO", "MARKETING", "NIGHT_MARKETING"]
+            "enum": [
+              "INFO",
+              "MARKETING",
+              "NIGHT_MARKETING"
+            ]
           }
         },
-        "type": "object",
-        "required": ["allow", "agreementType"]
+        "required": [
+          "allow",
+          "agreementType"
+        ],
+        "additionalProperties": false
       },
       "IAgreement.AgreementToggleDto": {
+        "type": "object",
         "properties": {
           "agreementType": {
+            "$ref": "#/components/schemas/AgreementType",
             "minLength": 1,
             "type": "string",
-            "enum": ["INFO", "MARKETING", "NIGHT_MARKETING"]
+            "enum": [
+              "INFO",
+              "MARKETING",
+              "NIGHT_MARKETING"
+            ]
           },
           "modal": {
-            "minLength": 1,
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           }
         },
-        "type": "object",
-        "required": ["agreementType", "modal"]
+        "required": [
+          "agreementType",
+          "modal"
+        ],
+        "additionalProperties": false
       },
       "ICourse.Basic": {
         "type": "object",
@@ -3586,7 +3939,12 @@
             "type": "string"
           }
         },
-        "required": ["id", "name", "name_en", "code"],
+        "required": [
+          "id",
+          "name",
+          "name_en",
+          "code"
+        ],
         "additionalProperties": false
       },
       "ICourse.Detail": {
@@ -3709,7 +4067,12 @@
             "type": "number"
           }
         },
-        "required": ["name", "name_en", "professor_id", "review_total_weight"],
+        "required": [
+          "name",
+          "name_en",
+          "professor_id",
+          "review_total_weight"
+        ],
         "additionalProperties": false
       },
       "ICourse.DetailWithIsRead": {
@@ -3830,7 +4193,12 @@
             "type": "number"
           }
         },
-        "required": ["id", "latest_read_datetime", "course_id", "user_profile_id"],
+        "required": [
+          "id",
+          "latest_read_datetime",
+          "course_id",
+          "user_profile_id"
+        ],
         "additionalProperties": false
       },
       "ICourse.FeedBasic": {
@@ -4000,54 +4368,58 @@
         "additionalProperties": false
       },
       "ICourse.AutocompleteQueryDto": {
+        "type": "object",
         "properties": {
           "keyword": {
             "type": "string"
           }
         },
-        "type": "object",
-        "required": ["keyword"]
+        "required": [
+          "keyword"
+        ],
+        "additionalProperties": false
       },
       "ICourse.Query": {
+        "type": "object",
         "properties": {
           "department": {
+            "type": "array",
             "items": {
               "type": "string"
-            },
-            "type": "array"
+            }
           },
           "type": {
+            "type": "array",
             "items": {
               "type": "string"
-            },
-            "type": "array"
+            }
           },
           "level": {
+            "type": "array",
             "items": {
               "type": "string"
-            },
-            "type": "array"
+            }
           },
           "group": {
+            "type": "array",
             "items": {
               "type": "string"
-            },
-            "type": "array"
+            }
           },
           "keyword": {
             "type": "string"
           },
           "term": {
+            "type": "array",
             "items": {
               "type": "string"
-            },
-            "type": "array"
+            }
           },
           "order": {
+            "type": "array",
             "items": {
               "type": "string"
-            },
-            "type": "array"
+            }
           },
           "offset": {
             "type": "number"
@@ -4056,38 +4428,66 @@
             "type": "number"
           }
         },
-        "type": "object"
+        "additionalProperties": false
       },
       "ICourse.LectureQueryDto": {
+        "type": "object",
         "properties": {
           "order": {
+            "type": "array",
             "items": {
               "type": "string"
-            },
-            "type": "array"
+            }
           }
         },
-        "type": "object"
+        "additionalProperties": false
       },
       "ICourse.ReviewQueryDto": {
+        "type": "object",
         "properties": {
           "order": {
+            "type": "array",
             "items": {
               "type": "string"
-            },
-            "type": "array"
+            }
           },
           "offset": {
-            "minimum": 0,
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           },
           "limit": {
-            "maximum": 100,
             "type": "number",
+            "maximum": 100,
             "minimum": 0
           }
         },
-        "type": "object"
+        "additionalProperties": false
+      },
+      "ICustomblock.Time": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "integer",
+            "maximum": 6,
+            "minimum": 0
+          },
+          "begin": {
+            "type": "integer",
+            "maximum": 1439,
+            "minimum": 0
+          },
+          "end": {
+            "type": "integer",
+            "maximum": 1440,
+            "minimum": 1
+          }
+        },
+        "required": [
+          "day",
+          "begin",
+          "end"
+        ],
+        "additionalProperties": false
       },
       "ICustomblock.Basic": {
         "type": "object",
@@ -4109,114 +4509,226 @@
           },
           "end": {
             "type": "number"
+          },
+          "times": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ICustomblock.Time"
+            }
           }
         },
-        "required": ["id", "block_name", "place", "day", "begin", "end"],
+        "required": [
+          "id",
+          "block_name",
+          "place",
+          "day",
+          "begin",
+          "end",
+          "times"
+        ],
         "additionalProperties": false
       },
       "ICustomblock.CreateDto": {
+        "type": "object",
         "properties": {
           "block_name": {
             "type": "string",
             "minLength": 1
           },
           "place": {
-            "type": "string",
-            "minLength": 1
+            "type": "string"
           },
           "day": {
             "type": "string",
+            "maximum": 6,
+            "minimum": 0,
             "minLength": 1
           },
           "begin": {
-            "maximum": 1439,
             "type": "string",
+            "maximum": 1439,
             "minimum": 0,
             "minLength": 1
           },
           "end": {
-            "maximum": 1439,
             "type": "string",
-            "minimum": 0,
+            "maximum": 1440,
+            "minimum": 1,
             "minLength": 1
+          },
+          "times": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ICustomblock.Time"
+            },
+            "minItems": 1
           }
         },
-        "type": "object",
-        "required": ["block_name", "place", "day", "begin", "end"]
+        "required": [
+          "block_name",
+          "place"
+        ],
+        "additionalProperties": false
       },
-      "ICustomblock.CreateResponse": {},
-      "ICustomblock.ListResponse": {},
+      "ICustomblock.CreateResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "ICustomblock.ListResponse": {
+        "type": "object",
+        "properties": {
+          "custom_blocks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ICustomblock.Basic"
+            }
+          }
+        },
+        "required": [
+          "custom_blocks"
+        ],
+        "additionalProperties": false
+      },
       "ICustomblock.UpdateDto": {
+        "type": "object",
         "properties": {
           "block_name": {
             "type": "string"
           },
           "place": {
             "type": "string"
+          },
+          "day": {
+            "type": "integer",
+            "maximum": 6,
+            "minimum": 0
+          },
+          "begin": {
+            "type": "integer",
+            "maximum": 1439,
+            "minimum": 0
+          },
+          "end": {
+            "type": "integer",
+            "maximum": 1440,
+            "minimum": 1
+          },
+          "times": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ICustomblock.Time"
+            },
+            "minItems": 1
           }
         },
-        "type": "object"
+        "additionalProperties": false
       },
-      "ICustomblock.DeleteDto": {},
+      "ICustomblock.DeleteDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
       "IDevice.RegisterDeviceDto": {
+        "type": "object",
         "properties": {
           "deviceToken": {
-            "minLength": 1,
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           },
           "deviceType": {
             "type": "string",
-            "enum": ["ANDROID", "IOS", "WEB"]
+            "enum": [
+              "ANDROID",
+              "IOS",
+              "WEB"
+            ]
           },
-          "deviceOsVersion": {},
-          "appVersion": {},
-          "isActive": {
-            "minLength": 1,
+          "deviceOsVersion": {
             "type": "string"
+          },
+          "appVersion": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "string",
+            "minLength": 1
           }
         },
-        "type": "object",
-        "required": ["deviceToken", "isActive"]
+        "required": [
+          "deviceToken",
+          "isActive"
+        ],
+        "additionalProperties": false
       },
       "IDevice.UnregisterDeviceDto": {
+        "type": "object",
         "properties": {
           "deviceToken": {
-            "minLength": 1,
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           }
         },
-        "type": "object",
-        "required": ["deviceToken"]
+        "required": [
+          "deviceToken"
+        ],
+        "additionalProperties": false
       },
       "IDevice.DeviceActivateDto": {
+        "type": "object",
         "properties": {
           "deviceToken": {
-            "minLength": 1,
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           },
           "isActive": {
-            "minLength": 1,
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           }
         },
-        "type": "object",
-        "required": ["deviceToken", "isActive"]
+        "required": [
+          "deviceToken",
+          "isActive"
+        ],
+        "additionalProperties": false
       },
       "IDevice.UpdateDeviceDto": {
+        "type": "object",
         "properties": {
-          "deviceOsVersion": {},
-          "appVersion": {},
           "deviceToken": {
-            "minLength": 1,
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           },
           "isActive": {
-            "minLength": 1,
+            "type": "string",
+            "minLength": 1
+          },
+          "deviceOsVersion": {
+            "type": "string"
+          },
+          "appVersion": {
             "type": "string"
           }
         },
-        "type": "object",
-        "required": ["deviceToken", "isActive"]
+        "additionalProperties": false,
+        "required": [
+          "deviceToken",
+          "isActive"
+        ]
       },
       "IDevice.Response.DeviceResponseDto": {
         "type": "object",
@@ -4265,7 +4777,9 @@
             ]
           }
         },
-        "required": ["deviceToken"],
+        "required": [
+          "deviceToken"
+        ],
         "additionalProperties": false
       },
       "IDevice.Response.UserDeviceResponseDto": {
@@ -4318,7 +4832,10 @@
             "type": "number"
           }
         },
-        "required": ["deviceToken", "userId"],
+        "required": [
+          "deviceToken",
+          "userId"
+        ],
         "additionalProperties": false
       },
       "IFeed.Basic": {
@@ -4335,7 +4852,11 @@
             "type": "number"
           }
         },
-        "required": ["type", "date", "priority"],
+        "required": [
+          "type",
+          "date",
+          "priority"
+        ],
         "additionalProperties": false
       },
       "IFeed.FamousHumanityReview": {
@@ -4358,7 +4879,12 @@
             }
           }
         },
-        "required": ["date", "priority", "reviews", "type"],
+        "required": [
+          "date",
+          "priority",
+          "reviews",
+          "type"
+        ],
         "additionalProperties": false
       },
       "IReview.Basic": {
@@ -4374,7 +4900,9 @@
                 "type": "number"
               }
             },
-            "required": ["id"],
+            "required": [
+              "id"
+            ],
             "additionalProperties": false
           },
           "lecture": {
@@ -4566,7 +5094,13 @@
             "$ref": "#/components/schemas/IDepartment.Basic"
           }
         },
-        "required": ["date", "department", "priority", "reviews", "type"],
+        "required": [
+          "date",
+          "department",
+          "priority",
+          "reviews",
+          "type"
+        ],
         "additionalProperties": false
       },
       "IFeed.ReviewWrite": {
@@ -4586,7 +5120,12 @@
             "$ref": "#/components/schemas/ILecture.Basic"
           }
         },
-        "required": ["date", "lecture", "priority", "type"],
+        "required": [
+          "date",
+          "lecture",
+          "priority",
+          "type"
+        ],
         "additionalProperties": false
       },
       "IFeed.RelatedCourse": {
@@ -4606,7 +5145,12 @@
             "$ref": "#/components/schemas/ICourse.FeedRelated"
           }
         },
-        "required": ["course", "date", "priority", "type"],
+        "required": [
+          "course",
+          "date",
+          "priority",
+          "type"
+        ],
         "additionalProperties": false
       },
       "IFeed.RankedReview": {
@@ -4629,7 +5173,12 @@
             }
           }
         },
-        "required": ["date", "priority", "reviews", "type"],
+        "required": [
+          "date",
+          "priority",
+          "reviews",
+          "type"
+        ],
         "additionalProperties": false
       },
       "IFeed.Details": {
@@ -4655,14 +5204,17 @@
         ]
       },
       "IFeed.QueryDto": {
+        "type": "object",
         "properties": {
           "date": {
-            "pattern": "\\d{4}-[01]\\d-[0-3]\\dT[0-2]\\d:[0-5]\\d:[0-5]\\d.\\d+Z?",
-            "type": "string"
+            "type": "string",
+            "pattern": "\\d{4}-[01]\\d-[0-3]\\dT[0-2]\\d:[0-5]\\d:[0-5]\\d.\\d+Z?"
           }
         },
-        "type": "object",
-        "required": ["date"]
+        "required": [
+          "date"
+        ],
+        "additionalProperties": false
       },
       "ILecture.Classtime": {
         "type": "object",
@@ -4727,7 +5279,13 @@
             "type": "number"
           }
         },
-        "required": ["day", "str", "str_en", "begin", "end"],
+        "required": [
+          "day",
+          "str",
+          "str_en",
+          "begin",
+          "end"
+        ],
         "additionalProperties": false
       },
       "ILecture.Raw": {
@@ -5040,7 +5598,9 @@
                 "type": "number"
               }
             },
-            "required": ["id"],
+            "required": [
+              "id"
+            ],
             "additionalProperties": false
           },
           "department": {
@@ -5050,7 +5610,9 @@
                 "type": "number"
               }
             },
-            "required": ["id"],
+            "required": [
+              "id"
+            ],
             "additionalProperties": false
           },
           "class_no": {
@@ -5498,7 +6060,53 @@
         "additionalProperties": false
       },
       "ILecture.QueryDto": {
+        "type": "object",
         "properties": {
+          "department": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "type": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "level": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "group": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "keyword": {
+            "type": "string"
+          },
+          "term": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "order": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "offset": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
           "year": {
             "type": "number"
           },
@@ -5513,56 +6121,12 @@
           },
           "end": {
             "type": "number"
-          },
-          "department": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "type": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "level": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "group": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "keyword": {
-            "type": "string"
-          },
-          "term": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "order": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "offset": {
-            "type": "number"
-          },
-          "limit": {
-            "type": "number"
           }
         },
-        "type": "object"
+        "additionalProperties": false
       },
       "ILecture.AutocompleteQueryDto": {
+        "type": "object",
         "properties": {
           "year": {
             "type": "integer"
@@ -5574,8 +6138,12 @@
             "type": "string"
           }
         },
-        "type": "object",
-        "required": ["year", "semester", "keyword"]
+        "required": [
+          "year",
+          "semester",
+          "keyword"
+        ],
+        "additionalProperties": false
       },
       "INotice.Basic": {
         "type": "object",
@@ -5595,84 +6163,120 @@
             "format": "date-time"
           }
         },
-        "required": ["title", "content", "start_time", "end_time"],
+        "required": [
+          "title",
+          "content",
+          "start_time",
+          "end_time"
+        ],
         "additionalProperties": false
       },
       "INotification.ReadDto": {
+        "type": "object",
         "properties": {
           "requestUUID": {
-            "minLength": 1,
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           }
         },
-        "type": "object",
-        "required": ["requestUUID"]
+        "required": [
+          "requestUUID"
+        ],
+        "additionalProperties": false
       },
       "INotification.ActiveDto": {
+        "type": "object",
         "properties": {
           "active": {
-            "minLength": 1,
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           },
           "notificationType": {
-            "minLength": 1,
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           }
         },
-        "type": "object",
-        "required": ["active", "notificationType"]
+        "required": [
+          "active",
+          "notificationType"
+        ],
+        "additionalProperties": false
       },
       "INotification.CreateDto": {
+        "type": "object",
         "properties": {
           "name": {
-            "minLength": 1,
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           },
           "description": {
-            "minLength": 1,
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           },
           "agreementType": {
+            "$ref": "#/components/schemas/AgreementType",
             "minLength": 1,
             "type": "string",
-            "enum": ["INFO", "MARKETING", "NIGHT_MARKETING"]
+            "enum": [
+              "INFO",
+              "MARKETING",
+              "NIGHT_MARKETING"
+            ]
           }
         },
-        "type": "object",
-        "required": ["name", "description", "agreementType"]
+        "required": [
+          "name",
+          "description",
+          "agreementType"
+        ],
+        "additionalProperties": false
       },
       "INotification.UpdateDto": {
+        "type": "object",
         "properties": {
           "id": {
-            "minLength": 1,
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           },
           "name": {
-            "minLength": 1,
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           },
           "description": {
-            "minLength": 1,
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           },
           "agreementType": {
+            "$ref": "#/components/schemas/AgreementType",
             "minLength": 1,
             "type": "string",
-            "enum": ["INFO", "MARKETING", "NIGHT_MARKETING"]
+            "enum": [
+              "INFO",
+              "MARKETING",
+              "NIGHT_MARKETING"
+            ]
           }
         },
-        "type": "object",
-        "required": ["id", "name", "description", "agreementType"]
+        "required": [
+          "id",
+          "name",
+          "description",
+          "agreementType"
+        ],
+        "additionalProperties": false
       },
       "INotification.DeleteDto": {
+        "type": "object",
         "properties": {
           "id": {
-            "minLength": 1,
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           }
         },
-        "type": "object",
-        "required": ["id"]
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
       },
       "IPlanner.ITrack.Additional": {
         "type": "object",
@@ -5706,12 +6310,25 @@
             "type": "number"
           }
         },
-        "required": ["id", "start_year", "end_year", "type", "department", "major_required", "major_elective"],
+        "required": [
+          "id",
+          "start_year",
+          "end_year",
+          "type",
+          "department",
+          "major_required",
+          "major_elective"
+        ],
         "additionalProperties": false
       },
       "AdditionalTrackType": {
         "type": "string",
-        "enum": ["DOUBLE", "MINOR", "ADVANCED", "INTERDISCIPLINARY"]
+        "enum": [
+          "DOUBLE",
+          "MINOR",
+          "ADVANCED",
+          "INTERDISCIPLINARY"
+        ]
       },
       "IPlanner.ITrack.General": {
         "type": "object",
@@ -5826,12 +6443,20 @@
             "type": "boolean"
           }
         },
-        "required": ["id", "item_type", "is_excluded"],
+        "required": [
+          "id",
+          "item_type",
+          "is_excluded"
+        ],
         "additionalProperties": false
       },
       "PlannerItemType": {
         "type": "string",
-        "enum": ["TAKEN", "FUTURE", "ARBITRARY"]
+        "enum": [
+          "TAKEN",
+          "FUTURE",
+          "ARBITRARY"
+        ]
       },
       "IPlanner.IItem.Future": {
         "type": "object",
@@ -5856,7 +6481,14 @@
             "$ref": "#/components/schemas/ICourse.Basic"
           }
         },
-        "required": ["course", "id", "is_excluded", "item_type", "semester", "year"],
+        "required": [
+          "course",
+          "id",
+          "is_excluded",
+          "item_type",
+          "semester",
+          "year"
+        ],
         "additionalProperties": false
       },
       "IPlanner.IItem.Taken": {
@@ -5879,7 +6511,13 @@
             "$ref": "#/components/schemas/ICourse.Basic"
           }
         },
-        "required": ["course", "id", "is_excluded", "item_type", "lecture"],
+        "required": [
+          "course",
+          "id",
+          "is_excluded",
+          "item_type",
+          "lecture"
+        ],
         "additionalProperties": false
       },
       "IPlanner.IItem.Arbitrary": {
@@ -5999,12 +6637,13 @@
         "additionalProperties": false
       },
       "IPlanner.QueryDto": {
+        "type": "object",
         "properties": {
           "order": {
+            "type": "array",
             "items": {
               "type": "string"
-            },
-            "type": "array"
+            }
           },
           "offset": {
             "type": "number"
@@ -6013,9 +6652,10 @@
             "type": "number"
           }
         },
-        "type": "object"
+        "additionalProperties": false
       },
       "IPlanner.CreateBodyDto": {
+        "type": "object",
         "properties": {
           "start_year": {
             "type": "integer"
@@ -6030,34 +6670,33 @@
             "type": "integer"
           },
           "additional_tracks": {
+            "type": "array",
             "items": {
-              "type": "integer"
-            },
-            "type": "array"
+              "type": "number"
+            }
           },
           "should_update_taken_semesters": {
             "type": "boolean"
           },
           "taken_items_to_copy": {
+            "type": "array",
             "items": {
-              "type": "integer"
-            },
-            "type": "array"
+              "type": "number"
+            }
           },
           "future_items_to_copy": {
+            "type": "array",
             "items": {
-              "type": "integer"
-            },
-            "type": "array"
+              "type": "number"
+            }
           },
           "arbitrary_items_to_copy": {
+            "type": "array",
             "items": {
-              "type": "integer"
-            },
-            "type": "array"
+              "type": "number"
+            }
           }
         },
-        "type": "object",
         "required": [
           "start_year",
           "end_year",
@@ -6066,37 +6705,55 @@
           "taken_items_to_copy",
           "future_items_to_copy",
           "arbitrary_items_to_copy"
-        ]
+        ],
+        "additionalProperties": false
       },
       "IPlanner.RemoveItemBodyDto": {
+        "type": "object",
         "properties": {
           "item": {
             "type": "integer"
           },
           "item_type": {
-            "enum": ["TAKEN", "FUTURE", "ARBITRARY"],
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "TAKEN",
+              "FUTURE",
+              "ARBITRARY"
+            ]
           }
         },
-        "type": "object",
-        "required": ["item", "item_type"]
+        "required": [
+          "item",
+          "item_type"
+        ],
+        "additionalProperties": false
       },
       "IPlanner.ReorderBodyDto": {
+        "type": "object",
         "properties": {
           "arrange_order": {
             "type": "integer"
           }
         },
-        "type": "object",
-        "required": ["arrange_order"]
+        "required": [
+          "arrange_order"
+        ],
+        "additionalProperties": false
       },
       "IPlanner.UpdateItemBodyDto": {
+        "type": "object",
         "properties": {
           "item": {
             "type": "integer"
           },
           "item_type": {
-            "enum": ["TAKEN", "FUTURE", "ARBITRARY"],
+            "$ref": "#/components/schemas/PlannerItemType",
+            "enum": [
+              "TAKEN",
+              "FUTURE",
+              "ARBITRARY"
+            ],
             "type": "string"
           },
           "semester": {
@@ -6106,10 +6763,14 @@
             "type": "boolean"
           }
         },
-        "type": "object",
-        "required": ["item", "item_type"]
+        "required": [
+          "item",
+          "item_type"
+        ],
+        "additionalProperties": false
       },
       "IPlanner.FuturePlannerItemDto": {
+        "type": "object",
         "properties": {
           "course": {
             "type": "integer"
@@ -6119,20 +6780,35 @@
           },
           "semester": {
             "type": "number",
-            "enum": [1, 2, 3, 4]
+            "enum": [
+              1,
+              2,
+              3,
+              4
+            ]
           }
         },
-        "type": "object",
-        "required": ["course", "year", "semester"]
+        "required": [
+          "course",
+          "year",
+          "semester"
+        ],
+        "additionalProperties": false
       },
       "IPlanner.AddArbitraryItemDto": {
+        "type": "object",
         "properties": {
           "year": {
             "type": "integer"
           },
           "semester": {
             "type": "number",
-            "enum": [1, 2, 3, 4]
+            "enum": [
+              1,
+              2,
+              3,
+              4
+            ]
           },
           "department": {
             "type": "integer"
@@ -6150,10 +6826,19 @@
             "type": "integer"
           }
         },
-        "type": "object",
-        "required": ["year", "semester", "department", "type", "type_en", "credit", "credit_au"]
+        "required": [
+          "year",
+          "semester",
+          "department",
+          "type",
+          "type_en",
+          "credit",
+          "credit_au"
+        ],
+        "additionalProperties": false
       },
       "IPlanner.UpdateBodyDto": {
+        "type": "object",
         "properties": {
           "start_year": {
             "type": "integer"
@@ -6168,17 +6853,23 @@
             "type": "integer"
           },
           "additional_tracks": {
+            "type": "array",
             "items": {
-              "type": "integer"
-            },
-            "type": "array"
+              "type": "number"
+            }
           },
           "should_update_taken_semesters": {
             "type": "boolean"
           }
         },
-        "type": "object",
-        "required": ["start_year", "end_year", "general_track", "major_track", "additional_tracks"]
+        "required": [
+          "start_year",
+          "end_year",
+          "general_track",
+          "major_track",
+          "additional_tracks"
+        ],
+        "additionalProperties": false
       },
       "IPlanner.Response": {
         "type": "object",
@@ -6268,7 +6959,12 @@
             "type": "number"
           }
         },
-        "required": ["id", "start_year", "end_year", "arrange_order"],
+        "required": [
+          "id",
+          "start_year",
+          "end_year",
+          "arrange_order"
+        ],
         "additionalProperties": false
       },
       "IRate.Basic": {
@@ -6298,19 +6994,28 @@
             ]
           }
         },
-        "required": ["id", "user_id", "score", "version", "created_datetime"],
+        "required": [
+          "id",
+          "user_id",
+          "score",
+          "version",
+          "created_datetime"
+        ],
         "additionalProperties": false
       },
       "IRate.CreateDto": {
+        "type": "object",
         "properties": {
           "score": {
-            "minimum": 1,
             "type": "number",
+            "minimum": 1,
             "maximum": 5
           }
         },
-        "type": "object",
-        "required": ["score"]
+        "required": [
+          "score"
+        ],
+        "additionalProperties": false
       },
       "IReview.WithLiked": {
         "type": "object",
@@ -6325,7 +7030,9 @@
                 "type": "number"
               }
             },
-            "required": ["id"],
+            "required": [
+              "id"
+            ],
             "additionalProperties": false
           },
           "lecture": {
@@ -6446,30 +7153,37 @@
             ]
           }
         },
-        "required": ["id", "review_id", "userprofile_id", "created_datetime"],
+        "required": [
+          "id",
+          "review_id",
+          "userprofile_id",
+          "created_datetime"
+        ],
         "additionalProperties": false
       },
       "IReview.LectureReviewsQueryDto": {
+        "type": "object",
         "properties": {
           "order": {
+            "type": "array",
             "items": {
               "type": "string"
-            },
-            "type": "array"
+            }
           },
           "offset": {
-            "minimum": 0,
-            "type": "integer"
+            "type": "integer",
+            "minimum": 0
           },
           "limit": {
-            "maximum": 100,
             "type": "integer",
+            "maximum": 100,
             "minimum": 0
           }
         },
-        "type": "object"
+        "additionalProperties": false
       },
       "IReview.QueryDto": {
+        "type": "object",
         "properties": {
           "lecture_year": {
             "type": "number"
@@ -6481,10 +7195,10 @@
             "type": "string"
           },
           "order": {
+            "type": "array",
             "items": {
               "type": "string"
-            },
-            "type": "array"
+            }
           },
           "offset": {
             "type": "number"
@@ -6493,67 +7207,80 @@
             "type": "number"
           }
         },
-        "type": "object"
+        "additionalProperties": false
       },
       "IReview.CreateDto": {
+        "type": "object",
         "properties": {
           "content": {
-            "minLength": 1,
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           },
           "lecture": {
-            "minLength": 1,
-            "type": "number"
+            "type": "number",
+            "minLength": 1
           },
           "grade": {
-            "maximum": 5,
             "type": "number",
+            "maximum": 5,
             "minimum": 1,
             "minLength": 1
           },
           "load": {
-            "maximum": 5,
             "type": "number",
+            "maximum": 5,
             "minimum": 1,
             "minLength": 1
           },
           "speech": {
-            "maximum": 5,
             "type": "number",
+            "maximum": 5,
             "minimum": 1,
             "minLength": 1
           }
         },
-        "type": "object",
-        "required": ["content", "lecture", "grade", "load", "speech"]
+        "required": [
+          "content",
+          "lecture",
+          "grade",
+          "load",
+          "speech"
+        ],
+        "additionalProperties": false
       },
       "IReview.UpdateDto": {
+        "type": "object",
         "properties": {
           "content": {
-            "minLength": 1,
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           },
           "grade": {
-            "maximum": 5,
             "type": "number",
+            "maximum": 5,
             "minimum": 1,
             "minLength": 1
           },
           "load": {
-            "maximum": 5,
             "type": "number",
+            "maximum": 5,
             "minimum": 1,
             "minLength": 1
           },
           "speech": {
-            "maximum": 5,
             "type": "number",
+            "maximum": 5,
             "minimum": 1,
             "minLength": 1
           }
         },
-        "type": "object",
-        "required": ["content", "grade", "load", "speech"]
+        "required": [
+          "content",
+          "grade",
+          "load",
+          "speech"
+        ],
+        "additionalProperties": false
       },
       "ISchedules.Basic": {
         "type": "object",
@@ -6573,7 +7300,12 @@
             "type": "string"
           }
         },
-        "required": ["year", "from", "to", "name"],
+        "required": [
+          "year",
+          "from",
+          "to",
+          "name"
+        ],
         "additionalProperties": false
       },
       "ISchedules.SchedulesResponse": {
@@ -6586,17 +7318,22 @@
             }
           }
         },
-        "required": ["schedules"],
+        "required": [
+          "schedules"
+        ],
         "additionalProperties": false
       },
       "ISemester.QueryDto": {
+        "type": "object",
         "properties": {
           "order": {
-            "items": {},
-            "type": "array"
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
-        "type": "object"
+        "additionalProperties": false
       },
       "ISemester.Response": {
         "type": "object",
@@ -6718,20 +7455,25 @@
             }
           }
         },
-        "required": ["semesters"],
+        "required": [
+          "semesters"
+        ],
         "additionalProperties": false
       },
       "ISession.FavoriteDepartmentsDto": {
+        "type": "object",
         "properties": {
           "fav_department": {
+            "type": "array",
             "items": {
               "type": "string"
-            },
-            "type": "array"
+            }
           }
         },
-        "type": "object",
-        "required": ["fav_department"]
+        "required": [
+          "fav_department"
+        ],
+        "additionalProperties": false
       },
       "IShare.RoundedRectangleOptions": {
         "type": "object",
@@ -6758,7 +7500,15 @@
             "type": "string"
           }
         },
-        "required": ["ctx", "x", "y", "width", "height", "radius", "color"],
+        "required": [
+          "ctx",
+          "x",
+          "y",
+          "width",
+          "height",
+          "radius",
+          "color"
+        ],
         "additionalProperties": false
       },
       "CanvasRenderingContext2D": {
@@ -6766,7 +7516,13 @@
         "properties": {
           "patternQuality": {
             "type": "string",
-            "enum": ["fast", "good", "best", "nearest", "bilinear"],
+            "enum": [
+              "fast",
+              "good",
+              "best",
+              "nearest",
+              "bilinear"
+            ],
             "description": "_Non-standard_. Defaults to 'good'. Affects pattern (gradient, image, etc.) rendering quality."
           },
           "imageSmoothingEnabled": {
@@ -6807,17 +7563,31 @@
           },
           "antialias": {
             "type": "string",
-            "enum": ["default", "gray", "none", "subpixel"],
+            "enum": [
+              "default",
+              "gray",
+              "none",
+              "subpixel"
+            ],
             "description": "_Non-standard_. Sets the antialiasing mode."
           },
           "textDrawingMode": {
             "type": "string",
-            "enum": ["path", "glyph"],
+            "enum": [
+              "path",
+              "glyph"
+            ],
             "description": "Defaults to 'path'. The effect depends on the canvas type:\n\n* **Standard (image)** `'glyph'` and `'path'` both result in rasterized   text. Glyph mode is faster than path, but may result in lower-quality   text, especially when rotated or translated.\n\n* **PDF** `'glyph'` will embed text instead of paths into the PDF. This   is faster to encode, faster to open with PDF viewers, yields a smaller   file size and makes the text selectable. The subset of the font needed   to render the glyphs will be embedded in the PDF. This is usually the   mode you want to use with PDF canvases.\n\n* **SVG** glyph does not cause `<text>` elements to be produced as one   might expect ([cairo bug](https://gitlab.freedesktop.org/cairo/cairo/issues/253)).   Rather, glyph will create a `<defs>` section with a `<symbol>` for each   glyph, then those glyphs be reused via `<use>` elements. `'path'` mode   creates a `<path>` element for each text string. glyph mode is faster   and yields a smaller file size.\n\nIn glyph mode, `ctx.strokeText()` and `ctx.fillText()` behave the same (aside from using the stroke and fill style, respectively)."
           },
           "quality": {
             "type": "string",
-            "enum": ["fast", "good", "best", "nearest", "bilinear"],
+            "enum": [
+              "fast",
+              "good",
+              "best",
+              "nearest",
+              "bilinear"
+            ],
             "description": "_Non-standard_. Defaults to 'good'. Like `patternQuality`, but applies to transformations affecting more than just patterns."
           },
           "currentTransform": {
@@ -6864,7 +7634,10 @@
           },
           "direction": {
             "type": "string",
-            "enum": ["ltr", "rtl"]
+            "enum": [
+              "ltr",
+              "rtl"
+            ]
           }
         },
         "required": [
@@ -6932,11 +7705,19 @@
       },
       "CanvasLineCap": {
         "type": "string",
-        "enum": ["butt", "round", "square"]
+        "enum": [
+          "butt",
+          "round",
+          "square"
+        ]
       },
       "CanvasLineJoin": {
         "type": "string",
-        "enum": ["bevel", "miter", "round"]
+        "enum": [
+          "bevel",
+          "miter",
+          "round"
+        ]
       },
       "DOMMatrix": {
         "type": "object",
@@ -7052,11 +7833,24 @@
       },
       "CanvasTextBaseline": {
         "type": "string",
-        "enum": ["alphabetic", "bottom", "hanging", "ideographic", "middle", "top"]
+        "enum": [
+          "alphabetic",
+          "bottom",
+          "hanging",
+          "ideographic",
+          "middle",
+          "top"
+        ]
       },
       "CanvasTextAlign": {
         "type": "string",
-        "enum": ["center", "end", "left", "right", "start"]
+        "enum": [
+          "center",
+          "end",
+          "left",
+          "right",
+          "start"
+        ]
       },
       "Canvas": {
         "type": "object",
@@ -7069,7 +7863,11 @@
           },
           "type": {
             "type": "string",
-            "enum": ["image", "pdf", "svg"],
+            "enum": [
+              "image",
+              "pdf",
+              "svg"
+            ],
             "description": "_Non standard._ The type of the canvas."
           },
           "stride": {
@@ -7077,7 +7875,12 @@
             "description": "_Non standard._ Getter. The stride used by the canvas."
           }
         },
-        "required": ["width", "height", "type", "stride"],
+        "required": [
+          "width",
+          "height",
+          "type",
+          "stride"
+        ],
         "additionalProperties": false
       },
       "IShare.TextOptions": {
@@ -7106,10 +7909,22 @@
           },
           "align": {
             "type": "string",
-            "enum": ["right", "left", "center"]
+            "enum": [
+              "right",
+              "left",
+              "center"
+            ]
           }
         },
-        "required": ["ctx", "x", "y", "text", "font", "fontSize", "color"],
+        "required": [
+          "ctx",
+          "x",
+          "y",
+          "text",
+          "font",
+          "fontSize",
+          "color"
+        ],
         "additionalProperties": false
       },
       "IShare.DrawTileOptions": {
@@ -7146,7 +7961,18 @@
             "type": "number"
           }
         },
-        "required": ["ctx", "x", "y", "width", "height", "title", "professor", "location", "font", "fontSize"],
+        "required": [
+          "ctx",
+          "x",
+          "y",
+          "width",
+          "height",
+          "title",
+          "professor",
+          "location",
+          "font",
+          "fontSize"
+        ],
         "additionalProperties": false
       },
       "IShare.drawTimetableDatas": {
@@ -7174,10 +8000,18 @@
             "type": "number"
           }
         },
-        "required": ["lectures", "timetableType", "semesterName", "isEnglish", "semesterFontSize", "tileFontSize"],
+        "required": [
+          "lectures",
+          "timetableType",
+          "semesterName",
+          "isEnglish",
+          "semesterFontSize",
+          "tileFontSize"
+        ],
         "additionalProperties": false
       },
       "IShare.TimetableImageQueryDto": {
+        "type": "object",
         "properties": {
           "timetable": {
             "type": "number"
@@ -7192,10 +8026,15 @@
             "type": "string"
           }
         },
-        "type": "object",
-        "required": ["timetable", "year", "semester"]
+        "required": [
+          "timetable",
+          "year",
+          "semester"
+        ],
+        "additionalProperties": false
       },
       "IShare.TimetableIcalQueryDto": {
+        "type": "object",
         "properties": {
           "timetable": {
             "type": "number"
@@ -7210,84 +8049,120 @@
             "type": "string"
           }
         },
-        "type": "object",
-        "required": ["timetable", "year", "semester"]
+        "required": [
+          "timetable",
+          "year",
+          "semester"
+        ],
+        "additionalProperties": false
       },
       "ISync.ScholarLectureType": {
+        "type": "object",
         "properties": {
           "LECTURE_YEAR": {
-            "type": "integer"
+            "type": "integer",
+            "description": "개설 연도"
           },
           "LECTURE_TERM": {
             "type": "number",
-            "enum": [1, 2, 3, 4]
+            "description": "개설 학기. 1: 봄학기, 2:여름학기, 3: 가을학기, 4: 겨울학기",
+            "enum": [
+              1,
+              2,
+              3,
+              4
+            ]
           },
           "SUBJECT_NO": {
-            "type": "string"
+            "type": "string",
+            "description": "36.492 등의 과목코드"
           },
           "LECTURE_CLASS": {
-            "type": "string"
+            "type": "string",
+            "description": "분반"
           },
           "DEPT_ID": {
-            "type": "integer"
+            "type": "integer",
+            "description": "학과 숫자 id"
           },
           "DEPT_NAME": {
-            "type": "string"
+            "type": "string",
+            "description": "학과 이름"
           },
           "E_DEPT_NAME": {
-            "type": "string"
+            "type": "string",
+            "description": "학과 영어 이름"
           },
           "SUB_TITLE": {
-            "type": "string"
+            "type": "string",
+            "description": "강의 이름, 전산학특강<AI 프로토타이핑> 처럼 꺾쇠도 사용."
           },
           "E_SUB_TITLE": {
-            "type": "string"
+            "type": "string",
+            "description": "강의 영어 이름"
           },
           "SUBJECT_ID": {
-            "type": "string"
+            "type": "string",
+            "description": "과목 종류 id로 추정. 아래 subject_type과 대응."
           },
           "SUBJECT_TYPE": {
-            "type": "string"
+            "type": "string",
+            "description": "과목 종류 한글 명칭. 전공필수, 전공선택 등"
           },
           "E_SUBJECT_TYPE": {
-            "type": "string"
+            "type": "string",
+            "description": "과목 종류 영어 명칭. Major Elective 등"
           },
           "COURSE_SECT": {
-            "type": "integer"
+            "type": "integer",
+            "description": "? 학년 구분이라고 보임."
           },
           "ACT_UNIT": {
-            "type": "integer"
+            "type": "integer",
+            "description": "부여 AU"
           },
           "LECTURE": {
-            "type": "number"
+            "type": "number",
+            "description": "강의시간"
           },
           "LAB": {
-            "type": "number"
+            "type": "number",
+            "description": "실습시간"
           },
           "CREDIT": {
-            "type": "integer"
+            "type": "integer",
+            "description": "학점"
           },
           "LIMIT": {
-            "type": "integer"
+            "type": "integer",
+            "description": "수강 제한 인원"
           },
           "PROF_NAMES": {
-            "type": "string"
+            "type": "string",
+            "description": "교수(들) 이름"
           },
           "NOTICE": {
-            "type": "string"
+            "type": "string",
+            "description": "공지사항"
           },
           "OLD_NO": {
-            "type": "string"
+            "type": "string",
+            "description": "CS492 형의 과목 코드"
           },
           "ENGLISH_LEC": {
             "type": "string",
-            "enum": ["Y", "N", ""]
+            "enum": [
+              "Y",
+              "N",
+              ""
+            ],
+            "description": "영어 강의 여부"
           },
           "E_PROF_NAMES": {
-            "type": "string"
+            "type": "string",
+            "description": "교수(들) 영어 이름"
           }
         },
-        "type": "object",
         "required": [
           "LECTURE_YEAR",
           "LECTURE_TERM",
@@ -7312,40 +8187,63 @@
           "OLD_NO",
           "ENGLISH_LEC",
           "E_PROF_NAMES"
-        ]
+        ],
+        "additionalProperties": false,
+        "description": "동기화 대상 강의 정보 example: { \"lecture_year\": 2024, \"lecture_term\": 3, \"subject_no\": \"36.492\", \"lecture_class\": \"F \", \"dept_id\": 4421, \"dept_name\": \"전산학부\", \"e_dept_name\": \"School of Computing\", \"sub_title\": \"전산학특강<AI 프로토타이핑>\", \"e_sub_title\": \"Special Topics in Computer Science<AI Prototyping>\", \"subject_id\": 34, \"subject_type\": \"전공선택\", \"e_subject_type\": \"Major Elective\", \"course_sect\": 7, \"act_unit\": 0, \"lecture\": 3, \"lab\": 0, \"credit\": 3, \"limit\": 25, \"prof_names\": \"안드리아\", \"notice\": \"\", \"old_no\": \"CS492\", \"english_lec\": \"Y\", \"e_prof_names\": \"Bianchi Andrea\" },"
       },
       "ISync.ScholarChargeType": {
+        "type": "object",
         "properties": {
           "LECTURE_YEAR": {
-            "type": "integer"
+            "type": "integer",
+            "description": "개설 연도"
           },
           "LECTURE_TERM": {
             "type": "number",
-            "enum": [1, 2, 3, 4]
+            "description": "개설 학기. 1: 봄학기, 2:여름학기, 3: 가을학기, 4: 겨울학기",
+            "enum": [
+              1,
+              2,
+              3,
+              4
+            ]
           },
           "SUBJECT_NO": {
-            "type": "string"
+            "type": "string",
+            "description": "36.492 등의 과목코드"
           },
           "LECTURE_CLASS": {
-            "type": "string"
+            "type": "string",
+            "description": "분반"
           },
           "DEPT_ID": {
-            "type": "integer"
+            "type": "integer",
+            "description": "학과 숫자 id"
           },
           "PROF_ID": {
-            "type": "integer"
+            "type": "integer",
+            "description": "교수 숫자 id"
           },
           "PROF_NAME": {
-            "type": "string"
+            "type": "string",
+            "description": "교수 이름"
           },
           "PORTION": {
-            "type": "number"
+            "type": "number",
+            "description": "?"
           },
           "E_PROF_NAME": {
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "교수 영어 이름"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
-        "type": "object",
         "required": [
           "LECTURE_YEAR",
           "LECTURE_TERM",
@@ -7355,40 +8253,146 @@
           "PROF_ID",
           "PROF_NAME",
           "PORTION"
-        ]
+        ],
+        "additionalProperties": false,
+        "description": "동기화 대상 교수 정보 example: { \"lecture_year\": 2024, \"lecture_term\": 1, \"subject_no\": \"21.960\", \"lecture_class\": \"AS\", \"dept_id\": 132, \"prof_id\": 1849, \"prof_name\": \"전상용\", \"portion\": 3, \"e_prof_name\": \" Sangyong Jon\" },"
       },
       "ISync.ExamtimeType": {
+        "type": "object",
         "properties": {
           "LECTURE_YEAR": {
-            "type": "integer"
+            "type": "integer",
+            "description": "개설 연도"
           },
           "LECTURE_TERM": {
             "type": "number",
-            "enum": [1, 2, 3, 4]
+            "description": "개설 학기. 1: 봄학기, 2:여름학기, 3: 가을학기, 4: 겨울학기",
+            "enum": [
+              1,
+              2,
+              3,
+              4
+            ]
           },
           "SUBJECT_NO": {
-            "type": "string"
+            "type": "string",
+            "description": "36.492 등의 과목코드"
           },
           "LECTURE_CLASS": {
-            "type": "string"
+            "type": "string",
+            "description": "분반"
           },
           "DEPT_ID": {
-            "type": "integer"
+            "type": "integer",
+            "description": "학과 숫자 id"
           },
           "EXAM_DAY": {
-            "type": "integer"
+            "type": "integer",
+            "description": "시험 요일. 1~6 범위의 값 확인. 월부터 시작."
           },
           "EXAM_BEGIN": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+              "date": {
+                "type": "number"
+              },
+              "day": {
+                "type": "number"
+              },
+              "hours": {
+                "type": "number"
+              },
+              "minutes": {
+                "type": "number"
+              },
+              "month": {
+                "type": "number"
+              },
+              "nanos": {
+                "type": "number"
+              },
+              "seconds": {
+                "type": "number"
+              },
+              "time": {
+                "type": "number"
+              },
+              "timezoneOffset": {
+                "type": "number"
+              },
+              "year": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "date",
+              "day",
+              "hours",
+              "minutes",
+              "month",
+              "nanos",
+              "seconds",
+              "time",
+              "timezoneOffset",
+              "year"
+            ],
+            "additionalProperties": false,
+            "description": "시험 시작 시간"
           },
           "EXAM_END": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+              "date": {
+                "type": "number"
+              },
+              "day": {
+                "type": "number"
+              },
+              "hours": {
+                "type": "number"
+              },
+              "minutes": {
+                "type": "number"
+              },
+              "month": {
+                "type": "number"
+              },
+              "nanos": {
+                "type": "number"
+              },
+              "seconds": {
+                "type": "number"
+              },
+              "time": {
+                "type": "number"
+              },
+              "timezoneOffset": {
+                "type": "number"
+              },
+              "year": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "date",
+              "day",
+              "hours",
+              "minutes",
+              "month",
+              "nanos",
+              "seconds",
+              "time",
+              "timezoneOffset",
+              "year"
+            ],
+            "additionalProperties": false,
+            "description": "시험 종료 시간"
           },
           "NOTICE": {
-            "type": "string"
+            "type": "string",
+            "description": "공지사항"
           }
         },
-        "type": "object",
         "required": [
           "LECTURE_YEAR",
           "LECTURE_TERM",
@@ -7399,7 +8403,9 @@
           "EXAM_BEGIN",
           "EXAM_END",
           "NOTICE"
-        ]
+        ],
+        "additionalProperties": false,
+        "description": "동기화 대상 시험시간 정보 example: { \"lecture_year\": 2024, \"lecture_term\": 1, \"subject_no\": \"31.343\", \"lecture_class\": \"  \", \"dept_id\": 331, \"exam_day\": 4, \"exam_begin\": \"1899-12-31 13:00:00.0\", \"exam_end\": \"1899-12-31 15:45:00.0\", \"notice\": \"\" }"
       },
       "timeDayConverter": {
         "$comment": "(dayString: string) =>undefined",
@@ -7412,59 +8418,180 @@
                 "type": "string"
               }
             },
-            "required": ["dayString"],
+            "required": [
+              "dayString"
+            ],
             "additionalProperties": false
           }
         }
       },
       "ISync.ClasstimeType": {
+        "type": "object",
         "properties": {
           "LECTURE_YEAR": {
-            "type": "integer"
+            "type": "integer",
+            "description": "개설 연도"
           },
           "LECTURE_TERM": {
             "type": "number",
-            "enum": [1, 2, 3, 4]
+            "description": "개설 학기. 1: 봄학기, 2:여름학기, 3: 가을학기, 4: 겨울학기",
+            "enum": [
+              1,
+              2,
+              3,
+              4
+            ]
           },
           "SUBJECT_NO": {
-            "type": "string"
+            "type": "string",
+            "description": "36.492 등의 과목코드"
           },
           "LECTURE_CLASS": {
-            "type": "string"
+            "type": "string",
+            "description": "분반"
           },
           "DEPT_ID": {
-            "type": "integer"
+            "type": "integer",
+            "description": "학과 숫자 id"
           },
           "LECTURE_DAY": {
-            "type": "number"
+            "type": "number",
+            "description": "수업 요일. 1~7 범위의 값 확인. 월부터 시작."
           },
           "LECTURE_BEGIN": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+              "date": {
+                "type": "number"
+              },
+              "day": {
+                "type": "number"
+              },
+              "hours": {
+                "type": "number"
+              },
+              "minutes": {
+                "type": "number"
+              },
+              "month": {
+                "type": "number"
+              },
+              "nanos": {
+                "type": "number"
+              },
+              "seconds": {
+                "type": "number"
+              },
+              "time": {
+                "type": "number"
+              },
+              "timezoneOffset": {
+                "type": "number"
+              },
+              "year": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "date",
+              "day",
+              "hours",
+              "minutes",
+              "month",
+              "nanos",
+              "seconds",
+              "time",
+              "timezoneOffset",
+              "year"
+            ],
+            "additionalProperties": false,
+            "description": "수업 시작 시간"
           },
           "LECTURE_END": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+              "date": {
+                "type": "number"
+              },
+              "day": {
+                "type": "number"
+              },
+              "hours": {
+                "type": "number"
+              },
+              "minutes": {
+                "type": "number"
+              },
+              "month": {
+                "type": "number"
+              },
+              "nanos": {
+                "type": "number"
+              },
+              "seconds": {
+                "type": "number"
+              },
+              "time": {
+                "type": "number"
+              },
+              "timezoneOffset": {
+                "type": "number"
+              },
+              "year": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "date",
+              "day",
+              "hours",
+              "minutes",
+              "month",
+              "nanos",
+              "seconds",
+              "time",
+              "timezoneOffset",
+              "year"
+            ],
+            "additionalProperties": false,
+            "description": "수업 종료 시간"
           },
           "LECTURE_TYPE": {
             "type": "string",
-            "enum": ["l", "e"]
+            "enum": [
+              "l",
+              "e"
+            ],
+            "description": "수업 종류. l: lecture, e: experiment"
           },
           "BUILDING": {
-            "type": "string"
+            "type": "string",
+            "description": "건물 번호"
           },
           "ROOM_NO": {
-            "type": "string"
+            "type": "string",
+            "description": "강의실 번호"
           },
           "ROOM_K_NAME": {
-            "type": "string"
+            "type": "string",
+            "description": "강의실 한글 이름"
           },
           "ROOM_E_NAME": {
-            "type": "string"
+            "type": "string",
+            "description": "강의실 영어 이름"
           },
           "TEACHING": {
-            "type": "number"
+            "anyOf": [
+              {
+                "type": "number",
+                "description": "수업 교시"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
-        "type": "object",
         "required": [
           "LECTURE_YEAR",
           "LECTURE_TERM",
@@ -7478,36 +8605,53 @@
           "BUILDING",
           "ROOM_NO",
           "ROOM_K_NAME",
-          "ROOM_E_NAME"
-        ]
+          "ROOM_E_NAME",
+          "TEACHING"
+        ],
+        "additionalProperties": false
       },
       "ISync.AttendType": {
+        "type": "object",
         "properties": {
           "LECTURE_YEAR": {
-            "type": "integer"
+            "type": "integer",
+            "description": "개설 연도"
           },
           "LECTURE_TERM": {
             "type": "number",
-            "enum": [1, 2, 3, 4]
+            "description": "개설 학기. 1: 봄학기, 2:여름학기, 3: 가을학기, 4: 겨울학기",
+            "enum": [
+              1,
+              2,
+              3,
+              4
+            ]
           },
           "SUBJECT_NO": {
-            "type": "string"
+            "type": "string",
+            "description": "36.492 등의 과목코드"
           },
           "LECTURE_CLASS": {
-            "type": "string"
+            "type": "string",
+            "description": "분반"
           },
           "DEPT_ID": {
-            "type": "integer"
+            "type": "integer",
+            "description": "학과 숫자 id"
           },
           "STUDENT_NO": {
-            "type": "integer"
+            "type": "integer",
+            "description": "학번"
           },
           "PROCESS_TYPE": {
             "type": "string",
-            "enum": ["I", "C"]
+            "enum": [
+              "I",
+              "C"
+            ],
+            "description": "신청 기간 구분으로 유추. I: 수강신청기간 내 신청, C: 수강변경기간 내 신청"
           }
         },
-        "type": "object",
         "required": [
           "LECTURE_YEAR",
           "LECTURE_TERM",
@@ -7516,70 +8660,145 @@
           "DEPT_ID",
           "STUDENT_NO",
           "PROCESS_TYPE"
-        ]
+        ],
+        "additionalProperties": false,
+        "description": "동기화 대상 들은 수업 정보 example: { \"lecture_year\": 2024, \"lecture_term\": 1, \"subject_no\": \"25.101\", \"lecture_class\": \"G \", \"dept_id\": 151, \"student_no\": 20240111, \"process_type\": \"I\" }"
       },
       "ISync.ClasstimeBody": {
+        "type": "object",
         "properties": {
           "year": {
-            "type": "integer"
+            "type": "integer",
+            "description": "동기화 대상 연도"
           },
           "semester": {
             "type": "number",
-            "enum": [1, 2, 3, 4]
+            "description": "동기화 대상 학기",
+            "enum": [
+              1,
+              2,
+              3,
+              4
+            ]
           },
           "classtimes": {
-            "type": "array"
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ISync.ClasstimeType"
+            },
+            "description": "동기화 대상 수업시간 정보"
           }
         },
-        "type": "object",
-        "required": ["year", "semester", "classtimes"]
+        "required": [
+          "year",
+          "semester",
+          "classtimes"
+        ],
+        "additionalProperties": false
       },
       "ISync.TakenLectureBody": {
+        "type": "object",
         "properties": {
           "year": {
-            "type": "integer"
+            "type": "integer",
+            "description": "동기화 대상 연도"
           },
           "semester": {
             "type": "number",
-            "enum": [1, 2, 3, 4]
+            "description": "동기화 대상 학기",
+            "enum": [
+              1,
+              2,
+              3,
+              4
+            ]
           },
           "attend": {
-            "type": "array"
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ISync.AttendType"
+            },
+            "description": "동기화 대상 수강 강의 정보"
           }
         },
-        "type": "object",
-        "required": ["year", "semester", "attend"]
+        "required": [
+          "year",
+          "semester",
+          "attend"
+        ],
+        "additionalProperties": false
       },
       "ISync.ExamtimeBody": {
+        "type": "object",
         "properties": {
           "year": {
-            "type": "integer"
+            "type": "integer",
+            "description": "동기화 대상 연도"
           },
           "semester": {
             "type": "number",
-            "enum": [1, 2, 3, 4]
+            "description": "동기화 대상 학기",
+            "enum": [
+              1,
+              2,
+              3,
+              4
+            ]
           },
           "examtimes": {
-            "type": "array"
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ISync.ExamtimeType"
+            },
+            "description": "동기화 대상 시험시간 정보"
           }
         },
-        "type": "object",
-        "required": ["year", "semester", "examtimes"]
+        "required": [
+          "year",
+          "semester",
+          "examtimes"
+        ],
+        "additionalProperties": false
       },
       "ISync.ScholarDBBody": {
+        "type": "object",
         "properties": {
           "year": {
-            "type": "integer"
+            "type": "integer",
+            "description": "동기화 대상 연도"
           },
           "semester": {
             "type": "number",
-            "enum": [1, 2, 3, 4]
+            "description": "동기화 대상 학기",
+            "enum": [
+              1,
+              2,
+              3,
+              4
+            ]
           },
-          "lectures": {},
-          "charges": {}
+          "lectures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ISync.ScholarLectureType"
+            },
+            "description": "동기화 대상 강의 정보"
+          },
+          "charges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ISync.ScholarChargeType"
+            },
+            "description": "강의 강사 정보"
+          }
         },
-        "type": "object",
-        "required": ["year", "semester", "lectures", "charges"]
+        "required": [
+          "year",
+          "semester",
+          "lectures",
+          "charges"
+        ],
+        "additionalProperties": false
       },
       "ITimetable.Response": {
         "type": "object",
@@ -7604,10 +8823,14 @@
             "type": "number"
           }
         },
-        "required": ["id", "arrange_order"],
+        "required": [
+          "id",
+          "arrange_order"
+        ],
         "additionalProperties": false
       },
       "ITimetable.QueryDto": {
+        "type": "object",
         "properties": {
           "year": {
             "type": "number"
@@ -7616,10 +8839,10 @@
             "type": "number"
           },
           "order": {
+            "type": "array",
             "items": {
               "type": "string"
-            },
-            "type": "array"
+            }
           },
           "offset": {
             "type": "number"
@@ -7628,9 +8851,10 @@
             "type": "number"
           }
         },
-        "type": "object"
+        "additionalProperties": false
       },
       "ITimetable.CreateDto": {
+        "type": "object",
         "properties": {
           "year": {
             "type": "number"
@@ -7639,32 +8863,42 @@
             "type": "number"
           },
           "lectures": {
+            "type": "array",
             "items": {
               "type": "number"
-            },
-            "type": "array"
+            }
           }
         },
-        "type": "object",
-        "required": ["year", "semester", "lectures"]
+        "required": [
+          "year",
+          "semester",
+          "lectures"
+        ],
+        "additionalProperties": false
       },
       "ITimetable.AddLectureDto": {
+        "type": "object",
         "properties": {
           "lecture": {
             "type": "number"
           }
         },
-        "type": "object",
-        "required": ["lecture"]
+        "required": [
+          "lecture"
+        ],
+        "additionalProperties": false
       },
       "ITimetable.ReorderTimetableDto": {
+        "type": "object",
         "properties": {
           "arrange_order": {
             "type": "number"
           }
         },
-        "type": "object",
-        "required": ["arrange_order"]
+        "required": [
+          "arrange_order"
+        ],
+        "additionalProperties": false
       },
       "IUser.SsoInfoOneApp": {
         "type": "object",
@@ -7673,27 +8907,31 @@
             "type": "string"
           }
         },
-        "required": ["sso_info"],
+        "required": [
+          "sso_info"
+        ],
         "additionalProperties": false
       },
       "IUser.TakenCoursesQueryDto": {
+        "type": "object",
         "properties": {
           "order": {
+            "type": "array",
             "items": {
               "type": "string"
-            },
-            "type": "array"
+            }
           }
         },
-        "type": "object"
+        "additionalProperties": false
       },
       "IUser.ReviewLikedQueryDto": {
+        "type": "object",
         "properties": {
           "order": {
+            "type": "array",
             "items": {
               "type": "string"
-            },
-            "type": "array"
+            }
           },
           "offset": {
             "type": "number"
@@ -7702,7 +8940,7 @@
             "type": "number"
           }
         },
-        "type": "object"
+        "additionalProperties": false
       },
       "IUser.Basic": {
         "type": "object",
@@ -7885,14 +9123,17 @@
         "additionalProperties": false
       },
       "IUser.TokenDto": {
+        "type": "object",
         "properties": {
           "token": {
-            "minLength": 1,
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           }
         },
-        "type": "object",
-        "required": ["token"]
+        "required": [
+          "token"
+        ],
+        "additionalProperties": false
       },
       "IUser.TokenResponse": {
         "type": "object",
@@ -7904,7 +9145,10 @@
             "type": "string"
           }
         },
-        "required": ["accessToken", "refreshToken"],
+        "required": [
+          "accessToken",
+          "refreshToken"
+        ],
         "additionalProperties": false
       },
       "IUser.SimpleProfile": {
@@ -7977,38 +9221,72 @@
             }
           }
         },
-        "required": ["lectures"],
+        "required": [
+          "lectures"
+        ],
         "additionalProperties": false
       },
       "IWishlist.AddLectureDto": {
+        "type": "object",
         "properties": {
           "lecture": {
             "type": "number"
           }
         },
-        "type": "object",
-        "required": ["lecture"]
+        "required": [
+          "lecture"
+        ],
+        "additionalProperties": false
       },
       "IWishlist.RemoveLectureDto": {
+        "type": "object",
         "properties": {
           "lecture": {
             "type": "number"
           }
         },
-        "type": "object",
-        "required": ["lecture"]
+        "required": [
+          "lecture"
+        ],
+        "additionalProperties": false
       },
       "CourseOrderQuery": {
         "type": "string",
-        "enum": ["code", "popular", "studentCount"]
+        "enum": [
+          "code",
+          "popular",
+          "studentCount"
+        ]
       },
       "level": {
         "type": "number",
-        "enum": [100, 200, 300, 400, 500, 600, 700, 800, 900]
+        "enum": [
+          100,
+          200,
+          300,
+          400,
+          500,
+          600,
+          700,
+          800,
+          900
+        ]
       },
       "CourseType": {
         "type": "string",
-        "enum": ["ALL", "BR", "BE", "MR", "ME", "MGC", "HSE", "GR", "EG", "OE", "ETC"]
+        "enum": [
+          "ALL",
+          "BR",
+          "BE",
+          "MR",
+          "ME",
+          "MGC",
+          "HSE",
+          "GR",
+          "EG",
+          "OE",
+          "ETC"
+        ]
       },
       "ICourseV2.Basic": {
         "type": "object",
@@ -8044,7 +9322,17 @@
             "type": "boolean"
           }
         },
-        "required": ["id", "name", "code", "type", "department", "professors", "summary", "open", "completed"],
+        "required": [
+          "id",
+          "name",
+          "code",
+          "type",
+          "department",
+          "professors",
+          "summary",
+          "open",
+          "completed"
+        ],
         "additionalProperties": false
       },
       "IDepartmentV2.Basic": {
@@ -8057,7 +9345,10 @@
             "type": "string"
           }
         },
-        "required": ["id", "name"],
+        "required": [
+          "id",
+          "name"
+        ],
         "additionalProperties": false
       },
       "IProfessorV2.Basic": {
@@ -8070,7 +9361,10 @@
             "type": "string"
           }
         },
-        "required": ["id", "name"],
+        "required": [
+          "id",
+          "name"
+        ],
         "additionalProperties": false
       },
       "ICourseV2.Detail": {
@@ -8123,7 +9417,12 @@
                         }
                       }
                     },
-                    "required": ["lectureId", "subtitle", "classNo", "professors"],
+                    "required": [
+                      "lectureId",
+                      "subtitle",
+                      "classNo",
+                      "professors"
+                    ],
                     "additionalProperties": false
                   }
                 },
@@ -8138,7 +9437,12 @@
                   ]
                 }
               },
-              "required": ["year", "semester", "classes", "myLectureId"],
+              "required": [
+                "year",
+                "semester",
+                "classes",
+                "myLectureId"
+              ],
               "additionalProperties": false
             }
           },
@@ -8174,26 +9478,51 @@
         "additionalProperties": false
       },
       "ICourseV2.Query": {
+        "type": "object",
         "properties": {
           "type": {
+            "type": "array",
             "items": {
               "type": "string",
-              "enum": ["ALL", "BR", "BE", "MR", "ME", "MGC", "HSE", "GR", "EG", "OE", "ETC"]
-            },
-            "type": "array"
+              "enum": [
+                "ALL",
+                "BR",
+                "BE",
+                "MR",
+                "ME",
+                "MGC",
+                "HSE",
+                "GR",
+                "EG",
+                "OE",
+                "ETC"
+              ],
+              "$ref": "#/components/schemas/CourseType"
+            }
           },
           "department": {
+            "type": "array",
             "items": {
-              "type": "integer"
-            },
-            "type": "array"
+              "type": "number"
+            }
           },
           "level": {
+            "type": "array",
             "items": {
               "type": "integer",
-              "enum": [100, 200, 300, 400, 500, 600, 700, 800, 900]
-            },
-            "type": "array"
+              "enum": [
+                100,
+                200,
+                300,
+                400,
+                500,
+                600,
+                700,
+                800,
+                900
+              ],
+              "$ref": "#/components/schemas/level"
+            }
           },
           "term": {
             "type": "integer"
@@ -8202,8 +9531,13 @@
             "type": "string"
           },
           "order": {
+            "$ref": "#/components/schemas/CourseOrderQuery",
             "type": "string",
-            "enum": ["code", "popular", "studentCount"]
+            "enum": [
+              "code",
+              "popular",
+              "studentCount"
+            ]
           },
           "offset": {
             "type": "number"
@@ -8212,7 +9546,7 @@
             "type": "number"
           }
         },
-        "type": "object"
+        "additionalProperties": false
       },
       "ICourseV2.WritableReview": {
         "type": "object",
@@ -8227,7 +9561,11 @@
             "type": "number"
           }
         },
-        "required": ["lectureId", "name", "totalRemainingCount"],
+        "required": [
+          "lectureId",
+          "name",
+          "totalRemainingCount"
+        ],
         "additionalProperties": false
       },
       "ICourseV2.GETCoursesResponse": {
@@ -8243,7 +9581,10 @@
             "type": "number"
           }
         },
-        "required": ["courses", "totalCount"],
+        "required": [
+          "courses",
+          "totalCount"
+        ],
         "additionalProperties": false
       },
       "IDepartmentV2.Detail": {
@@ -8259,7 +9600,11 @@
             "type": "string"
           }
         },
-        "required": ["id", "name", "code"],
+        "required": [
+          "id",
+          "name",
+          "code"
+        ],
         "additionalProperties": false
       },
       "IDepartmentV2.Response": {
@@ -8272,7 +9617,9 @@
             }
           }
         },
-        "required": ["departments"],
+        "required": [
+          "departments"
+        ],
         "additionalProperties": false
       },
       "ILectureV2.Classtime": {
@@ -8297,7 +9644,14 @@
             "type": "string"
           }
         },
-        "required": ["day", "begin", "end", "buildingCode", "buildingName", "roomName"],
+        "required": [
+          "day",
+          "begin",
+          "end",
+          "buildingCode",
+          "buildingName",
+          "roomName"
+        ],
         "additionalProperties": false
       },
       "ILectureV2.ExamTime": {
@@ -8316,7 +9670,12 @@
             "type": "number"
           }
         },
-        "required": ["day", "str", "begin", "end"],
+        "required": [
+          "day",
+          "str",
+          "begin",
+          "end"
+        ],
         "additionalProperties": false
       },
       "ILectureV2.Basic": {
@@ -8450,50 +9809,84 @@
                   "type": "boolean"
                 }
               },
-              "required": ["id", "name", "code", "type", "lectures", "completed"],
+              "required": [
+                "id",
+                "name",
+                "code",
+                "type",
+                "lectures",
+                "completed"
+              ],
               "additionalProperties": false
             }
           }
         },
-        "required": ["courses"],
+        "required": [
+          "courses"
+        ],
         "additionalProperties": false
       },
       "ILectureV2.getQuery": {
+        "type": "object",
         "properties": {
           "keyword": {
             "type": "string"
           },
           "type": {
+            "type": "array",
             "items": {
               "type": "string",
-              "enum": ["ALL", "BR", "BE", "MR", "ME", "MGC", "HSE", "GR", "EG", "OE", "ETC"]
-            },
-            "type": "array"
+              "enum": [
+                "ALL",
+                "BR",
+                "BE",
+                "MR",
+                "ME",
+                "MGC",
+                "HSE",
+                "GR",
+                "EG",
+                "OE",
+                "ETC"
+              ],
+              "$ref": "#/components/schemas/CourseType"
+            }
           },
           "department": {
+            "type": "array",
             "items": {
-              "type": "integer"
-            },
-            "type": "array"
+              "type": "number"
+            }
           },
           "level": {
+            "type": "array",
             "items": {
               "type": "integer",
-              "enum": [100, 200, 300, 400, 500, 600, 700, 800, 900]
-            },
-            "type": "array"
+              "enum": [
+                100,
+                200,
+                300,
+                400,
+                500,
+                600,
+                700,
+                800,
+                900
+              ],
+              "$ref": "#/components/schemas/level"
+            }
           },
           "year": {
-            "maximum": 2100,
             "type": "integer",
+            "maximum": 2100,
             "minimum": 2000,
             "not": {
               "type": "null"
             }
           },
           "semester": {
-            "maximum": 4,
             "type": "integer",
+            "maximum": 4,
             "minimum": 1,
             "not": {
               "type": "null"
@@ -8509,8 +9902,13 @@
             "type": "number"
           },
           "order": {
+            "$ref": "#/components/schemas/CourseOrderQuery",
             "type": "string",
-            "enum": ["code", "popular", "studentCount"]
+            "enum": [
+              "code",
+              "popular",
+              "studentCount"
+            ]
           },
           "limit": {
             "type": "number"
@@ -8519,8 +9917,11 @@
             "type": "number"
           }
         },
-        "type": "object",
-        "required": ["year", "semester"]
+        "required": [
+          "year",
+          "semester"
+        ],
+        "additionalProperties": false
       },
       "IReviewV2.Basic": {
         "type": "object",
@@ -8621,10 +10022,18 @@
             "type": "number"
           }
         },
-        "required": ["reviews", "averageGrade", "averageLoad", "averageSpeech", "department", "totalCount"],
+        "required": [
+          "reviews",
+          "averageGrade",
+          "averageLoad",
+          "averageSpeech",
+          "department",
+          "totalCount"
+        ],
         "additionalProperties": false
       },
       "IReviewV2.QueryDto": {
+        "type": "object",
         "properties": {
           "courseId": {
             "type": "number"
@@ -8634,7 +10043,12 @@
           },
           "mode": {
             "type": "string",
-            "enum": ["default", "recent", "hall-of-fame", "popular-feed"]
+            "enum": [
+              "default",
+              "recent",
+              "hall-of-fame",
+              "popular-feed"
+            ]
           },
           "year": {
             "type": "number"
@@ -8649,109 +10063,151 @@
             "type": "number"
           }
         },
-        "type": "object",
-        "required": ["mode", "offset", "limit"]
+        "required": [
+          "mode",
+          "offset",
+          "limit"
+        ],
+        "additionalProperties": false
       },
       "IReviewV2.CreateDto": {
+        "type": "object",
         "properties": {
           "lectureId": {
-            "minLength": 1,
-            "type": "number"
+            "type": "number",
+            "minLength": 1
           },
           "content": {
-            "minLength": 1,
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           },
           "grade": {
-            "maximum": 5,
             "type": "number",
+            "maximum": 5,
             "minimum": 0,
             "minLength": 1
           },
           "load": {
-            "maximum": 5,
             "type": "number",
+            "maximum": 5,
             "minimum": 0,
             "minLength": 1
           },
           "speech": {
-            "maximum": 5,
             "type": "number",
+            "maximum": 5,
             "minimum": 0,
             "minLength": 1
           }
         },
-        "type": "object",
-        "required": ["lectureId", "content", "grade", "load", "speech"]
+        "required": [
+          "lectureId",
+          "content",
+          "grade",
+          "load",
+          "speech"
+        ],
+        "additionalProperties": false
       },
-      "IReviewV2.CreateResponseDto": {},
-      "IReviewV2.UpdateDto": {
-        "properties": {
-          "content": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "grade": {
-            "maximum": 5,
-            "type": "number",
-            "minimum": 0,
-            "minLength": 1
-          },
-          "load": {
-            "maximum": 5,
-            "type": "number",
-            "minimum": 0,
-            "minLength": 1
-          },
-          "speech": {
-            "maximum": 5,
-            "type": "number",
-            "minimum": 0,
-            "minLength": 1
-          }
-        },
+      "IReviewV2.CreateResponseDto": {
         "type": "object",
-        "required": ["content", "grade", "load", "speech"]
-      },
-      "IReviewV2.UpdateResponseDto": {
         "properties": {
           "id": {
-            "minLength": 1,
             "type": "number"
           }
         },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "IReviewV2.UpdateDto": {
         "type": "object",
-        "required": ["id"]
+        "properties": {
+          "content": {
+            "type": "string",
+            "minLength": 1
+          },
+          "grade": {
+            "type": "number",
+            "maximum": 5,
+            "minimum": 0,
+            "minLength": 1
+          },
+          "load": {
+            "type": "number",
+            "maximum": 5,
+            "minimum": 0,
+            "minLength": 1
+          },
+          "speech": {
+            "type": "number",
+            "maximum": 5,
+            "minimum": 0,
+            "minLength": 1
+          }
+        },
+        "required": [
+          "content",
+          "grade",
+          "load",
+          "speech"
+        ],
+        "additionalProperties": false
+      },
+      "IReviewV2.UpdateResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
       },
       "IReviewV2.PatchLikedDto": {
+        "type": "object",
         "properties": {
           "reviewId": {
-            "minLength": 1,
-            "type": "number"
+            "type": "number",
+            "minLength": 1
           },
           "action": {
             "type": "string",
-            "enum": ["like", "unlike"],
+            "enum": [
+              "like",
+              "unlike"
+            ],
             "minLength": 1
           }
         },
-        "type": "object",
-        "required": ["reviewId", "action"]
+        "required": [
+          "reviewId",
+          "action"
+        ],
+        "additionalProperties": false
       },
       "ITimetableV2.GetTimetablesReqDto": {
+        "type": "object",
         "properties": {
           "year": {
-            "minimum": 0,
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           },
           "semester": {
-            "maximum": 4,
             "type": "number",
+            "maximum": 4,
             "minimum": 1
           }
         },
-        "type": "object",
-        "required": ["year", "semester"]
+        "required": [
+          "year",
+          "semester"
+        ],
+        "additionalProperties": false
       },
       "ITimetableV2.GetTimetablesResDto": {
         "type": "object",
@@ -8759,14 +10215,16 @@
           "timetables": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ITimetableV2.TimetableItem"
+              "$ref": "#/components/schemas/ITimetableV2.TimetableSummary"
             }
           }
         },
-        "required": ["timetables"],
+        "required": [
+          "timetables"
+        ],
         "additionalProperties": false
       },
-      "ITimetableV2.TimetableItem": {
+      "ITimetableV2.TimetableSummary": {
         "type": "object",
         "properties": {
           "id": {
@@ -8799,96 +10257,123 @@
             "type": "number"
           }
         },
-        "required": ["id", "name", "year", "semester", "timeTableOrder"],
+        "required": [
+          "id",
+          "name",
+          "year",
+          "semester",
+          "timeTableOrder"
+        ],
         "additionalProperties": false
       },
       "ITimetableV2.DeleteReqDto": {
+        "type": "object",
         "properties": {
           "id": {
-            "minimum": 0,
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           }
         },
-        "type": "object",
-        "required": ["id"]
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
       },
       "ITimetableV2.DeleteResDto": {
+        "type": "object",
         "properties": {
           "message": {
             "type": "string"
           }
         },
-        "type": "object",
-        "required": ["message"]
+        "required": [
+          "message"
+        ],
+        "additionalProperties": false
       },
       "ITimetableV2.UpdateReqDto": {
+        "type": "object",
         "properties": {
           "id": {
             "type": "number"
           },
           "name": {
-            "maxLength": 255,
             "type": "string",
+            "maxLength": 255,
             "minLength": 1
           },
           "order": {
-            "minimum": 0,
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           }
         },
-        "type": "object",
-        "required": ["id"]
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
       },
       "ITimetableV2.UpdateResDto": {
+        "type": "object",
         "properties": {
           "message": {
             "type": "string"
           }
         },
-        "type": "object",
-        "required": ["message"]
+        "required": [
+          "message"
+        ],
+        "additionalProperties": false
       },
       "ITimetableV2.DepartmentResDto": {
+        "type": "object",
         "properties": {
           "id": {
-            "minimum": 0,
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           },
           "name": {
             "type": "string"
           }
         },
-        "type": "object",
-        "required": ["id", "name"]
+        "required": [
+          "id",
+          "name"
+        ],
+        "additionalProperties": false
       },
       "ITimetableV2.ProfessorResDto": {
+        "type": "object",
         "properties": {
           "id": {
-            "minimum": 0,
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           },
           "name": {
             "type": "string"
           }
         },
-        "type": "object",
-        "required": ["id", "name"]
+        "required": [
+          "id",
+          "name"
+        ],
+        "additionalProperties": false
       },
       "ITimetableV2.ClassResDto": {
+        "type": "object",
         "properties": {
           "day": {
-            "maximum": 4,
             "type": "number",
+            "maximum": 4,
             "minimum": 0
           },
           "begin": {
-            "maximum": 3000,
             "type": "number",
+            "maximum": 3000,
             "minimum": 0
           },
           "end": {
-            "maximum": 3000,
             "type": "number",
+            "maximum": 3000,
             "minimum": 0
           },
           "buildingCode": {
@@ -8901,14 +10386,22 @@
             "type": "string"
           }
         },
-        "type": "object",
-        "required": ["day", "begin", "end", "buildingCode", "buildingName", "roomName"]
+        "required": [
+          "day",
+          "begin",
+          "end",
+          "buildingCode",
+          "buildingName",
+          "roomName"
+        ],
+        "additionalProperties": false
       },
       "ITimetableV2.ExamTimeResDto": {
+        "type": "object",
         "properties": {
           "day": {
-            "minimum": 0,
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           },
           "str": {
             "type": "string"
@@ -8920,18 +10413,24 @@
             "type": "number"
           }
         },
-        "type": "object",
-        "required": ["day", "str", "begin", "end"]
+        "required": [
+          "day",
+          "str",
+          "begin",
+          "end"
+        ],
+        "additionalProperties": false
       },
       "ITimetableV2.LectureResDto": {
+        "type": "object",
         "properties": {
           "id": {
-            "minimum": 0,
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           },
           "courseId": {
-            "minimum": 0,
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           },
           "classNo": {
             "type": "string"
@@ -8943,6 +10442,7 @@
             "type": "string"
           },
           "department": {
+            "$ref": "#/components/schemas/ITimetableV2.DepartmentResDto",
             "items": {},
             "type": "array"
           },
@@ -8950,54 +10450,63 @@
             "type": "string"
           },
           "limitPeople": {
-            "minimum": 0,
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           },
           "numPeople": {
-            "minimum": 0,
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           },
           "credit": {
-            "minimum": 0,
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           },
           "creditAU": {
-            "minimum": 0,
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           },
           "averageGrade": {
-            "minimum": 0,
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           },
           "averageLoad": {
-            "minimum": 0,
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           },
           "averageSpeech": {
-            "minimum": 0,
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           },
           "isEnglish": {
             "type": "boolean"
           },
           "professors": {
-            "items": {},
-            "type": "array"
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ITimetableV2.ProfessorResDto"
+            }
           },
           "classes": {
-            "items": {},
-            "type": "array"
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ITimetableV2.ClassResDto"
+            }
+          },
+          "examTimes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ITimetableV2.ExamTimeResDto"
+            }
           },
           "classDuration": {
-            "minimum": 0,
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           },
           "expDuration": {
-            "minimum": 0,
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           }
         },
-        "type": "object",
         "required": [
           "id",
           "courseId",
@@ -9016,93 +10525,473 @@
           "isEnglish",
           "professors",
           "classes",
+          "examTimes",
           "classDuration",
           "expDuration"
+        ],
+        "additionalProperties": false
+      },
+      "ITimetableV2.GetResDto": {
+        "type": "object",
+        "properties": {
+          "lectures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ITimetableV2.LectureResDto"
+            }
+          }
+        },
+        "required": [
+          "lectures"
+        ],
+        "additionalProperties": false
+      },
+      "ITimetableV2.TimetableItem": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "lecture"
+              },
+              "data": {
+                "$ref": "#/components/schemas/ITimetableV2.LectureResDto"
+              }
+            },
+            "required": [
+              "kind",
+              "data"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "custom"
+              },
+              "data": {
+                "$ref": "#/components/schemas/ICustomblock.Basic"
+              }
+            },
+            "required": [
+              "kind",
+              "data"
+            ],
+            "additionalProperties": false
+          }
         ]
       },
-      "ITimetableV2.GetResDto": {},
+      "ITimetableV2.TimetableDetailResDto": {
+        "type": "object",
+        "properties": {
+          "lectures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ITimetableV2.LectureResDto"
+            }
+          },
+          "timetableItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ITimetableV2.TimetableItem"
+            }
+          }
+        },
+        "required": [
+          "lectures",
+          "timetableItems"
+        ],
+        "additionalProperties": false
+      },
+      "ITimetableV2.TimetableChange": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "op": {
+                "type": "string",
+                "const": "add"
+              },
+              "kind": {
+                "type": "string",
+                "const": "lecture"
+              },
+              "lectureId": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "op",
+              "kind",
+              "lectureId"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "op": {
+                "type": "string",
+                "const": "add"
+              },
+              "kind": {
+                "type": "string",
+                "const": "custom"
+              },
+              "data": {
+                "$ref": "#/components/schemas/ICustomblock.CreateDto"
+              }
+            },
+            "required": [
+              "op",
+              "kind",
+              "data"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "op": {
+                "type": "string",
+                "const": "remove"
+              },
+              "kind": {
+                "$ref": "#/components/schemas/TimetableItemKind"
+              },
+              "id": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "op",
+              "kind",
+              "id"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "op": {
+                "type": "string",
+                "const": "update"
+              },
+              "kind": {
+                "type": "string",
+                "const": "custom"
+              },
+              "id": {
+                "type": "number"
+              },
+              "data": {
+                "$ref": "#/components/schemas/ICustomblock.UpdateDto"
+              }
+            },
+            "required": [
+              "op",
+              "kind",
+              "id",
+              "data"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "TimetableItemKind": {
+        "type": "string",
+        "enum": [
+          "lecture",
+          "custom"
+        ]
+      },
+      "ITimetableV2.UpdateItemsReqDto": {
+        "type": "object",
+        "properties": {
+          "changes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ITimetableV2.TimetableChange"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "changes"
+        ],
+        "additionalProperties": false
+      },
+      "ITimetableV2.UpdateItemsResDto": {
+        "type": "object",
+        "properties": {
+          "timetableItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ITimetableV2.TimetableItem"
+            }
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "number"
+                },
+                "kind": {
+                  "$ref": "#/components/schemas/TimetableItemKind"
+                },
+                "id": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "index",
+                "kind",
+                "id"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "timetableItems",
+          "results"
+        ],
+        "additionalProperties": false
+      },
       "ITimetableV2.UpdateLectureReqDto": {
+        "type": "object",
         "properties": {
           "lectureId": {
-            "minimum": 0,
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           },
           "action": {
             "type": "string",
-            "enum": ["add", "delete"]
+            "enum": [
+              "add",
+              "delete"
+            ]
           }
         },
-        "type": "object",
-        "required": ["lectureId", "action"]
+        "required": [
+          "lectureId",
+          "action"
+        ],
+        "additionalProperties": false
       },
       "ITimetableV2.UpdateLectureResDto": {
+        "type": "object",
         "properties": {
           "message": {
             "type": "string"
           }
         },
-        "type": "object",
-        "required": ["message"]
+        "required": [
+          "message"
+        ],
+        "additionalProperties": false
       },
       "ITimetableV2.CreateReqDto": {
+        "type": "object",
         "properties": {
           "year": {
-            "minimum": 0,
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           },
           "semester": {
-            "maximum": 4,
             "type": "number",
+            "maximum": 4,
             "minimum": 1
           },
           "lectureIds": {
+            "type": "array",
             "items": {
               "type": "number"
-            },
-            "type": "array"
+            }
+          },
+          "sourceTimetableId": {
+            "type": "integer",
+            "minimum": 1
           }
         },
-        "type": "object",
-        "required": ["year", "semester", "lectureIds"]
+        "required": [
+          "year",
+          "semester"
+        ],
+        "additionalProperties": false
       },
       "ITimetableV2.CreateResDto": {
+        "type": "object",
         "properties": {
           "id": {
-            "minimum": 0,
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           }
         },
-        "type": "object",
-        "required": ["id"]
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
       },
       "ITimetableV2.MyTimetableReqDto": {
-        "properties": {
-          "year": {
-            "minimum": 0,
-            "type": "number"
-          },
-          "semester": {
-            "maximum": 4,
-            "type": "number",
-            "minimum": 1
-          }
-        },
         "type": "object",
-        "required": ["year", "semester"]
+        "properties": {
+          "year": {
+            "type": "number",
+            "minimum": 0
+          },
+          "semester": {
+            "type": "number",
+            "maximum": 4,
+            "minimum": 1
+          }
+        },
+        "required": [
+          "year",
+          "semester"
+        ],
+        "additionalProperties": false
       },
-      "ITimetableV2.MyTimetableResDto": {},
+      "ITimetableV2.MyTimetableResDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "lectures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ITimetableV2.LectureResDto"
+            }
+          },
+          "timetableItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ITimetableV2.TimetableItem"
+            }
+          }
+        },
+        "required": [
+          "lectures",
+          "timetableItems"
+        ]
+      },
+      "ITimetableV2.HomeTimetableReqDto": {
+        "type": "object",
+        "properties": {
+          "year": {
+            "type": "integer"
+          },
+          "semester": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "semester",
+          "year"
+        ],
+        "additionalProperties": false
+      },
+      "ITimetableV2.SetHomeTimetableReqDto": {
+        "type": "object",
+        "properties": {
+          "year": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "semester": {
+            "type": "integer",
+            "maximum": 4,
+            "minimum": 1
+          },
+          "timetableId": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "semester",
+          "timetableId",
+          "year"
+        ],
+        "additionalProperties": false
+      },
+      "ITimetableV2.HomeTimetableResDto": {
+        "type": "object",
+        "properties": {
+          "lectures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ITimetableV2.LectureResDto"
+            }
+          },
+          "timetableItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ITimetableV2.TimetableItem"
+            }
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "saved",
+              "enrolled"
+            ]
+          },
+          "timetableId": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "year": {
+            "type": "number"
+          },
+          "semester": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "lectures",
+          "name",
+          "semester",
+          "source",
+          "timetableId",
+          "timetableItems",
+          "year"
+        ],
+        "additionalProperties": false
+      },
       "ITimetableV2.GetTimetablesBySemesterReqDto": {
+        "type": "object",
         "properties": {
           "year": {
             "type": "number"
           },
           "semester": {
-            "maximum": 4,
             "type": "number",
+            "maximum": 4,
             "minimum": 1
           }
         },
-        "type": "object"
+        "additionalProperties": false
       },
       "ITimetableV2.SemesterTimetableGroup": {
         "type": "object",
@@ -9125,12 +11014,19 @@
                   "type": "string"
                 }
               },
-              "required": ["id", "name"],
+              "required": [
+                "id",
+                "name"
+              ],
               "additionalProperties": false
             }
           }
         },
-        "required": ["year", "semester", "timetables"],
+        "required": [
+          "year",
+          "semester",
+          "timetables"
+        ],
         "additionalProperties": false
       },
       "ITimetableV2.GetTimetablesBySemesterResDto": {
@@ -9143,7 +11039,9 @@
             }
           }
         },
-        "required": ["semesters"],
+        "required": [
+          "semesters"
+        ],
         "additionalProperties": false
       },
       "IUserV2.SsoInfoOneApp": {
@@ -9153,27 +11051,31 @@
             "type": "string"
           }
         },
-        "required": ["sso_info"],
+        "required": [
+          "sso_info"
+        ],
         "additionalProperties": false
       },
       "IUserV2.TakenCoursesQueryDto": {
+        "type": "object",
         "properties": {
           "order": {
+            "type": "array",
             "items": {
               "type": "string"
-            },
-            "type": "array"
+            }
           }
         },
-        "type": "object"
+        "additionalProperties": false
       },
       "IUserV2.ReviewLikedQueryDto": {
+        "type": "object",
         "properties": {
           "order": {
+            "type": "array",
             "items": {
               "type": "string"
-            },
-            "type": "array"
+            }
           },
           "offset": {
             "type": "number"
@@ -9182,7 +11084,7 @@
             "type": "number"
           }
         },
-        "type": "object"
+        "additionalProperties": false
       },
       "IUserV2.Basic": {
         "type": "object",
@@ -9402,18 +11304,29 @@
             }
           }
         },
-        "required": ["id", "name", "mail", "studentNumber", "degree", "majorDepartments", "interestedDepartments"],
+        "required": [
+          "id",
+          "name",
+          "mail",
+          "studentNumber",
+          "degree",
+          "majorDepartments",
+          "interestedDepartments"
+        ],
         "additionalProperties": false
       },
       "IUserV2.TokenDto": {
+        "type": "object",
         "properties": {
           "token": {
-            "minLength": 1,
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           }
         },
-        "type": "object",
-        "required": ["token"]
+        "required": [
+          "token"
+        ],
+        "additionalProperties": false
       },
       "IUserV2.TokenResponse": {
         "type": "object",
@@ -9425,7 +11338,10 @@
             "type": "string"
           }
         },
-        "required": ["accessToken", "refreshToken"],
+        "required": [
+          "accessToken",
+          "refreshToken"
+        ],
         "additionalProperties": false
       },
       "IUserV2.SimpleProfile": {
@@ -9489,19 +11405,24 @@
         "additionalProperties": false
       },
       "IUserV2.ProfessorItem": {
+        "type": "object",
         "properties": {
           "id": {
-            "minimum": 0,
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           },
           "name": {
             "type": "string"
           }
         },
-        "type": "object",
-        "required": ["id", "name"]
+        "required": [
+          "id",
+          "name"
+        ],
+        "additionalProperties": false
       },
       "IUserV2.LectureItem": {
+        "type": "object",
         "properties": {
           "name": {
             "type": "string"
@@ -9510,63 +11431,87 @@
             "type": "string"
           },
           "courseId": {
-            "minimum": 0,
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           },
           "lectureId": {
-            "minimum": 0,
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           },
           "professors": {
-            "items": {},
-            "type": "array"
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IUserV2.ProfessorItem"
+            }
           },
           "written": {
             "type": "boolean"
           }
         },
-        "type": "object",
-        "required": ["name", "code", "courseId", "lectureId", "professors", "written"]
+        "required": [
+          "name",
+          "code",
+          "courseId",
+          "lectureId",
+          "professors",
+          "written"
+        ],
+        "additionalProperties": false
       },
       "IUserV2.LecturesWrap": {
+        "type": "object",
         "properties": {
           "year": {
-            "minimum": 0,
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           },
           "semester": {
-            "minimum": 1,
-            "type": "number"
+            "type": "number",
+            "minimum": 1
           },
           "lectures": {
-            "items": {},
-            "type": "array"
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IUserV2.LectureItem"
+            }
           }
         },
-        "type": "object",
-        "required": ["year", "semester", "lectures"]
+        "required": [
+          "year",
+          "semester",
+          "lectures"
+        ],
+        "additionalProperties": false
       },
       "IUserV2.LecturesResponse": {
+        "type": "object",
         "properties": {
           "totalLecturesCount": {
-            "minimum": 0,
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           },
           "reviewedLecturesCount": {
-            "minimum": 0,
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           },
           "totalLikesCount": {
-            "minimum": 0,
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           },
           "lecturesWrap": {
-            "items": {},
-            "type": "array"
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IUserV2.LecturesWrap"
+            }
           }
         },
-        "type": "object",
-        "required": ["totalLecturesCount", "reviewedLecturesCount", "totalLikesCount", "lecturesWrap"]
+        "required": [
+          "totalLecturesCount",
+          "reviewedLecturesCount",
+          "totalLikesCount",
+          "lecturesWrap"
+        ],
+        "additionalProperties": false
       },
       "IUserV2.WishlistCourseItem": {
         "type": "object",
@@ -9593,7 +11538,14 @@
             }
           }
         },
-        "required": ["id", "name", "code", "type", "completed", "lectures"],
+        "required": [
+          "id",
+          "name",
+          "code",
+          "type",
+          "completed",
+          "lectures"
+        ],
         "additionalProperties": false
       },
       "IUserV2.WrittenReviewsResponse": {
@@ -9606,7 +11558,9 @@
             }
           }
         },
-        "required": ["reviews"],
+        "required": [
+          "reviews"
+        ],
         "additionalProperties": false
       },
       "IUserV2.WishlistResponse": {
@@ -9619,37 +11573,50 @@
             }
           }
         },
-        "required": ["courses"],
+        "required": [
+          "courses"
+        ],
         "additionalProperties": false
       },
       "IUserV2.UpdateWishlistDto": {
+        "type": "object",
         "properties": {
           "lectureId": {
-            "minimum": 0,
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           },
           "mode": {
             "type": "string",
-            "enum": ["add", "delete"]
+            "enum": [
+              "add",
+              "delete"
+            ]
           }
         },
-        "type": "object",
-        "required": ["lectureId", "mode"]
+        "required": [
+          "lectureId",
+          "mode"
+        ],
+        "additionalProperties": false
       },
       "IUserV2.WishlistQueryDto": {
+        "type": "object",
         "properties": {
           "year": {
-            "minimum": 0,
-            "type": "number"
+            "type": "number",
+            "minimum": 0
           },
           "semester": {
-            "maximum": 4,
             "type": "number",
+            "maximum": 4,
             "minimum": 1
           }
         },
-        "type": "object",
-        "required": ["year", "semester"]
+        "required": [
+          "year",
+          "semester"
+        ],
+        "additionalProperties": false
       }
     },
     "securitySchemes": {
