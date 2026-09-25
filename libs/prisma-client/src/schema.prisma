@@ -85,6 +85,18 @@ model block_custom_blocks {
   begin                            Int // 00시부터 경과 분 (예: 780 = 13:00)
   end                              Int // 00시부터 경과 분 (예: 810 = 13:30)
   timetable_timetable_customblocks timetable_timetable_customblocks[]
+  times                            block_custom_block_times[]
+}
+
+model block_custom_block_times {
+  id                  Int                 @id @default(autoincrement())
+  custom_block_id     Int
+  day                 Int
+  begin               Int
+  end                 Int
+  block_custom_blocks block_custom_blocks @relation(fields: [custom_block_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_block_custom_block_times_block")
+
+  @@index([custom_block_id], map: "block_custom_block_times_custom_block_id_idx")
 }
 
 model django_admin_log {

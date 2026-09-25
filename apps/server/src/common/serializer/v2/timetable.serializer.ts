@@ -7,6 +7,7 @@ import { TimetableItemKind } from '@otl/common/enum/timetable'
 import { getTimeNumeric } from '@otl/common/utils/util'
 
 import { ELecture, ETimetable } from '@otl/prisma-client/entities'
+import { ECustomblock } from '@otl/prisma-client/entities/ECustomblock'
 
 export const toJsonTimetableV2 = (timetable: ETimetable.Basic): ITimetableV2.TimetableSummary => ({
   id: timetable.id,
@@ -164,7 +165,7 @@ export const toJsonTimetableV2WithItems = (
       ...lectures.map((data) => ({ kind: TimetableItemKind.LECTURE, data })),
       ...timetable.timetable_timetable_customblocks.map(({ block_custom_blocks: data }) => ({
         kind: TimetableItemKind.CUSTOM,
-        data,
+        data: ECustomblock.normalize(data),
       })),
     ],
   }

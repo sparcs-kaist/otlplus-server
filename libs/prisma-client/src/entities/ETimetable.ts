@@ -21,7 +21,7 @@ export namespace ETimetable {
     include: {
       ...Details.include,
       timetable_timetable_customblocks: {
-        include: { block_custom_blocks: true },
+        include: { block_custom_blocks: { include: { times: { orderBy: { id: 'asc' } } } } },
       },
     },
   })

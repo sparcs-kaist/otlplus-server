@@ -10,9 +10,17 @@ export class CustomblockRepository {
 
   // 커스텀 블록 생성
   async createCustomblock(data: ECustomblock.CreateInput): Promise<ECustomblock.Basic> {
-    return this.txHost.tx.block_custom_blocks.create({
-      data,
+    const times = data.times ?? [{ day: data.day!, begin: data.begin!, end: data.end! }]
+    const block = await this.txHost.tx.block_custom_blocks.create({
+      data: {
+        block_name: data.block_name,
+        place: data.place,
+        ...times[0],
+        times: { create: times },
+      },
+      include: { times: { orderBy: { id: 'asc' } } },
     })
+    return ECustomblock.normalize(block)
   }
 
   // timetable에 custom block mapping 추가하기
@@ -39,7 +47,7 @@ export class CustomblockRepository {
 
   // timetable에 있는 custom block 목록 가져오기
   async getCustomblocksList(timeTableId: number): Promise<ECustomblock.Basic[]> {
-    return this.txHost.tx.block_custom_blocks.findMany({
+    const blocks = await this.txHost.tx.block_custom_blocks.findMany({
       where: {
         timetable_timetable_customblocks: {
           some: { timetable_id: timeTableId },
@@ -52,15 +60,23 @@ export class CustomblockRepository {
         day: true,
         begin: true,
         end: true,
+        times: { orderBy: { id: 'asc' } },
       },
     })
+    return blocks.map(ECustomblock.normalize)
   }
 
   // 커스텀 블록 업데이트
   async updateCustomblock(customblockId: number, updateData: ECustomblock.UpdateInput): Promise<ECustomblock.Basic> {
-    return this.txHost.tx.block_custom_blocks.update({
+    const { times, ...data } = updateData
+    const block = await this.txHost.tx.block_custom_blocks.update({
       where: { id: customblockId },
-      data: updateData,
+      data: {
+        ...data,
+        ...(times ? { ...times[0], times: { deleteMany: {}, create: times } } : {}),
+      },
+      include: { times: { orderBy: { id: 'asc' } } },
     })
+    return ECustomblock.normalize(block)
   }
 }

@@ -1,6 +1,7 @@
 import 'reflect-metadata'
 
 import { BadRequestException, ValidationPipe } from '@nestjs/common'
+import { ICustomblock } from '@otl/server-nest/common/interfaces/ICustomblock'
 import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
 
 import { parseTimetableChanges, validateCreateTimetableInput } from './timetable-input'
@@ -80,5 +81,41 @@ describe('Timetable item request validation', () => {
       await expect(pipe.transform(body, { type: 'body', metatype: ITimetableV2.SetHomeTimetableReqDto }))
         .rejects.toThrow(BadRequestException)
     }
+  })
+})
+
+
+describe('custom block time arrays', () => {
+  const first = { day: 0, begin: 600, end: 660 }
+  const data = { block_name: 'Study', place: '', times: [first, { day: 2, begin: 600, end: 660 }] }
+
+  it.each([data, { ...data, ...first }])('accepts arrays with optional matching legacy fields', (data) => {
+    const changes = [{ op: 'add', kind: 'custom', data }]
+    expect(parseTimetableChanges(changes)).toEqual(changes)
+  })
+
+  it('keeps nested times through the legacy endpoint validation pipe', async () => {
+    expect(await pipe.transform(data, { type: 'body', metatype: ICustomblock.CreateDto })).toEqual(data)
+    expect(await pipe.transform({ times: data.times }, { type: 'body', metatype: ICustomblock.UpdateDto }))
+      .toEqual({ times: data.times })
+  })
+
+  it.each([
+    [], null, {}, [null],
+    [first, first], [first, { ...first, begin: 630 }],
+    [{ ...first, day: 7 }], [{ ...first, begin: -1 }], [{ ...first, end: 1441 }],
+    [{ ...first, end: first.begin }], [{ ...first, day: '0' }],
+    [{ day: 0, begin: 600 }], [{ ...first, extra: true }],
+  ].map((times) => [times]))('rejects malformed or overlapping time arrays: %j', (times) => {
+    expect(() => parseTimetableChanges([{ op: 'add', kind: 'custom', data: { ...data, times } }]))
+      .toThrow(BadRequestException)
+  })
+
+  it('rejects inconsistent mirrors and accepts adjacent slots', () => {
+    expect(() => parseTimetableChanges([{ op: 'add', kind: 'custom', data: { ...data, day: 3 } }]))
+      .toThrow(BadRequestException)
+    expect(() => parseTimetableChanges([{ op: 'add', kind: 'custom', data: {
+      ...data, times: [first, { ...first, begin: 660, end: 720 }],
+    } }])).not.toThrow()
   })
 })

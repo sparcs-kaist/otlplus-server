@@ -4,6 +4,8 @@ import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
 
 import { TimetableItemKind } from '@otl/common/enum/timetable'
 
+import { ECustomblock } from '@otl/prisma-client/entities/ECustomblock'
+
 const fail = (message: string): never => {
   throw new BadRequestException(message)
 }
@@ -30,11 +32,27 @@ function id(value: unknown): number {
   return value
 }
 
-function customData(value: unknown, partial: boolean): ICustomblock.CreateDto | ICustomblock.UpdateDto {
+export function validateCustomblockTimes(value: unknown): asserts value is ICustomblock.Time[] {
+  if (!Array.isArray(value) || value.length === 0) fail('Custom block times must be a non-empty array')
+  const times = (value as unknown[]).map((entry) => {
+    const time = object(entry)
+    keys(time, ['day', 'begin', 'end'])
+    if (!integer(time.day, 0, 6)) fail('Custom block day must be between 0 and 6')
+    if (!integer(time.begin, 0, 1439)) fail('Custom block begin must be between 0 and 1439')
+    if (!integer(time.end, 1, 1440)) fail('Custom block end must be between 1 and 1440')
+    if ((time.begin as number) >= (time.end as number)) fail('Custom block begin must precede its end')
+    return time as unknown as ICustomblock.Time
+  })
+  if (times.some((time, index) => times.slice(index + 1).some((other) => ECustomblock.overlaps(time, other)))) {
+    fail('Times within a custom block must not overlap')
+  }
+}
+
+export function parseCustomblockData(value: unknown, partial: boolean): ICustomblock.CreateDto | ICustomblock.UpdateDto {
   const data = object(value)
-  const fields = ['block_name', 'place', 'day', 'begin', 'end']
-  keys(data, fields)
-  if (Object.keys(data).length === 0 || (!partial && fields.some((field) => !(field in data)))) {
+  keys(data, ['block_name', 'place', 'day', 'begin', 'end', 'times'])
+  const required = 'times' in data ? ['block_name', 'place'] : ['block_name', 'place', 'day', 'begin', 'end']
+  if (Object.keys(data).length === 0 || (!partial && required.some((field) => !(field in data)))) {
     fail('Custom block data is incomplete')
   }
   if ('block_name' in data && (typeof data.block_name !== 'string'
@@ -49,6 +67,13 @@ function customData(value: unknown, partial: boolean): ICustomblock.CreateDto | 
   if ('end' in data && !integer(data.end, 1, 1440)) fail('Custom block end must be between 1 and 1440')
   if (typeof data.begin === 'number' && typeof data.end === 'number' && data.begin >= data.end) {
     fail('Custom block begin must precede its end')
+  }
+  if ('times' in data) {
+    validateCustomblockTimes(data.times)
+    const [first] = data.times as ICustomblock.Time[]
+    for (const field of ['day', 'begin', 'end'] as const) {
+      if (field in data && data[field] !== first[field]) fail('Legacy custom block time must match the first time')
+    }
   }
   return data as unknown as ICustomblock.CreateDto | ICustomblock.UpdateDto
 }
@@ -68,7 +93,7 @@ export function parseTimetableChanges(input: unknown): ITimetableV2.TimetableCha
     }
     else if (change.op === 'add' && change.kind === TimetableItemKind.CUSTOM) {
       keys(change, ['op', 'kind', 'data'])
-      parsed = { op: 'add', kind: TimetableItemKind.CUSTOM, data: customData(change.data, false) as ICustomblock.CreateDto }
+      parsed = { op: 'add', kind: TimetableItemKind.CUSTOM, data: parseCustomblockData(change.data, false) as ICustomblock.CreateDto }
     }
     else if (change.op === 'remove' && (change.kind === TimetableItemKind.LECTURE || change.kind === TimetableItemKind.CUSTOM)) {
       keys(change, ['op', 'kind', 'id'])
@@ -79,7 +104,7 @@ export function parseTimetableChanges(input: unknown): ITimetableV2.TimetableCha
       keys(change, ['op', 'kind', 'id', 'data'])
       itemId = id(change.id)
       parsed = {
-        op: 'update', kind: TimetableItemKind.CUSTOM, id: itemId, data: customData(change.data, true),
+        op: 'update', kind: TimetableItemKind.CUSTOM, id: itemId, data: parseCustomblockData(change.data, true),
       }
     }
     else {

@@ -871,7 +871,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").NotificationRequest"
+                  "$ref": "#/components/schemas/import(\"/Users/gerberasmacmini/developer/sparcs/otl/otlplus-server-timetable-items/apps/server/src/modules/notification/domain/notification\").NotificationRequest"
                 }
               }
             }
@@ -889,7 +889,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").FCMNotificationRequest"
+                  "$ref": "#/components/schemas/import(\"/Users/gerberasmacmini/developer/sparcs/otl/otlplus-server-timetable-items/apps/server/src/modules/notification/domain/notification\").FCMNotificationRequest"
                 }
               }
             }
@@ -916,7 +916,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").UserNotification"
+                  "$ref": "#/components/schemas/import(\"/Users/gerberasmacmini/developer/sparcs/otl/otlplus-server-timetable-items/apps/server/src/modules/notification/domain/notification\").UserNotification"
                 }
               }
             }
@@ -945,7 +945,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/agreement/domain/UserAgreement\").Agreement"
+                    "$ref": "#/components/schemas/import(\"/Users/gerberasmacmini/developer/sparcs/otl/otlplus-server-timetable-items/apps/server/src/modules/agreement/domain/UserAgreement\").Agreement"
                   }
                 }
               }
@@ -963,7 +963,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                  "$ref": "#/components/schemas/import(\"/Users/gerberasmacmini/developer/sparcs/otl/otlplus-server-timetable-items/apps/server/src/modules/notification/domain/notification\").Notification"
                 }
               }
             }
@@ -988,7 +988,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                  "$ref": "#/components/schemas/import(\"/Users/gerberasmacmini/developer/sparcs/otl/otlplus-server-timetable-items/apps/server/src/modules/notification/domain/notification\").Notification"
                 }
               }
             }
@@ -1040,7 +1040,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                    "$ref": "#/components/schemas/import(\"/Users/gerberasmacmini/developer/sparcs/otl/otlplus-server-timetable-items/apps/server/src/modules/notification/domain/notification\").Notification"
                   }
                 }
               }
@@ -1063,7 +1063,7 @@
                       "type": "null"
                     },
                     {
-                      "$ref": "#/components/schemas/import(\"/Users/sciberbee/Documents/otl/otlplus-server/apps/server/src/modules/notification/domain/notification\").Notification"
+                      "$ref": "#/components/schemas/import(\"/Users/gerberasmacmini/developer/sparcs/otl/otlplus-server-timetable-items/apps/server/src/modules/notification/domain/notification\").Notification"
                     }
                   ]
                 }
@@ -4463,6 +4463,32 @@
         },
         "additionalProperties": false
       },
+      "ICustomblock.Time": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "integer",
+            "maximum": 6,
+            "minimum": 0
+          },
+          "begin": {
+            "type": "integer",
+            "maximum": 1439,
+            "minimum": 0
+          },
+          "end": {
+            "type": "integer",
+            "maximum": 1440,
+            "minimum": 1
+          }
+        },
+        "required": [
+          "day",
+          "begin",
+          "end"
+        ],
+        "additionalProperties": false
+      },
       "ICustomblock.Basic": {
         "type": "object",
         "properties": {
@@ -4483,6 +4509,12 @@
           },
           "end": {
             "type": "number"
+          },
+          "times": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ICustomblock.Time"
+            }
           }
         },
         "required": [
@@ -4491,7 +4523,8 @@
           "place",
           "day",
           "begin",
-          "end"
+          "end",
+          "times"
         ],
         "additionalProperties": false
       },
@@ -4522,14 +4555,18 @@
             "maximum": 1440,
             "minimum": 1,
             "minLength": 1
+          },
+          "times": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ICustomblock.Time"
+            },
+            "minItems": 1
           }
         },
         "required": [
           "block_name",
-          "place",
-          "day",
-          "begin",
-          "end"
+          "place"
         ],
         "additionalProperties": false
       },
@@ -4583,6 +4620,13 @@
             "type": "integer",
             "maximum": 1440,
             "minimum": 1
+          },
+          "times": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ICustomblock.Time"
+            },
+            "minItems": 1
           }
         },
         "additionalProperties": false

@@ -21,6 +21,7 @@ const databaseUrl = process.env.TIMETABLE_TEST_DATABASE_URL
 const integration = databaseUrl ? describe : describe.skip
 const prefix = '/api/v2/timetables'
 const term = { year: 2026, semester: 3 }
+const blockTime = { day: 1, begin: 600, end: 660 }
 const block = { block_name: 'HTTP fixture', place: 'Library', day: 1, begin: 600, end: 660 }
 
 integration('Timetable HTTP compatibility (local MySQL)', () => {
@@ -151,7 +152,7 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     customIds.add(added.body.id)
     await request(app.getHttpServer()).patch(`${url}/custom-blocks/${added.body.id}`).send({ block_name: 'Renamed' }).expect(200)
     const oldBlocks = (await request(app.getHttpServer()).get(`${url}/custom-blocks`).expect(200)).body.custom_blocks
-    expect(oldBlocks).toEqual([{ ...block, id: added.body.id, block_name: 'Renamed' }])
+    expect(oldBlocks).toEqual([{ ...block, id: added.body.id, block_name: 'Renamed', times: [blockTime] }])
     const detail = (await request(app.getHttpServer()).get(url).set('Accept-Language', 'en').expect(200)).body
     expect(detail.lectures).toEqual([oldLecture])
     expect(detail.timetableItems).toEqual([{ kind: 'lecture', data: oldLecture }, { kind: 'custom', data: oldBlocks[0] }])
@@ -170,7 +171,7 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
       { op: 'add', kind: 'custom', data: replacement }, { op: 'remove', kind: 'lecture', id: lectureId },
     ] }).expect(200)).body
     customIds.add(replaced.results[0].id)
-    expect(replaced.timetableItems).toEqual([{ kind: 'custom', data: { id: replaced.results[0].id, ...replacement } }])
+    expect(replaced.timetableItems).toEqual([{ kind: 'custom', data: { id: replaced.results[0].id, ...replacement, times: [{ day: 0, begin: 540, end: 600 }] } }])
     await request(app.getHttpServer()).patch(url).send({ changes: [{ op: 'add', kind: 'lecture', lectureId }] }).expect(409)
     const current = (await request(app.getHttpServer()).get(`${prefix}/${id}`).expect(200)).body
     expect(current.timetableItems).toEqual(replaced.timetableItems)
@@ -205,7 +206,7 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     expect(clone.lectures.map((lecture: { id: number }) => lecture.id)).toEqual([lectureId])
     const copied = clone.timetableItems.find((item: { kind: string }) => item.kind === 'custom').data
     customIds.add(copied.id)
-    expect(copied).toEqual({ ...block, id: copied.id })
+    expect(copied).toEqual({ ...block, id: copied.id, times: [blockTime] })
     expect(copied.id).not.toBe(added.id)
     await request(app.getHttpServer()).patch(`${prefix}/${cloneId}/items`).send({ changes: [{ op: 'update', kind: 'custom', id: copied.id, data: { block_name: 'Copy' } }] }).expect(200)
     const original = (await request(app.getHttpServer()).get(`${prefix}/${id}/custom-blocks`).expect(200)).body
@@ -234,4 +235,96 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     expect((await getHome()).body).toMatchObject({ source: 'enrolled', timetableId: null, lectures: [{ id: lectureId }] })
     expect((await request(app.getHttpServer()).get(`${prefix}/my-timetable`).query(term).expect(200)).body.timetableItems).toMatchObject([{ kind: 'lecture', data: { id: lectureId } }])
   })
+
+  it('stores one grouped block, preserves legacy edits, clones and restores all times', async () => {
+    const id = await create()
+    const url = `${prefix}/${id}`
+    const times = [blockTime, { day: 3, begin: 720, end: 780 }]
+    const added = (await request(app.getHttpServer()).patch(`${url}/items`).send({
+      changes: [{ op: 'add', kind: 'custom', data: { ...block, times } }],
+    }).expect(200)).body
+    const customId = added.results[0].id
+    customIds.add(customId)
+    expect(added.timetableItems).toEqual([{ kind: 'custom', data: { ...block, id: customId, times } }])
+    expect(await prisma.block_custom_block_times.count({ where: { custom_block_id: customId } })).toBe(2)
+
+    await request(app.getHttpServer()).patch(`${url}/custom-blocks/${customId}`).send({ block_name: 'Grouped' }).expect(200)
+    await request(app.getHttpServer()).patch(`${url}/custom-blocks/${customId}`).send({ begin: 630 }).expect(200)
+    const editedTimes = [{ ...blockTime, begin: 630 }, times[1]]
+    const getBlock = async () => (await request(app.getHttpServer()).get(`${url}/custom-blocks`).expect(200)).body.custom_blocks[0]
+    expect(await getBlock()).toEqual({ ...block, id: customId, block_name: 'Grouped', begin: 630, times: editedTimes })
+    await request(app.getHttpServer()).patch(`${url}/custom-blocks/${customId}`)
+      .send({ day: 3, begin: 750, end: 810 }).expect(400)
+    expect((await getBlock()).times).toEqual(editedTimes)
+
+    const replacement = [{ day: 4, begin: 840, end: 900 }, { day: 4, begin: 930, end: 990 }]
+    await request(app.getHttpServer()).patch(`${url}/items`).send({ changes: [
+      { op: 'update', kind: 'custom', id: customId, data: { times: replacement } },
+    ] }).expect(200)
+    const updated = await getBlock()
+    expect(updated).toEqual({ ...block, id: customId, block_name: 'Grouped', ...replacement[0], times: replacement })
+    const home = (await request(app.getHttpServer()).patch(`${prefix}/home`).send({ ...term, timetableId: id }).expect(200)).body
+    expect(home.timetableItems).toEqual([{ kind: 'custom', data: updated }])
+
+    const cloneId = (await request(app.getHttpServer()).post(prefix).send({ ...term, sourceTimetableId: id }).expect(201)).body.id
+    const copy = (await request(app.getHttpServer()).get(`${prefix}/${cloneId}/custom-blocks`).expect(200)).body.custom_blocks[0]
+    customIds.add(copy.id)
+    expect(copy).toEqual({ ...updated, id: copy.id })
+    expect(copy.id).not.toBe(customId)
+    await request(app.getHttpServer()).patch(`${url}/items`).send({ changes: [{ op: 'remove', kind: 'custom', id: customId }] }).expect(200)
+    expect((await request(app.getHttpServer()).get(url).expect(200)).body.timetableItems).toEqual([])
+    const { id: _oldId, ...restore } = updated
+    const restored = (await request(app.getHttpServer()).patch(`${url}/items`).send({ changes: [
+      { op: 'add', kind: 'custom', data: restore },
+    ] }).expect(200)).body
+    customIds.add(restored.results[0].id)
+    expect(restored.timetableItems[0].data).toEqual({ ...updated, id: restored.results[0].id })
+    expect(restored.results[0].id).not.toBe(customId)
+  })
+
+  it('normalizes pre-migration rows and rejects collisions in non-first occurrences atomically', async () => {
+    const id = await create([lectureId])
+    const legacy = await prisma.block_custom_blocks.create({ data: block })
+    customIds.add(legacy.id)
+    await prisma.timetable_timetable_customblocks.create({ data: { timetable_id: id, custom_block_id: legacy.id } })
+    const url = `${prefix}/${id}`
+    const listed = (await request(app.getHttpServer()).get(`${url}/custom-blocks`).expect(200)).body.custom_blocks
+    expect(listed).toEqual([{ ...block, id: legacy.id, times: [blockTime] }])
+    const data = { ...block, day: 2, times: [{ ...blockTime, day: 2 }, { day: 0, begin: 570, end: 630 }] }
+    await request(app.getHttpServer()).patch(`${url}/items`).send({ changes: [
+      { op: 'remove', kind: 'custom', id: legacy.id }, { op: 'add', kind: 'custom', data },
+    ] }).expect(409)
+    expect((await request(app.getHttpServer()).get(`${url}/custom-blocks`).expect(200)).body.custom_blocks).toEqual(listed)
+    await request(app.getHttpServer()).post(`${url}/custom-blocks`).send(data).expect(409)
+    await request(app.getHttpServer()).patch(`${url}/items`).send({ changes: [
+      { op: 'update', kind: 'custom', id: legacy.id, data: { times: [blockTime, { day: 0, begin: 570, end: 630 }] } },
+    ] }).expect(409)
+    expect(await prisma.block_custom_block_times.count({ where: { custom_block_id: legacy.id } })).toBe(0)
+  })
+
+
+  it('reflects old-server parent-only time edits even after child rows exist', async () => {
+    for (const times of [[blockTime], [blockTime, { day: 3, begin: 720, end: 780 }]]) {
+      const id = await create()
+      const url = `${prefix}/${id}`
+      const added = (await request(app.getHttpServer()).patch(`${url}/items`).send({
+        changes: [{ op: 'add', kind: 'custom', data: { ...block, times } }],
+      }).expect(200)).body
+      const customId = added.results[0].id
+      customIds.add(customId)
+      // Emulate an older backend process: it knows no child table and updates only the parent.
+      const first = { day: 2, begin: 840, end: 900 }
+      await prisma.block_custom_blocks.update({ where: { id: customId }, data: first })
+      const expected = { ...block, id: customId, ...first, times: [first, ...times.slice(1)] }
+      const listed = (await request(app.getHttpServer()).get(`${url}/custom-blocks`).expect(200)).body.custom_blocks
+      const detail = (await request(app.getHttpServer()).get(url).expect(200)).body
+      expect(listed).toEqual([expected])
+      expect(detail.timetableItems).toEqual([{ kind: 'custom', data: expected }])
+      // A new-server metadata edit must keep the old-server time, not restore the stale child time.
+      await request(app.getHttpServer()).patch(`${url}/custom-blocks/${customId}`).send({ place: 'Updated' }).expect(200)
+      const updated = (await request(app.getHttpServer()).get(`${url}/custom-blocks`).expect(200)).body.custom_blocks
+      expect(updated).toEqual([{ ...expected, place: 'Updated' }])
+    }
+  })
+
 })

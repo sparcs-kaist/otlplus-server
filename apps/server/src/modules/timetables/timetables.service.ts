@@ -24,6 +24,8 @@ import { ECustomblock } from '@otl/prisma-client/entities/ECustomblock'
 import { ELecture } from '@otl/prisma-client/entities/ELecture'
 import { ETimetable } from '@otl/prisma-client/entities/ETimetable'
 
+import { parseCustomblockData, validateCustomblockTimes } from './v2/timetable-input'
+
 @Injectable()
 export class TimetablesService {
   constructor(
@@ -155,12 +157,10 @@ export class TimetablesService {
 
   private async validateCustomblockTime(
     timetableId: number,
-    candidate: ECustomblock.Time,
+    candidates: ECustomblock.Time[],
     customblocks: ECustomblock.Basic[],
   ) {
-    if (candidate.begin >= candidate.end) {
-      throw new BadRequestException('Custom block end must be later than begin')
-    }
+    validateCustomblockTimes(candidates)
 
     const timetableLectures = await this.timetableRepository.getLecturesWithClassTimes(timetableId)
     const lectureTimes = timetableLectures
@@ -170,9 +170,9 @@ export class TimetablesService {
         begin: begin.getUTCHours() * 60 + begin.getUTCMinutes(),
         end: end.getUTCHours() * 60 + end.getUTCMinutes(),
       }))
-    const timetableEntries = [...customblocks, ...lectureTimes]
+    const timetableEntries = [...customblocks.flatMap(ECustomblock.getTimes), ...lectureTimes]
 
-    if (timetableEntries.some((time) => ECustomblock.overlaps(candidate, time))) {
+    if (candidates.some((candidate) => timetableEntries.some((time) => ECustomblock.overlaps(candidate, time)))) {
       throw new ConflictException('Custom block overlaps an existing timetable entry')
     }
   }
@@ -183,14 +183,10 @@ export class TimetablesService {
     await this.timetableRepository.lockTimetable(timetableId)
     await this.TimetableValidation(user, timetableId)
     const customblocks = await this.customblockRepository.getCustomblocksList(timetableId)
-    await this.validateCustomblockTime(timetableId, body, customblocks)
-    const customBlock = await this.customblockRepository.createCustomblock({
-      block_name: body.block_name,
-      place: body.place,
-      day: body.day,
-      begin: body.begin,
-      end: body.end,
-    })
+    parseCustomblockData(body, false)
+    const times = body.times ?? [{ day: body.day!, begin: body.begin!, end: body.end! }]
+    await this.validateCustomblockTime(timetableId, times, customblocks)
+    const customBlock = await this.customblockRepository.createCustomblock({ ...body, times })
     // 시간표에 매핑 추가
     await this.customblockRepository.addCustomblockToTimetable(timetableId, customBlock.id)
     return customBlock
@@ -216,12 +212,14 @@ export class TimetablesService {
     if (!current) {
       throw new NotFoundException('No such custom block in timetable')
     }
+    parseCustomblockData(body, true)
+    const updated = ECustomblock.applyUpdate(ECustomblock.normalize(current), body)
     await this.validateCustomblockTime(
       timetableId,
-      { ...current, ...body },
+      updated.times,
       customblocks.filter((customblock) => customblock.id !== customblockId),
     )
-    return this.customblockRepository.updateCustomblock(customblockId, body)
+    return this.customblockRepository.updateCustomblock(customblockId, { ...body, times: updated.times })
   }
 
   @Transactional()

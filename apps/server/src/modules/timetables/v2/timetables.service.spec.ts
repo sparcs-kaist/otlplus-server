@@ -65,8 +65,10 @@ function setup(current = timetable()) {
     removeLectureFromTimetable: jest.fn().mockResolvedValue(undefined),
     getHomeTimetable: jest.fn().mockResolvedValue(null),
     setHomeTimetable: jest.fn().mockResolvedValue(undefined),
+    getLecturesWithClassTimes: jest.fn().mockResolvedValue([]),
   }
   const blocks = {
+    getCustomblocksList: jest.fn().mockResolvedValue(current.timetable_timetable_customblocks.map(({ block_custom_blocks }) => block_custom_blocks)),
     createCustomblock: jest.fn().mockImplementation(async (data) => ({ id: 100, ...data })),
     addCustomblockToTimetable: jest.fn().mockResolvedValue(undefined),
     removeCustomblockFromTimetable: jest.fn().mockResolvedValue(undefined),
@@ -104,7 +106,7 @@ describe('TimetablesServiceV2 unified items', () => {
     expect(blocks.addCustomblockToTimetable).toHaveBeenCalledWith(42, 100)
     expect(repo.removeLectureFromTimetable).toHaveBeenCalledWith(42, 11)
     expect(blocks.removeCustomblockFromTimetable).toHaveBeenCalledWith(42, 11)
-    expect(blocks.updateCustomblock).toHaveBeenCalledWith(12, { day: 4 })
+    expect(blocks.updateCustomblock).toHaveBeenCalledWith(12, { day: 4, times: [{ day: 4, begin: 540, end: 600 }] })
     expect(result.results).toEqual([
       { index: 0, kind: 'lecture', id: 13 },
       { index: 1, kind: 'custom', id: 100 },
@@ -199,7 +201,7 @@ describe('TimetablesServiceV2 clone compatibility', () => {
     const { service, repo, blocks } = setup(timetable([lecture(11)]))
     await expect(service.createTimetable(user, { ...term, sourceTimetableId: 42 }, 'en'))
       .resolves.toEqual({ id: 43 })
-    expect(blocks.createCustomblock).toHaveBeenCalledWith(customInput)
+    expect(blocks.createCustomblock).toHaveBeenCalledWith({ ...customInput, times: [{ day: 0, begin: 540, end: 600 }] })
     expect(blocks.addCustomblockToTimetable).toHaveBeenCalledWith(43, 100)
     expect(blocks.addCustomblockToTimetable).not.toHaveBeenCalledWith(43, 11)
     expect(repo.setHomeTimetable).not.toHaveBeenCalled()
@@ -243,7 +245,7 @@ describe('TimetablesServiceV2 home selection', () => {
     repo.getHomeTimetable.mockResolvedValue({ timetable_id: 42 })
     const result = await service.getHomeTimetable(user, term, 'en')
     expect(result).toMatchObject({ source: 'saved', timetableId: 42, name: 'Saved', ...term, lectures: [] })
-    expect(result.timetableItems).toEqual([{ kind: 'custom', data: block }])
+    expect(result.timetableItems).toEqual([{ kind: 'custom', data: { ...block, times: [{ day: 0, begin: 540, end: 600 }] } }])
     expect(lectures.getTakenLecturesBySemester).not.toHaveBeenCalled()
   })
 
@@ -257,5 +259,58 @@ describe('TimetablesServiceV2 home selection', () => {
     const { service, repo } = setup()
     await service.setHomeTimetable(user, { ...term, timetableId: null }, 'en')
     expect(repo.setHomeTimetable).toHaveBeenCalledWith(user.id, term.year, term.semester, null)
+  })
+})
+
+
+describe('multi-time custom blocks', () => {
+  const times = [{ day: 0, begin: 540, end: 600 }, { day: 2, begin: 720, end: 780 }]
+  const grouped = { ...block, times }
+
+  it('checks every occurrence when adding either a lecture or a custom block', async () => {
+    const custom = setup(timetable([lecture(9, 2, 720, 780)], []))
+    await expect(custom.service.updateTimetableItems(user, {
+      changes: [{ op: 'add', kind: 'custom', data: { block_name: 'Study', place: '', times } }],
+    }, 42, 'en')).rejects.toBeInstanceOf(ConflictException)
+    const nextLecture = setup(timetable([], [grouped]))
+    nextLecture.repo.getLecturesByIds.mockResolvedValue([lecture(9, 2, 720, 780)])
+    await expect(nextLecture.service.updateTimetableItems(user, {
+      changes: [{ op: 'add', kind: 'lecture', lectureId: 9 }],
+    }, 42, 'en')).rejects.toBeInstanceOf(ConflictException)
+    expect(custom.blocks.createCustomblock).not.toHaveBeenCalled()
+    expect(nextLecture.repo.addLectureToTimetable).not.toHaveBeenCalled()
+  })
+
+  it('preserves all times through legacy metadata and first-time updates', async () => {
+    const { service, blocks } = setup(timetable([], [grouped]))
+    await service.updateCustomblock(42, block.id, { block_name: 'Renamed' }, user)
+    expect(blocks.updateCustomblock).toHaveBeenLastCalledWith(block.id, { block_name: 'Renamed', times })
+    await service.updateCustomblock(42, block.id, { begin: 570 }, user)
+    expect(blocks.updateCustomblock).toHaveBeenLastCalledWith(block.id, {
+      begin: 570, times: [{ ...times[0], begin: 570 }, times[1]],
+    })
+  })
+
+  it('rejects a legacy first-time edit overlapping another occurrence in the same block', async () => {
+    const sameDay = { ...grouped, times: [times[0], { ...times[1], day: 0 }] }
+    const { service, blocks } = setup(timetable([], [sameDay]))
+    await expect(service.updateCustomblock(42, block.id, { end: 750 }, user)).rejects.toBeInstanceOf(BadRequestException)
+    expect(blocks.updateCustomblock).not.toHaveBeenCalled()
+  })
+
+  it('checks a replacement second occurrence against other blocks', async () => {
+    const { service, blocks } = setup(timetable([], [grouped, { ...block, id: 12, day: 4 }]))
+    await expect(service.updateTimetableItems(user, {
+      changes: [{ op: 'update', kind: 'custom', id: block.id, data: { times: [times[0], { ...times[0], day: 4 }] } }],
+    }, 42, 'en')).rejects.toBeInstanceOf(ConflictException)
+    expect(blocks.updateCustomblock).not.toHaveBeenCalled()
+  })
+
+  it('clones all times without child row identifiers and returns them in the home response', async () => {
+    const { service, blocks, repo } = setup(timetable([], [grouped]))
+    await service.createTimetable(user, { ...term, sourceTimetableId: 42 }, 'en')
+    expect(blocks.createCustomblock).toHaveBeenCalledWith({ ...customInput, times })
+    repo.getHomeTimetable.mockResolvedValue({ timetable_id: 42 })
+    expect((await service.getHomeTimetable(user, term, 'en')).timetableItems).toEqual([{ kind: 'custom', data: grouped }])
   })
 })
