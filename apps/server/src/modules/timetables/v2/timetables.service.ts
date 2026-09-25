@@ -14,15 +14,21 @@ import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
 import {
   toJsonLectures,
   toJsonTimetableV2,
-  toJsonTimetableV2WithLectures,
+  toJsonTimetableV2WithItems,
 } from '@otl/server-nest/common/serializer/v2/timetable.serializer'
 import { TIMETABLE_MQ, TimetableMQ } from '@otl/server-nest/modules/timetables/domain/out/TimetableMQ'
 import { Prisma, session_userprofile } from '@prisma/client'
+import { match } from 'ts-pattern'
 
+import { TimetableItemKind } from '@otl/common/enum/timetable'
 import logger from '@otl/common/logger/logger'
 
 import { CustomblockRepository, LectureRepository, TimetableRepository } from '@otl/prisma-client'
 import { ECustomblock } from '@otl/prisma-client/entities/ECustomblock'
+
+import {
+  parseCustomblockData, parseTimetableChanges, validateCreateTimetableInput, validateCustomblockTimes,
+} from './timetable-input'
 
 @Injectable()
 export class TimetablesServiceV2 {
@@ -84,13 +90,35 @@ export class TimetablesServiceV2 {
     }
   }
 
-  @Transactional()
   async createTimetable(
     user: session_userprofile,
     body: ITimetableV2.CreateReqDto,
     language: Language,
   ): Promise<ITimetableV2.CreateResDto> {
-    const { year, semester, lectureIds } = body
+    const { id, lectureIds } = await this.createTimetableInTransaction(user, body, language)
+    await this.publishLectureUpdates(lectureIds)
+    return { id }
+  }
+
+  @Transactional()
+  private async createTimetableInTransaction(
+    user: session_userprofile,
+    body: ITimetableV2.CreateReqDto,
+    language: Language,
+  ) {
+    const {
+      year, semester, lectureIds, sourceTimetableId,
+    } = body
+    validateCreateTimetableInput(body)
+    let source
+    if (sourceTimetableId !== undefined) {
+      await this.timetableRepository.lockTimetable(sourceTimetableId)
+      await this.TimetableValidation(user, sourceTimetableId)
+      source = await this.timetableRepository.getTimeTableWithItemsById(sourceTimetableId)
+      if (source.year !== year || source.semester !== semester) {
+        throw new BadRequestException('Source timetable must be in the requested year and semester')
+      }
+    }
 
     const relatedTimetables = await this.timetableRepository.getTimetableBasics(user, year, semester, {
       orderBy: { arrange_order: 'asc' },
@@ -99,7 +127,9 @@ export class TimetablesServiceV2 {
 
     // Remove duplicate lecture IDs
     const uniqueLectureIds = Array.from(new Set(lectureIds ?? []))
-    const lectures = uniqueLectureIds.length > 0 ? await this.lectureRepository.getLectureByIds(uniqueLectureIds) : []
+    const lectures = source
+      ? source.timetable_timetable_lectures.map(({ subject_lecture }) => subject_lecture)
+      : uniqueLectureIds.length > 0 ? await this.timetableRepository.getLecturesByIds(uniqueLectureIds) : []
 
     // Save only lectures that match the year and semester with timetable
     const filteredLectures = lectures.filter((lecture) => lecture.year === year && lecture.semester === semester)
@@ -113,20 +143,30 @@ export class TimetablesServiceV2 {
       language === 'en' ? `Timetable ${arrangeOrder + 1}` : `시간표 ${arrangeOrder + 1}`,
     )
 
-    await Promise.all(
-      filteredLectures.map(async (lecture) => this.timetableMQ.publishLectureNumUpdate(lecture.id)),
-    ).catch((error) => {
-      logger.error('Failed to publish lecture num update', error)
-    })
-
-    return { id: createdTimetable.id }
+    if (source) {
+      for (const { block_custom_blocks } of source.timetable_timetable_customblocks) {
+        const { id: _id, ...data } = ECustomblock.normalize(block_custom_blocks)
+        const block = await this.customblockRepository.createCustomblock(data)
+        await this.customblockRepository.addCustomblockToTimetable(createdTimetable.id, block.id)
+      }
+    }
+    return { id: createdTimetable.id, lectureIds: filteredLectures.map(({ id }) => id) }
   }
 
-  @Transactional()
   async deleteTimetable(
     user: session_userprofile,
     body: ITimetableV2.DeleteReqDto,
   ): Promise<ITimetableV2.DeleteResDto> {
+    const lectureIds = await this.deleteTimetableInTransaction(user, body)
+    await this.publishLectureUpdates(lectureIds)
+    return { message: 'Timetable deleted successfully' }
+  }
+
+  @Transactional()
+  private async deleteTimetableInTransaction(
+    user: session_userprofile,
+    body: ITimetableV2.DeleteReqDto,
+  ): Promise<number[]> {
     const { id } = body
     // if timetableId is invalid, throw 400
     if (id === undefined) {
@@ -134,6 +174,7 @@ export class TimetablesServiceV2 {
     }
 
     try {
+      await this.timetableRepository.lockTimetable(id)
       const timetable = await this.timetableRepository.getTimeTableById(id)
       // if user is not owner of timetable, throw 401
       if (timetable.user_id !== user.id) {
@@ -157,16 +198,7 @@ export class TimetablesServiceV2 {
         timeTablesToBeUpdated.map(async (updateElem) => this.timetableRepository.updateOrder(updateElem.id, updateElem.arrange_order)),
       )
 
-      // update statistics
-      await Promise.all(lectureIds.map((lectureId) => this.timetableMQ.publishLectureNumUpdate(lectureId))).catch(
-        (error) => {
-          logger.error('Failed to publish lecture num update', error)
-        },
-      )
-
-      return {
-        message: 'Timetable deleted successfully',
-      }
+      return lectureIds
     }
     catch (error) {
       // catch prisma.timetable_timetable.findUniqueOrThrow() + not found, throw 400
@@ -195,6 +227,7 @@ export class TimetablesServiceV2 {
         throw new BadRequestException('At least one of name or order must be provided')
       }
 
+      await this.timetableRepository.lockTimetable(id)
       const timetable = await this.timetableRepository.getTimeTableById(id)
       if (timetable.user_id !== user.id) {
         throw new UnauthorizedException('Current user does not match owner of requested timetable')
@@ -275,17 +308,17 @@ export class TimetablesServiceV2 {
   }
 
   @Transactional()
-  async getTimetable(id: number, user: session_userprofile, language: Language): Promise<ITimetableV2.GetResDto> {
+  async getTimetable(id: number, user: session_userprofile, language: Language): Promise<ITimetableV2.TimetableDetailResDto> {
     try {
       if (id === undefined) {
         throw new BadRequestException('id of timetable is required')
       }
-      const timetable = await this.timetableRepository.getTimeTableById(id)
+      const timetable = await this.timetableRepository.getTimeTableWithItemsById(id)
       if (timetable.user_id !== user.id) {
         throw new UnauthorizedException('Current user does not match owner of requested timetable')
       }
 
-      return toJsonTimetableV2WithLectures(timetable, language)
+      return toJsonTimetableV2WithItems(timetable, language)
     }
     catch (error) {
       // catch prisma.timetable_timetable.findUniqueOrThrow() + not found, throw 400
@@ -298,8 +331,18 @@ export class TimetablesServiceV2 {
     }
   }
 
-  @Transactional()
   async updateTimetableLecture(
+    user: session_userprofile,
+    body: ITimetableV2.UpdateLectureReqDto,
+    timetableId: number,
+  ): Promise<ITimetableV2.UpdateLectureResDto> {
+    const result = await this.updateTimetableLectureInTransaction(user, body, timetableId)
+    await this.publishLectureUpdates([body.lectureId])
+    return result
+  }
+
+  @Transactional()
+  private async updateTimetableLectureInTransaction(
     user: session_userprofile,
     body: ITimetableV2.UpdateLectureReqDto,
     timetableId: number,
@@ -312,6 +355,8 @@ export class TimetablesServiceV2 {
       if (action === undefined) {
         throw new BadRequestException('action is required')
       }
+
+      await this.timetableRepository.lockTimetable(timetableId)
 
       // Fetch lecture first - catch invalid lectureId
       let lecture
@@ -352,9 +397,6 @@ export class TimetablesServiceV2 {
       else if (action === 'delete') {
         await this.timetableRepository.removeLectureFromTimetable(timetable.id, lectureId)
       }
-      await this.timetableMQ.publishLectureNumUpdate(lectureId).catch((error) => {
-        logger.error('Failed to publish lecture num update', error)
-      })
       return {
         message: 'Timetable lecture updated successfully',
       }
@@ -374,25 +416,205 @@ export class TimetablesServiceV2 {
     }
   }
 
+  async updateTimetableItems(
+    user: session_userprofile,
+    body: ITimetableV2.UpdateItemsReqDto,
+    timetableId: number,
+    language: Language,
+  ): Promise<ITimetableV2.UpdateItemsResDto> {
+    const changes = parseTimetableChanges(body.changes)
+    const result = await this.updateTimetableItemsInTransaction(user, changes, timetableId, language)
+    await this.publishLectureUpdates(changes.flatMap((change) => match(change)
+      .with({ kind: TimetableItemKind.LECTURE, op: 'add' }, ({ lectureId }) => [lectureId])
+      .with({ kind: TimetableItemKind.LECTURE, op: 'remove' }, ({ id }) => [id])
+      .with({ kind: TimetableItemKind.CUSTOM }, () => [])
+      .exhaustive()))
+    return result
+  }
+
+  @Transactional()
+  private async updateTimetableItemsInTransaction(
+    user: session_userprofile,
+    changes: ITimetableV2.TimetableChange[],
+    timetableId: number,
+    language: Language,
+  ): Promise<ITimetableV2.UpdateItemsResDto> {
+    await this.timetableRepository.lockTimetable(timetableId)
+    await this.TimetableValidation(user, timetableId)
+    const timetable = await this.timetableRepository.getTimeTableWithItemsById(timetableId)
+    const lectures = new Map(timetable.timetable_timetable_lectures.map(({ subject_lecture }) => [subject_lecture.id, subject_lecture]))
+    const blocks = new Map(timetable.timetable_timetable_customblocks.map(({ block_custom_blocks }) => [block_custom_blocks.id, ECustomblock.normalize(block_custom_blocks)]))
+    const addedLectureIds = changes.flatMap((change) => (change.op === 'add' && change.kind === TimetableItemKind.LECTURE
+      ? [change.lectureId]
+      : []))
+    const addedLectures = await this.timetableRepository.getLecturesByIds(addedLectureIds)
+    const changedTimes = new Set<string>()
+
+    // Validate the final composition, allowing a conflicting item to be removed in the same batch.
+    for (const [index, change] of changes.entries()) {
+      match(change)
+        .with({ kind: TimetableItemKind.LECTURE, op: 'add' }, ({ lectureId }) => {
+          const lecture = addedLectures.find(({ id }) => id === lectureId)
+          if (!lecture || lecture.year !== timetable.year || lecture.semester !== timetable.semester) {
+            throw new BadRequestException('Lecture must exist in the timetable year and semester')
+          }
+          if (lectures.has(lecture.id)) throw new ConflictException('Lecture is already in timetable')
+          lectures.set(lecture.id, lecture)
+          changedTimes.add(`${TimetableItemKind.LECTURE}:${lecture.id}`)
+        })
+        .with({ kind: TimetableItemKind.LECTURE, op: 'remove' }, ({ id }) => {
+          if (!lectures.delete(id)) throw new NotFoundException('No such lecture in timetable')
+        })
+        .with({ kind: TimetableItemKind.CUSTOM, op: 'add' }, ({ data }) => {
+          const id = -index - 1
+          const times = data.times ?? [{ day: data.day!, begin: data.begin!, end: data.end! }]
+          blocks.set(id, {
+            id, block_name: data.block_name, place: data.place, ...times[0], times,
+          })
+          changedTimes.add(`${TimetableItemKind.CUSTOM}:${id}`)
+        })
+        .with({ kind: TimetableItemKind.CUSTOM, op: 'remove' }, ({ id }) => {
+          if (!blocks.delete(id)) throw new NotFoundException('No such custom block in timetable')
+        })
+        .with({ kind: TimetableItemKind.CUSTOM, op: 'update' }, ({ id, data }) => {
+          const current = blocks.get(id)
+          if (!current) throw new NotFoundException('No such custom block in timetable')
+          const updated = ECustomblock.applyUpdate(current, data)
+          validateCustomblockTimes(updated.times)
+          blocks.set(id, updated)
+          if (JSON.stringify(current.times) !== JSON.stringify(updated.times)) {
+            changedTimes.add(`${TimetableItemKind.CUSTOM}:${id}`)
+          }
+        })
+        .exhaustive()
+    }
+    const times = [
+      ...[...lectures.values()].flatMap((lecture) => lecture.subject_classtime.map((time) => ({
+        key: `${TimetableItemKind.LECTURE}:${lecture.id}`,
+        day: time.day,
+        begin: time.begin.getUTCHours() * 60 + time.begin.getUTCMinutes(),
+        end: time.end.getUTCHours() * 60 + time.end.getUTCMinutes(),
+      }))),
+      ...[...blocks.values()].flatMap((block) => block.times.map((time) => ({ ...time, key: `${TimetableItemKind.CUSTOM}:${block.id}` }))),
+    ]
+    for (const time of times) {
+      if (changedTimes.has(time.key) && times.some((other) => other.key !== time.key && ECustomblock.overlaps(time, other))) {
+        throw new ConflictException('Timetable items overlap')
+      }
+    }
+
+    const results: ITimetableV2.UpdateItemsResDto['results'] = []
+    for (const [index, change] of changes.entries()) {
+      const itemId = await match(change)
+        .with({ kind: TimetableItemKind.LECTURE, op: 'add' }, async ({ lectureId }) => {
+          await this.timetableRepository.addLectureToTimetable(timetableId, lectureId)
+          return lectureId
+        })
+        .with({ kind: TimetableItemKind.LECTURE, op: 'remove' }, async ({ id }) => {
+          await this.timetableRepository.removeLectureFromTimetable(timetableId, id)
+          return id
+        })
+        .with({ kind: TimetableItemKind.CUSTOM, op: 'add' }, async ({ data }) => {
+          const block = await this.customblockRepository.createCustomblock(data)
+          await this.customblockRepository.addCustomblockToTimetable(timetableId, block.id)
+          return block.id
+        })
+        .with({ kind: TimetableItemKind.CUSTOM, op: 'remove' }, async ({ id }) => {
+          await this.customblockRepository.removeCustomblockFromTimetable(timetableId, id)
+          return id
+        })
+        .with({ kind: TimetableItemKind.CUSTOM, op: 'update' }, async ({ id, data }) => {
+          await this.customblockRepository.updateCustomblock(id, { ...data, times: blocks.get(id)!.times })
+          return id
+        })
+        .exhaustive()
+      results.push({ index, kind: change.kind, id: itemId })
+    }
+    const updated = await this.timetableRepository.getTimeTableWithItemsById(timetableId)
+    return { timetableItems: toJsonTimetableV2WithItems(updated, language).timetableItems, results }
+  }
+
+  @Transactional()
+  async getHomeTimetable(
+    user: session_userprofile,
+    query: ITimetableV2.HomeTimetableReqDto,
+    language: Language,
+  ): Promise<ITimetableV2.HomeTimetableResDto> {
+    const { year, semester } = query
+    const selection = await this.timetableRepository.getHomeTimetable(user.id, year, semester)
+    if (selection?.timetable_id != null) {
+      try {
+        const timetable = await this.timetableRepository.getTimeTableWithItemsById(selection.timetable_id)
+        if (timetable.user_id === user.id && timetable.year === year && timetable.semester === semester) {
+          return {
+            ...toJsonTimetableV2WithItems(timetable, language),
+            source: 'saved',
+            timetableId: timetable.id,
+            name: timetable.name ?? '',
+            year,
+            semester,
+          }
+        }
+      }
+      catch (error) {
+        if (!(error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025')) throw error
+      }
+    }
+    return {
+      ...await this.getMyTimetable(user, query, language),
+      source: 'enrolled',
+      timetableId: null,
+      name: language === 'en' ? 'Enrolled timetable' : '실제 수강 시간표',
+      year,
+      semester,
+    }
+  }
+
+  @Transactional()
+  async setHomeTimetable(
+    user: session_userprofile,
+    body: ITimetableV2.SetHomeTimetableReqDto,
+    language: Language,
+  ): Promise<ITimetableV2.HomeTimetableResDto> {
+    const { year, semester, timetableId } = body
+    if (timetableId !== null) {
+      await this.timetableRepository.lockTimetable(timetableId)
+      const timetable = await this.TimetableValidation(user, timetableId)
+      if (timetable.year !== year || timetable.semester !== semester) {
+        throw new BadRequestException('Home timetable must be in the requested year and semester')
+      }
+    }
+    await this.timetableRepository.setHomeTimetable(user.id, year, semester, timetableId)
+    return this.getHomeTimetable(user, body, language)
+  }
+
+  private async publishLectureUpdates(lectureIds: number[]) {
+    await Promise.all([...new Set(lectureIds)].map((id) => this.timetableMQ.publishLectureNumUpdate(id)))
+      .catch((error) => logger.error('Failed to publish lecture num update', error))
+  }
+
   private async TimetableValidation(user: session_userprofile, timetableId: number) {
-    const timetable = await this.timetableRepository.getTimeTableBasicById(timetableId)
-    if (!timetable) {
-      throw new NotFoundException('No such timetable')
+    try {
+      const timetable = await this.timetableRepository.getTimeTableBasicById(timetableId)
+      if (timetable.user_id !== user.id) {
+        throw new ForbiddenException('User is not owner of timetable')
+      }
+      return timetable
     }
-    if (timetable.user_id !== user.id) {
-      throw new ForbiddenException('User is not owner of timetable')
+    catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        throw new NotFoundException('No such timetable')
+      }
+      throw error
     }
-    return timetable
   }
 
   private async validateCustomblockTime(
     timetableId: number,
-    candidate: ECustomblock.Time,
+    candidates: ECustomblock.Time[],
     customblocks: ECustomblock.Basic[],
   ) {
-    if (candidate.begin >= candidate.end) {
-      throw new BadRequestException('Custom block end must be later than begin')
-    }
+    validateCustomblockTimes(candidates)
 
     const timetableLectures = await this.timetableRepository.getLecturesWithClassTimes(timetableId)
     const lectureTimes = timetableLectures
@@ -402,25 +624,22 @@ export class TimetablesServiceV2 {
         begin: begin.getUTCHours() * 60 + begin.getUTCMinutes(),
         end: end.getUTCHours() * 60 + end.getUTCMinutes(),
       }))
-    const timetableEntries = [...customblocks, ...lectureTimes]
+    const timetableEntries = [...customblocks.flatMap(ECustomblock.getTimes), ...lectureTimes]
 
-    if (timetableEntries.some((time) => ECustomblock.overlaps(candidate, time))) {
+    if (candidates.some((candidate) => timetableEntries.some((time) => ECustomblock.overlaps(candidate, time)))) {
       throw new ConflictException('Custom block overlaps an existing timetable entry')
     }
   }
 
   @Transactional()
   async addCustomblockToTimetable(timetableId: number, body: ICustomblock.CreateDto, user: session_userprofile) {
+    await this.timetableRepository.lockTimetable(timetableId)
     await this.TimetableValidation(user, timetableId)
     const customblocks = await this.customblockRepository.getCustomblocksList(timetableId)
-    await this.validateCustomblockTime(timetableId, body, customblocks)
-    const customBlock = await this.customblockRepository.createCustomblock({
-      block_name: body.block_name,
-      place: body.place,
-      day: body.day,
-      begin: body.begin,
-      end: body.end,
-    })
+    parseCustomblockData(body, false)
+    const times = body.times ?? [{ day: body.day!, begin: body.begin!, end: body.end! }]
+    await this.validateCustomblockTime(timetableId, times, customblocks)
+    const customBlock = await this.customblockRepository.createCustomblock({ ...body, times })
     // 시간표에 매핑 추가
     await this.customblockRepository.addCustomblockToTimetable(timetableId, customBlock.id)
     return customBlock
@@ -439,22 +658,26 @@ export class TimetablesServiceV2 {
     body: ICustomblock.UpdateDto,
     user: session_userprofile,
   ) {
+    await this.timetableRepository.lockTimetable(timetableId)
     await this.TimetableValidation(user, timetableId)
     const customblocks = await this.customblockRepository.getCustomblocksList(timetableId)
     const current = customblocks.find((customblock) => customblock.id === customblockId)
     if (!current) {
       throw new NotFoundException('No such custom block in timetable')
     }
+    parseCustomblockData(body, true)
+    const updated = ECustomblock.applyUpdate(ECustomblock.normalize(current), body)
     await this.validateCustomblockTime(
       timetableId,
-      { ...current, ...body },
+      updated.times,
       customblocks.filter((customblock) => customblock.id !== customblockId),
     )
-    return this.customblockRepository.updateCustomblock(customblockId, body)
+    return this.customblockRepository.updateCustomblock(customblockId, { ...body, times: updated.times })
   }
 
   @Transactional()
   async removeCustomblockFromTimetable(timetableId: number, customblockId: number, user: session_userprofile) {
+    await this.timetableRepository.lockTimetable(timetableId)
     await this.TimetableValidation(user, timetableId)
     await this.customblockRepository.removeCustomblockFromTimetable(timetableId, customblockId)
   }
@@ -471,6 +694,7 @@ export class TimetablesServiceV2 {
       throw new BadRequestException('No timetable found for the current user')
     }
 
-    return { lectures: toJsonLectures(lectures, language).lectures }
+    const serialized = toJsonLectures(lectures, language).lectures
+    return { lectures: serialized, timetableItems: serialized.map((data) => ({ kind: TimetableItemKind.LECTURE, data })) }
   }
 }

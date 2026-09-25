@@ -6,6 +6,22 @@ import * as Sentry from '@sentry/node'
 
 import logger from '../logger/logger'
 
+export function redactFriendInviteRequest<T extends Sentry.Event>(event: T): T {
+  const { request } = event
+  const requestContext = event.contexts?.request
+  const urls = [request?.url, requestContext?.url]
+  if (urls.some((url) => typeof url === 'string' && /\/api\/v2\/friends(?:\/(?:code|invites(?:\/accept)?))?\/?(?:\?|$)/i.test(url))) {
+    if (request) delete request.data
+    for (const context of [requestContext, event.contexts?.response]) {
+      if (context) {
+        delete context.body
+        delete context.data
+      }
+    }
+  }
+  return event
+}
+
 @Catch() // BaseException을 상속한 exception에 대해서 실행됨.
 export class UnexpectedExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {

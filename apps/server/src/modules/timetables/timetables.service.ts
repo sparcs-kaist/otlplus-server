@@ -24,6 +24,8 @@ import { ECustomblock } from '@otl/prisma-client/entities/ECustomblock'
 import { ELecture } from '@otl/prisma-client/entities/ELecture'
 import { ETimetable } from '@otl/prisma-client/entities/ETimetable'
 
+import { parseCustomblockData, validateCustomblockTimes } from './v2/timetable-input'
+
 @Injectable()
 export class TimetablesService {
   constructor(
@@ -60,8 +62,14 @@ export class TimetablesService {
     return existsSemester || (year > 2009 && year < 2018 && semester && [1, 3].includes(semester))
   }
 
-  @Transactional()
   async createTimetable(timeTableBody: ITimetable.CreateDto, user: session_userprofile) {
+    const { result, lectureIds } = await this.createTimetableTransaction(timeTableBody, user)
+    await this.publishLectureUpdates(lectureIds)
+    return result
+  }
+
+  @Transactional()
+  private async createTimetableTransaction(timeTableBody: ITimetable.CreateDto, user: session_userprofile) {
     const { year, semester } = timeTableBody
     if (!(await this.validateYearAndSemester(year, semester))) {
       throw new BadRequestException('Wrong fields \'year\' and \'semester\' in request data')
@@ -88,16 +96,18 @@ export class TimetablesService {
       (lecture) => lecture.semester === timeTableBody.semester && lecture.year === timeTableBody.year,
     )
     const result = await this.timetableRepository.createTimetable(user, year, semester, arrangeOrder, filteredLectures)
-    await Promise.all(lectures.map((lecture) => this.timetableMQ.publishLectureNumUpdate(lecture.id))).catch(
-      (error) => {
-        logger.error('Failed to publish lecture num update', error)
-      },
-    )
+    return { result, lectureIds: filteredLectures.map((lecture) => lecture.id) }
+  }
+
+  async addLectureToTimetable(timeTableId: number, body: ITimetable.AddLectureDto) {
+    const result = await this.addLectureToTimetableTransaction(timeTableId, body)
+    await this.publishLectureUpdates([body.lecture])
     return result
   }
 
   @Transactional()
-  async addLectureToTimetable(timeTableId: number, body: ITimetable.AddLectureDto) {
+  private async addLectureToTimetableTransaction(timeTableId: number, body: ITimetable.AddLectureDto) {
+    await this.timetableRepository.lockTimetable(timeTableId)
     const lectureId = body.lecture
     const lecture = await this.lectureRepository.getLectureBasicById(lectureId)
     const timetable = await this.timetableRepository.getTimeTableBasicById(timeTableId)
@@ -108,14 +118,18 @@ export class TimetablesService {
       throw new BadRequestException('Wrong field \\\'lecture\\\' in request data')
     }
     await this.timetableRepository.addLectureToTimetable(timeTableId, lectureId)
-    await this.timetableMQ.publishLectureNumUpdate(lectureId).catch((error) => {
-      logger.error('Failed to publish lecture num update', error)
-    })
     return await this.timetableRepository.getTimeTableById(timeTableId)
   }
 
-  @Transactional()
   async removeLectureFromTimetable(timeTableId: number, body: ITimetable.AddLectureDto) {
+    const result = await this.removeLectureFromTimetableTransaction(timeTableId, body)
+    await this.publishLectureUpdates([body.lecture])
+    return result
+  }
+
+  @Transactional()
+  private async removeLectureFromTimetableTransaction(timeTableId: number, body: ITimetable.AddLectureDto) {
+    await this.timetableRepository.lockTimetable(timeTableId)
     const lectureId = body.lecture
     const lecture = await this.lectureRepository.getLectureBasicById(lectureId)
     const timetable = await this.timetableRepository.getTimeTableBasicById(timeTableId)
@@ -126,9 +140,6 @@ export class TimetablesService {
       throw new BadRequestException('Wrong field \\\'lecture\\\' in request data')
     }
     await this.timetableRepository.removeLectureFromTimetable(timeTableId, lectureId)
-    await this.timetableMQ.publishLectureNumUpdate(lectureId).catch((error) => {
-      logger.error('Failed to publish lecture num update', error)
-    })
     return await this.timetableRepository.getTimeTableById(timeTableId)
   }
 
@@ -146,12 +157,10 @@ export class TimetablesService {
 
   private async validateCustomblockTime(
     timetableId: number,
-    candidate: ECustomblock.Time,
+    candidates: ECustomblock.Time[],
     customblocks: ECustomblock.Basic[],
   ) {
-    if (candidate.begin >= candidate.end) {
-      throw new BadRequestException('Custom block end must be later than begin')
-    }
+    validateCustomblockTimes(candidates)
 
     const timetableLectures = await this.timetableRepository.getLecturesWithClassTimes(timetableId)
     const lectureTimes = timetableLectures
@@ -161,9 +170,9 @@ export class TimetablesService {
         begin: begin.getUTCHours() * 60 + begin.getUTCMinutes(),
         end: end.getUTCHours() * 60 + end.getUTCMinutes(),
       }))
-    const timetableEntries = [...customblocks, ...lectureTimes]
+    const timetableEntries = [...customblocks.flatMap(ECustomblock.getTimes), ...lectureTimes]
 
-    if (timetableEntries.some((time) => ECustomblock.overlaps(candidate, time))) {
+    if (candidates.some((candidate) => timetableEntries.some((time) => ECustomblock.overlaps(candidate, time)))) {
       throw new ConflictException('Custom block overlaps an existing timetable entry')
     }
   }
@@ -171,16 +180,13 @@ export class TimetablesService {
   // 커스텀 블록 관련 Service 로직
   @Transactional()
   async addCustomblockToTimetable(timetableId: number, body: ICustomblock.CreateDto, user: session_userprofile) {
+    await this.timetableRepository.lockTimetable(timetableId)
     await this.TimetableValidation(user, timetableId)
     const customblocks = await this.customblockRepository.getCustomblocksList(timetableId)
-    await this.validateCustomblockTime(timetableId, body, customblocks)
-    const customBlock = await this.customblockRepository.createCustomblock({
-      block_name: body.block_name,
-      place: body.place,
-      day: body.day,
-      begin: body.begin,
-      end: body.end,
-    })
+    parseCustomblockData(body, false)
+    const times = body.times ?? [{ day: body.day!, begin: body.begin!, end: body.end! }]
+    await this.validateCustomblockTime(timetableId, times, customblocks)
+    const customBlock = await this.customblockRepository.createCustomblock({ ...body, times })
     // 시간표에 매핑 추가
     await this.customblockRepository.addCustomblockToTimetable(timetableId, customBlock.id)
     return customBlock
@@ -199,28 +205,39 @@ export class TimetablesService {
     body: ICustomblock.UpdateDto,
     user: session_userprofile,
   ) {
+    await this.timetableRepository.lockTimetable(timetableId)
     await this.TimetableValidation(user, timetableId)
     const customblocks = await this.customblockRepository.getCustomblocksList(timetableId)
     const current = customblocks.find((customblock) => customblock.id === customblockId)
     if (!current) {
       throw new NotFoundException('No such custom block in timetable')
     }
+    parseCustomblockData(body, true)
+    const updated = ECustomblock.applyUpdate(ECustomblock.normalize(current), body)
     await this.validateCustomblockTime(
       timetableId,
-      { ...current, ...body },
+      updated.times,
       customblocks.filter((customblock) => customblock.id !== customblockId),
     )
-    return this.customblockRepository.updateCustomblock(customblockId, body)
+    return this.customblockRepository.updateCustomblock(customblockId, { ...body, times: updated.times })
   }
 
   @Transactional()
   async removeCustomblockFromTimetable(timetableId: number, customblockId: number, user: session_userprofile) {
+    await this.timetableRepository.lockTimetable(timetableId)
     await this.TimetableValidation(user, timetableId)
     await this.customblockRepository.removeCustomblockFromTimetable(timetableId, customblockId)
   }
 
-  @Transactional()
   async deleteTimetable(user: session_userprofile, timetableId: number): Promise<ETimetable.Basic[]> {
+    const { result, lectureIds } = await this.deleteTimetableTransaction(user, timetableId)
+    await this.publishLectureUpdates(lectureIds)
+    return result
+  }
+
+  @Transactional()
+  private async deleteTimetableTransaction(user: session_userprofile, timetableId: number) {
+    await this.timetableRepository.lockTimetable(timetableId)
     const { semester, year, arrange_order } = await this.timetableRepository.getTimeTableById(timetableId)
     const lectureIds = await this.timetableRepository.getTimeTableLectures(timetableId)
     await this.timetableRepository.deleteById(timetableId)
@@ -234,16 +251,12 @@ export class TimetablesService {
     const result = await Promise.all(
       timeTablesToBeUpdated.map(async (updateElem) => this.timetableRepository.updateOrder(updateElem.id, updateElem.arrange_order)),
     )
-    await Promise.all(lectureIds.map((lectureId) => this.timetableMQ.publishLectureNumUpdate(lectureId))).catch(
-      (error) => {
-        logger.error('Failed to publish lecture num update', error)
-      },
-    )
-    return result
+    return { result, lectureIds }
   }
 
   @Transactional()
   async reorderTimetable(user: session_userprofile, timetableId: number, body: ITimetable.ReorderTimetableDto) {
+    await this.timetableRepository.lockTimetable(timetableId)
     const { arrange_order: targetArrangeOrder } = body
     const targetTimetable = await this.timetableRepository.getTimeTableById(timetableId)
     if (targetTimetable.user_id !== user.id) {
@@ -289,6 +302,11 @@ export class TimetablesService {
     )
     const updatedTimeTable = await this.timetableRepository.updateOrder(targetTimetable.id, targetArrangeOrder)
     return updatedTimeTable
+  }
+
+  private async publishLectureUpdates(lectureIds: number[]) {
+    await Promise.all([...new Set(lectureIds)].map((lectureId) => this.timetableMQ.publishLectureNumUpdate(lectureId)))
+      .catch((error) => logger.error('Failed to publish lecture num update', error))
   }
 
   public getTimetableType(lectures: ELecture.WithClasstime[]): '5days' | '7days' {

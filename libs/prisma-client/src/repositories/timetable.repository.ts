@@ -1,17 +1,67 @@
 import { Injectable } from '@nestjs/common'
+import { TransactionHost } from '@nestjs-cls/transactional'
+import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma'
 import { Prisma, session_userprofile } from '@prisma/client'
-
-import { PrismaService } from '@otl/prisma-client/prisma.service'
 
 import { ELecture } from '../entities/ELecture'
 import { ETimetable } from '../entities/ETimetable'
 
 @Injectable()
 export class TimetableRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly txHost: TransactionHost<TransactionalAdapterPrisma>) {}
+
+  async lockTimetable(timetableId: number): Promise<void> {
+    if (!this.txHost.isTransactionActive()) {
+      throw new Error('Timetable locks require a transaction')
+    }
+    await this.txHost.tx.$queryRaw`SELECT id FROM timetable_timetable WHERE id = ${timetableId} FOR UPDATE`
+  }
+
+  async getTimeTableWithItemsById(timetableId: number): Promise<ETimetable.WithItems> {
+    return this.txHost.tx.timetable_timetable.findUniqueOrThrow({
+      where: { id: timetableId },
+      include: ETimetable.WithItems.include,
+    })
+  }
+
+  async getLecturesByIds(ids: number[]): Promise<ELecture.Details[]> {
+    return this.txHost.tx.subject_lecture.findMany({
+      where: { id: { in: ids } },
+      include: ELecture.Details.include,
+    })
+  }
+
+  async getHomeTimetable(userId: number, year: number, semester: number) {
+    return this.txHost.tx.timetable_home_selection.findUnique({
+      where: { user_id_year_semester: { user_id: userId, year, semester } },
+    })
+  }
+
+  async setHomeTimetable(userId: number, year: number, semester: number, timetableId: number | null) {
+    return this.txHost.tx.timetable_home_selection.upsert({
+      where: { user_id_year_semester: { user_id: userId, year, semester } },
+      create: {
+        user_id: userId, year, semester, timetable_id: timetableId,
+      },
+      update: { timetable_id: timetableId },
+    })
+  }
 
   async getTimetables(
     user: session_userprofile,
+    year?: number | null,
+    semester?: number | null,
+    paginationAndSorting?: {
+      orderBy?: Prisma.timetable_timetableOrderByWithRelationInput[]
+      skip?: number
+      take?: number
+    },
+  ): Promise<ETimetable.Details[]> {
+    return this.getTimetablesByUserId(user.id, year, semester, paginationAndSorting)
+  }
+
+  async getTimetablesByUserId(
+    userId: number,
     year?: number | null,
     semester?: number | null,
     paginationAndSorting?: {
@@ -24,12 +74,12 @@ export class TimetableRepository {
     const take = paginationAndSorting?.take
     const orderBy = paginationAndSorting?.orderBy
 
-    return this.prisma.timetable_timetable.findMany({
+    return this.txHost.tx.timetable_timetable.findMany({
       include: ETimetable.Details.include,
       where: {
         year: year ?? undefined,
         semester: semester ?? undefined,
-        user_id: user.id,
+        user_id: userId,
       },
       skip,
       take,
@@ -51,7 +101,7 @@ export class TimetableRepository {
     const take = paginationAndSorting?.take
     const orderBy = paginationAndSorting?.orderBy
 
-    return this.prisma.timetable_timetable.findMany({
+    return this.txHost.tx.timetable_timetable.findMany({
       where: {
         year,
         semester,
@@ -71,7 +121,7 @@ export class TimetableRepository {
     lectures: ELecture.Details[],
     name?: string,
   ): Promise<ETimetable.Details> {
-    return this.prisma.timetable_timetable.create({
+    return this.txHost.tx.timetable_timetable.create({
       data: {
         user_id: user.id,
         year,
@@ -91,7 +141,7 @@ export class TimetableRepository {
   }
 
   async getTimeTableBasicById(timeTableId: number) {
-    return this.prisma.timetable_timetable.findUniqueOrThrow({
+    return this.txHost.tx.timetable_timetable.findUniqueOrThrow({
       where: {
         id: timeTableId,
       },
@@ -99,7 +149,7 @@ export class TimetableRepository {
   }
 
   async addLectureToTimetable(timeTableId: number, lectureId: number) {
-    return this.prisma.timetable_timetable_lectures.create({
+    return this.txHost.tx.timetable_timetable_lectures.create({
       data: {
         timetable_id: timeTableId,
         lecture_id: lectureId,
@@ -108,7 +158,7 @@ export class TimetableRepository {
   }
 
   async getTimeTableById(timeTableId: number): Promise<ETimetable.Details> {
-    return this.prisma.timetable_timetable.findUniqueOrThrow({
+    return this.txHost.tx.timetable_timetable.findUniqueOrThrow({
       include: ETimetable.Details.include,
       where: {
         id: timeTableId,
@@ -116,8 +166,15 @@ export class TimetableRepository {
     })
   }
 
+  async getTimeTableWithItemsByIdAndUserId(timeTableId: number, userId: number): Promise<ETimetable.WithItems | null> {
+    return this.txHost.tx.timetable_timetable.findFirst({
+      include: ETimetable.WithItems.include,
+      where: { id: timeTableId, user_id: userId },
+    })
+  }
+
   async removeLectureFromTimetable(timeTableId: number, lectureId: number) {
-    return this.prisma.timetable_timetable_lectures.delete({
+    return this.txHost.tx.timetable_timetable_lectures.delete({
       where: {
         timetable_id_lecture_id: {
           timetable_id: timeTableId,
@@ -128,7 +185,9 @@ export class TimetableRepository {
   }
 
   async deleteById(timetableId: number) {
-    return this.prisma.$transaction(async (tx) => {
+    return this.txHost.withTransaction(async () => {
+      await this.lockTimetable(timetableId)
+      const { tx } = this.txHost
       await tx.timetable_timetable_lectures.deleteMany({
         where: { timetable_id: timetableId },
       })
@@ -142,7 +201,7 @@ export class TimetableRepository {
   }
 
   async updateOrder(id: number, arrange_order: number): Promise<ETimetable.Basic> {
-    return this.prisma.timetable_timetable.update({
+    return this.txHost.tx.timetable_timetable.update({
       where: {
         id,
       },
@@ -153,7 +212,7 @@ export class TimetableRepository {
   }
 
   async updateName(id: number, name: string): Promise<ETimetable.Basic> {
-    return this.prisma.timetable_timetable.update({
+    return this.txHost.tx.timetable_timetable.update({
       where: { id },
       // trim name to remove leading and trailing spaces
       data: { name: name.trim() },
@@ -161,7 +220,7 @@ export class TimetableRepository {
   }
 
   async getLecturesWithClassTimes(timetableId: number) {
-    return this.prisma.timetable_timetable_lectures.findMany({
+    return this.txHost.tx.timetable_timetable_lectures.findMany({
       where: { timetable_id: timetableId },
       include: ETimetable.WithLectureClasstimes.include,
     })
@@ -169,7 +228,7 @@ export class TimetableRepository {
 
   async getTimeTableLectures(timetableId: number): Promise<number[]> {
     return (
-      await this.prisma.timetable_timetable_lectures.findMany({
+      await this.txHost.tx.timetable_timetable_lectures.findMany({
         where: { timetable_id: timetableId },
       })
     ).map((lecture) => lecture.lecture_id)

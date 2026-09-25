@@ -85,6 +85,18 @@ model block_custom_blocks {
   begin                            Int // 00시부터 경과 분 (예: 780 = 13:00)
   end                              Int // 00시부터 경과 분 (예: 810 = 13:30)
   timetable_timetable_customblocks timetable_timetable_customblocks[]
+  times                            block_custom_block_times[]
+}
+
+model block_custom_block_times {
+  id                  Int                 @id @default(autoincrement())
+  custom_block_id     Int
+  day                 Int
+  begin               Int
+  end                 Int
+  block_custom_blocks block_custom_blocks @relation(fields: [custom_block_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_block_custom_block_times_block")
+
+  @@index([custom_block_id], map: "block_custom_block_times_custom_block_id_idx")
 }
 
 model django_admin_log {
@@ -313,14 +325,38 @@ model session_userprofile {
   session_userprofile_notification      session_userprofile_notification[]
   session_userprofile_notification_hist session_userprofile_notification_history[]
   session_userprofile_specialized_major session_userprofile_specialized_major[]
+  friend_relations                     session_userprofile_friends[]             @relation("friend_owner")
+  friended_by                          session_userprofile_friends[]             @relation("friend_target")
+  friend_code                          session_userprofile_friend_codes?
   taken_lectures                        session_userprofile_taken_lectures[]
   subject_courseuser                    subject_courseuser[]
   support_rate                          support_rate[]
   timetable_timetable                   timetable_timetable[]
+  timetable_home_selections             timetable_home_selection[]
   timetable_wishlist                    timetable_wishlist?
 
   @@index([department_id], map: "session_userprofile_department_id_fkey")
   @@index([student_id], map: "session_userprofile_student_id_index")
+}
+
+model session_userprofile_friend_codes {
+  userprofile_id Int                 @id
+  code           String              @unique(map: "session_friend_code_uniq") @db.VarChar(6)
+  userprofile    session_userprofile @relation(fields: [userprofile_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "session_friend_code_owner_fk")
+}
+
+model session_userprofile_friends {
+  id                    Int                 @id @default(autoincrement())
+  userprofile_id        Int
+  friend_userprofile_id Int
+  is_favorite           Boolean             @default(false)
+  created_at            DateTime            @default(now()) @db.DateTime(0)
+  userprofile           session_userprofile @relation("friend_owner", fields: [userprofile_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "session_friend_owner_fk")
+  friend_profile        session_userprofile @relation("friend_target", fields: [friend_userprofile_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "session_friend_target_fk")
+
+  @@unique([userprofile_id, friend_userprofile_id], map: "session_friend_owner_target_uniq")
+  @@index([friend_userprofile_id], map: "session_friend_target_idx")
+  @@index([userprofile_id, is_favorite, created_at], map: "session_friend_sort_idx")
 }
 
 model sid_uid_map {
@@ -773,11 +809,25 @@ model timetable_timetable {
   session_userprofile              session_userprofile                @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "timetable_timetable_user_id_0d214170_fk_session_userprofile_id")
   timetable_timetable_lectures     timetable_timetable_lectures[]
   timetable_timetable_customblocks timetable_timetable_customblocks[]
+  timetable_home_selections         timetable_home_selection[]
   @@index([arrange_order], map: "timetable_timetable_arrange_order_84c8935c")
   @@index([semester], map: "timetable_timetable_semester_d8ce5d37_uniq")
   @@index([user_id], map: "timetable_timetable_user_id_0d214170_fk_session_userprofile_id")
   @@index([year], map: "timetable_timetable_year_907cf59a_uniq")
   @@index([user_id, name], map: "timetable_timetable_user_name_index")
+}
+
+model timetable_home_selection {
+  id                  Int                  @id @default(autoincrement())
+  user_id             Int
+  year                Int
+  semester            Int
+  timetable_id        Int?
+  session_userprofile session_userprofile  @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "timetable_home_selection_user_fk")
+  timetable_timetable timetable_timetable? @relation(fields: [timetable_id], references: [id], onDelete: SetNull, onUpdate: Restrict, map: "timetable_home_selection_timetable_fk")
+
+  @@unique([user_id, year, semester], map: "timetable_home_selection_user_term_key")
+  @@index([timetable_id], map: "timetable_home_selection_timetable_idx")
 }
 
 model timetable_timetable_lectures {
