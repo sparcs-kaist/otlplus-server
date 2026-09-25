@@ -41,6 +41,9 @@ export namespace EFriend {
           timetable_timetable: {
             where: { timetable_timetable_lectures: { some: { subject_lecture: { course_id: courseId } } } },
             select: {
+              id: true,
+              year: true,
+              semester: true,
               timetable_timetable_lectures: {
                 where: { subject_lecture: { course_id: courseId } },
                 select: { subject_lecture: overlapLecture },

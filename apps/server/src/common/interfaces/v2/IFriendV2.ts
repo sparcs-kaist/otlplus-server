@@ -47,9 +47,18 @@ export namespace IFriendV2 {
     timetables: ITimetableV2.TimetableItem[]
   }
 
+  export interface OverlapFriend extends Friend {
+    timetable: {
+      /** null identifies the official academic timetable for this term. */
+      id: number | null
+      year: number
+      semester: number
+    }
+  }
+
   export interface GetOverlapsResDto {
-    sameLecture: Friend[]
-    sameCourseDifferentSection: Friend[]
-    previousSemesterSameProfessor: Friend[]
+    sameLecture: OverlapFriend[]
+    sameCourseDifferentSection: OverlapFriend[]
+    previousSemesterSameProfessor: OverlapFriend[]
   }
 }

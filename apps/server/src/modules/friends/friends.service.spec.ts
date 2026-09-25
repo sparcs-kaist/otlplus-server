@@ -57,6 +57,15 @@ describe('FriendsService', () => {
     expect(friends.getFriendByTarget).not.toHaveBeenCalled()
   })
 
+  it('distinguishes the own code from invalid codes without returning profile data', async () => {
+    friends.getUserIdByCode.mockResolvedValue(user.id)
+    await expect(service.addFriend(user, 'K7L4MX')).rejects.toHaveProperty('response', {
+      code: 'SELF_FRIENDSHIP',
+      message: 'You cannot add yourself as a friend',
+    })
+    expect(friends.createPair).not.toHaveBeenCalled()
+  })
+
   it('creates both directions through the pair operation and returns the caller-owned relation', async () => {
     friends.getUserIdByCode.mockResolvedValue(43)
     friends.getFriendByTarget.mockResolvedValue({
@@ -126,7 +135,10 @@ describe('FriendsService', () => {
         first_name: `Friend ${id}`,
         last_name: '',
         taken_lectures: taken.map((item) => ({ lecture: item })),
-        timetable_timetable: saved.map((items) => ({
+        timetable_timetable: saved.map((items, index) => ({
+          id: id * 100 + index,
+          year: items[0].year,
+          semester: items[0].semester,
           timetable_timetable_lectures: items.map((item) => ({ subject_lecture: item })),
         })),
       },
@@ -150,12 +162,115 @@ describe('FriendsService', () => {
     expect(result.sameLecture.map(({ id }) => id)).toEqual([1, 5, 8])
     expect(result.sameCourseDifferentSection.map(({ id }) => id)).toEqual([2, 6, 9])
     expect(result.previousSemesterSameProfessor.map(({ id }) => id)).toEqual([3, 7])
+    expect(result.sameLecture.map(({ timetable }) => timetable)).toEqual([
+      { id: null, year: 2026, semester: 3 },
+      { id: 501, year: 2026, semester: 3 },
+      { id: 800, year: 2026, semester: 3 },
+    ])
+    expect(result.sameCourseDifferentSection.map(({ timetable }) => timetable)).toEqual([
+      { id: null, year: 2026, semester: 3 },
+      { id: 600, year: 2026, semester: 3 },
+      { id: 900, year: 2026, semester: 3 },
+    ])
+    expect(result.previousSemesterSameProfessor.map(({ timetable }) => timetable)).toEqual([
+      { id: null, year: 2025, semester: 3 },
+      { id: 700, year: 2025, semester: 3 },
+    ])
+  })
+
+  it('chooses the latest matching term, then official records, then the smallest saved timetable ID', async () => {
+    const lecture = {
+      id: 10,
+      course_id: 100,
+      year: 2026,
+      semester: 3,
+      subject_lecture_professors: [{ professor_id: 5 }],
+    }
+    const priorLecture = { ...lecture, id: 11, year: 2025 }
+    const profile = {
+      first_name: 'Test',
+      last_name: 'Friend',
+      taken_lectures: [{ lecture: { ...priorLecture, year: 2024 } }],
+      timetable_timetable: [
+        { id: 80, year: 2025, semester: 1 },
+        { id: 30, year: 2025, semester: 3 },
+        { id: 20, year: 2025, semester: 3 },
+      ].map((timetable) => ({
+        ...timetable,
+        timetable_timetable_lectures: [{
+          subject_lecture: { ...priorLecture, year: timetable.year, semester: timetable.semester },
+        }],
+      })),
+    }
+    lectures.getLectureDetailById.mockResolvedValue(lecture)
+    friends.getFriendsWithCourse.mockResolvedValue([{ id: 7, is_favorite: true, friend_profile: profile }])
+    await expect(service.getOverlaps(user, 10)).resolves.toMatchObject({
+      previousSemesterSameProfessor: [{
+        id: 7,
+        name: 'Test Friend',
+        isFavorite: true,
+        timetable: { id: 20, year: 2025, semester: 3 },
+      }],
+    })
+
+    profile.taken_lectures.push({ lecture: priorLecture })
+    profile.timetable_timetable.reverse()
+    await expect(service.getOverlaps(user, 10)).resolves.toMatchObject({
+      previousSemesterSameProfessor: [{ timetable: { id: null, year: 2025, semester: 3 } }],
+    })
+
+    profile.timetable_timetable.push({
+      id: 99,
+      year: 2026,
+      semester: 1,
+      timetable_timetable_lectures: [{ subject_lecture: { ...priorLecture, year: 2026, semester: 1 } }],
+    })
+    await expect(service.getOverlaps(user, 10)).resolves.toMatchObject({
+      previousSemesterSameProfessor: [{ timetable: { id: 99, year: 2026, semester: 1 } }],
+    })
+  })
+
+  it('uses the matched lecture term for legacy saved timetables without a year or semester', async () => {
+    const lecture = {
+      id: 10,
+      course_id: 100,
+      year: 2026,
+      semester: 3,
+      subject_lecture_professors: [],
+    }
+    lectures.getLectureDetailById.mockResolvedValue(lecture)
+    friends.getFriendsWithCourse.mockResolvedValue([{
+      id: 7,
+      is_favorite: false,
+      friend_profile: {
+        first_name: 'Test',
+        last_name: 'Friend',
+        taken_lectures: [],
+        timetable_timetable: [{
+          id: 91,
+          year: null,
+          semester: null,
+          timetable_timetable_lectures: [{ subject_lecture: lecture }],
+        }],
+      },
+    }])
+    await expect(service.getOverlaps(user, 10)).resolves.toEqual({
+      sameLecture: [{
+        id: 7,
+        name: 'Test Friend',
+        isFavorite: false,
+        timetable: { id: 91, year: 2026, semester: 3 },
+      }],
+      sameCourseDifferentSection: [],
+      previousSemesterSameProfessor: [],
+    })
   })
 
   it('filters included lecture rows by course, not just the parent friend records', async () => {
     const findMany = jest.fn().mockResolvedValue([])
     const repository = new FriendRepository({ tx: { session_userprofile_friends: { findMany } } } as never)
     await repository.getFriendsWithCourse(42, 100)
+    expect(findMany).toHaveBeenCalledTimes(1)
     expect(findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         ...EFriend.WithCourseLectures(100),
@@ -178,6 +293,7 @@ describe('FriendsService', () => {
       lecture: { course_id: 100 },
     })
     const savedTimetables = findMany.mock.calls[0][0].select.friend_profile.select.timetable_timetable
+    expect(savedTimetables.select).toMatchObject({ id: true, year: true, semester: true })
     expect(savedTimetables.where).toEqual({
       timetable_timetable_lectures: { some: { subject_lecture: { course_id: 100 } } },
     })

@@ -36,7 +36,12 @@ export class FriendsService {
   async addFriend(user: session_userprofile, code: string): Promise<IFriendV2.AddFriendResDto> {
     const inviterId = await this.friendRepository.getUserIdByCode(code)
     if (inviterId === null) throw new BadRequestException('Invalid friend code')
-    if (inviterId === user.id) throw new BadRequestException('You cannot add yourself as a friend')
+    if (inviterId === user.id) {
+      throw new BadRequestException({
+        code: 'SELF_FRIENDSHIP',
+        message: 'You cannot add yourself as a friend',
+      })
+    }
 
     await this.friendRepository.createPair(user.id, inviterId)
     const friend = await this.friendRepository.getFriendByTarget(user.id, inviterId)
@@ -121,23 +126,34 @@ export class FriendsService {
     for (const friend of friends) {
       const profile = friend.friend_profile
       const matchingLectures = [
-        ...profile.taken_lectures.map(({ lecture: takenLecture }) => takenLecture),
-        ...profile.timetable_timetable.flatMap(({ timetable_timetable_lectures: savedLectures }) => savedLectures.map(({ subject_lecture: savedLecture }) => savedLecture)),
-      ]
+        ...profile.taken_lectures.map(({ lecture: takenLecture }) => ({
+          lecture: takenLecture,
+          timetable: { id: null, year: takenLecture.year, semester: takenLecture.semester },
+        })),
+        ...profile.timetable_timetable.flatMap((timetable) => timetable.timetable_timetable_lectures.map(({ subject_lecture: savedLecture }) => ({
+          lecture: savedLecture,
+          timetable: {
+            id: timetable.id,
+            year: timetable.year ?? savedLecture.year,
+            semester: timetable.semester ?? savedLecture.semester,
+          },
+        }))),
+      ].sort((a, b) => b.timetable.year - a.timetable.year
+        || b.timetable.semester - a.timetable.semester
+        || (a.timetable.id ?? 0) - (b.timetable.id ?? 0))
       const serialized = this.toFriend(friend)
-      if (matchingLectures.some(({ id }) => id === lecture.id)) {
-        result.sameLecture.push(serialized)
+      const sameLecture = matchingLectures.find(({ lecture: item }) => item.id === lecture.id)
+      const sameTerm = matchingLectures.find(({ lecture: item }) => item.year === lecture.year && item.semester === lecture.semester)
+      const otherTerm = matchingLectures.find(({ lecture: item }) => (item.year !== lecture.year || item.semester !== lecture.semester)
+        && item.subject_lecture_professors.some(({ professor_id }) => professorIds.has(professor_id)))
+      if (sameLecture) {
+        result.sameLecture.push({ ...serialized, timetable: sameLecture.timetable })
       }
-      else if (matchingLectures.some(({ year, semester }) => year === lecture.year && semester === lecture.semester)) {
-        result.sameCourseDifferentSection.push(serialized)
+      else if (sameTerm) {
+        result.sameCourseDifferentSection.push({ ...serialized, timetable: sameTerm.timetable })
       }
-      else if (
-        matchingLectures.some(
-          (takenLecture) => (takenLecture.year !== lecture.year || takenLecture.semester !== lecture.semester)
-            && takenLecture.subject_lecture_professors.some(({ professor_id }) => professorIds.has(professor_id)),
-        )
-      ) {
-        result.previousSemesterSameProfessor.push(serialized)
+      else if (otherTerm) {
+        result.previousSemesterSameProfessor.push({ ...serialized, timetable: otherTerm.timetable })
       }
     }
     return result

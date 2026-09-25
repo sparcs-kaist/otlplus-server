@@ -1,6 +1,35 @@
+import { ArgumentsHost, BadRequestException } from '@nestjs/common'
 import type { Event } from '@sentry/node'
 
-import { redactFriendInviteRequest } from './exception.filter'
+import logger from '../logger/logger'
+import { HttpExceptionFilter, redactFriendInviteRequest } from './exception.filter'
+
+describe('HttpExceptionFilter', () => {
+  it('preserves a machine-readable self-friendship error inside the existing message envelope', () => {
+    const error = { code: 'SELF_FRIENDSHIP', message: 'You cannot add yourself as a friend' }
+    const response = { status: jest.fn().mockReturnThis(), json: jest.fn() }
+    const host = {
+      switchToHttp: () => ({
+        getResponse: () => response,
+        getRequest: () => ({ method: 'POST', url: '/api/v2/friends', headers: {} }),
+      }),
+    } as ArgumentsHost
+    const log = jest.spyOn(logger, 'error').mockImplementation(() => logger)
+    try {
+      new HttpExceptionFilter().catch(new BadRequestException(error), host)
+      expect(response.status).toHaveBeenCalledWith(400)
+      expect(response.json).toHaveBeenCalledWith({
+        message: error,
+        statusCode: 400,
+        timestamp: expect.any(String),
+        path: '/api/v2/friends',
+      })
+    }
+    finally {
+      log.mockRestore()
+    }
+  })
+})
 
 describe('redactFriendInviteRequest', () => {
   it.each([
