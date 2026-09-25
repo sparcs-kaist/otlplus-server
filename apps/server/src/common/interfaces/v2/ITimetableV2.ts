@@ -1,8 +1,10 @@
 import { Type } from 'class-transformer'
 import {
+  ArrayMinSize,
   IsArray,
   IsBoolean,
   IsIn,
+  IsInt,
   IsNumber,
   IsOptional,
   IsString,
@@ -10,8 +12,13 @@ import {
   MaxLength,
   Min,
   MinLength,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator'
+
+import { TimetableItemKind } from '@otl/common/enum/timetable'
+
+import { ICustomblock } from '../ICustomblock'
 
 export const TIMETABLE_MAX_LIMIT = 50
 
@@ -30,7 +37,7 @@ export namespace ITimetableV2 {
   }
 
   export interface GetTimetablesResDto {
-    timetables: TimetableItem[]
+    timetables: TimetableSummary[]
   }
 
   export class DeleteReqDto {
@@ -241,6 +248,32 @@ export namespace ITimetableV2 {
     lectures!: LectureResDto[]
   }
 
+  export type TimetableItem =
+    | { kind: typeof TimetableItemKind.LECTURE, data: LectureResDto }
+    | { kind: typeof TimetableItemKind.CUSTOM, data: ICustomblock.Basic }
+
+  export class TimetableDetailResDto extends GetResDto {
+    timetableItems!: TimetableItem[]
+  }
+
+  export type TimetableChange =
+    | { op: 'add', kind: typeof TimetableItemKind.LECTURE, lectureId: number }
+    | { op: 'add', kind: typeof TimetableItemKind.CUSTOM, data: ICustomblock.CreateDto }
+    | { op: 'remove', kind: TimetableItemKind, id: number }
+    | { op: 'update', kind: typeof TimetableItemKind.CUSTOM, id: number, data: ICustomblock.UpdateDto }
+
+  export class UpdateItemsReqDto {
+    @IsArray()
+    @ArrayMinSize(1)
+    changes!: TimetableChange[]
+  }
+
+  export class UpdateItemsResDto {
+    timetableItems!: TimetableItem[]
+
+    results!: { index: number, kind: TimetableItemKind, id: number }[]
+  }
+
   export class UpdateLectureReqDto {
     @IsNumber()
     @Min(0)
@@ -271,9 +304,15 @@ export namespace ITimetableV2 {
     @Type(() => Number)
     semester!: number
 
+    @ValidateIf((_, value) => value !== undefined)
     @IsArray()
     @IsNumber({}, { each: true })
-    lectureIds!: number[]
+    lectureIds?: number[]
+
+    @ValidateIf((_, value) => value !== undefined)
+    @IsInt()
+    @Min(1)
+    sourceTimetableId?: number
   }
 
   export class CreateResDto {
@@ -296,9 +335,36 @@ export namespace ITimetableV2 {
     semester!: number
   }
 
-  export class MyTimetableResDto extends GetResDto {}
+  export class MyTimetableResDto extends TimetableDetailResDto {}
 
-  export interface TimetableItem {
+  export class HomeTimetableReqDto extends GetTimetablesReqDto {
+    @IsInt()
+    year!: number
+
+    @IsInt()
+    semester!: number
+  }
+
+  export class SetHomeTimetableReqDto extends HomeTimetableReqDto {
+    @ValidateIf((_, value) => value !== null)
+    @IsInt()
+    @Min(1)
+    timetableId!: number | null
+  }
+
+  export class HomeTimetableResDto extends TimetableDetailResDto {
+    source!: 'saved' | 'enrolled'
+
+    timetableId!: number | null
+
+    name!: string
+
+    year!: number
+
+    semester!: number
+  }
+
+  export interface TimetableSummary {
     id: number
     name: string
     year: number | null

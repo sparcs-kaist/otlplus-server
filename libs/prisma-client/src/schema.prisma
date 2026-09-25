@@ -317,6 +317,7 @@ model session_userprofile {
   subject_courseuser                    subject_courseuser[]
   support_rate                          support_rate[]
   timetable_timetable                   timetable_timetable[]
+  timetable_home_selections             timetable_home_selection[]
   timetable_wishlist                    timetable_wishlist?
 
   @@index([department_id], map: "session_userprofile_department_id_fkey")
@@ -773,11 +774,25 @@ model timetable_timetable {
   session_userprofile              session_userprofile                @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "timetable_timetable_user_id_0d214170_fk_session_userprofile_id")
   timetable_timetable_lectures     timetable_timetable_lectures[]
   timetable_timetable_customblocks timetable_timetable_customblocks[]
+  timetable_home_selections         timetable_home_selection[]
   @@index([arrange_order], map: "timetable_timetable_arrange_order_84c8935c")
   @@index([semester], map: "timetable_timetable_semester_d8ce5d37_uniq")
   @@index([user_id], map: "timetable_timetable_user_id_0d214170_fk_session_userprofile_id")
   @@index([year], map: "timetable_timetable_year_907cf59a_uniq")
   @@index([user_id, name], map: "timetable_timetable_user_name_index")
+}
+
+model timetable_home_selection {
+  id                  Int                  @id @default(autoincrement())
+  user_id             Int
+  year                Int
+  semester            Int
+  timetable_id        Int?
+  session_userprofile session_userprofile  @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "timetable_home_selection_user_fk")
+  timetable_timetable timetable_timetable? @relation(fields: [timetable_id], references: [id], onDelete: SetNull, onUpdate: Restrict, map: "timetable_home_selection_timetable_fk")
+
+  @@unique([user_id, year, semester], map: "timetable_home_selection_user_term_key")
+  @@index([timetable_id], map: "timetable_home_selection_timetable_idx")
 }
 
 model timetable_timetable_lectures {

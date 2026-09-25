@@ -1,23 +1,23 @@
 import { Injectable } from '@nestjs/common'
-
-import { PrismaService } from '@otl/prisma-client/prisma.service'
+import { TransactionHost } from '@nestjs-cls/transactional'
+import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma'
 
 import { ECustomblock } from '../entities/ECustomblock'
 
 @Injectable()
 export class CustomblockRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly txHost: TransactionHost<TransactionalAdapterPrisma>) {}
 
   // 커스텀 블록 생성
   async createCustomblock(data: ECustomblock.CreateInput): Promise<ECustomblock.Basic> {
-    return this.prisma.block_custom_blocks.create({
+    return this.txHost.tx.block_custom_blocks.create({
       data,
     })
   }
 
   // timetable에 custom block mapping 추가하기
   async addCustomblockToTimetable(timeTableId: number, customblockId: number) {
-    return this.prisma.timetable_timetable_customblocks.create({
+    return this.txHost.tx.timetable_timetable_customblocks.create({
       data: {
         timetable_id: timeTableId,
         custom_block_id: customblockId,
@@ -27,7 +27,7 @@ export class CustomblockRepository {
 
   // 시간표에서 custom block 삭제하기
   async removeCustomblockFromTimetable(timeTableId: number, customblockId: number) {
-    return this.prisma.timetable_timetable_customblocks.delete({
+    return this.txHost.tx.timetable_timetable_customblocks.delete({
       where: {
         timetable_id_custom_block_id: {
           timetable_id: timeTableId,
@@ -39,7 +39,7 @@ export class CustomblockRepository {
 
   // timetable에 있는 custom block 목록 가져오기
   async getCustomblocksList(timeTableId: number): Promise<ECustomblock.Basic[]> {
-    return this.prisma.block_custom_blocks.findMany({
+    return this.txHost.tx.block_custom_blocks.findMany({
       where: {
         timetable_timetable_customblocks: {
           some: { timetable_id: timeTableId },
@@ -58,7 +58,7 @@ export class CustomblockRepository {
 
   // 커스텀 블록 업데이트
   async updateCustomblock(customblockId: number, updateData: ECustomblock.UpdateInput): Promise<ECustomblock.Basic> {
-    return this.prisma.block_custom_blocks.update({
+    return this.txHost.tx.block_custom_blocks.update({
       where: { id: customblockId },
       data: updateData,
     })

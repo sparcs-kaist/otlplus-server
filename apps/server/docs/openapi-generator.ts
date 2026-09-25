@@ -195,7 +195,32 @@ async function main() {
       if (!ctor) continue // 여전히 못 찾으면 skip
       const schemaKey = [...nsChain, className].join('.')
       // console.log(schemaKey)
-      classValidatorSchemas[schemaKey] = targetConstructorToSchema(ctor)
+      const validationSchema = targetConstructorToSchema(ctor)
+      const typeSchema = interfacesSchema[schemaKey]
+      // Keep the TypeScript shape (including unions and undecorated response fields).
+      // Validation metadata adds constraints but cannot describe these by itself.
+      if (typeSchema?.properties) {
+        const properties = { ...typeSchema.properties }
+        for (const [name, constraints] of Object.entries(validationSchema.properties ?? {})) {
+          const typed = properties[name] ?? {}
+          const validated = constraints as any
+          const merged = { ...typed, ...validated }
+          if (typed.items) merged.items = { ...validated.items, ...typed.items }
+          if (Array.isArray(typed.type) && typed.type.includes('null')) {
+            properties[name] = { anyOf: [{ ...merged, type: validated.type ?? typed.type.find((type: string) => type !== 'null') }, { type: 'null' }] }
+          }
+          else properties[name] = merged
+        }
+        classValidatorSchemas[schemaKey] = {
+          ...typeSchema,
+          ...validationSchema,
+          properties,
+          required: typeSchema.required?.filter((name: string) => !validationSchema.properties?.[name]
+            || validationSchema.required?.includes(name)
+            || (Array.isArray(typeSchema.properties[name].type) && typeSchema.properties[name].type.includes('null'))),
+        }
+      }
+      else classValidatorSchemas[schemaKey] = validationSchema
     }
   }
 

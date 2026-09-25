@@ -60,12 +60,30 @@ export class TimetablesControllerV2 {
     return await this.timetablesService.getTimetablesBySemester(user, query)
   }
 
+  @Get('/home')
+  async getHomeTimetable(
+    @Query() query: ITimetableV2.HomeTimetableReqDto,
+    @GetUser() user: session_userprofile,
+    @GetLanguage() language: Language,
+  ): Promise<ITimetableV2.HomeTimetableResDto> {
+    return await this.timetablesService.getHomeTimetable(user, query, language)
+  }
+
+  @Patch('/home')
+  async setHomeTimetable(
+    @GetUser() user: session_userprofile,
+    @Body() body: ITimetableV2.SetHomeTimetableReqDto,
+    @GetLanguage() language: Language,
+  ): Promise<ITimetableV2.HomeTimetableResDto> {
+    return await this.timetablesService.setHomeTimetable(user, body, language)
+  }
+
   @Get('/:timetableId')
   async getTimetable(
     @Param('timetableId', ParseIntPipe) timetableId: number,
     @GetUser() user: session_userprofile,
     @GetLanguage() language: Language,
-  ): Promise<ITimetableV2.GetResDto> {
+  ): Promise<ITimetableV2.TimetableDetailResDto> {
     return await this.timetablesService.getTimetable(timetableId, user, language)
   }
 
@@ -76,6 +94,16 @@ export class TimetablesControllerV2 {
     @Body() body: ITimetableV2.UpdateLectureReqDto,
   ): Promise<ITimetableV2.UpdateLectureResDto> {
     return await this.timetablesService.updateTimetableLecture(user, body, timetableId)
+  }
+
+  @Patch('/:timetableId/items')
+  async updateTimetableItems(
+    @GetUser() user: session_userprofile,
+    @Param('timetableId', ParseIntPipe) timetableId: number,
+    @Body() body: ITimetableV2.UpdateItemsReqDto,
+    @GetLanguage() language: Language,
+  ): Promise<ITimetableV2.UpdateItemsResDto> {
+    return await this.timetablesService.updateTimetableItems(user, body, timetableId, language)
   }
 
   @Get('/:timetableId/custom-blocks')

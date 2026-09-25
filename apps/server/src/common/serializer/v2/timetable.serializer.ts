@@ -3,11 +3,12 @@ import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
 // import { toJsonClasstime } from '@otl/server-nest/common/serializer/classtime.serializer'
 import { toJsonExamtime } from '@otl/server-nest/common/serializer/examtime.serializer'
 
+import { TimetableItemKind } from '@otl/common/enum/timetable'
 import { getTimeNumeric } from '@otl/common/utils/util'
 
 import { ELecture, ETimetable } from '@otl/prisma-client/entities'
 
-export const toJsonTimetableV2 = (timetable: ETimetable.Basic): ITimetableV2.TimetableItem => ({
+export const toJsonTimetableV2 = (timetable: ETimetable.Basic): ITimetableV2.TimetableSummary => ({
   id: timetable.id,
   name: timetable.name ?? '',
   year: timetable.year,
@@ -147,3 +148,24 @@ export const toJsonLectures = (lectures: ELecture.Details[], language: Language)
     expDuration: lecture.num_labs,
   })),
 })
+
+// Only owner-facing endpoints include private custom blocks.
+export const toJsonTimetableV2WithItems = (
+  timetable: ETimetable.WithItems,
+  language: Language,
+): ITimetableV2.TimetableDetailResDto => {
+  const { lectures } = toJsonLectures(
+    timetable.timetable_timetable_lectures.map(({ subject_lecture }) => subject_lecture),
+    language,
+  )
+  return {
+    lectures,
+    timetableItems: [
+      ...lectures.map((data) => ({ kind: TimetableItemKind.LECTURE, data })),
+      ...timetable.timetable_timetable_customblocks.map(({ block_custom_blocks: data }) => ({
+        kind: TimetableItemKind.CUSTOM,
+        data,
+      })),
+    ],
+  }
+}

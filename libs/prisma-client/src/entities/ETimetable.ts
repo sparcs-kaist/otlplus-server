@@ -17,6 +17,17 @@ export namespace ETimetable {
 
   export type Details = Prisma.timetable_timetableGetPayload<typeof Details>
 
+  export const WithItems = Prisma.validator<Prisma.timetable_timetableDefaultArgs>()({
+    include: {
+      ...Details.include,
+      timetable_timetable_customblocks: {
+        include: { block_custom_blocks: true },
+      },
+    },
+  })
+
+  export type WithItems = Prisma.timetable_timetableGetPayload<typeof WithItems>
+
   export const WithLectureClasstimes = Prisma.validator<Prisma.timetable_timetable_lecturesDefaultArgs>()({
     include: {
       subject_lecture: ELecture.WithClasstime,
