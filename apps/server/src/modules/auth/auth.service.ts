@@ -1,6 +1,4 @@
-import {
-  Inject, Injectable, NotFoundException, UnauthorizedException,
-} from '@nestjs/common'
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { IAuth } from '@otl/server-nest/common/interfaces'
 import { AGREEMENT_IN_PUBLIC_PORT } from '@otl/server-nest/modules/agreement/domain/agreement.in.port'
@@ -345,12 +343,20 @@ export class AuthService {
   }
 
   async tokenRefresh(refreshToken: any) {
-    const payload = await this.jwtService.verifyAsync(refreshToken, {
-      secret: this.jwtConfig.secret,
-      ignoreExpiration: false,
-    })
+    let payload
+    try {
+      payload = await this.jwtService.verifyAsync(refreshToken, {
+        secret: this.jwtConfig.secret,
+        ignoreExpiration: false,
+      })
+    }
+    catch (_: any) {
+      throw new UnauthorizedException('Invalid or expired refresh token')
+    }
+
     const user = await this.findBySid(payload.sid)
-    if (!user) throw new NotFoundException('user is not found')
+    if (!user) throw new UnauthorizedException('user is not found')
+
     const { accessToken, ...accessTokenOptions } = this.getCookieWithAccessToken(payload.sid)
     const { refreshToken: newRefreshToken, ...refreshTokenOptions } = this.getCookieWithRefreshToken(payload.sid)
     return {
