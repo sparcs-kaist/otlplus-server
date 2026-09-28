@@ -12,6 +12,7 @@ import { LecturesService } from '@otl/server-nest/modules/lectures/lectures.serv
 import { SyncModule } from '@otl/server-nest/modules/sync/sync.module'
 
 import { PrismaModule } from '@otl/prisma-client/prisma.module'
+import { AuthSessionRepository } from '@otl/prisma-client/repositories/auth-session.repository'
 
 import { UserService } from '../user/user.service'
 import { AuthChain } from './auth.chain'
@@ -37,6 +38,7 @@ import { JwtCookieStrategy } from './strategy/jwt-cookie.strategy'
   controllers: [AuthController],
   providers: [
     AuthService,
+    AuthSessionRepository,
     JwtCookieStrategy,
     UserService,
     LecturesService,

@@ -19,6 +19,7 @@ export class OneAppCookieCommand implements AuthCommand {
   ) {}
 
   public async next(context: ExecutionContext, prevResult: AuthResult): Promise<AuthResult> {
+    if (prevResult.authentication) return prevResult
     const request = context.switchToHttp().getRequest<Request>()
     const response = context.switchToHttp().getResponse<Response>()
 
@@ -66,11 +67,9 @@ export class OneAppCookieCommand implements AuthCommand {
 
       if (!sid) return result
 
-      const { accessToken: newAccessToken, ...accessTokenOptions } = this.authService.getCookieWithAccessToken(sid)
-      const { refreshToken: newRefreshToken, ...refreshTokenOptions } = this.authService.getCookieWithRefreshToken(sid)
-
-      response.cookie('accessToken', newAccessToken, accessTokenOptions)
-      response.cookie('refreshToken', newRefreshToken, refreshTokenOptions)
+      const tokens = await this.authService.createSession({ id: user.id, sid })
+      response.cookie('accessToken', tokens.accessToken, tokens.accessTokenOptions)
+      response.cookie('refreshToken', tokens.refreshToken, tokens.refreshTokenOptions)
       request.user = user
       return this.setAuthenticated(result)
     }

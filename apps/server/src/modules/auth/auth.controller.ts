@@ -235,17 +235,20 @@ export class AuthController {
     @GetUser() user: session_userprofile,
   ): Promise<void> {
     const webURL = process.env.WEB_URL
-    if (user) {
-      const { sid } = user
+    const revokedSid = await this.authService.revokeRequestSessions(req)
+    for (const name of ['accessToken', 'refreshToken', 'sso_state']) {
+      res.clearCookie(name, {
+        path: '/', httpOnly: true, secure: true, sameSite: 'none',
+      })
+    }
+    const sid = user?.sid ?? revokedSid
+    if (sid) {
       const { protocol } = req
       const host = req.get('host')
       const { originalUrl } = req
       const absoluteUrl = `${protocol}://${host}${originalUrl}`
       const logoutUrl = this.ssoClient.get_logout_url(sid, absoluteUrl)
 
-      res.clearCookie('accessToken', { path: '/', maxAge: 0, httpOnly: true })
-      res.clearCookie('refreshToken', { path: '/', maxAge: 0, httpOnly: true })
-      res.clearCookie('sso_state', { path: '/', maxAge: 0, httpOnly: true })
       return res.redirect(logoutUrl)
     }
 
