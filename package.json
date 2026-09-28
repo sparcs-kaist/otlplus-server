@@ -49,6 +49,7 @@
     "lint:check": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "dotenv -e env/.env.test -- jest --maxWorkers 1 --silent=false",
+    "test:auth": "jest --runInBand --runTestsByPath apps/server/src/modules/auth/auth.service.spec.ts libs/prisma-client/src/repositories/auth-session.repository.spec.ts",
     "test:watch": "dotenv -e env/.env.test -- jest --watch",
     "test:cov": "dotenv -e env/.env.test -- jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",

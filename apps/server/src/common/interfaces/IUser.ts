@@ -74,6 +74,7 @@ export namespace IUser {
   }
 
   export class TokenDto {
+    @IsString()
     @IsNotEmpty()
     token!: string
   }

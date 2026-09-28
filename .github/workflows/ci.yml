@@ -10,6 +10,36 @@ env:
   NODE_VERSION: 20
 
 jobs:
+  auth-tests:
+    name: Authentication tests
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0.36
+        env:
+          MYSQL_ROOT_PASSWORD: auth-test-only
+          MYSQL_DATABASE: otl_auth_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      DATABASE_URL: mysql://root:auth-test-only@127.0.0.1:3306/otl_auth_test
+      SHADOW_DATABASE_URL: mysql://root:auth-test-only@127.0.0.1:3306/otl_auth_shadow
+      AUTH_SESSION_TEST_DATABASE_URL: mysql://root:auth-test-only@127.0.0.1:3306/otl_auth_test
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - run: yarn prisma db push --schema libs/prisma-client/src/schema.prisma
+      - run: yarn test:auth
+
   lint-fix:
     name: Lint-fix
     runs-on: ubuntu-latest

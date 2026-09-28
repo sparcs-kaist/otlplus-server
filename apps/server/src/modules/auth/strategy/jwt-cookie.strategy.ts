@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { PassportStrategy } from '@nestjs/passport'
 import { IAuth } from '@otl/server-nest/common/interfaces'
 import { AuthService } from '@otl/server-nest/modules/auth/auth.service'
@@ -17,11 +17,13 @@ export class JwtCookieStrategy extends PassportStrategy(Strategy, 'jwt-cookie') 
     super({
       secretOrKey: settings().getJwtConfig().secret,
       ignoreExpiration: false,
+      algorithms: ['HS256'],
       jwtFromRequest: ExtractJwt.fromExtractors([(request) => request?.cookies?.accessToken]),
     })
   }
 
-  async validate(payload: IAuth.JwtPayload) {
+  async validate(payload: IAuth.JwtPayload & { tokenUse?: string }) {
+    if (payload.tokenUse !== 'access') throw new UnauthorizedException('Invalid access token')
     return this.authService.findBySid(payload.sid)
   }
 }

@@ -1,5 +1,5 @@
 import {
-  Inject, Injectable, NotFoundException, UnauthorizedException,
+  Inject, Injectable, UnauthorizedException,
 } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { IAuth } from '@otl/server-nest/common/interfaces'
@@ -7,18 +7,27 @@ import { AGREEMENT_IN_PUBLIC_PORT } from '@otl/server-nest/modules/agreement/dom
 import { AgreementInPublicPort } from '@otl/server-nest/modules/agreement/domain/agreement.in.public.port'
 import { UserNotificationCreate } from '@otl/server-nest/modules/notification/domain/notification'
 import settings from '@otl/server-nest/settings'
-import { Prisma, session_userprofile } from '@prisma/client'
-import * as bcrypt from 'bcrypt'
-import { Request } from 'express'
+import { Prisma, session_auth_session, session_userprofile } from '@prisma/client'
+import { Request, Response } from 'express'
 import * as jsonwebtoken from 'jsonwebtoken'
 
 import { AgreementType } from '@otl/common/enum/agreement'
 
 import { ESSOUser } from '@otl/prisma-client/entities/ESSOUser'
 import { UserRepository } from '@otl/prisma-client/repositories'
+import { AuthSessionRepository, REFRESH_RETRY_SECONDS } from '@otl/prisma-client/repositories/auth-session.repository'
 import { NotificationPrismaRepository } from '@otl/prisma-client/repositories/notification.repository'
 
 import { SyncTakenLectureService } from '../sync/syncTakenLecture.service'
+
+type SessionTokenPayload = {
+  sid: string
+  sessionId: string
+  tokenUse: 'access' | 'refresh'
+  version: number
+  iat: number
+  exp: number
+}
 
 @Injectable()
 export class AuthService {
@@ -31,6 +40,7 @@ export class AuthService {
     private readonly notificationRepository: NotificationPrismaRepository,
     @Inject(AGREEMENT_IN_PUBLIC_PORT)
     private readonly agreementService: AgreementInPublicPort,
+    private readonly authSessions: AuthSessionRepository,
   ) {}
 
   public async findBySid(sid: string) {
@@ -187,11 +197,6 @@ export class AuthService {
     const studentId = kaistInfo.std_no ?? ''
     const departmentId = kaistInfo.std_dept_id ? Number(kaistInfo.std_dept_id) : undefined
 
-    const { accessToken, ...accessTokenOptions } = this.getCookieWithAccessToken(sid)
-    const { refreshToken, ...refreshTokenOptions } = this.getCookieWithRefreshToken(sid)
-
-    const salt = await bcrypt.genSalt(Number(process.env.saltRounds))
-    const encryptedRefreshToken = await bcrypt.hash(refreshToken, salt)
     const rawDegree = ssoProfile.kaist_v2_info?.std_prog_code ?? ssoProfile.kaist_info?.ku_acad_prog_code ?? null
     let degree: string | null = null
     const degreeNum = rawDegree !== null ? Number(rawDegree) : null
@@ -216,7 +221,6 @@ export class AuthService {
         departmentId,
         status,
         kaist_id,
-        encryptedRefreshToken,
         degree,
       )
       await this.syncTakenLecturesService.repopulateTakenLectureForStudent(user.id)
@@ -232,7 +236,7 @@ export class AuthService {
         status,
         kaist_id,
         last_login: new Date(),
-        refresh_token: encryptedRefreshToken,
+        refresh_token: null,
         degree,
       }
       user = await this.updateUser(user.id, updateData)
@@ -260,52 +264,114 @@ export class AuthService {
     }
     await this.agreementService.initialize(user.id)
 
+    return this.createSession({ id: user.id, sid })
+  }
+
+  private tokenLifetime(tokenUse: 'access' | 'refresh') {
+    const seconds = Number(tokenUse === 'access'
+      ? this.jwtConfig.signOptions.expiresIn
+      : this.jwtConfig.signOptions.refreshExpiresIn)
+    if (!Number.isSafeInteger(seconds) || seconds <= REFRESH_RETRY_SECONDS) {
+      throw new Error(`${tokenUse} token lifetime must exceed ${REFRESH_RETRY_SECONDS} seconds`)
+    }
+    return seconds
+  }
+
+  async createSession(user: Pick<session_userprofile, 'id' | 'sid'>) {
+    if (!user.sid) throw new UnauthorizedException('Missing user sid')
+    this.tokenLifetime('access')
+    const session = await this.authSessions.create(user.id, this.tokenLifetime('refresh'))
+    return this.tokensForSession(user.sid, session)
+  }
+
+  private tokensForSession(sid: string, session: session_auth_session) {
+    const iat = Math.floor(session.issued_at.getTime() / 1000)
+    const accessExp = iat + this.tokenLifetime('access')
+    const refreshExp = Math.floor(session.expires_at.getTime() / 1000)
+    const payload = {
+      sid, sessionId: session.id, version: session.version, iat,
+    }
+    const options = {
+      path: '/', httpOnly: true, sameSite: 'none' as const, secure: true,
+    }
     return {
-      accessToken,
-      accessTokenOptions,
-      refreshToken,
-      refreshTokenOptions,
+      accessToken: this.jwtService.sign({ ...payload, tokenUse: 'access', exp: accessExp }, {
+        secret: this.jwtConfig.secret, algorithm: 'HS256',
+      }),
+      refreshToken: this.jwtService.sign({ ...payload, tokenUse: 'refresh', exp: refreshExp }, {
+        secret: this.jwtConfig.secret, algorithm: 'HS256',
+      }),
+      accessTokenOptions: { ...options, maxAge: Math.max(0, accessExp * 1000 - Date.now()) },
+      refreshTokenOptions: { ...options, maxAge: Math.max(0, refreshExp * 1000 - Date.now()) },
     }
   }
 
-  public getCookieWithAccessToken(sid: string) {
-    const payload = {
-      sid,
+  private verifySessionToken(token: unknown, tokenUse: 'access' | 'refresh', ignoreExpiration = false): SessionTokenPayload {
+    try {
+      if (typeof token !== 'string' || !token) throw new Error('Missing token')
+      const payload = this.jwtService.verify<SessionTokenPayload>(token, {
+        secret: this.jwtConfig.secret, algorithms: ['HS256'], ignoreExpiration,
+      })
+      if (payload.tokenUse !== tokenUse || typeof payload.sid !== 'string' || !payload.sid
+        || typeof payload.sessionId !== 'string'
+        || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(payload.sessionId)
+        || !Number.isSafeInteger(payload.version) || payload.version < 0
+        || !Number.isSafeInteger(payload.iat) || !Number.isSafeInteger(payload.exp)
+        || payload.exp <= payload.iat) {
+        throw new Error('Invalid token claims')
+      }
+      return payload
     }
-
-    const jwtConfig = settings().getJwtConfig()
-    const token = this.jwtService.sign(payload, {
-      secret: jwtConfig.secret,
-      expiresIn: `${jwtConfig.signOptions.expiresIn}s`,
-    })
-    return {
-      accessToken: token,
-      path: '/',
-      httpOnly: true,
-      sameSite: 'none' as const,
-      maxAge: Number(jwtConfig.signOptions.expiresIn) * 1000,
-      secure: true,
+    catch {
+      throw new UnauthorizedException('Invalid or expired token')
     }
   }
 
-  public getCookieWithRefreshToken(sid: string) {
-    const payload = {
-      sid,
-    }
+  verifyAccessToken(token: unknown) {
+    return this.verifySessionToken(token, 'access')
+  }
 
-    const jwtConfig = settings().getJwtConfig()
-    const refreshToken = this.jwtService.sign(payload, {
-      secret: jwtConfig.secret,
-      expiresIn: `${jwtConfig.signOptions.refreshExpiresIn}s`,
-    })
-    return {
-      refreshToken,
-      path: '/',
-      httpOnly: true,
-      sameSite: 'none' as const,
-      maxAge: Number(jwtConfig.signOptions.refreshExpiresIn) * 1000,
-      secure: true,
+  async authenticateTokens(accessToken: unknown, refreshToken: unknown, response: Response) {
+    let payload: SessionTokenPayload | undefined
+    try {
+      payload = this.verifyAccessToken(accessToken)
     }
+    catch (error) {
+      if (!(error instanceof UnauthorizedException)) throw error
+    }
+    if (payload) return this.findBySid(payload.sid)
+    if (!refreshToken) return null
+
+    try {
+      const tokens = await this.tokenRefresh(refreshToken)
+      response.cookie('accessToken', tokens.accessToken, tokens.accessTokenOptions)
+      response.cookie('refreshToken', tokens.refreshToken, tokens.refreshTokenOptions)
+      return this.findBySid(this.verifyAccessToken(tokens.accessToken).sid)
+    }
+    catch (error) {
+      if (!(error instanceof UnauthorizedException)) throw error
+      return null
+    }
+  }
+
+  async revokeRequestSessions(request: Request) {
+    const ids = new Set<string>()
+    let sid: string | undefined
+    for (const tokenUse of ['access', 'refresh'] as const) {
+      const tokenType = tokenUse === 'access' ? 'accessToken' : 'refreshToken'
+      for (const token of [this.extractTokenFromHeader(request, tokenType), this.extractTokenFromCookie(request, tokenType)]) {
+        try {
+          const payload = this.verifySessionToken(token, tokenUse, true)
+          ids.add(payload.sessionId)
+          sid ??= payload.sid
+        }
+        catch (error) {
+          if (!(error instanceof UnauthorizedException)) throw error
+        }
+      }
+    }
+    for (const id of ids) await this.authSessions.revoke(id)
+    return sid
   }
 
   async createUser(
@@ -318,7 +384,6 @@ export class AuthService {
     departmentId: number | undefined,
     status: string | null,
     kaistuid: string | null,
-    refreshToken: string,
     degree: string | null,
     lastLogin: Date = new Date(),
   ): Promise<session_userprofile> {
@@ -334,7 +399,7 @@ export class AuthService {
       // department_id: departmentId,
       status,
       kaist_id: kaistuid,
-      refresh_token: refreshToken,
+      refresh_token: null,
       degree,
     }
     return await this.userRepository.createUser(user)
@@ -344,21 +409,13 @@ export class AuthService {
     return await this.userRepository.updateUser(userId, user)
   }
 
-  async tokenRefresh(refreshToken: any) {
-    const payload = await this.jwtService.verifyAsync(refreshToken, {
-      secret: this.jwtConfig.secret,
-      ignoreExpiration: false,
-    })
+  async tokenRefresh(refreshToken: unknown) {
+    const payload = this.verifySessionToken(refreshToken, 'refresh')
     const user = await this.findBySid(payload.sid)
-    if (!user) throw new NotFoundException('user is not found')
-    const { accessToken, ...accessTokenOptions } = this.getCookieWithAccessToken(payload.sid)
-    const { refreshToken: newRefreshToken, ...refreshTokenOptions } = this.getCookieWithRefreshToken(payload.sid)
-    return {
-      accessToken,
-      accessTokenOptions,
-      refreshToken: newRefreshToken,
-      refreshTokenOptions,
-    }
+    if (!user) throw new UnauthorizedException('user is not found')
+    const session = await this.authSessions.rotate(payload.sessionId, user.id, payload.version, this.tokenLifetime('refresh'))
+    if (!session) throw new UnauthorizedException('Refresh session expired or revoked')
+    return this.tokensForSession(payload.sid, session)
   }
 
   public extractTokenFromHeader(request: Request, type: 'accessToken' | 'refreshToken'): string | undefined {
@@ -369,7 +426,7 @@ export class AuthService {
       }
     }
     if (type === 'refreshToken') {
-      const refreshHeader = request.headers['X-REFRESH-TOKEN']
+      const refreshHeader = request.headers['x-refresh-token']
       if (typeof refreshHeader === 'string') {
         return refreshHeader
       }

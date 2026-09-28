@@ -328,6 +328,7 @@ model session_userprofile {
   friend_relations                     session_userprofile_friends[]             @relation("friend_owner")
   friended_by                          session_userprofile_friends[]             @relation("friend_target")
   friend_code                          session_userprofile_friend_codes?
+  auth_sessions                        session_auth_session[]
   taken_lectures                        session_userprofile_taken_lectures[]
   subject_courseuser                    subject_courseuser[]
   support_rate                          support_rate[]
@@ -337,6 +338,19 @@ model session_userprofile {
 
   @@index([department_id], map: "session_userprofile_department_id_fkey")
   @@index([student_id], map: "session_userprofile_student_id_index")
+}
+
+model session_auth_session {
+  id             String              @id @db.Char(36)
+  userprofile_id Int
+  version        Int                 @default(0)
+  issued_at      DateTime            @db.DateTime(0)
+  expires_at     DateTime            @db.DateTime(0)
+  revoked_at     DateTime?           @db.DateTime(0)
+  userprofile    session_userprofile @relation(fields: [userprofile_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "session_auth_owner_fk")
+
+  @@index([userprofile_id], map: "session_auth_owner_idx")
+  @@index([expires_at], map: "session_auth_expiry_idx")
 }
 
 model session_userprofile_friend_codes {
