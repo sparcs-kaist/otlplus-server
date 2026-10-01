@@ -61,7 +61,8 @@ export class AuthConfig {
     .register(this.isReviewProhibitedCommand)
     .register(this.isAdminCommand)
     .register(this.oneappHeaderCommand)
-    .register(this.sidAuthTokenCommand)
+  // dev 환경에서 x-sid-auth-token 검증 비활성화
+  // .register(this.sidAuthTokenCommand)
     .register(this.ipRangeCommand)
 
   private getProdGuardConfig = () => this.authChain
