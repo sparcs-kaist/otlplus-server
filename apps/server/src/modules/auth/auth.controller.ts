@@ -47,9 +47,12 @@ export class AuthController {
       if (sid && uid) {
         const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https'
         const host = req.get('host')
-        const base_url = host ? `${protocol}://${host}` : process.env.WEB_URL // fall back : default url
+        const requestBaseUrl = host ? `${protocol}://${host}` : undefined
+        const baseUrl = process.env.NODE_ENV === 'dev'
+          ? (process.env.WEB_URL ?? requestBaseUrl)
+          : (requestBaseUrl ?? process.env.WEB_URL)
 
-        return res.redirect(`${base_url}/login/success#accessToken=${accessToken}&refreshToken=${refreshToken}`)
+        return res.redirect(`${baseUrl}/login/success#accessToken=${accessToken}&refreshToken=${refreshToken}`)
       }
     }
     // req.session['next'] = next ?? '/';
@@ -124,6 +127,11 @@ export class AuthController {
     }
     catch (_) {
       console.warn('Invalid preferred_url received:', preferred_url)
+    }
+
+    // dev는 API와 웹 origin이 다르므로 최종 redirect는 WEB_URL을 사용한다.
+    if (process.env.NODE_ENV === 'dev' && process.env.WEB_URL) {
+      base_url = process.env.WEB_URL
     }
 
     const next_url = `${base_url}/login/success#accessToken=${accessToken}&refreshToken=${refreshToken}`
