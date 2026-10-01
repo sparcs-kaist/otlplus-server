@@ -159,12 +159,12 @@ maybe('SyncTakenLectureService', () => {
 
     expect(result.updated).toHaveLength(2)
     expect(result.errors).toHaveLength(0)
-    expect(result.updated.filter((u: any) => u.studentId.toString() === userData[0].student_id)[0]).toMatchObject({
+    expect(result.updated.filter((u) => u.studentId.toString() === userData[0].student_id)[0]).toMatchObject({
       studentId: parseInt(userData[0].student_id),
       add: [lectureData[1].id],
       remove: [takenLectureData[0].id],
     })
-    expect(result.updated.filter((u: any) => u.studentId.toString() === userData[1].student_id)[0]).toMatchObject({
+    expect(result.updated.filter((u) => u.studentId.toString() === userData[1].student_id)[0]).toMatchObject({
       studentId: parseInt(userData[1].student_id),
       add: [],
       remove: [takenLectureData[1].id],

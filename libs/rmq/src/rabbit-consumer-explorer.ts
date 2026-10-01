@@ -4,7 +4,7 @@ import { DiscoveryService, Reflector } from '@nestjs/core'
 import { RABBIT_CONSUMER_METADATA, RabbitConsumerMetadata } from '@otl/rmq/decorator/rabbit-consumer.decorator'
 import { RabbitMQService } from '@otl/rmq/rmq.service'
 import settings from '@otl/rmq/settings'
-import { Channel } from 'amqplib'
+import { Channel, ConsumeMessage } from 'amqplib'
 
 import logger from '@otl/common/logger/logger'
 
@@ -54,7 +54,7 @@ export class RabbitConsumerExplorer implements OnModuleInit {
 
   private async setupConsumer(
     instance: object,
-    method: (payload: any) => Promise<void>,
+    method: (payload: ConsumeMessage) => Promise<void>,
     metadata: RabbitConsumerMetadata,
     methodName: string,
   ) {
@@ -76,7 +76,7 @@ export class RabbitConsumerExplorer implements OnModuleInit {
       const connection = await this.rabbitMQService.getConnection()
       const channel = await connection.createChannel()
       channel.on('error', (err) => {
-        this.logger.error(`💥 Channel Error for queue ${queueConfig.queue}`, err.stack)
+        this.logger.error(`💥 Channel Error for queue ${queueConfig.queue}`, (err instanceof Error ? err.stack : undefined))
       })
 
       //  Prefetch 설정
@@ -94,8 +94,8 @@ export class RabbitConsumerExplorer implements OnModuleInit {
         `🐇 Consumer setup successful for ${instance.constructor.name}.${methodName} on queue: ${queueConfig.queue}`,
       )
     }
-    catch (err: any) {
-      this.logger.error(`❌ Failed to setup consumer for queue ${queueConfig.queue}`, err.stack)
+    catch (err: unknown) {
+      this.logger.error(`❌ Failed to setup consumer for queue ${queueConfig.queue}`, (err instanceof Error ? err.stack : undefined))
     }
   }
 
@@ -104,12 +104,16 @@ export class RabbitConsumerExplorer implements OnModuleInit {
    */
   private consumeIndividually(
     channel: Channel,
-    queueConfig: any,
+    queueConfig: ReturnType<ReturnType<typeof settings>['getRabbitMQConfig']>['queueConfig'][string],
     instance: object,
-    method: (payload: any) => Promise<void>,
+    method: (payload: ConsumeMessage) => Promise<void>,
     options: RabbitConsumerMetadata['options'],
   ) {
-    channel.consume(queueConfig.queue, async (msg) => {
+    const { queue, exchange, routingKey } = queueConfig
+    if (!queue || !exchange || typeof routingKey !== 'string') {
+      throw new Error('Consumer requires a queue, exchange and a single routing key')
+    }
+    channel.consume(queue, async (msg) => {
       if (!msg) return
 
       const currentRetry = msg?.properties?.headers?.['x-retry-count'] || 0
@@ -124,17 +128,17 @@ export class RabbitConsumerExplorer implements OnModuleInit {
         ])
         channel.ack(msg)
       }
-      catch (err: any) {
-        const exchangeName = this.config.exchangeConfig.exchangeMap[queueConfig.exchange].name
+      catch (err: unknown) {
+        const exchangeName = this.config.exchangeConfig.exchangeMap[exchange].name
 
         if (currentRetry < MAX_RETRIES) {
           // ✅ 원래 큐로 다시 보내되, x-delay 헤더로 지연 시간 설정
           const delay = RETRY_DELAYS[currentRetry]
           this.logger.warn(
-            `Retrying message for queue ${queueConfig.queue}. Delay: ${delay}ms (Attempt: ${currentRetry + 1}) Error: ${err.message}`,
+            `Retrying message for queue ${queueConfig.queue}. Delay: ${delay}ms (Attempt: ${currentRetry + 1}) Error: ${(err instanceof Error ? err.message : String(err))}`,
           )
 
-          channel.publish(exchangeName, queueConfig.routingKey, msg.content, {
+          channel.publish(exchangeName, routingKey, msg.content, {
             ...msg.properties,
             headers: {
               ...msg.properties.headers,

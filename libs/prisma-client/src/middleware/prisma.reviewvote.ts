@@ -15,11 +15,13 @@ export class ReviewVoteMiddleware implements IPrismaMiddleware.Middleware {
     this.prisma = prisma
   }
 
-  async preExecute(_operations: IPrismaMiddleware.operationType, _args: any): Promise<boolean> {
+  async preExecute(_operations: IPrismaMiddleware.operationType, _args: unknown): Promise<boolean> {
     return true
   }
 
-  async postExecute(operatoins: IPrismaMiddleware.operationType, args: any, result: any): Promise<boolean> {
+  async postExecute(operatoins: IPrismaMiddleware.operationType, args: unknown, rawResult: unknown): Promise<boolean> {
+    // Dispatched only for review_reviewvote by the Prisma extension.
+    const result = rawResult as review_reviewvote
     if (operatoins === 'create' || operatoins === 'update' || operatoins === 'upsert') {
       await this.reviewVoteSavedMiddleware(result)
       return true
@@ -52,11 +54,11 @@ export class ReviewVoteMiddleware implements IPrismaMiddleware.Middleware {
     })
   }
 
-  private async reviewVoteSavedMiddleware(result: any) {
+  private async reviewVoteSavedMiddleware(result: review_reviewvote) {
     await this.reviewRecalcLike(result)
   }
 
-  private async reviewVoteDeletedMiddleware(result: any) {
+  private async reviewVoteDeletedMiddleware(result: review_reviewvote) {
     await this.reviewRecalcLike(result)
   }
 }

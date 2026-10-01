@@ -1,3 +1,5 @@
+import { Prisma } from '@prisma/client'
+
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 
 import { IPrismaMiddleware } from './IPrismaMiddleware'
@@ -11,13 +13,13 @@ export class TimetableMiddleware implements IPrismaMiddleware.Middleware {
     this.prisma = prisma
   }
 
-  async preExecute(_operations: IPrismaMiddleware.operationType, _args: any): Promise<boolean> {
+  async preExecute(_operations: IPrismaMiddleware.operationType, _args: unknown): Promise<boolean> {
     return true
   }
 
-  async postExecute(operations: IPrismaMiddleware.operationType, args: any, _result: any): Promise<boolean> {
+  async postExecute(operations: IPrismaMiddleware.operationType, args: unknown, _result: unknown): Promise<boolean> {
     if (operations === 'delete') {
-      const timetableId = args.where.id
+      const timetableId = (args as Prisma.timetable_timetableDeleteArgs).where.id
       const lectures = await this.prisma.timetable_timetable_lectures.findMany({
         where: {
           timetable_id: timetableId,

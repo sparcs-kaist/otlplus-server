@@ -31,7 +31,19 @@ export class SyncScholarDBService {
     this.slackNoti.sendSyncNoti(
       `syncScholarDB ${data.year}-${data.semester}: ${data.lectures.length} lectures, ${data.charges.length} charges`,
     )
-    const result: any = {
+    const result: {
+      time: string
+      departments: { created: EDepartment.Basic[], updated: [EDepartment.Basic, EDepartment.Basic][], errors: { dept_id: number, error: string }[] }
+      courses: { created: ECourse.Basic[], updated: [ECourse.Basic, ECourse.Basic][], errors: { new_code: string, error: string }[] }
+      professors: { created: EProfessor.Basic[], updated: [EProfessor.Basic, EProfessor.Basic][], errors: { prof_id: number, error: string }[] }
+      lectures: {
+        created: (ELecture.Basic & { professors: number[] })[]
+        updated: [ELecture.Basic, ELecture.Basic][]
+        chargeUpdated: { lecture: ELecture.Details, added: (EProfessor.Basic | undefined)[], removed: (EProfessor.Basic | { id: number })[] }[]
+        deleted: number[]
+        errors: ({ lecture: { code: string, class_no: string }, error: string } | { lecturesToDelete: number[], error: string })[]
+      }
+    } = {
       time: new Date().toISOString(),
       departments: {
         created: [],
@@ -101,10 +113,10 @@ export class SyncScholarDBService {
           result.departments.updated.push([foundDepartment, updated])
         }
       }
-      catch (e: any) {
+      catch (e: unknown) {
         result.departments.errors.push({
           dept_id: lecture.DEPT_ID,
-          error: e.message || 'Unknown error',
+          error: (e instanceof Error ? e.message : String(e)) || 'Unknown error',
         })
       }
     }
@@ -134,10 +146,10 @@ export class SyncScholarDBService {
           courseMap.set(new_code, updatedCourse)
         }
       }
-      catch (e: any) {
+      catch (e: unknown) {
         result.courses.errors.push({
           new_code,
-          error: e.message || 'Unknown error',
+          error: (e instanceof Error ? e.message : String(e)) || 'Unknown error',
         })
       }
     }
@@ -173,10 +185,10 @@ export class SyncScholarDBService {
           result.professors.updated.push([professor, updatedProfessor])
         }
       }
-      catch (e: any) {
+      catch (e: unknown) {
         result.professors.errors.push({
           prof_id: charge.PROF_ID,
-          error: e.message || 'Unknown error',
+          error: (e instanceof Error ? e.message : String(e)) || 'Unknown error',
         })
       }
     }
@@ -237,13 +249,13 @@ export class SyncScholarDBService {
           result.lectures.created.push({ ...newLecture, professors: addedIds })
         }
       }
-      catch (e: any) {
+      catch (e: unknown) {
         result.lectures.errors.push({
           lecture: {
             code: lecture.SUBJECT_NO,
             class_no: lecture.LECTURE_CLASS,
           },
-          error: e.message || 'Unknown error',
+          error: (e instanceof Error ? e.message : String(e)) || 'Unknown error',
         })
       }
     }
@@ -253,10 +265,10 @@ export class SyncScholarDBService {
       await this.syncRepository.markLecturesDeleted(Array.from(notExistingLectures))
       result.lectures.deleted = Array.from(notExistingLectures)
     }
-    catch (e: any) {
+    catch (e: unknown) {
       result.lectures.errors.push({
         lecturesToDelete: Array.from(notExistingLectures),
-        error: e.message || 'Unknown error',
+        error: (e instanceof Error ? e.message : String(e)) || 'Unknown error',
       })
     }
 
@@ -405,6 +417,8 @@ export class SyncScholarDBService {
       'examtime',
       this.deriveExamtimeInfo,
       this.examtimeMatches,
+      (lecture) => lecture.subject_examtime,
+      (lectureId, changes) => this.syncRepository.updateLectureExamtimes(lectureId, changes),
     )
   }
 
@@ -416,23 +430,32 @@ export class SyncScholarDBService {
       'classtime',
       this.deriveClasstimeInfo,
       this.classtimeMatches,
+      (lecture) => lecture.subject_classtime,
+      (lectureId, changes) => this.syncRepository.updateLectureClasstimes(lectureId, changes),
     )
   }
 
   async syncTime<
-    TYPE extends 'examtime' | 'classtime',
-    T extends TYPE extends 'examtime' ? ISync.ExamtimeType : ISync.ClasstimeType,
-    D extends TYPE extends 'examtime' ? DerivedExamtimeInfo : DerivedClasstimeInfo,
+    T extends ISync.ExamtimeType | ISync.ClasstimeType,
+    D extends DerivedExamtimeInfo,
+    E extends { id: number },
   >(
     year: number,
     semester: number,
     data: T[],
-    type: TYPE,
+    type: 'examtime' | 'classtime',
     deriveInfo: (time: T) => D,
-    matches: (derivedTime: D, existingTime: any) => boolean,
+    matches: (derivedTime: D, existingTime: E) => boolean,
+    getExistingTimes: (lecture: ELecture.Details) => E[],
+    updateTimes: (lectureId: number, changes: { added: D[], removed: number[] }) => Promise<unknown>,
   ) {
     this.slackNoti.sendSyncNoti(`sync ${type} ${year}-${semester}: ${data.length} ${type}s`)
-    const result: any = {
+    const result: {
+      time: string
+      updated: { lecture: string, class_no: string, previous: E[], added: D[], removed: number[] }[]
+      skipped: { subject_no: string, lecture_class: string, error: string }[]
+      errors: { lecture: { code: string, class_no: string }, error: string }[]
+    } = {
       time: new Date().toISOString(),
       updated: [],
       skipped: [],
@@ -467,7 +490,7 @@ export class SyncScholarDBService {
     for (const [lecture, times] of lecturePairMap.values()) {
       try {
         const derivedTimes = times.map(deriveInfo)
-        const existingTimes = type === 'examtime' ? lecture.subject_examtime : lecture.subject_classtime
+        const existingTimes = getExistingTimes(lecture)
         const timesToRemove = []
 
         for (const existing of existingTimes) {
@@ -476,18 +499,7 @@ export class SyncScholarDBService {
           else derivedTimes.splice(idx, 1) // remove matched time
         }
         const timesToAdd = derivedTimes
-        if (type === 'examtime') {
-          await this.syncRepository.updateLectureExamtimes(lecture.id, {
-            added: timesToAdd,
-            removed: timesToRemove,
-          })
-        }
-        else {
-          await this.syncRepository.updateLectureClasstimes(lecture.id, {
-            added: timesToAdd as any,
-            removed: timesToRemove,
-          })
-        }
+        await updateTimes(lecture.id, { added: timesToAdd, removed: timesToRemove })
 
         if (timesToAdd.length > 0 || timesToRemove.length > 0) {
           result.updated.push({
@@ -499,13 +511,13 @@ export class SyncScholarDBService {
           })
         }
       }
-      catch (e: any) {
+      catch (e: unknown) {
         result.errors.push({
           lecture: {
             code: lecture.code,
             class_no: lecture.class_no,
           },
-          error: e.message || 'Unknown error',
+          error: (e instanceof Error ? e.message : String(e)) || 'Unknown error',
         })
       }
     }

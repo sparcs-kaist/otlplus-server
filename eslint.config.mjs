@@ -12,7 +12,7 @@ import eslintPluginJest from 'eslint-plugin-jest'
 const compat = new FlatCompat({})
 
 /** @type {import('eslint').Linter.FlatConfig[]} */
-export default tseslint.config(
+const sourceConfig = tseslint.config(
   eslint.configs.recommended,
   tseslint.configs.recommended,
 
@@ -28,10 +28,6 @@ export default tseslint.config(
       '**/node_modules/',
       '**/*.js',
       'eslint.config.mjs',
-      '**/*.spec.ts',
-      '**/__tests__/**',
-      '**/test/**',
-      '**/*.test.ts',
     ],
   },
   {
@@ -103,7 +99,7 @@ export default tseslint.config(
       '@typescript-eslint/no-use-before-define': 'error',
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-namespace': 'off',
-      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-explicit-any': 'error',
     },
   },
   {
@@ -172,3 +168,21 @@ export default tseslint.config(
     },
   },
 )
+
+// Tests were previously ignored entirely. Apply the any guard to them as well.
+const testFiles = ['**/*.spec.ts', '**/*.test.ts', '**/test/**/*.ts', '**/__tests__/**/*.ts']
+export default [
+  ...sourceConfig.map((config) => (Object.keys(config).length === 1 && config.ignores
+    ? config
+    : { ...config, ignores: [...(config.ignores ?? []), ...testFiles] })),
+  {
+    files: ['scripts/**/*.mjs'],
+    languageOptions: { parserOptions: { project: false } },
+  },
+  {
+    files: testFiles,
+    languageOptions: { parser: tseslint.parser },
+    plugins: { '@typescript-eslint': tseslint.plugin },
+    rules: { '@typescript-eslint/no-explicit-any': 'error' },
+  },
+]

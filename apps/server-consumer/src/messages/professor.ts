@@ -5,11 +5,10 @@ export class ProfessorUpdateMessage extends Message {
 }
 
 export class ProfessorScoreUpdateMessage extends ProfessorUpdateMessage {
-  public static isValid(msg: any): msg is ProfessorUpdateMessage {
+  public static isValid(msg: unknown): msg is ProfessorUpdateMessage {
     return (
-      msg
-      && typeof msg.professorId === 'number'
-      && typeof msg.type === 'string'
+      typeof msg === 'object' && msg !== null && 'professorId' in msg && typeof msg.professorId === 'number'
+      && 'type' in msg && typeof msg.type === 'string'
       && msg.type === EVENT_TYPE.PROFESSOR_SCORE
     )
   }

@@ -26,7 +26,7 @@ export class LecturesServiceV2 {
         const mm = v.getUTCMinutes()
         return hh * 60 + mm
       }
-      const n = Number(v as any)
+      const n = Number(v)
       return Number.isFinite(n) ? n : 0
     }
     const pad2 = (n: number) => (n < 10 ? `0${n}` : String(n))
@@ -59,10 +59,9 @@ export class LecturesServiceV2 {
     // 2) Fetch metadata (classTimes, examTime, professors)
     const lectureIds = lectures.map((l) => l.id)
     const metaTuples = await this.lectureRepository.getLectureMetadataByIds(lectureIds)
-    const metaById = new Map<number, { classTimes: any[], examTimes: any[], professors: any[] }>()
-    for (const [id, classTimes, examTimes, professors] of metaTuples) {
-      metaById.set(id, { classTimes, examTimes, professors })
-    }
+    const metaById = new Map(metaTuples.map(([id, classTimes, examTimes, professors]) => [
+      id, { classTimes, examTimes, professors },
+    ]))
 
     // 3) Fetch course codes for all involved courses
     const courseIds = Array.from(new Set(lectures.map((l) => l.course_id)))
@@ -104,7 +103,7 @@ export class LecturesServiceV2 {
     for (const lec of lectures) {
       const meta = metaById.get(lec.id)
 
-      const classTimes = (meta?.classTimes ?? []).map((ct: any) => ({
+      const classTimes = (meta?.classTimes ?? []).map((ct) => ({
         day: ct.day,
         begin: toMinutes(ct.begin),
         end: toMinutes(ct.end),
@@ -113,14 +112,14 @@ export class LecturesServiceV2 {
         roomName: ct.room_name ?? '',
       }))
 
-      const examTimes = (meta?.examTimes ?? []).map((exam: any) => ({
+      const examTimes = (meta?.examTimes ?? []).map((exam) => ({
         day: exam.day,
         begin: toMinutes(exam.begin),
         end: toMinutes(exam.end),
         str: `${mmToHHmm(toMinutes(exam.begin))}~${mmToHHmm(toMinutes(exam.end))}`,
       }))
 
-      const professors = (meta?.professors ?? []).map((p: any) => ({
+      const professors = (meta?.professors ?? []).map((p) => ({
         id: p.id,
         name: choose(p.professor_name, p.professor_name_en),
       }))

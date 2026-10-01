@@ -256,15 +256,11 @@ maybe('SyncScholarDBService', () => {
     expect(service).toBeDefined()
   })
 
-  function checkNoError(result: any) {
-    if (result.departments.errors.length > 0) console.error(result.departments.errors)
-    if (result.courses.errors.length > 0) console.error(result.courses.errors)
-    if (result.lectures.errors.length > 0) console.error(result.lectures.errors)
-    if (result.professors.errors.length > 0) console.error(result.professors.errors)
-    expect(result.departments.errors).toHaveLength(0)
-    expect(result.courses.errors).toHaveLength(0)
-    expect(result.lectures.errors).toHaveLength(0)
-    expect(result.professors.errors).toHaveLength(0)
+  function checkNoError(result: Awaited<ReturnType<SyncService['syncScholarDB']>>) {
+    for (const detail of result.results) {
+      if (detail.errors.length > 0) console.error(detail.errors)
+      expect(detail.errors).toHaveLength(0)
+    }
   }
 
   describe('syncScholarDB', () => {
@@ -704,8 +700,8 @@ maybe('SyncScholarDBService', () => {
       })
 
       expect(result.updated).toHaveLength(2)
-      expect(result.updated.filter((l: any) => l.lecture === existingLecture.code)[0].added).toHaveLength(1)
-      expect(result.updated.filter((l: any) => l.lecture === lectureData[0].code)[0].removed).toHaveLength(2)
+      expect(result.updated.filter((l: { lecture: string, added: unknown[], removed: number[] }) => l.lecture === existingLecture.code)[0].added).toHaveLength(1)
+      expect(result.updated.filter((l: { lecture: string, added: unknown[], removed: number[] }) => l.lecture === lectureData[0].code)[0].removed).toHaveLength(2)
 
       const classtime = await prisma.subject_classtime.findFirst({
         where: { lecture_id: existingLecture.id },
@@ -917,8 +913,8 @@ maybe('SyncScholarDBService', () => {
       })
 
       expect(result.updated).toHaveLength(2)
-      expect(result.updated.filter((l: any) => l.lecture === existingLecture.code)[0].added).toHaveLength(1)
-      expect(result.updated.filter((l: any) => l.lecture === lectureData[0].code)[0].removed).toHaveLength(1)
+      expect(result.updated.filter((l: { lecture: string, added: unknown[], removed: number[] }) => l.lecture === existingLecture.code)[0].added).toHaveLength(1)
+      expect(result.updated.filter((l: { lecture: string, added: unknown[], removed: number[] }) => l.lecture === lectureData[0].code)[0].removed).toHaveLength(1)
 
       const examtime = await prisma.subject_examtime.findFirst({
         where: { lecture_id: existingLecture.id },

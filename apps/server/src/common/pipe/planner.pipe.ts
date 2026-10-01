@@ -8,7 +8,7 @@ import { PrismaService } from '@otl/prisma-client/prisma.service'
 export class PlannerPipe implements PipeTransform {
   constructor(private prismaService: PrismaService) {}
 
-  async transform(value: any, _metadata: ArgumentMetadata): Promise<number> {
+  async transform(value: string, _metadata: ArgumentMetadata): Promise<number> {
     const plannerId = parseInt(value)
     if (Number.isNaN(plannerId)) {
       throw new BadRequestException('Invalid planner ID')

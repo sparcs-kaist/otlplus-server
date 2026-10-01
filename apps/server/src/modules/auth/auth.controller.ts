@@ -74,7 +74,7 @@ export class AuthController {
     @Query('code') code: string,
     @Query('preferred_url') preferred_url: string,
     @Req() req: IAuth.Request,
-    @Session() session: Record<string, any>,
+    @Session() session: IAuth.RequestExtra['session'],
     @Res() response: IAuth.Response,
   ): Promise<void> {
     const ssoProfile: ESSOUser.SSOUser = await this.ssoClient.get_user_info(code)

@@ -11,11 +11,11 @@ export class DepartmentMiddleware implements IPrismaMiddleware.Middleware {
     this.prisma = prisma
   }
 
-  async preExecute(_operations: IPrismaMiddleware.operationType, _args: any): Promise<boolean> {
+  async preExecute(_operations: IPrismaMiddleware.operationType, _args: unknown): Promise<boolean> {
     return true
   }
 
-  async postExecute(operations: IPrismaMiddleware.operationType, _args: any, _result: any): Promise<boolean> {
+  async postExecute(operations: IPrismaMiddleware.operationType, _args: unknown, _result: unknown): Promise<boolean> {
     if (operations === 'create') {
       // todo: cache delete
     }

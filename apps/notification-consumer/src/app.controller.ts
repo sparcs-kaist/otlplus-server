@@ -15,7 +15,7 @@ export class AppController {
     ...settings().getRabbitMQConfig().queueConfig[QueueSymbols.NOTI_FCM],
     errorHandler: defaultNackErrorHandler,
   })
-  handleNotification(msg: any, amqpMsg: ConsumeMessage) {
+  handleNotification(msg: FCMNotificationRequest, amqpMsg: ConsumeMessage) {
     const request = plainToInstance(FCMNotificationRequest, msg)
     return this.appService.handleNotification(request, amqpMsg)
   }
@@ -24,7 +24,7 @@ export class AppController {
     ...settings().getRabbitMQConfig().queueConfig[QueueSymbols.NOTI_INFO_FCM],
     errorHandler: defaultNackErrorHandler,
   })
-  handleInfoNotification(msg: any) {
+  handleInfoNotification(msg: FCMNotificationRequest) {
     return this.appService.handleInfoNotification(msg)
   }
 
@@ -32,7 +32,7 @@ export class AppController {
     ...settings().getRabbitMQConfig().queueConfig[QueueSymbols.NOTI_AD_FCM],
     errorHandler: defaultNackErrorHandler,
   })
-  handleAdNotification(msg: any) {
+  handleAdNotification(msg: FCMNotificationRequest) {
     return this.appService.handleAdNotification(msg)
   }
 
@@ -40,7 +40,7 @@ export class AppController {
     ...settings().getRabbitMQConfig().queueConfig[QueueSymbols.NOTI_NIGHT_AD_FCM],
     errorHandler: defaultNackErrorHandler,
   })
-  handleNightAdNotification(msg: any) {
+  handleNightAdNotification(msg: FCMNotificationRequest) {
     return this.appService.handleNightAdNotification(msg)
   }
 }
