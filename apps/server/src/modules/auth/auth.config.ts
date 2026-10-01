@@ -52,7 +52,8 @@ export class AuthConfig {
 
   private getDevGuardConfig = () => this.authChain
     .register(this.isPublicCommand)
-    .register(this.studentHeaderCommand)
+  // dev 환경에서 학번을 이용한 x-auth-sid 인증 비활성화
+  // .register(this.studentHeaderCommand)
     .register(this.jwtHeaderCommand)
     .register(this.sidHeaderCommand)
     .register(this.sidCookieCommand)
@@ -63,7 +64,8 @@ export class AuthConfig {
     .register(this.oneappHeaderCommand)
   // dev 환경에서 x-sid-auth-token 검증 비활성화
   // .register(this.sidAuthTokenCommand)
-    .register(this.ipRangeCommand)
+  // Tailscale에서 접근을 제한하므로 dev 환경에서 IP 대역 검증 비활성화
+  // .register(this.ipRangeCommand)
 
   private getProdGuardConfig = () => this.authChain
     .register(this.jwtHeaderCommand)
