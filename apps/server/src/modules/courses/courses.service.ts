@@ -72,7 +72,7 @@ export class CoursesService {
       throw new NotFoundException()
     }
     const representativeLecture = (await this.lectureRepository.getLecturesByIds([course.representative_lecture_id]))[0]
-    const professorRaw = course.subject_course_professors.map((x: { professor: any }) => x.professor)
+    const professorRaw = course.subject_course_professors.map((x) => x.professor)
     const result = toJsonCourseDetail(course, representativeLecture, professorRaw)
 
     const userspecific_is_read = user

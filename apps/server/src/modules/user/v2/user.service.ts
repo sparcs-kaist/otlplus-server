@@ -17,7 +17,7 @@ import {
 } from '@otl/prisma-client'
 import { mapCourse } from '@otl/prisma-client/common/mapper/course'
 
-function toJsonDepartment(major: any): any {
+function toJsonDepartment(major: { id: number, name: string }) {
   // Safely extract department info from the lecture/major object.
   const dept = major
   return {
@@ -145,7 +145,7 @@ export class UserServiceV2 {
     const name = `${user.first_name} ${user.last_name}`
     const mail = user.email || ''
     const studentNumber = parseInt(user.student_id)
-    const degree = (user as any).degree || null
+    const degree = user.degree || null
     const [favoriteDepartments, majors] = await Promise.all([
       this.departmentRepository.getFavoriteDepartments(user),
       this.departmentRepository.getMajors(user),

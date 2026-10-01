@@ -1,4 +1,4 @@
-import { ModuleMocker, MockFunctionMetadata } from 'jest-mock'
+import { ModuleMocker } from 'jest-mock'
 import { AgreementPrivateService } from '@otl/server-nest/modules/agreement/agreement.private.service'
 import { Test } from '@nestjs/testing'
 import {
@@ -66,12 +66,12 @@ export class MockAgreementRepository implements AgreementRepository {
   }
 
   async findById(id: number): Promise<UserAgreement | null> {
-    const agreement = this.mockUserAgreement.find((agreement: any) => agreement.id === id)
+    const agreement = this.mockUserAgreement.find((agreement) => agreement.id === id)
     return Promise.resolve(agreement || null)
   }
 
   async findByUserId(userId: number): Promise<UserAgreement[] | null> {
-    const userAgreement = this.mockUserAgreement.filter((agreement: any) => agreement.userId === userId)
+    const userAgreement = this.mockUserAgreement.filter((agreement) => agreement.userId === userId)
     return Promise.resolve(userAgreement.length > 0 ? userAgreement : null)
   }
 
@@ -94,7 +94,7 @@ export class MockAgreementRepository implements AgreementRepository {
     const newAgreement = {
       ...agreement,
       id: this.mockUserAgreement.length + 1,
-      agreementId: this.mockAgreement.find((a: any) => a.name === agreement.agreementType)!.id,
+      agreementId: this.mockAgreement.find((a) => a.agreementType === agreement.agreementType)!.id,
       createdAt: new Date(),
       updatedAt: new Date(),
     }
@@ -103,10 +103,10 @@ export class MockAgreementRepository implements AgreementRepository {
   }
 
   async insertMany(agreement: UserAgreementCreate[]): Promise<UserAgreement[]> {
-    const newAgreements = agreement.map((ag: any) => ({
+    const newAgreements = agreement.map((ag) => ({
       ...ag,
       id: this.mockUserAgreement.length + 1,
-      agreementId: this.mockAgreement.find((a: any) => a.name === ag.agreementType)?.id,
+      agreementId: this.mockAgreement.find((a) => a.agreementType === ag.agreementType)!.id,
       createdAt: new Date(),
       updatedAt: new Date(),
     }))
@@ -117,7 +117,7 @@ export class MockAgreementRepository implements AgreementRepository {
   async updateMany(agreement: UserAgreement[]): Promise<UserAgreement[]> {
     const updatedAgreements: UserAgreement[] = []
     agreement.forEach((ag) => {
-      const index = this.mockUserAgreement.findIndex((a: any) => a.id === ag.id)
+      const index = this.mockUserAgreement.findIndex((a) => a.id === ag.id)
       if (index !== -1) {
         this.mockUserAgreement[index] = { ...this.mockUserAgreement[index], ...ag }
         updatedAgreements.push(this.mockUserAgreement[index])
@@ -134,7 +134,7 @@ export class MockAgreementRepository implements AgreementRepository {
     } else {
       const newAgreement = {
         ...agreement,
-        agreementId: this.mockAgreement.find((a: any) => a.name === agreement.agreementType)!.id,
+        agreementId: this.mockAgreement.find((a) => a.agreementType === agreement.agreementType)!.id,
         id: this.mockUserAgreement.length + 1,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -168,7 +168,7 @@ export class MockAgreementRepository implements AgreementRepository {
   }
 
   update(agreement: UserAgreement): Promise<UserAgreement> {
-    const index = this.mockUserAgreement.findIndex((a: any) => a.id === agreement.id)
+    const index = this.mockUserAgreement.findIndex((a) => a.id === agreement.id)
     if (index !== -1) {
       this.mockUserAgreement[index] = { ...this.mockUserAgreement[index], ...agreement }
       return Promise.resolve(this.mockUserAgreement[index])
@@ -192,9 +192,10 @@ describe('AgreementService', () => {
           return repo
         }
         if (typeof token === 'function') {
-          const mockMetadata = moduleMocker.getMetadata(token) as MockFunctionMetadata<any, any>
+          const mockMetadata = moduleMocker.getMetadata(token)
+          if (!mockMetadata) throw new Error('Missing mock metadata')
           const Mock = moduleMocker.generateFromMetadata(mockMetadata)
-          return new Mock()
+          return Reflect.construct(Mock, [])
         }
       })
       .compile()

@@ -16,7 +16,11 @@ export class SyncTakenLectureService {
   async syncTakenLecture(data: ISync.TakenLectureBody) {
     this.slackNoti.sendSyncNoti(`syncTakenLecture: ${data.year}-${data.semester}: ${data.attend.length} attend records`)
 
-    const result: any = {
+    const result: {
+      time: string
+      updated: { studentId: number, remove: (number | undefined)[], add: number[] }[]
+      errors: ({ student_no: number, attend: ISync.AttendType, error: string } | { studentId: number, error: string })[]
+    } = {
       time: new Date().toISOString(),
       updated: [],
       errors: [],

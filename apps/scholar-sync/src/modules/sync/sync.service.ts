@@ -109,10 +109,10 @@ export class SyncService {
           departmentSyncResultDetail.updated.push([foundDepartment, updated])
         }
       }
-      catch (e: any) {
+      catch (e: unknown) {
         departmentSyncResultDetail.errors.push({
           dept_id: lecture.DEPT_ID,
-          error: e.message || 'Unknown error',
+          error: (e instanceof Error ? e.message : String(e)) || 'Unknown error',
         })
       }
     }
@@ -151,10 +151,10 @@ export class SyncService {
           courseMap.set(new_code, updatedCourse)
         }
       }
-      catch (e: any) {
+      catch (e: unknown) {
         courseSyncResultDetail.errors.push({
           new_code,
-          error: e.message || 'Unknown error',
+          error: (e instanceof Error ? e.message : String(e)) || 'Unknown error',
         })
       }
     }
@@ -175,7 +175,7 @@ export class SyncService {
       updated: EProfessor.Basic[][]
       deleted: EProfessor.Basic[]
       skipped: EProfessor.Basic[]
-      errors: Record<string, number>[]
+      errors: { prof_id: number, error: string }[]
     } = {
       type: SyncType.PROFESSOR,
       created: [],
@@ -212,10 +212,10 @@ export class SyncService {
           professorSyncResultDetail.updated.push([professor, updatedProfessor])
         }
       }
-      catch (e: any) {
+      catch (e: unknown) {
         professorSyncResultDetail.errors.push({
           prof_id: charge.PROF_ID,
-          error: e.message || 'Unknown error',
+          error: (e instanceof Error ? e.message : String(e)) || 'Unknown error',
         })
       }
     }
@@ -315,13 +315,13 @@ export class SyncService {
           })
         }
       }
-      catch (e: any) {
+      catch (e: unknown) {
         lecturesSyncResultDetail.errors.push({
           lecture: {
             code: lecture.SUBJECT_NO,
             class_no: lecture.LECTURE_CLASS,
           },
-          error: e.message || 'Unknown error',
+          error: (e instanceof Error ? e.message : String(e)) || 'Unknown error',
         })
       }
     }
@@ -331,10 +331,10 @@ export class SyncService {
       await this.syncRepository.markLecturesDeleted(Array.from(notExistingLectures))
       lecturesSyncResultDetail.deleted = Array.from(notExistingLectures)
     }
-    catch (e: any) {
+    catch (e: unknown) {
       lecturesSyncResultDetail.errors.push({
         lecturesToDelete: Array.from(notExistingLectures),
-        error: e.message || 'Unknown error',
+        error: (e instanceof Error ? e.message : String(e)) || 'Unknown error',
       })
     }
 
@@ -385,6 +385,8 @@ export class SyncService {
       SyncType.EXAMTIME,
       ExamtimeInfo.deriveExamtimeInfo,
       ExamtimeInfo.equals,
+      (lecture) => lecture.subject_examtime,
+      (lectureId, changes) => this.syncRepository.updateLectureExamtimes(lectureId, changes),
     )
   }
 
@@ -396,20 +398,24 @@ export class SyncService {
       SyncType.CLASSTIME,
       ClassTimeInfo.deriveClasstimeInfo,
       ClassTimeInfo.equals,
+      (lecture) => lecture.subject_classtime,
+      (lectureId, changes) => this.syncRepository.updateLectureClasstimes(lectureId, changes),
     )
   }
 
   async syncTime<
-    TYPE extends SyncTimeType,
-    T extends TYPE extends typeof SyncType.EXAMTIME ? IScholar.ScholarExamtimeType : IScholar.ScholarClasstimeType,
-    D extends TYPE extends typeof SyncType.EXAMTIME ? ExamtimeInfo : ClassTimeInfo,
+    T extends IScholar.ScholarExamtimeType | IScholar.ScholarClasstimeType,
+    D extends ExamtimeInfo,
+    E extends { id: number },
   >(
     year: number,
     semester: number,
     data: T[],
-    type: TYPE,
+    type: SyncTimeType,
     deriveInfo: (time: T) => D,
-    matches: (derivedTime: D, existingTime: any) => boolean,
+    matches: (derivedTime: D, existingTime: E) => boolean,
+    getExistingTimes: (lecture: ELecture.Details) => E[],
+    updateTimes: (lectureId: number, changes: { added: D[], removed: number[] }) => Promise<unknown>,
   ) {
     const result: SyncResultDetails = {
       time: new Date(),
@@ -447,7 +453,7 @@ export class SyncService {
     for (const [lecture, times] of lecturePairMap.values()) {
       try {
         const derivedTimes = times.map(deriveInfo)
-        const existingTimes = type === SyncType.EXAMTIME ? lecture.subject_examtime : lecture.subject_classtime
+        const existingTimes = getExistingTimes(lecture)
         const timesToRemove = []
 
         for (const existing of existingTimes) {
@@ -456,18 +462,7 @@ export class SyncService {
           else derivedTimes.splice(idx, 1) // remove matched time
         }
         const timesToAdd = derivedTimes
-        if (type === SyncType.EXAMTIME) {
-          await this.syncRepository.updateLectureExamtimes(lecture.id, {
-            added: timesToAdd,
-            removed: timesToRemove,
-          })
-        }
-        else {
-          await this.syncRepository.updateLectureClasstimes(lecture.id, {
-            added: timesToAdd as any,
-            removed: timesToRemove,
-          })
-        }
+        await updateTimes(lecture.id, { added: timesToAdd, removed: timesToRemove })
 
         if (timesToAdd.length > 0 || timesToRemove.length > 0) {
           timeResultDetail.updated.push({
@@ -479,13 +474,13 @@ export class SyncService {
           })
         }
       }
-      catch (e: any) {
+      catch (e: unknown) {
         timeResultDetail.errors.push({
           lecture: {
             code: lecture.code,
             class_no: lecture.class_no,
           },
-          error: e.message || 'Unknown error',
+          error: (e instanceof Error ? e.message : String(e)) || 'Unknown error',
         })
       }
     }
@@ -613,8 +608,8 @@ export class SyncService {
           }
         }
       }
-      catch (e: any) {
-        resultDetail.errors.push({ studentId, error: e.message || 'Unknown error' })
+      catch (e: unknown) {
+        resultDetail.errors.push({ studentId, error: (e instanceof Error ? e.message : String(e)) || 'Unknown error' })
       }
     }
 

@@ -1,3 +1,5 @@
+import { Prisma } from '@prisma/client'
+
 import { PrismaService } from '@otl/prisma-client/prisma.service'
 
 import { IPrismaMiddleware } from './IPrismaMiddleware'
@@ -11,14 +13,16 @@ export class TimetableLectureMiddleware implements IPrismaMiddleware.Middleware 
     this.prisma = prisma
   }
 
-  async preExecute(_operations: IPrismaMiddleware.operationType, _args: any): Promise<boolean> {
+  async preExecute(_operations: IPrismaMiddleware.operationType, _args: unknown): Promise<boolean> {
     return true
   }
 
-  async postExecute(operations: IPrismaMiddleware.operationType, args: any, _result: any): Promise<boolean> {
+  async postExecute(operations: IPrismaMiddleware.operationType, args: unknown, _result: unknown): Promise<boolean> {
     if (operations === 'create') {
-      const timetableId = args?.data?.timetable_id
-      const lectureId = args?.data?.lecture_id
+      const { data } = args as Prisma.timetable_timetable_lecturesCreateArgs
+      const timetableId = 'timetable_id' in data ? data.timetable_id : data.timetable_timetable?.connect?.id
+      const lectureId = 'lecture_id' in data ? data.lecture_id : data.subject_lecture?.connect?.id
+      if (lectureId === undefined) throw new Error('Missing lecture ID')
       const userId: number | undefined = (
         await this.prisma.timetable_timetable.findUnique({
           where: { id: timetableId },
@@ -33,24 +37,15 @@ export class TimetableLectureMiddleware implements IPrismaMiddleware.Middleware 
       throw new Error('can\'t find user')
     }
     else if (operations === 'createMany') {
-      const timetableId = args?.data?.timetable_id
-      const lectures = args?.data // nested createMany 에 대해서는 작동 안함.
-      const userId: number | undefined = (
-        await this.prisma.timetable_timetable.findUnique({
-          where: { id: timetableId },
-          select: { user_id: true },
-        })
-      )?.user_id
-      if (userId !== undefined) {
-        const res = await this.countNumPeopleBatch(lectures)
-        if (!res) throw new Error('Could not increase num_people')
-        return true
-      }
-      throw new Error('can\'t find user')
+      const { data } = args as Prisma.timetable_timetable_lecturesCreateManyArgs
+      const lectures = Array.isArray(data) ? data : [data]
+      return this.countNumPeopleBatch(lectures)
     }
     else if (operations === 'delete') {
-      const timetableId = args?.where?.timetable_id_lecture_id?.timetable_id // todo : args에 where이 들거가나?
-      const lectureId = args?.where?.timetable_id_lecture_id?.lecture_id
+      const { where } = args as Prisma.timetable_timetable_lecturesDeleteArgs
+      const timetableId = where.timetable_id_lecture_id?.timetable_id // todo : args에 where이 들거가나?
+      const lectureId = where.timetable_id_lecture_id?.lecture_id
+      if (lectureId === undefined) throw new Error('Missing lecture ID')
       const userId: number | undefined = (
         await this.prisma.timetable_timetable.findUnique({
           where: { id: timetableId },
@@ -65,7 +60,9 @@ export class TimetableLectureMiddleware implements IPrismaMiddleware.Middleware 
       throw new Error('can\'t find user')
     }
     else if (operations === 'deleteMany') {
-      const timetableId = args?.where?.timetable_id
+      const { where } = args as Prisma.timetable_timetable_lecturesDeleteManyArgs
+      const timetableId = where?.timetable_id
+      if (typeof timetableId !== 'number') throw new Error('Expected a single timetable ID')
       const lectures = await this.prisma.timetable_timetable_lectures.findMany({
         where: {
           timetable_id: timetableId,
@@ -121,7 +118,7 @@ export class TimetableLectureMiddleware implements IPrismaMiddleware.Middleware 
     return true
   }
 
-  private async countNumPeopleBatch(lectures: { id: number, timetable_id: number, lecture_id: number }[]) {
+  private async countNumPeopleBatch(lectures: { lecture_id: number }[]) {
     const lectureIds = lectures.map((lecture) => lecture.lecture_id)
     Promise.all(
       lectureIds.map(async (id) => {

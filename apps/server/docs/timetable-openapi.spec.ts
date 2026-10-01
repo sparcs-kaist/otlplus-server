@@ -11,7 +11,7 @@ it('documents unified items, change variants and required nullable home selectio
   expect(schemas['ITimetableV2.UpdateItemsReqDto'].properties.changes.items.$ref)
     .toBe('#/components/schemas/ITimetableV2.TimetableChange')
   expect(schemas['ITimetableV2.TimetableItem'].anyOf).toHaveLength(2)
-  expect(schemas['ITimetableV2.TimetableItem'].anyOf.map((item: any) => item.properties.kind.const))
+  expect(schemas['ITimetableV2.TimetableItem'].anyOf.map((item: { properties: { kind: { const: string } } }) => item.properties.kind.const))
     .toEqual(['lecture', 'custom'])
   expect(schemas['ICustomblock.Basic'].required).toContain('times')
   expect(schemas['ICustomblock.Basic'].properties.times.items.$ref).toBe('#/components/schemas/ICustomblock.Time')

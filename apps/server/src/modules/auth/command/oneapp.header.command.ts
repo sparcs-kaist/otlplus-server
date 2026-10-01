@@ -33,8 +33,8 @@ export class OneAppHeaderCommand implements AuthCommand {
       request.user = user
       return this.setAuthenticated(prevResult)
     }
-    catch (e: any) {
-      if (e.message === 'jwt expired' && refreshToken) {
+    catch (e: unknown) {
+      if ((e instanceof Error ? e.message : String(e)) === 'jwt expired' && refreshToken) {
         return this.handleRefreshToken(refreshToken, request, response, prevResult)
       }
       return prevResult
@@ -64,7 +64,7 @@ export class OneAppHeaderCommand implements AuthCommand {
 
       // 필요 시 우리 서비스 쿠키를 발급하려면 sid 매핑이 있어야 함.
       // user 객체에 sid가 있다면 같은 형식으로 재발급
-      const sid: string | undefined = (user as any)?.sid
+      const { sid } = user
       if (sid) {
         const { accessToken: newAccessToken, ...accessTokenOptions } = this.authService.getCookieWithAccessToken(sid)
         const { refreshToken: newRefreshToken, ...refreshTokenOptions } = this.authService.getCookieWithRefreshToken(sid)

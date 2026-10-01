@@ -213,7 +213,7 @@ maybe('SyncScholarDBService', () => {
     expect(service).toBeDefined()
   })
 
-  function checkNoError(result: any) {
+  function checkNoError(result: Awaited<ReturnType<SyncScholarDBService['syncScholarDB']>>) {
     if (result.departments.errors.length > 0) console.error(result.departments.errors)
     if (result.courses.errors.length > 0) console.error(result.courses.errors)
     if (result.lectures.errors.length > 0) console.error(result.lectures.errors)
@@ -639,8 +639,8 @@ maybe('SyncScholarDBService', () => {
       })
 
       expect(result.updated).toHaveLength(2)
-      expect(result.updated.filter((l: any) => l.lecture === existingLecture.code)[0].added).toHaveLength(1)
-      expect(result.updated.filter((l: any) => l.lecture === lectureData[0].code)[0].removed).toHaveLength(2)
+      expect(result.updated.filter((l) => l.lecture === existingLecture.code)[0].added).toHaveLength(1)
+      expect(result.updated.filter((l) => l.lecture === lectureData[0].code)[0].removed).toHaveLength(2)
 
       const classtime = await prisma.subject_classtime.findFirst({
         where: { lecture_id: existingLecture.id },
@@ -764,8 +764,8 @@ maybe('SyncScholarDBService', () => {
       })
 
       expect(result.updated).toHaveLength(2)
-      expect(result.updated.filter((l: any) => l.lecture === existingLecture.code)[0].added).toHaveLength(1)
-      expect(result.updated.filter((l: any) => l.lecture === lectureData[0].code)[0].removed).toHaveLength(1)
+      expect(result.updated.filter((l) => l.lecture === existingLecture.code)[0].added).toHaveLength(1)
+      expect(result.updated.filter((l) => l.lecture === lectureData[0].code)[0].removed).toHaveLength(1)
 
       const examtime = await prisma.subject_examtime.findFirst({
         where: { lecture_id: existingLecture.id },

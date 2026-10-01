@@ -126,7 +126,7 @@ export class LectureRepositoryV2 {
     const datetimeBegin = begin !== undefined && begin !== null ? this.datetimeConverter(begin) : undefined
     const datetimeEnd = end !== undefined && end !== null ? this.datetimeConverter(end) : undefined
 
-    const result: any = {}
+    const result: Prisma.subject_classtimeWhereInput = {}
 
     if (day !== undefined && day !== null) {
       result.day = day
@@ -188,7 +188,7 @@ export class LectureRepositoryV2 {
     // 2) examTimes: lecture_id -> ExamTime[]
     const etByLecture = new Map<number, ELectureV2.ExamTime[]>()
     for (const et of examTimes as Array<ELectureV2.ExamTime & { lecture_id: number }>) {
-      // const key = (et as any).lecture_id as number
+      // const key = (et as unknown).lecture_id as number
       // if (!etByLecture.has(key)) {
       //   etByLecture.set(key, et)
       // }
