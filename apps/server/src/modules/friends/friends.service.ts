@@ -3,13 +3,10 @@ import { Transactional } from '@nestjs-cls/transactional'
 import { Language } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { IFriendV2, ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
 import {
-  toJsonLectures,
   toJsonTimetableV2,
   toJsonTimetableV2WithItems,
 } from '@otl/server-nest/common/serializer/v2/timetable.serializer'
 import { session_userprofile } from '@prisma/client'
-
-import { TimetableItemKind } from '@otl/common/enum/timetable'
 
 import { EFriend } from '@otl/prisma-client/entities'
 import {
@@ -100,7 +97,7 @@ export class FriendsService {
     query: ITimetableV2.GetTimetablesReqDto,
   ): Promise<IFriendV2.GetTimetablesResDto> {
     const friend = await this.getFriend(user.id, friendId)
-    const timetables = await this.timetableRepository.getTimetablesByUserId(
+    const timetables = await this.timetableRepository.getSharedTimetables(
       friend.friend_userprofile_id,
       query.year,
       query.semester,
@@ -111,17 +108,12 @@ export class FriendsService {
   async getMyTimetable(
     user: session_userprofile,
     friendId: number,
-    query: ITimetableV2.MyTimetableReqDto,
-    language: Language,
+    _query: ITimetableV2.MyTimetableReqDto,
+    _language: Language,
   ): Promise<ITimetableV2.MyTimetableResDto> {
-    const friend = await this.getFriend(user.id, friendId)
-    const lectures = await this.lectureRepository.getTakenLecturesBySemester(
-      friend.friend_userprofile_id,
-      query.year,
-      query.semester,
-    )
-    const serialized = toJsonLectures(lectures, language).lectures
-    return { lectures: serialized, timetableItems: serialized.map((data) => ({ kind: TimetableItemKind.LECTURE, data })) }
+    await this.getFriend(user.id, friendId)
+    // Legacy endpoint: academic enrolments are never implicitly shared.
+    return { lectures: [], timetableItems: [] }
   }
 
   async getTimetable(
@@ -131,7 +123,7 @@ export class FriendsService {
     language: Language,
   ): Promise<ITimetableV2.TimetableDetailResDto> {
     const friend = await this.getFriend(user.id, friendId)
-    const timetable = await this.timetableRepository.getTimeTableWithItemsByIdAndUserId(
+    const timetable = await this.timetableRepository.getSharedTimetableWithItems(
       timetableId,
       friend.friend_userprofile_id,
     )
@@ -154,10 +146,6 @@ export class FriendsService {
     for (const friend of friends) {
       const profile = friend.friend_profile
       const matchingLectures = [
-        ...profile.taken_lectures.map(({ lecture: takenLecture }) => ({
-          lecture: takenLecture,
-          timetable: { id: null, year: takenLecture.year, semester: takenLecture.semester },
-        })),
         ...profile.timetable_timetable.flatMap((timetable) => timetable.timetable_timetable_lectures.map(({ subject_lecture: savedLecture }) => ({
           lecture: savedLecture,
           timetable: {

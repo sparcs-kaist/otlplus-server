@@ -588,6 +588,32 @@ export class TimetablesServiceV2 {
     return this.getHomeTimetable(user, body, language)
   }
 
+  async getSharedTimetable(
+    user: session_userprofile,
+    query: ITimetableV2.HomeTimetableReqDto,
+  ): Promise<ITimetableV2.SharedTimetableResDto> {
+    const { year, semester } = query
+    const selection = await this.timetableRepository.getSharedTimetableSelection(user.id, year, semester)
+    return { year, semester, timetableId: selection?.timetable_id ?? null }
+  }
+
+  @Transactional()
+  async setSharedTimetable(
+    user: session_userprofile,
+    body: ITimetableV2.SetHomeTimetableReqDto,
+  ): Promise<ITimetableV2.SharedTimetableResDto> {
+    const { year, semester, timetableId } = body
+    if (timetableId !== null) {
+      await this.timetableRepository.lockTimetable(timetableId)
+      const timetable = await this.TimetableValidation(user, timetableId)
+      if (timetable.year !== year || timetable.semester !== semester) {
+        throw new BadRequestException('Shared timetable must be in the requested year and semester')
+      }
+    }
+    await this.timetableRepository.setSharedTimetableSelection(user.id, year, semester, timetableId)
+    return { year, semester, timetableId }
+  }
+
   private async publishLectureUpdates(lectureIds: number[]) {
     await Promise.all([...new Set(lectureIds)].map((id) => this.timetableMQ.publishLectureNumUpdate(id)))
       .catch((error) => logger.error('Failed to publish lecture num update', error))

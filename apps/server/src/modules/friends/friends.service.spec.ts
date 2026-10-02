@@ -23,7 +23,7 @@ describe('FriendsService', () => {
     deletePair: jest.fn(),
   }
   const lectures = { getLectureDetailById: jest.fn(), getTakenLecturesBySemester: jest.fn() }
-  const timetables = { getTimeTableWithItemsByIdAndUserId: jest.fn(), getTimetablesByUserId: jest.fn() }
+  const timetables = { getSharedTimetableWithItems: jest.fn(), getSharedTimetables: jest.fn() }
   const semesters = { getActiveSemestersAt: jest.fn() }
   let service: FriendsService
 
@@ -186,12 +186,12 @@ describe('FriendsService', () => {
     friends.getFriend.mockResolvedValue(null)
     await expect(service.getTimetable(user, 7, 99, 'ko')).rejects.toBeInstanceOf(NotFoundException)
     expect(friends.getFriend).toHaveBeenCalledWith(42, 7)
-    expect(timetables.getTimeTableWithItemsByIdAndUserId).not.toHaveBeenCalled()
+    expect(timetables.getSharedTimetableWithItems).not.toHaveBeenCalled()
 
     friends.getFriend.mockResolvedValue({ friend_userprofile_id: 43 })
-    timetables.getTimeTableWithItemsByIdAndUserId.mockResolvedValue(null)
+    timetables.getSharedTimetableWithItems.mockResolvedValue(null)
     await expect(service.getTimetable(user, 7, 99, 'ko')).rejects.toBeInstanceOf(NotFoundException)
-    expect(timetables.getTimeTableWithItemsByIdAndUserId).toHaveBeenCalledWith(99, 43)
+    expect(timetables.getSharedTimetableWithItems).toHaveBeenCalledWith(99, 43)
   })
 
   describe('unified timetable items', () => {
@@ -215,7 +215,7 @@ describe('FriendsService', () => {
     beforeEach(() => friends.getFriend.mockResolvedValue({ friend_userprofile_id: 43 }))
 
     it('returns lectures and grouped custom blocks together, preserving kinds even when IDs match', async () => {
-      timetables.getTimeTableWithItemsByIdAndUserId.mockResolvedValue({
+      timetables.getSharedTimetableWithItems.mockResolvedValue({
         timetable_timetable_lectures: [{ subject_lecture: lecture }],
         timetable_timetable_customblocks: [{ block_custom_blocks: {
           ...block,
@@ -229,45 +229,45 @@ describe('FriendsService', () => {
         { kind: 'custom', data: { ...block, times: [first, second] } },
       ])
       expect(result.lectures[0]).toMatchObject({ id: 10, name: 'Lecture' })
-      expect(timetables.getTimeTableWithItemsByIdAndUserId).toHaveBeenCalledWith(99, 43)
+      expect(timetables.getSharedTimetableWithItems).toHaveBeenCalledWith(99, 43)
     })
 
     it('normalizes legacy custom blocks without child times and handles an empty saved timetable', async () => {
-      timetables.getTimeTableWithItemsByIdAndUserId.mockResolvedValue({
+      timetables.getSharedTimetableWithItems.mockResolvedValue({
         timetable_timetable_lectures: [],
         timetable_timetable_customblocks: [{ block_custom_blocks: { ...block, times: [] } }],
       })
       await expect(service.getTimetable(user, 7, 99, 'ko')).resolves.toEqual({
         lectures: [], timetableItems: [{ kind: 'custom', data: { ...block, times: [first] } }],
       })
-      timetables.getTimeTableWithItemsByIdAndUserId.mockResolvedValue({
+      timetables.getSharedTimetableWithItems.mockResolvedValue({
         timetable_timetable_lectures: [], timetable_timetable_customblocks: [],
       })
       await expect(service.getTimetable(user, 7, 99, 'ko')).resolves.toEqual({ lectures: [], timetableItems: [] })
     })
 
-    it('uses the same item contract for enrolled timetables after checking the friendship', async () => {
+    it('never exposes enrolled timetables through the legacy friend endpoint', async () => {
       friends.getFriend.mockResolvedValueOnce(null)
       await expect(service.getMyTimetable(user, 7, term, 'ko')).rejects.toBeInstanceOf(NotFoundException)
       expect(lectures.getTakenLecturesBySemester).not.toHaveBeenCalled()
 
       lectures.getTakenLecturesBySemester.mockResolvedValue([lecture])
       const result = await service.getMyTimetable(user, 7, term, 'ko')
-      expect(lectures.getTakenLecturesBySemester).toHaveBeenCalledWith(43, 2026, 3)
-      expect(result.timetableItems).toEqual([{ kind: 'lecture', data: result.lectures[0] }])
-      expect(timetables.getTimeTableWithItemsByIdAndUserId).not.toHaveBeenCalled()
+      expect(lectures.getTakenLecturesBySemester).not.toHaveBeenCalled()
+      expect(result).toEqual({ lectures: [], timetableItems: [] })
+      expect(timetables.getSharedTimetableWithItems).not.toHaveBeenCalled()
     })
 
     it('keeps timetable list summaries distinct from the item union', async () => {
-      timetables.getTimetablesByUserId.mockResolvedValue([{ id: 99, name: 'Saved', ...term, arrange_order: 2 }])
+      timetables.getSharedTimetables.mockResolvedValue([{ id: 99, name: 'Saved', ...term, arrange_order: 2 }])
       await expect(service.getTimetables(user, 7, term)).resolves.toEqual({
         timetables: [{ id: 99, name: 'Saved', ...term, timeTableOrder: 2 }],
       })
-      expect(timetables.getTimetablesByUserId).toHaveBeenCalledWith(43, 2026, 3)
+      expect(timetables.getSharedTimetables).toHaveBeenCalledWith(43, 2026, 3)
     })
   })
 
-  it('includes any official or saved timetable and groups each friend once with exact-section priority', async () => {
+  it('ignores official enrolments and groups shared timetables with exact-section priority', async () => {
     const lecture = {
       id: 10,
       course_id: 100,
@@ -309,26 +309,23 @@ describe('FriendsService', () => {
     ])
     const result = await service.getOverlaps(user, 10)
     expect(friends.getFriendsWithCourse).toHaveBeenCalledWith(42, 100)
-    expect(result.sameLecture.map(({ id }) => id)).toEqual([1, 5, 8])
-    expect(result.sameCourseDifferentSection.map(({ id }) => id)).toEqual([2, 6, 9])
-    expect(result.previousSemesterSameProfessor.map(({ id }) => id)).toEqual([3, 7])
+    expect(result.sameLecture.map(({ id }) => id)).toEqual([5, 8])
+    expect(result.sameCourseDifferentSection.map(({ id }) => id)).toEqual([6, 9])
+    expect(result.previousSemesterSameProfessor.map(({ id }) => id)).toEqual([7])
     expect(result.sameLecture.map(({ timetable }) => timetable)).toEqual([
-      { id: null, year: 2026, semester: 3 },
       { id: 501, year: 2026, semester: 3 },
       { id: 800, year: 2026, semester: 3 },
     ])
     expect(result.sameCourseDifferentSection.map(({ timetable }) => timetable)).toEqual([
-      { id: null, year: 2026, semester: 3 },
       { id: 600, year: 2026, semester: 3 },
       { id: 900, year: 2026, semester: 3 },
     ])
     expect(result.previousSemesterSameProfessor.map(({ timetable }) => timetable)).toEqual([
-      { id: null, year: 2025, semester: 3 },
       { id: 700, year: 2025, semester: 3 },
     ])
   })
 
-  it('chooses the latest matching term, then official records, then the smallest saved timetable ID', async () => {
+  it('chooses the latest shared matching term and ignores official records', async () => {
     const lecture = {
       id: 10,
       course_id: 100,
@@ -366,7 +363,7 @@ describe('FriendsService', () => {
     profile.taken_lectures.push({ lecture: priorLecture })
     profile.timetable_timetable.reverse()
     await expect(service.getOverlaps(user, 10)).resolves.toMatchObject({
-      previousSemesterSameProfessor: [{ timetable: { id: null, year: 2025, semester: 3 } }],
+      previousSemesterSameProfessor: [{ timetable: { id: 20, year: 2025, semester: 3 } }],
     })
 
     profile.timetable_timetable.push({
@@ -428,10 +425,9 @@ describe('FriendsService', () => {
           userprofile_id: 42,
           friend_profile: {
             OR: [
-              { taken_lectures: { some: { lecture: { course_id: 100 } } } },
               {
                 timetable_timetable: {
-                  some: { timetable_timetable_lectures: { some: { subject_lecture: { course_id: 100 } } } },
+                  some: { timetable_shared_selections: { some: {} }, timetable_timetable_lectures: { some: { subject_lecture: { course_id: 100 } } } },
                 },
               },
             ],
@@ -439,12 +435,11 @@ describe('FriendsService', () => {
         },
       }),
     )
-    expect(findMany.mock.calls[0][0].select.friend_profile.select.taken_lectures.where).toEqual({
-      lecture: { course_id: 100 },
-    })
+    expect(findMany.mock.calls[0][0].select.friend_profile.select).not.toHaveProperty('taken_lectures')
     const savedTimetables = findMany.mock.calls[0][0].select.friend_profile.select.timetable_timetable
     expect(savedTimetables.select).toMatchObject({ id: true, year: true, semester: true })
     expect(savedTimetables.where).toEqual({
+      timetable_shared_selections: { some: {} },
       timetable_timetable_lectures: { some: { subject_lecture: { course_id: 100 } } },
     })
     expect(savedTimetables.select.timetable_timetable_lectures.where).toEqual({
