@@ -46,14 +46,6 @@ export class AuthService {
     return this.userRepository.findByStudentId(studentId)
   }
 
-  public async findUserFromToken(payload: IAuth.JwtPayload) {
-    if (process.env.NODE_ENV === 'dev' && payload.devUserId !== undefined) {
-      if (!Number.isSafeInteger(payload.devUserId) || payload.devUserId <= 0) return null
-      return this.userRepository.findById(payload.devUserId)
-    }
-    return this.findBySid(payload.sid)
-  }
-
   private getDevSsoSecret() {
     if (process.env.NODE_ENV !== 'dev') throw new NotFoundException()
     if (!this.jwtConfig.secret) throw new UnauthorizedException('JWT secret is not configured')
@@ -92,9 +84,10 @@ export class AuthService {
     }
     const user = await this.findByStudentId(Number(studentId))
     if (!user) throw new NotFoundException('Student not found')
+    if (!user.sid) throw new BadRequestException('The selected user has no SID')
 
-    const { accessToken, ...accessTokenOptions } = this.getCookieWithAccessToken(user.sid, user.id)
-    const { refreshToken, ...refreshTokenOptions } = this.getCookieWithRefreshToken(user.sid, user.id)
+    const { accessToken, ...accessTokenOptions } = this.getCookieWithAccessToken(user.sid)
+    const { refreshToken, ...refreshTokenOptions } = this.getCookieWithRefreshToken(user.sid)
     Logger.log(`Dev login: SSO ${identity.sub} selected user ${user.id}`, AuthService.name)
     return {
       accessToken, accessTokenOptions, refreshToken, refreshTokenOptions,
@@ -324,10 +317,9 @@ export class AuthService {
     }
   }
 
-  public getCookieWithAccessToken(sid: string, devUserId?: number) {
+  public getCookieWithAccessToken(sid: string) {
     const payload = {
       sid,
-      ...(process.env.NODE_ENV === 'dev' && devUserId !== undefined ? { devUserId } : {}),
     }
 
     const jwtConfig = settings().getJwtConfig()
@@ -345,10 +337,9 @@ export class AuthService {
     }
   }
 
-  public getCookieWithRefreshToken(sid: string, devUserId?: number) {
+  public getCookieWithRefreshToken(sid: string) {
     const payload = {
       sid,
-      ...(process.env.NODE_ENV === 'dev' && devUserId !== undefined ? { devUserId } : {}),
     }
 
     const jwtConfig = settings().getJwtConfig()
@@ -414,11 +405,11 @@ export class AuthService {
       throw new UnauthorizedException('Invalid or expired refresh token')
     }
 
-    const user = await this.findUserFromToken(payload)
+    const user = await this.findBySid(payload.sid)
     if (!user) throw new UnauthorizedException('user is not found')
 
-    const { accessToken, ...accessTokenOptions } = this.getCookieWithAccessToken(payload.sid, payload.devUserId)
-    const { refreshToken: newRefreshToken, ...refreshTokenOptions } = this.getCookieWithRefreshToken(payload.sid, payload.devUserId)
+    const { accessToken, ...accessTokenOptions } = this.getCookieWithAccessToken(payload.sid)
+    const { refreshToken: newRefreshToken, ...refreshTokenOptions } = this.getCookieWithRefreshToken(payload.sid)
     return {
       accessToken,
       accessTokenOptions,

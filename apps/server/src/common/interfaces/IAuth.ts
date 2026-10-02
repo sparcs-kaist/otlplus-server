@@ -64,7 +64,6 @@ export namespace IAuth {
 
   export interface JwtPayload {
     sid: string
-    devUserId?: number
   }
 
   export class TokenDto {

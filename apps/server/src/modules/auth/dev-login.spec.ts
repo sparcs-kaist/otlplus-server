@@ -27,7 +27,6 @@ const user = { id: 42, sid: 'copied-prod-sid', student_id: '20201234' }
 let repository: {
   findByStudentId: jest.Mock
   findBySid: jest.Mock
-  findById: jest.Mock
   updateUser: jest.Mock
   createUser: jest.Mock
 }
@@ -55,7 +54,6 @@ beforeEach(() => {
   repository = {
     findByStudentId: jest.fn().mockResolvedValue(user),
     findBySid: jest.fn().mockImplementation(async (sid) => (sid === user.sid ? user : null)),
-    findById: jest.fn().mockResolvedValue(user),
     updateUser: jest.fn(),
     createUser: jest.fn(),
   }
@@ -78,9 +76,11 @@ afterEach(() => {
 it('exchanges SSO proof for the copied user tokens without changing the DB, and refreshes them', async () => {
   const tokens = await controller.devLogin(user.student_id, request({ devSsoToken: proof() }), response)
   const secret = settings().getJwtConfig().secret
-  expect(jwt.verify(tokens.accessToken, { secret }).sid).toBe(user.sid)
-  expect(jwt.verify(tokens.refreshToken, { secret }).sid).toBe(user.sid)
-  expect((await service.tokenRefresh(tokens.refreshToken)).accessToken).toBeTruthy()
+  const refreshed = await service.tokenRefresh(tokens.refreshToken)
+  for (const token of [tokens.accessToken, tokens.refreshToken, refreshed.accessToken, refreshed.refreshToken]) {
+    expect(jwt.verify(token, { secret })).toEqual({ sid: user.sid, iat: expect.any(Number), exp: expect.any(Number) })
+  }
+  expect(repository.findBySid).toHaveBeenCalledWith(user.sid)
   expect(repository.updateUser).not.toHaveBeenCalled()
   expect(repository.createUser).not.toHaveBeenCalled()
   expect(response.cookie).toHaveBeenCalledWith(
@@ -319,26 +319,10 @@ it('runs login, callback, account selection and authenticated profile through th
   }
 })
 
-it('authenticates and refreshes an account without a SID by its selected dev user ID', async () => {
-  const selected = { ...user, sid: '' }
-  repository.findByStudentId.mockResolvedValue(selected)
-  repository.findById.mockResolvedValue(selected)
-  const tokens = await service.devLogin(proof(), user.student_id)
-  const payload = jwt.verify(tokens.accessToken, { secret: settings().getJwtConfig().secret })
-  expect(payload.devUserId).toBe(user.id)
-  expect(await service.findUserFromToken(payload)).toEqual(selected)
-  const refreshed = await service.tokenRefresh(tokens.refreshToken)
-  expect(jwt.verify(refreshed.accessToken, { secret: settings().getJwtConfig().secret }).devUserId).toBe(user.id)
-  const req = request({ accessToken: tokens.accessToken })
-  const context = { switchToHttp: () => ({ getRequest: () => req, getResponse: () => response }) } as never
-  const result = { authentication: false, authorization: false, isPublic: false }
-  expect((await new JwtCookieCommand(new Reflector(), service, jwt).next(context, result)).authentication).toBe(true)
-  req.cookies = { refreshToken: tokens.refreshToken }
-  expect((await new JwtCookieCommand(new Reflector(), service, jwt).next(context, result)).authentication).toBe(true)
-  req.cookies = {}
-  req.headers.authorization = `Bearer ${tokens.accessToken}`
-  expect((await new JwtHeaderCommand(new Reflector(), service, jwt).next(context, result)).authentication).toBe(true)
-  expect(repository.findBySid).not.toHaveBeenCalled()
-  process.env.NODE_ENV = 'prod'
-  expect(await service.findUserFromToken(payload)).toBeNull()
+it('rejects a selected account without a SID instead of issuing unusable tokens', async () => {
+  const token = proof()
+  const sign = jest.spyOn(jwt, 'sign')
+  repository.findByStudentId.mockResolvedValue({ ...user, sid: '' })
+  await expect(service.devLogin(token, user.student_id)).rejects.toBeInstanceOf(BadRequestException)
+  expect(sign).not.toHaveBeenCalled()
 })

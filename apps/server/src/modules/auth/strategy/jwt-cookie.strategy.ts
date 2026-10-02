@@ -22,6 +22,6 @@ export class JwtCookieStrategy extends PassportStrategy(Strategy, 'jwt-cookie') 
   }
 
   async validate(payload: IAuth.JwtPayload) {
-    return this.authService.findUserFromToken(payload)
+    return this.authService.findBySid(payload.sid)
   }
 }
