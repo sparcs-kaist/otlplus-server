@@ -63,6 +63,8 @@ function setup(current = timetable()) {
     createTimetable: jest.fn().mockResolvedValue({ id: 43 }),
     addLectureToTimetable: jest.fn().mockResolvedValue(undefined),
     removeLectureFromTimetable: jest.fn().mockResolvedValue(undefined),
+    getSharedTimetableSelection: jest.fn().mockResolvedValue(null),
+    setSharedTimetableSelection: jest.fn().mockResolvedValue(undefined),
     getHomeTimetable: jest.fn().mockResolvedValue(null),
     setHomeTimetable: jest.fn().mockResolvedValue(undefined),
     getLecturesWithClassTimes: jest.fn().mockResolvedValue([]),
@@ -312,5 +314,24 @@ describe('multi-time custom blocks', () => {
     expect(blocks.createCustomblock).toHaveBeenCalledWith({ ...customInput, times })
     repo.getHomeTimetable.mockResolvedValue({ timetable_id: 42 })
     expect((await service.getHomeTimetable(user, term, 'en')).timetableItems).toEqual([{ kind: 'custom', data: grouped }])
+  })
+})
+
+
+describe('friend sharing selection', () => {
+  it('starts private, selects a timetable, and can unshare without changing home selection', async () => {
+    const { service, repo } = setup()
+    await expect(service.getSharedTimetable(user, term)).resolves.toEqual({ ...term, timetableId: null })
+    await expect(service.setSharedTimetable(user, { ...term, timetableId: 42 })).resolves.toEqual({ ...term, timetableId: 42 })
+    expect(repo.setSharedTimetableSelection).toHaveBeenCalledWith(user.id, 2026, 3, 42)
+    await service.setSharedTimetable(user, { ...term, timetableId: null })
+    expect(repo.setSharedTimetableSelection).toHaveBeenLastCalledWith(user.id, 2026, 3, null)
+    expect(repo.setHomeTimetable).not.toHaveBeenCalled()
+  })
+
+  it.each([{ year: 2025 }, { semester: 1 }, { user_id: 999 }])('rejects wrong term or owner: %j', async (changes) => {
+    const { service, repo } = setup({ ...timetable(), ...changes })
+    await expect(service.setSharedTimetable(user, { ...term, timetableId: 42 })).rejects.toThrow()
+    expect(repo.setSharedTimetableSelection).not.toHaveBeenCalled()
   })
 })

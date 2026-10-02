@@ -25,6 +25,9 @@ it('documents unified items, change variants and required nullable home selectio
   expect(selection.required).toContain('timetableId')
   expect(selection.properties.timetableId.anyOf).toContainEqual({ type: 'null' })
   expect(document.paths['/api/v2/timetables/home']).toHaveProperty('patch')
+  expect(document.paths['/api/v2/timetables/shared']).toHaveProperty('get')
+  expect(document.paths['/api/v2/timetables/shared']).toHaveProperty('patch')
+  expect(schemas['ITimetableV2.SharedTimetableResDto'].required).toContain('timetableId')
   expect(document.paths['/api/v2/timetables/{timetableId}/items']).toHaveProperty('patch')
 })
 
