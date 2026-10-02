@@ -4031,6 +4031,58 @@
           }
         ]
       }
+    },
+    "/api/v2/timetables/shared": {
+      "get": {
+        "summary": "TimetablesControllerV2.getSharedTimetable",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ITimetableV2.SharedTimetableResDto"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ITimetableV2.HomeTimetableReqDto"
+            }
+          }
+        ]
+      },
+      "patch": {
+        "summary": "TimetablesControllerV2.setSharedTimetable",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ITimetableV2.SharedTimetableResDto"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ITimetableV2.SetHomeTimetableReqDto"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -12136,6 +12188,33 @@
         "required": [
           "year",
           "semester"
+        ],
+        "additionalProperties": false
+      },
+      "ITimetableV2.SharedTimetableResDto": {
+        "type": "object",
+        "properties": {
+          "year": {
+            "type": "number"
+          },
+          "semester": {
+            "type": "number"
+          },
+          "timetableId": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "year",
+          "semester",
+          "timetableId"
         ],
         "additionalProperties": false
       }

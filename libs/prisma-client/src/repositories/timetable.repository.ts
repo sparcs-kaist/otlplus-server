@@ -47,6 +47,36 @@ export class TimetableRepository {
     })
   }
 
+  async getSharedTimetableSelection(userId: number, year: number, semester: number) {
+    return this.txHost.tx.timetable_shared_selection.findUnique({
+      where: { user_id_year_semester: { user_id: userId, year, semester } },
+    })
+  }
+
+  async setSharedTimetableSelection(userId: number, year: number, semester: number, timetableId: number | null) {
+    return this.txHost.tx.$executeRaw`
+      INSERT INTO timetable_shared_selection (user_id, year, semester, timetable_id)
+      VALUES (${userId}, ${year}, ${semester}, ${timetableId})
+      ON DUPLICATE KEY UPDATE timetable_id = ${timetableId}
+    `
+  }
+
+  async getSharedTimetables(userId: number, year: number, semester: number) {
+    return this.txHost.tx.timetable_timetable.findMany({
+      include: ETimetable.Details.include,
+      where: {
+        user_id: userId, year, semester, timetable_shared_selections: { some: { user_id: userId, year, semester } },
+      },
+    })
+  }
+
+  async getSharedTimetableWithItems(timetableId: number, userId: number) {
+    return this.txHost.tx.timetable_timetable.findFirst({
+      include: ETimetable.WithItems.include,
+      where: { id: timetableId, user_id: userId, timetable_shared_selections: { some: { user_id: userId } } },
+    })
+  }
+
   async getTimetables(
     user: session_userprofile,
     year?: number | null,

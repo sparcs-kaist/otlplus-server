@@ -135,7 +135,7 @@ describe('current schedule query', () => {
 
   beforeEach(() => queryRaw.mockResolvedValue([]))
 
-  it('matches enrolled lectures or any term-scoped timetable lecture/custom block, selecting only owned relation IDs', async () => {
+  it('matches only shared timetable lectures/custom blocks, selecting only owned relation IDs', async () => {
     const terms = [{ year: 2026, semester: 3 }, { year: 2027, semester: 1 }]
     findMany.mockResolvedValue([{ id: 101 }, { id: 102 }])
     await expect(repository.getFriendIdsWithScheduleAt(42, [101, 102, 103], terms, 0, 635)).resolves.toEqual([101, 102])
@@ -155,11 +155,11 @@ describe('current schedule query', () => {
               subject_classtime: { some: { day: 0, begin: { lte: time }, end: { gt: time } } },
             }
             return [
-              { taken_lectures: { some: { lecture } } },
               {
                 timetable_timetable: {
                   some: {
                     ...term,
+                    timetable_shared_selections: { some: {} },
                     OR: [
                       { timetable_timetable_lectures: { some: { subject_lecture: lecture } } },
                       {
@@ -189,6 +189,7 @@ describe('current schedule query', () => {
     const sql = query.sql.replace(/\s+/g, ' ').trim()
     expect(sql).toContain('friend.userprofile_id = ? AND friend.id IN (?,?,?)')
     expect(sql).toContain('timetable.user_id = friend.friend_userprofile_id')
+    expect(sql).toContain('JOIN timetable_shared_selection AS shared ON shared.timetable_id = timetable.id AND shared.user_id = timetable.user_id')
     expect(sql).toContain('(timetable.year = ? AND timetable.semester = ?) OR (timetable.year = ? AND timetable.semester = ?)')
     expect(sql).toContain('slot.day = ? AND slot.begin <= ? AND slot.end > ?')
     expect(sql).toContain('first_slot.custom_block_id = slot.custom_block_id AND first_slot.id < slot.id')
@@ -201,7 +202,7 @@ describe('current schedule query', () => {
   ])('represents minute %i as a UTC-anchored MySQL TIME with inclusive start and exclusive end', async (minute, iso) => {
     findMany.mockResolvedValue([])
     await repository.getFriendIdsWithScheduleAt(42, [101], [{ year: 2026, semester: 3 }], 6, minute)
-    const filter = findMany.mock.calls[0][0].where.friend_profile.OR[0].taken_lectures.some.lecture.subject_classtime.some
+    const filter = findMany.mock.calls[0][0].where.friend_profile.OR[0].timetable_timetable.some.OR[0].timetable_timetable_lectures.some.subject_lecture.subject_classtime.some
     expect(filter).toEqual({ day: 6, begin: { lte: new Date(iso) }, end: { gt: new Date(iso) } })
     expect(queryRaw.mock.calls[0][0].values.slice(-3)).toEqual([6, minute, minute])
   })

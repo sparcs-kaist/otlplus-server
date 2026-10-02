@@ -352,6 +352,14 @@ export namespace ITimetableV2 {
     timetableId!: number | null
   }
 
+  export class SharedTimetableResDto {
+    year!: number
+
+    semester!: number
+
+    timetableId!: number | null
+  }
+
   export class HomeTimetableResDto extends TimetableDetailResDto {
     source!: 'saved' | 'enrolled'
 
