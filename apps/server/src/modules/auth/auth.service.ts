@@ -1,4 +1,6 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common'
+import {
+  BadRequestException, Inject, Injectable, Logger, NotFoundException, UnauthorizedException,
+} from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { IAuth } from '@otl/server-nest/common/interfaces'
 import { AGREEMENT_IN_PUBLIC_PORT } from '@otl/server-nest/modules/agreement/domain/agreement.in.port'
@@ -9,6 +11,7 @@ import { Prisma, session_userprofile } from '@prisma/client'
 import * as bcrypt from 'bcrypt'
 import { Request } from 'express'
 import * as jsonwebtoken from 'jsonwebtoken'
+import { createHmac } from 'node:crypto'
 
 import { AgreementType } from '@otl/common/enum/agreement'
 
@@ -41,6 +44,61 @@ export class AuthService {
 
   public async findByStudentId(studentId: number) {
     return this.userRepository.findByStudentId(studentId)
+  }
+
+  public async findUserFromToken(payload: IAuth.JwtPayload) {
+    if (process.env.NODE_ENV === 'dev' && payload.devUserId !== undefined) {
+      if (!Number.isSafeInteger(payload.devUserId) || payload.devUserId <= 0) return null
+      return this.userRepository.findById(payload.devUserId)
+    }
+    return this.findBySid(payload.sid)
+  }
+
+  private getDevSsoSecret() {
+    if (process.env.NODE_ENV !== 'dev') throw new NotFoundException()
+    if (!this.jwtConfig.secret) throw new UnauthorizedException('JWT secret is not configured')
+    return createHmac('sha256', this.jwtConfig.secret).update('otl-dev-sso').digest('hex')
+  }
+
+  public createDevSsoToken(ssoProfile: ESSOUser.SSOUser) {
+    const secret = this.getDevSsoSecret()
+    if (!ssoProfile.uid) throw new UnauthorizedException('Missing SSO identity')
+    return this.jwtService.sign({}, {
+      secret,
+      algorithm: 'HS256',
+      subject: ssoProfile.uid,
+      audience: 'otl-dev-login',
+      expiresIn: '10m',
+    })
+  }
+
+  public async devLogin(token: unknown, studentId: unknown) {
+    const secret = this.getDevSsoSecret()
+    let identity: { sub: string }
+    try {
+      if (typeof token !== 'string') throw new Error('Missing SSO proof')
+      identity = await this.jwtService.verifyAsync<{ sub: string }>(token, {
+        secret,
+        algorithms: ['HS256'],
+        audience: 'otl-dev-login',
+      })
+      if (!identity.sub) throw new Error('Missing SSO identity')
+    }
+    catch (_) {
+      throw new UnauthorizedException('SPARCS SSO authentication required')
+    }
+    if (typeof studentId !== 'string' || !/^[1-9]\d{0,14}$/.test(studentId)) {
+      throw new BadRequestException('Invalid student ID')
+    }
+    const user = await this.findByStudentId(Number(studentId))
+    if (!user) throw new NotFoundException('Student not found')
+
+    const { accessToken, ...accessTokenOptions } = this.getCookieWithAccessToken(user.sid, user.id)
+    const { refreshToken, ...refreshTokenOptions } = this.getCookieWithRefreshToken(user.sid, user.id)
+    Logger.log(`Dev login: SSO ${identity.sub} selected user ${user.id}`, AuthService.name)
+    return {
+      accessToken, accessTokenOptions, refreshToken, refreshTokenOptions,
+    }
   }
 
   async findSidByUid(uid: string): Promise<string | null> {
@@ -266,9 +324,10 @@ export class AuthService {
     }
   }
 
-  public getCookieWithAccessToken(sid: string) {
+  public getCookieWithAccessToken(sid: string, devUserId?: number) {
     const payload = {
       sid,
+      ...(process.env.NODE_ENV === 'dev' && devUserId !== undefined ? { devUserId } : {}),
     }
 
     const jwtConfig = settings().getJwtConfig()
@@ -286,9 +345,10 @@ export class AuthService {
     }
   }
 
-  public getCookieWithRefreshToken(sid: string) {
+  public getCookieWithRefreshToken(sid: string, devUserId?: number) {
     const payload = {
       sid,
+      ...(process.env.NODE_ENV === 'dev' && devUserId !== undefined ? { devUserId } : {}),
     }
 
     const jwtConfig = settings().getJwtConfig()
@@ -354,11 +414,11 @@ export class AuthService {
       throw new UnauthorizedException('Invalid or expired refresh token')
     }
 
-    const user = await this.findBySid(payload.sid)
+    const user = await this.findUserFromToken(payload)
     if (!user) throw new UnauthorizedException('user is not found')
 
-    const { accessToken, ...accessTokenOptions } = this.getCookieWithAccessToken(payload.sid)
-    const { refreshToken: newRefreshToken, ...refreshTokenOptions } = this.getCookieWithRefreshToken(payload.sid)
+    const { accessToken, ...accessTokenOptions } = this.getCookieWithAccessToken(payload.sid, payload.devUserId)
+    const { refreshToken: newRefreshToken, ...refreshTokenOptions } = this.getCookieWithRefreshToken(payload.sid, payload.devUserId)
     return {
       accessToken,
       accessTokenOptions,

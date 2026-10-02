@@ -1,6 +1,7 @@
 import { ExecutionContext, Injectable, NotFoundException } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { JwtService } from '@nestjs/jwt'
+import { IAuth } from '@otl/server-nest/common/interfaces'
 import { AuthCommand, AuthResult } from '@otl/server-nest/modules/auth/auth.command'
 import { AuthService } from '@otl/server-nest/modules/auth/auth.service'
 import settings from '@otl/server-nest/settings'
@@ -26,8 +27,7 @@ export class JwtHeaderCommand implements AuthCommand {
     try {
       if (!accessToken) throw new Error('jwt expired')
       const payload = await this.verifyToken(accessToken)
-      if (!payload.sid) throw new Error('one app jwt')
-      const user = await this.getUserFromPayload(payload.sid)
+      const user = await this.getUserFromPayload(payload)
 
       request.user = user
       return this.setAuthenticated(prevResult)
@@ -40,15 +40,15 @@ export class JwtHeaderCommand implements AuthCommand {
     }
   }
 
-  private async verifyToken(token: string): Promise<{ sid: string }> {
+  private async verifyToken(token: string): Promise<IAuth.JwtPayload> {
     return this.jwtService.verifyAsync(token, {
       secret: this.jwtConfig.secret,
       ignoreExpiration: false,
     })
   }
 
-  private async getUserFromPayload(sid: string) {
-    const user = await this.authService.findBySid(sid)
+  private async getUserFromPayload(payload: IAuth.JwtPayload) {
+    const user = await this.authService.findUserFromToken(payload)
     if (!user) throw new NotFoundException('user is not found')
     return user
   }
@@ -61,8 +61,7 @@ export class JwtHeaderCommand implements AuthCommand {
   ): Promise<AuthResult> {
     try {
       const payload = await this.verifyToken(refreshToken)
-      if (!payload.sid) throw new Error('one app jwt')
-      const user = await this.getUserFromPayload(payload.sid)
+      const user = await this.getUserFromPayload(payload)
 
       // if (user.refresh_token && (await bcrypt.compare(refreshToken, user.refresh_token))) {
       //   const { accessToken: newAccessToken, ...accessTokenOptions } = this.authService.getCookieWithAccessToken(
@@ -77,12 +76,8 @@ export class JwtHeaderCommand implements AuthCommand {
       //   request.user = user
       //   return this.setAuthenticated(result)
       // }
-      const { accessToken: newAccessToken, ...accessTokenOptions } = this.authService.getCookieWithAccessToken(
-        payload.sid,
-      )
-      const { refreshToken: newRefreshToken, ...refreshTokenOptions } = this.authService.getCookieWithRefreshToken(
-        payload.sid,
-      )
+      const { accessToken: newAccessToken, ...accessTokenOptions } = this.authService.getCookieWithAccessToken(payload.sid, payload.devUserId)
+      const { refreshToken: newRefreshToken, ...refreshTokenOptions } = this.authService.getCookieWithRefreshToken(payload.sid, payload.devUserId)
       response.cookie('accessToken', newAccessToken, accessTokenOptions)
       response.cookie('refreshToken', newRefreshToken, refreshTokenOptions)
       request.user = user
