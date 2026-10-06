@@ -14,7 +14,7 @@ export const toJsonReviewV2 = (
   }
 
   const professors = review.lecture.subject_lecture_professors.map((x) => ({
-    id: x.professor.professor_id,
+    id: x.professor.id,
     name:
       language.includes('en') && x.professor.professor_name_en
         ? x.professor.professor_name_en
