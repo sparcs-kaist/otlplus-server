@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { CourseOrderQuery } from '@otl/server-nest/common/interfaces/v2/ICourseV2'
 import { Prisma } from '@prisma/client'
 
 import { PrismaService } from '@otl/prisma-client/prisma.service'
@@ -25,7 +26,7 @@ export class LectureRepositoryV2 {
     day: number | undefined,
     begin: number | undefined,
     end: number | undefined,
-    order: string | undefined,
+    order: CourseOrderQuery | undefined,
     limit: number | undefined,
     offset: number | undefined,
   ): Promise<ELectureV2.Basic[]> {

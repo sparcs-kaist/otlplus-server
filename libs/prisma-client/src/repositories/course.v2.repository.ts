@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { CourseOrderQuery } from '@otl/server-nest/common/interfaces/v2/ICourseV2'
 import { Prisma } from '@prisma/client'
 
 import { formatNewLectureCodeWithDot } from '@otl/prisma-client/common'
@@ -52,7 +53,7 @@ export class CourseRepositoryV2 {
     level: number[] | undefined,
     keyword: string | undefined,
     term: number | undefined,
-    order: string | undefined,
+    order: CourseOrderQuery | undefined,
     offset: number | undefined,
     limit: number | undefined,
   ): Promise<{ queryResult: ECourseV2.BasicWithProfessors[], totalCount: number }> {
