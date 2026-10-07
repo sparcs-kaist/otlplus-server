@@ -47,7 +47,7 @@ export class LecturesServiceV2 {
       day,
       begin,
       end,
-      order,
+      order as unknown as string | undefined,
       limit,
       offset,
     )
