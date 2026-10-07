@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common'
-import { CourseOrderQuery } from '@otl/server-nest/common/interfaces/v2/ICourseV2'
 import { Prisma } from '@prisma/client'
 
 import { PrismaService } from '@otl/prisma-client/prisma.service'
@@ -26,11 +25,12 @@ export class LectureRepositoryV2 {
     day: number | undefined,
     begin: number | undefined,
     end: number | undefined,
-    order: CourseOrderQuery | undefined,
+    order: string | undefined,
     limit: number | undefined,
     offset: number | undefined,
   ): Promise<ELectureV2.Basic[]> {
     const DEFAULT_LIMIT = 300
+    // const DEFAULT_ORDER = ['year', 'semester', 'old_code', 'class_no']
     const researchTypes = ['Individual Study', 'Thesis Study(Undergraduate)', 'Thesis Research(MA/phD)']
 
     const semesterFilter = this.semesterFilter(year, semester)
@@ -67,36 +67,17 @@ export class LectureRepositoryV2 {
         AND: filters,
       },
       select: ELectureV2.BasicArgs.select,
-      orderBy: this.lectureOrderBy(order),
+      orderBy: [{ year: 'desc' }, { semester: 'desc' }, { old_code: 'asc' }, { class_no: 'asc' }],
       skip: offset ?? 0,
       take: limit ?? DEFAULT_LIMIT,
     })
 
+    // const orderedQuery = applyOrder<ELecture.Details>(
+    //   levelFilteredResult,
+    //   (query.order ?? DEFAULT_ORDER) as (keyof ELecture.Details)[],
+    // )
+    // return applyOffset<ELecture.Details>(orderedQuery, query.offset ?? 0)
     return queryResult
-  }
-
-  private lectureOrderBy(order?: CourseOrderQuery): Prisma.subject_lectureOrderByWithRelationInput[] {
-    /**
-     * [인기순, 수강자 많은 순]
-     * 1) review_total_weight 2) (old_code, class_no) 3) id
-     * 과목 사전은 new_code를, 시간표는 old_code를 기준으로 씀.
-     *
-     * [과목 코드 순]
-     * 1) year 2) semester 3) old_code 4) class_no 5) id
-     * 기존 정렬 순서 유지
-     */
-    switch (order) {
-      // 인기순
-      case 'popular':
-        return [{ course: { review_total_weight: 'desc' } }, { old_code: 'asc' }, { class_no: 'asc' }, { id: 'asc' }]
-      // 수강자 많은 순
-      case 'studentCount':
-        return [{ num_people: 'desc' }, { old_code: 'asc' }, { class_no: 'asc' }, { id: 'asc' }]
-      // 과목 코드 순 (default)
-      case 'code':
-      default:
-        return [{ year: 'desc' }, { semester: 'desc' }, { old_code: 'asc' }, { class_no: 'asc' }, { id: 'asc' }]
-    }
   }
 
   getResearchLectureQuery(): Prisma.subject_lectureWhereInput {
