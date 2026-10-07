@@ -67,6 +67,10 @@ export class CourseRepositoryV2 {
       (filter): filter is object => filter !== null,
     )
 
+    if (order === 'studentCount') {
+      return this.getCoursesByStudentCount(filterList, offset ?? 0, limit ?? DEFAULT_LIMIT)
+    }
+
     const queryResult = await this.prisma.subject_course.findMany({
       select: ECourseV2.BasicWithProfessorsArgs.select,
       where: {
@@ -84,6 +88,47 @@ export class CourseRepositoryV2 {
     })
 
     return { queryResult, totalCount: queryCountResult }
+  }
+
+  /**
+   * [수강자 많은 순]
+   */
+  // Prisma cannot order by SUM of a relation column, so rank course ids in memory and fetch only the requested page.
+  private async getCoursesByStudentCount(
+    filterList: object[],
+    offset: number,
+    limit: number,
+  ): Promise<{ queryResult: ECourseV2.BasicWithProfessors[], totalCount: number }> {
+    // Already in code order, so the stable sort below keeps it as the tie-breaker.
+    const courseIds = (
+      await this.prisma.subject_course.findMany({
+        select: { id: true },
+        where: { AND: filterList },
+        orderBy: this.courseOrderBy('code'),
+      })
+    ).map((course) => course.id)
+
+    const studentCounts = await this.prisma.subject_lecture.groupBy({
+      by: ['course_id'],
+      where: { course_id: { in: courseIds }, deleted: false },
+      _sum: { num_people: true },
+    })
+    const studentCountById = new Map(studentCounts.map(({ course_id, _sum: sum }) => [course_id, sum.num_people ?? 0]))
+
+    const pageIds = [...courseIds]
+      .sort((a, b) => (studentCountById.get(b) ?? 0) - (studentCountById.get(a) ?? 0))
+      .slice(offset, offset + limit)
+
+    const courses = await this.prisma.subject_course.findMany({
+      select: ECourseV2.BasicWithProfessorsArgs.select,
+      where: { id: { in: pageIds } },
+    })
+    const courseById = new Map(courses.map((course) => [course.id, course]))
+    const queryResult = pageIds
+      .map((id) => courseById.get(id))
+      .filter((course): course is ECourseV2.BasicWithProfessors => course !== undefined)
+
+    return { queryResult, totalCount: courseIds.length }
   }
 
   /**
