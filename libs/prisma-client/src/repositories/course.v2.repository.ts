@@ -58,7 +58,6 @@ export class CourseRepositoryV2 {
     limit: number | undefined,
   ): Promise<{ queryResult: ECourseV2.BasicWithProfessors[], totalCount: number }> {
     const DEFAULT_LIMIT = 150
-    // const DEFAULT_ORDER = ['old_code'] satisfies (keyof ECourse.Details)[]
     const departmentFilter = this.departmentFilter(department)
     const typeFilter = this.typeFilter(type)
     const keywordFilter = this.keywordFilter(keyword)
@@ -73,7 +72,7 @@ export class CourseRepositoryV2 {
       where: {
         AND: filterList,
       },
-      orderBy: [{ new_code: 'asc' }],
+      orderBy: this.courseOrderBy(order),
       skip: offset ?? 0,
       take: limit ?? DEFAULT_LIMIT,
     })
@@ -84,13 +83,26 @@ export class CourseRepositoryV2 {
       },
     })
 
-    // Apply Ordering and Offset
-    // const orderedResult = applyOrder<ECourse.Details>(
-    //   levelFilteredResult,
-    //   (order as (keyof ECourse.Details)[]) ?? DEFAULT_ORDER,
-    // )
-    // return applyOffset<ECourse.Details>(orderedResult, offset ?? 0)
     return { queryResult, totalCount: queryCountResult }
+  }
+
+  /**
+   * [인기순]
+   * 1) review_total_weight 2) (new_code) 3) id
+   * 과목 사전은 new_code를, 시간표는 old_code를 기준으로 씀.
+   *
+   * [과목 코드 순]
+   * 1) new_code 2) id
+   * 기존 정렬 순서 유지
+   */
+  private courseOrderBy(order?: CourseOrderQuery): Prisma.subject_courseOrderByWithRelationInput[] {
+    switch (order) {
+      case 'popular':
+        return [{ review_total_weight: 'desc' }, { new_code: 'asc' }, { id: 'asc' }]
+      case 'code':
+      default:
+        return [{ new_code: 'asc' }, { id: 'asc' }]
+    }
   }
 
   public departmentFilter(department_ids?: number[]): object | null {
