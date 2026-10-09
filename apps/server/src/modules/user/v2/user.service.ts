@@ -146,10 +146,16 @@ export class UserServiceV2 {
     const mail = user.email || ''
     const studentNumber = parseInt(user.student_id)
     const degree = (user as any).degree || null
-    const [favoriteDepartments, majors] = await Promise.all([
+    const [favoriteDepartments, department, majors, minors] = await Promise.all([
       this.departmentRepository.getFavoriteDepartments(user),
+      this.departmentRepository.getDepartmentOfUser(user),
       this.departmentRepository.getMajors(user),
+      this.departmentRepository.getMinors(user),
     ])
+
+    const majorDepartmentsRaw = [
+      ...new Map([department, ...majors, ...minors].filter((d) => d !== null).map((d) => [d.id, d])).values(),
+    ]
 
     return {
       id,
@@ -157,7 +163,7 @@ export class UserServiceV2 {
       mail,
       studentNumber,
       degree,
-      majorDepartments: majors.map((major) => toJsonDepartment(major)),
+      majorDepartments: majorDepartmentsRaw.map((majorDepartment) => toJsonDepartment(majorDepartment)),
       interestedDepartments: favoriteDepartments.map((d) => toJsonDepartment(d)),
     }
   }
