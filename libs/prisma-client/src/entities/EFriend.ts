@@ -34,12 +34,13 @@ export namespace EFriend {
       friend_profile: {
         select: {
           ...Summary.select.friend_profile.select,
+          timetable_shared_selections: { select: { year: true, semester: true } },
           taken_lectures: {
-            where: { lecture: { course_id: courseId } },
+            where: { lecture: { course_id: courseId, deleted: false } },
             select: { lecture: overlapLecture },
           },
           timetable_timetable: {
-            where: { timetable_timetable_lectures: { some: { subject_lecture: { course_id: courseId } } } },
+            where: { timetable_shared_selections: { some: {} }, timetable_timetable_lectures: { some: { subject_lecture: { course_id: courseId } } } },
             select: {
               id: true,
               year: true,

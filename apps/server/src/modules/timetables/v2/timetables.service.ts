@@ -110,6 +110,7 @@ export class TimetablesServiceV2 {
       year, semester, lectureIds, sourceTimetableId,
     } = body
     validateCreateTimetableInput(body)
+    await this.timetableRepository.lockUserTimetables(user.id)
     let source
     if (sourceTimetableId !== undefined) {
       await this.timetableRepository.lockTimetable(sourceTimetableId)
@@ -174,6 +175,7 @@ export class TimetablesServiceV2 {
     }
 
     try {
+      await this.timetableRepository.lockUserTimetables(user.id)
       await this.timetableRepository.lockTimetable(id)
       const timetable = await this.timetableRepository.getTimeTableById(id)
       // if user is not owner of timetable, throw 401
@@ -184,7 +186,7 @@ export class TimetablesServiceV2 {
       const { year, semester, arrange_order } = timetable
       const lectureIds = await this.timetableRepository.getTimeTableLectures(id)
 
-      await this.timetableRepository.deleteById(id)
+      await this.timetableRepository.deleteById(id, user.id)
 
       // update order of other timetables
       const relatedTimeTables = await this.timetableRepository.getTimetables(user, year, semester)
@@ -577,15 +579,64 @@ export class TimetablesServiceV2 {
     language: Language,
   ): Promise<ITimetableV2.HomeTimetableResDto> {
     const { year, semester, timetableId } = body
+    await this.timetableRepository.lockUserTimetables(user.id)
+    await this.timetableRepository.lockTimetable(timetableId)
+    const timetable = await this.TimetableValidation(user, timetableId)
+    if (timetable.year !== year || timetable.semester !== semester) {
+      throw new BadRequestException('Home timetable must be in the requested year and semester')
+    }
+    await this.timetableRepository.setHomeTimetable(user.id, year, semester, timetableId)
+    return this.getHomeTimetable(user, body, language)
+  }
+
+  @Transactional()
+  async getSharedTimetable(
+    user: session_userprofile,
+    query: ITimetableV2.HomeTimetableReqDto,
+    language: Language,
+  ): Promise<ITimetableV2.SharedTimetableResDto> {
+    const { year, semester } = query
+    const selection = await this.timetableRepository.getSharedTimetableSelection(user.id, year, semester)
+    if (selection) {
+      const timetable = await this.timetableRepository.getSharedTimetableWithItems(selection.timetable_id, user.id)
+      if (timetable) {
+        return {
+          ...toJsonTimetableV2WithItems(timetable, language),
+          year,
+          semester,
+          timetableId: timetable.id,
+          source: 'saved',
+          name: timetable.name ?? '',
+        }
+      }
+    }
+    return {
+      ...await this.getMyTimetable(user, query, language),
+      year,
+      semester,
+      timetableId: null,
+      source: 'enrolled',
+      name: language === 'en' ? 'Enrolled timetable' : '학사 시간표',
+    }
+  }
+
+  @Transactional()
+  async setSharedTimetable(
+    user: session_userprofile,
+    body: ITimetableV2.SetSharedTimetableReqDto,
+    language: Language,
+  ): Promise<ITimetableV2.SharedTimetableResDto> {
+    const { year, semester, timetableId } = body
+    await this.timetableRepository.lockUserTimetables(user.id)
     if (timetableId !== null) {
       await this.timetableRepository.lockTimetable(timetableId)
       const timetable = await this.TimetableValidation(user, timetableId)
       if (timetable.year !== year || timetable.semester !== semester) {
-        throw new BadRequestException('Home timetable must be in the requested year and semester')
+        throw new BadRequestException('Shared timetable must be in the requested year and semester')
       }
     }
-    await this.timetableRepository.setHomeTimetable(user.id, year, semester, timetableId)
-    return this.getHomeTimetable(user, body, language)
+    await this.timetableRepository.setSharedTimetableSelection(user.id, year, semester, timetableId)
+    return this.getSharedTimetable(user, body, language)
   }
 
   private async publishLectureUpdates(lectureIds: number[]) {

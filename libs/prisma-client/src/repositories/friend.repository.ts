@@ -69,11 +69,15 @@ export class FriendRepository {
           OR: semesters.flatMap((term): Prisma.session_userprofileWhereInput[] => {
             const lecture = { ...term, deleted: false, subject_classtime: { some: classtime } }
             return [
-              { taken_lectures: { some: { lecture } } },
+              {
+                timetable_shared_selections: { none: term },
+                taken_lectures: { some: { lecture } },
+              },
               {
                 timetable_timetable: {
                   some: {
                     ...term,
+                    timetable_shared_selections: { some: {} },
                     OR: [
                       { timetable_timetable_lectures: { some: { subject_lecture: lecture } } },
                       { timetable_timetable_customblocks: { some: { block_custom_blocks: customBlock } } },
@@ -95,6 +99,7 @@ export class FriendRepository {
         AND friend.id IN (${Prisma.join(friendIds)})
         AND EXISTS (
           SELECT 1 FROM timetable_timetable AS timetable
+          JOIN timetable_shared_selection AS shared ON shared.timetable_id = timetable.id AND shared.user_id = timetable.user_id
           JOIN timetable_timetable_customblocks AS mapping ON mapping.timetable_id = timetable.id
           JOIN block_custom_block_times AS slot ON slot.custom_block_id = mapping.custom_block_id
           WHERE timetable.user_id = friend.friend_userprofile_id
@@ -163,10 +168,10 @@ export class FriendRepository {
         userprofile_id: userId,
         friend_profile: {
           OR: [
-            { taken_lectures: { some: { lecture: { course_id: courseId } } } },
+            { taken_lectures: { some: { lecture: { course_id: courseId, deleted: false } } } },
             {
               timetable_timetable: {
-                some: { timetable_timetable_lectures: { some: { subject_lecture: { course_id: courseId } } } },
+                some: { timetable_shared_selections: { some: {} }, timetable_timetable_lectures: { some: { subject_lecture: { course_id: courseId } } } },
               },
             },
           ],
