@@ -31,19 +31,40 @@ export class TimetableRepository {
     })
   }
 
+  async lockUserTimetables(userId: number): Promise<void> {
+    if (!this.txHost.isTransactionActive()) throw new Error('Timetable selections require a transaction')
+    // Lock the owner before any timetable so creation, selection and deletion cannot race.
+    await this.txHost.tx.$queryRaw`SELECT id FROM session_userprofile WHERE id = ${userId} FOR UPDATE`
+  }
+
   async getHomeTimetable(userId: number, year: number, semester: number) {
-    return this.txHost.tx.timetable_home_selection.findUnique({
-      where: { user_id_year_semester: { user_id: userId, year, semester } },
+    return this.txHost.withTransaction(async () => {
+      await this.lockUserTimetables(userId)
+      const selection = await this.txHost.tx.timetable_home_selection.findUnique({
+        where: { user_id_year_semester: { user_id: userId, year, semester } },
+      })
+      if (selection) return selection
+      const first = await this.txHost.tx.timetable_timetable.findFirst({
+        where: { user_id: userId, year, semester },
+        orderBy: [{ arrange_order: 'asc' }, { id: 'asc' }],
+      })
+      if (!first) return null
+      return this.txHost.tx.timetable_home_selection.create({
+        data: {
+          user_id: userId, year, semester, timetable_id: first.id,
+        },
+      })
     })
   }
 
-  async setHomeTimetable(userId: number, year: number, semester: number, timetableId: number | null) {
-    return this.txHost.tx.timetable_home_selection.upsert({
-      where: { user_id_year_semester: { user_id: userId, year, semester } },
-      create: {
-        user_id: userId, year, semester, timetable_id: timetableId,
-      },
-      update: { timetable_id: timetableId },
+  async setHomeTimetable(userId: number, year: number, semester: number, timetableId: number) {
+    return this.txHost.withTransaction(async () => {
+      await this.lockUserTimetables(userId)
+      return this.txHost.tx.$executeRaw`
+        INSERT INTO timetable_home_selection (user_id, year, semester, timetable_id)
+        VALUES (${userId}, ${year}, ${semester}, ${timetableId})
+        ON DUPLICATE KEY UPDATE timetable_id = ${timetableId}
+      `
     })
   }
 
@@ -54,11 +75,17 @@ export class TimetableRepository {
   }
 
   async setSharedTimetableSelection(userId: number, year: number, semester: number, timetableId: number | null) {
-    return this.txHost.tx.$executeRaw`
-      INSERT INTO timetable_shared_selection (user_id, year, semester, timetable_id)
-      VALUES (${userId}, ${year}, ${semester}, ${timetableId})
-      ON DUPLICATE KEY UPDATE timetable_id = ${timetableId}
-    `
+    return this.txHost.withTransaction(async () => {
+      await this.lockUserTimetables(userId)
+      if (timetableId === null) {
+        return this.txHost.tx.timetable_shared_selection.deleteMany({ where: { user_id: userId, year, semester } })
+      }
+      return this.txHost.tx.$executeRaw`
+        INSERT INTO timetable_shared_selection (user_id, year, semester, timetable_id)
+        VALUES (${userId}, ${year}, ${semester}, ${timetableId})
+        ON DUPLICATE KEY UPDATE timetable_id = ${timetableId}
+      `
+    })
   }
 
   async getSharedTimetables(userId: number, year: number, semester: number) {
@@ -151,22 +178,31 @@ export class TimetableRepository {
     lectures: ELecture.Details[],
     name?: string,
   ): Promise<ETimetable.Details> {
-    return this.txHost.tx.timetable_timetable.create({
-      data: {
-        user_id: user.id,
-        year,
-        semester,
-        arrange_order: arrangeOrder,
-        name: name ?? '',
-        timetable_timetable_lectures: {
-          createMany: {
-            data: lectures.map((lecture) => ({
-              lecture_id: lecture.id,
-            })),
+    return this.txHost.withTransaction(async () => {
+      await this.lockUserTimetables(user.id)
+      const timetable = await this.txHost.tx.timetable_timetable.create({
+        data: {
+          user_id: user.id,
+          year,
+          semester,
+          arrange_order: arrangeOrder,
+          name: name ?? '',
+          timetable_timetable_lectures: {
+            createMany: {
+              data: lectures.map((lecture) => ({
+                lecture_id: lecture.id,
+              })),
+            },
           },
         },
-      },
-      include: ETimetable.Details.include,
+        include: ETimetable.Details.include,
+      })
+      await this.txHost.tx.$executeRaw`
+        INSERT INTO timetable_home_selection (user_id, year, semester, timetable_id)
+        VALUES (${user.id}, ${year}, ${semester}, ${timetable.id})
+        ON DUPLICATE KEY UPDATE timetable_id = timetable_id
+      `
+      return timetable
     })
   }
 
@@ -214,8 +250,9 @@ export class TimetableRepository {
     })
   }
 
-  async deleteById(timetableId: number) {
+  async deleteById(timetableId: number, userId: number) {
     return this.txHost.withTransaction(async () => {
+      await this.lockUserTimetables(userId)
       await this.lockTimetable(timetableId)
       const { tx } = this.txHost
       await tx.timetable_timetable_lectures.deleteMany({
@@ -224,9 +261,11 @@ export class TimetableRepository {
       await tx.timetable_timetable_customblocks.deleteMany({
         where: { timetable_id: timetableId },
       })
-      return tx.timetable_timetable.delete({
-        where: { id: timetableId },
-      })
+      const deleted = await tx.timetable_timetable.delete({ where: { id: timetableId } })
+      if (deleted.year !== null && deleted.semester !== null) {
+        await this.getHomeTimetable(userId, deleted.year, deleted.semester)
+      }
+      return deleted
     })
   }
 

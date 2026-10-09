@@ -3,10 +3,13 @@ import { Transactional } from '@nestjs-cls/transactional'
 import { Language } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { IFriendV2, ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
 import {
+  toJsonLectures,
   toJsonTimetableV2,
   toJsonTimetableV2WithItems,
 } from '@otl/server-nest/common/serializer/v2/timetable.serializer'
 import { session_userprofile } from '@prisma/client'
+
+import { TimetableItemKind } from '@otl/common/enum/timetable'
 
 import { EFriend } from '@otl/prisma-client/entities'
 import {
@@ -108,12 +111,15 @@ export class FriendsService {
   async getMyTimetable(
     user: session_userprofile,
     friendId: number,
-    _query: ITimetableV2.MyTimetableReqDto,
-    _language: Language,
+    query: ITimetableV2.MyTimetableReqDto,
+    language: Language,
   ): Promise<ITimetableV2.MyTimetableResDto> {
-    await this.getFriend(user.id, friendId)
-    // Legacy endpoint: academic enrolments are never implicitly shared.
-    return { lectures: [], timetableItems: [] }
+    const friend = await this.getFriend(user.id, friendId)
+    const selection = await this.timetableRepository.getSharedTimetableSelection(friend.friend_userprofile_id, query.year, query.semester)
+    if (selection) throw new NotFoundException('Enrolled timetable is not shared for this semester')
+    const lectures = await this.lectureRepository.getTakenLecturesBySemester(friend.friend_userprofile_id, query.year, query.semester)
+    const serialized = toJsonLectures(lectures, language).lectures
+    return { lectures: serialized, timetableItems: serialized.map((data) => ({ kind: TimetableItemKind.LECTURE, data })) }
   }
 
   async getTimetable(
@@ -146,6 +152,14 @@ export class FriendsService {
     for (const friend of friends) {
       const profile = friend.friend_profile
       const matchingLectures = [
+        ...profile.taken_lectures
+          .filter(({ lecture: enrolled }) => !profile.timetable_shared_selections.some(
+            (selection) => selection.year === enrolled.year && selection.semester === enrolled.semester,
+          ))
+          .map(({ lecture: enrolled }) => ({
+            lecture: enrolled,
+            timetable: { id: null, year: enrolled.year, semester: enrolled.semester },
+          })),
         ...profile.timetable_timetable.flatMap((timetable) => timetable.timetable_timetable_lectures.map(({ subject_lecture: savedLecture }) => ({
           lecture: savedLecture,
           timetable: {

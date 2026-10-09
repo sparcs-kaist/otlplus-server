@@ -70,6 +70,10 @@ export class FriendRepository {
             const lecture = { ...term, deleted: false, subject_classtime: { some: classtime } }
             return [
               {
+                timetable_shared_selections: { none: term },
+                taken_lectures: { some: { lecture } },
+              },
+              {
                 timetable_timetable: {
                   some: {
                     ...term,
@@ -164,6 +168,7 @@ export class FriendRepository {
         userprofile_id: userId,
         friend_profile: {
           OR: [
+            { taken_lectures: { some: { lecture: { course_id: courseId, deleted: false } } } },
             {
               timetable_timetable: {
                 some: { timetable_shared_selections: { some: {} }, timetable_timetable_lectures: { some: { subject_lecture: { course_id: courseId } } } },
