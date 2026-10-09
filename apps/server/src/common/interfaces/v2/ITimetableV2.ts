@@ -346,17 +346,15 @@ export namespace ITimetableV2 {
   }
 
   export class SetHomeTimetableReqDto extends HomeTimetableReqDto {
+    @IsInt()
+    @Min(1)
+    timetableId!: number
+  }
+
+  export class SetSharedTimetableReqDto extends HomeTimetableReqDto {
     @ValidateIf((_, value) => value !== null)
     @IsInt()
     @Min(1)
-    timetableId!: number | null
-  }
-
-  export class SharedTimetableResDto {
-    year!: number
-
-    semester!: number
-
     timetableId!: number | null
   }
 
@@ -371,6 +369,8 @@ export namespace ITimetableV2 {
 
     semester!: number
   }
+
+  export class SharedTimetableResDto extends HomeTimetableResDto {}
 
   export interface TimetableSummary {
     id: number

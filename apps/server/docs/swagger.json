@@ -4055,6 +4055,19 @@
             "schema": {
               "$ref": "#/components/schemas/ITimetableV2.HomeTimetableReqDto"
             }
+          },
+          {
+            "name": "accept-language",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en",
+                "ko"
+              ]
+            },
+            "description": "en/ko (기본: ko). 언어 헤더 파라미터"
           }
         ]
       },
@@ -4072,12 +4085,27 @@
             }
           }
         },
+        "parameters": [
+          {
+            "name": "accept-language",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en",
+                "ko"
+              ]
+            },
+            "description": "en/ko (기본: ko). 언어 헤더 파라미터"
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ITimetableV2.SetHomeTimetableReqDto"
+                "$ref": "#/components/schemas/ITimetableV2.SetSharedTimetableReqDto"
               }
             }
           }
@@ -11481,15 +11509,8 @@
             "minimum": 1
           },
           "timetableId": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": 1
-              },
-              {
-                "type": "null"
-              }
-            ]
+            "type": "integer",
+            "minimum": 1
           }
         },
         "required": [
@@ -12193,12 +12214,26 @@
       },
       "ITimetableV2.SharedTimetableResDto": {
         "type": "object",
+        "additionalProperties": false,
         "properties": {
-          "year": {
-            "type": "number"
+          "lectures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ITimetableV2.LectureResDto"
+            }
           },
-          "semester": {
-            "type": "number"
+          "timetableItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ITimetableV2.TimetableItem"
+            }
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "saved",
+              "enrolled"
+            ]
           },
           "timetableId": {
             "oneOf": [
@@ -12209,12 +12244,55 @@
                 "type": "null"
               }
             ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "year": {
+            "type": "number"
+          },
+          "semester": {
+            "type": "number"
           }
         },
         "required": [
-          "year",
+          "lectures",
+          "name",
           "semester",
-          "timetableId"
+          "source",
+          "timetableId",
+          "timetableItems",
+          "year"
+        ]
+      },
+      "ITimetableV2.SetSharedTimetableReqDto": {
+        "type": "object",
+        "properties": {
+          "year": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "semester": {
+            "type": "integer",
+            "maximum": 4,
+            "minimum": 1
+          },
+          "timetableId": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "semester",
+          "timetableId",
+          "year"
         ],
         "additionalProperties": false
       }

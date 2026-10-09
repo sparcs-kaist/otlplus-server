@@ -64,7 +64,7 @@ integration('Timetable transaction storage (local MySQL)', () => {
   afterAll(async () => {
     if (user) {
       const tables = await timetables.getTimetableBasics(user)
-      for (const table of tables) await timetables.deleteById(table.id)
+      for (const table of tables) await timetables.deleteById(table.id, user.id)
       await prisma.block_custom_blocks.deleteMany({ where: { id: { in: createdBlockIds } } })
       await prisma.session_userprofile.delete({ where: { id: user.id } })
     }
@@ -89,21 +89,22 @@ integration('Timetable transaction storage (local MySQL)', () => {
     expect(await timetables.getTimeTableLectures(table.id)).toEqual([])
   })
 
-  it('joins the caller transaction when deleting and clears home selection only on committed deletion', async () => {
+  it('joins the caller transaction when deleting and moves home selection only on committed deletion', async () => {
     const table = await timetables.createTimetable(user, 2026, 3, 1, [])
     const block = await customblocks.createCustomblock(blockData)
     createdBlockIds.push(block.id)
     await customblocks.addCustomblockToTimetable(table.id, block.id)
     await timetables.setHomeTimetable(user.id, 2026, 3, table.id)
     await expect(host.withTransaction(async () => {
-      await timetables.deleteById(table.id)
+      await timetables.deleteById(table.id, user.id)
       throw new Error('later failure')
     })).rejects.toThrow('later failure')
     expect((await timetables.getHomeTimetable(user.id, 2026, 3))?.timetable_id).toBe(table.id)
     expect(await customblocks.getCustomblocksList(table.id)).toEqual([block])
-    await timetables.deleteById(table.id)
+    await timetables.deleteById(table.id, user.id)
     expect(await prisma.timetable_timetable.findUnique({ where: { id: table.id } })).toBeNull()
-    expect((await timetables.getHomeTimetable(user.id, 2026, 3))?.timetable_id).toBeNull()
+    const remaining = (await timetables.getTimetableBasics(user, 2026, 3, { orderBy: { arrange_order: 'asc' } }))[0]
+    expect((await timetables.getHomeTimetable(user.id, 2026, 3))?.timetable_id).toBe(remaining.id)
     expect(await customblocks.getCustomblocksList(table.id)).toEqual([])
   })
 

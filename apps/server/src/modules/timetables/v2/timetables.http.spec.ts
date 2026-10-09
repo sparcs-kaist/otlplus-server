@@ -8,6 +8,8 @@ import { existsSync, rmSync, writeFileSync } from 'fs'
 import request from 'supertest'
 
 import { PrismaService } from '@otl/prisma-client/prisma.service'
+import { FriendsService } from '@otl/server-nest/modules/friends/friends.service'
+import { SemesterRepository } from '@otl/prisma-client/repositories/semester.repository'
 import { FriendRepository } from '@otl/prisma-client/repositories/friend.repository'
 import { CourseRepository } from '@otl/prisma-client/repositories/course.repository'
 import { CustomblockRepository } from '@otl/prisma-client/repositories/customblock.repository'
@@ -29,6 +31,7 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
   let app: INestApplication
   let prisma: PrismaService
   let timetables: TimetableRepository
+  let lectures: LectureRepository
   let user: session_userprofile
   let otherUser: session_userprofile
   let lectureId: number
@@ -70,6 +73,7 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     })
     await app.init()
     timetables = module.get(TimetableRepository)
+    lectures = module.get(LectureRepository)
     const profile = { student_id: 'http-test', sid: 'http-test', date_joined: new Date(), first_name: 'HTTP', last_name: 'Test' }
     user = await prisma.session_userprofile.create({ data: profile })
     otherUser = await prisma.session_userprofile.create({ data: profile })
@@ -122,7 +126,7 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
       for (const table of await timetables.getTimetableBasics(profile)) {
         const items = await timetables.getTimeTableWithItemsById(table.id)
         items.timetable_timetable_customblocks.forEach((entry) => customIds.add(entry.custom_block_id))
-        await timetables.deleteById(table.id)
+        await timetables.deleteById(table.id, profile.id)
       }
       await prisma.session_userprofile_taken_lectures.deleteMany({ where: { userprofile_id: profile.id } })
       await prisma.session_userprofile.delete({ where: { id: profile.id } })
@@ -217,24 +221,48 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     await request(app.getHttpServer()).post(prefix).set('x-test-other-user', '1').send({ ...term, sourceTimetableId: id }).expect(403)
   })
 
-  it('persists home choice per user and semester, resets explicitly and falls back after legacy deletion', async () => {
-    const getHome = () => request(app.getHttpServer()).get(`${prefix}/home`).query(term).expect(200)
-    expect((await getHome()).body).toMatchObject({ source: 'enrolled', timetableId: null, lectures: [{ id: lectureId }] })
-    const id = await create()
-    const createdBlock = (await request(app.getHttpServer()).post(`${prefix}/${id}/custom-blocks`).send(block).expect(201)).body
-    customIds.add(createdBlock.id)
-    const selected = (await request(app.getHttpServer()).patch(`${prefix}/home`).send({ ...term, timetableId: id }).expect(200)).body
-    expect(selected).toMatchObject({ source: 'saved', timetableId: id, lectures: [], timetableItems: [{ kind: 'custom' }] })
-    expect((await getHome()).body).toEqual(selected)
-    expect((await request(app.getHttpServer()).get(`${prefix}/home`).query({ ...term, semester: 1 }).expect(200)).body.source).toBe('enrolled')
-    await request(app.getHttpServer()).patch(`${prefix}/home`).set('x-test-other-user', '1').send({ ...term, timetableId: id }).expect(403)
-    await request(app.getHttpServer()).patch(`${prefix}/home`).send({ ...term, semester: 1, timetableId: id }).expect(400)
-    await request(app.getHttpServer()).patch(`${prefix}/home`).send(term).expect(400)
-    expect((await request(app.getHttpServer()).patch(`${prefix}/home`).send({ ...term, timetableId: null }).expect(200)).body.source).toBe('enrolled')
-    await request(app.getHttpServer()).patch(`${prefix}/home`).send({ ...term, timetableId: id }).expect(200)
-    await request(app.getHttpServer()).delete(prefix).send({ id }).expect(200)
-    expect((await getHome()).body).toMatchObject({ source: 'enrolled', timetableId: null, lectures: [{ id: lectureId }] })
-    expect((await request(app.getHttpServer()).get(`${prefix}/my-timetable`).query(term).expect(200)).body.timetableItems).toMatchObject([{ kind: 'lecture', data: { id: lectureId } }])
+  it('persists the first saved timetable as home, replaces it on deletion, and only falls back when empty', async () => {
+    const homeTerm = { year: 2027, semester: 3 }
+    const getHome = () => request(app.getHttpServer()).get(`${prefix}/home`).query(homeTerm).expect(200)
+    const createHome = () => request(app.getHttpServer()).post(prefix).send({ ...homeTerm, lectureIds: [] }).expect(201)
+    const selection = () => prisma.timetable_home_selection.findUnique({ where: {
+      user_id_year_semester: { user_id: user.id, ...homeTerm },
+    } })
+    expect((await getHome()).body).toMatchObject({ source: 'enrolled', timetableId: null })
+    const first = (await createHome()).body.id
+    expect((await selection())?.timetable_id).toBe(first)
+    const second = (await createHome()).body.id
+    expect((await selection())?.timetable_id).toBe(first)
+    expect((await getHome()).body).toMatchObject({ source: 'saved', timetableId: first })
+    await request(app.getHttpServer()).patch(`${prefix}/home`).send({ ...homeTerm, timetableId: second }).expect(200)
+    expect((await selection())?.timetable_id).toBe(second)
+    await request(app.getHttpServer()).patch(`${prefix}/home`).send({ ...homeTerm, timetableId: null }).expect(400)
+    await request(app.getHttpServer()).patch(`${prefix}/home`).send(homeTerm).expect(400)
+    await request(app.getHttpServer()).patch(`${prefix}/home`).send({ ...homeTerm, semester: 1, timetableId: second }).expect(400)
+    await request(app.getHttpServer()).patch(`${prefix}/home`).set('x-test-other-user', '1').send({ ...homeTerm, timetableId: second }).expect(403)
+    await timetables.deleteById(second, user.id)
+    expect((await selection())?.timetable_id).toBe(first)
+    await request(app.getHttpServer()).delete(prefix).send({ id: first }).expect(200)
+    expect(await selection()).toBeNull()
+    expect((await getHome()).body).toMatchObject({ source: 'enrolled', timetableId: null })
+    const recreated = (await createHome()).body.id
+    expect((await selection())?.timetable_id).toBe(recreated)
+  })
+
+  it('serializes first creation and main deletion without losing the main choice', async () => {
+    const concurrentTerm = { year: 2028, semester: 1 }
+    const creates = await Promise.all([0, 1, 2].map(() => request(app.getHttpServer()).post(prefix)
+      .send({ ...concurrentTerm, lectureIds: [] }).expect(201)))
+    const tables = await prisma.timetable_timetable.findMany({ where: { user_id: user.id, ...concurrentTerm }, orderBy: { arrange_order: 'asc' } })
+    const selection = () => prisma.timetable_home_selection.findUnique({ where: { user_id_year_semester: { user_id: user.id, ...concurrentTerm } } })
+    expect(creates.map(({ body }) => body.id).sort()).toEqual(tables.map(({ id }) => id).sort())
+    expect(tables.map(({ arrange_order }) => arrange_order)).toEqual([0, 1, 2])
+    expect((await selection())?.timetable_id).toBe(tables[0].id)
+    await Promise.all([
+      request(app.getHttpServer()).delete(prefix).send({ id: tables[0].id }).expect(200),
+      request(app.getHttpServer()).post(prefix).send({ ...concurrentTerm, lectureIds: [] }).expect(201),
+    ])
+    expect((await selection())?.timetable_id).toBe(tables[1].id)
   })
 
   it('shares exactly one timetable per term, restricts friend reads, and clears sharing after deletion', async () => {
@@ -243,14 +271,17 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     const friendRepository = new FriendRepository({ tx: prisma } as never)
     await friendRepository.createPair(otherUser.id, user.id)
     const friend = (await friendRepository.getFriendByTarget(otherUser.id, user.id))!
+    const friendsService = new FriendsService(friendRepository, lectures, timetables, {} as SemesterRepository)
     const shared = () => request(app.getHttpServer()).get(`${prefix}/shared`).query(term).expect(200)
     const select = (timetableId: number | null) => request(app.getHttpServer()).patch(`${prefix}/shared`).send({ ...term, timetableId }).expect(200)
-    expect((await shared()).body).toEqual({ ...term, timetableId: null })
+    expect((await shared()).body).toMatchObject({ ...term, timetableId: null, source: 'enrolled', lectures: [{ id: lectureId }] })
     expect(await timetables.getSharedTimetables(user.id, term.year, term.semester)).toEqual([])
-    expect(await friendRepository.getFriendsWithCourse(otherUser.id, courseId)).toEqual([])
-    expect(await friendRepository.getFriendIdsWithScheduleAt(otherUser.id, [friend.id], [term], 0, 570)).toEqual([])
+    expect((await friendsService.getOverlaps(otherUser, lectureId)).sameLecture.map(({ id }) => id)).toEqual([friend.id])
+    expect(await friendRepository.getFriendIdsWithScheduleAt(otherUser.id, [friend.id], [term], 0, 570)).toEqual([friend.id])
     await request(app.getHttpServer()).patch(`${prefix}/home`).send({ ...term, timetableId: first }).expect(200)
+    expect((await friendsService.getMyTimetable(otherUser, friend.id, term, 'en')).lectures.map(({ id }) => id)).toEqual([lectureId])
     await select(first)
+    await expect(friendsService.getMyTimetable(otherUser, friend.id, term, 'en')).rejects.toThrow('Enrolled timetable is not shared')
     expect((await timetables.getSharedTimetables(user.id, term.year, term.semester)).map(({ id }) => id)).toEqual([first])
     expect(await timetables.getSharedTimetableWithItems(second, user.id)).toBeNull()
     expect(await timetables.getSharedTimetableWithItems(first, otherUser.id)).toBeNull()
@@ -259,7 +290,7 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     await select(second)
     expect(await timetables.getSharedTimetableWithItems(first, user.id)).toBeNull()
     expect((await timetables.getSharedTimetables(user.id, term.year, term.semester)).map(({ id }) => id)).toEqual([second])
-    expect(await friendRepository.getFriendsWithCourse(otherUser.id, courseId)).toEqual([])
+    expect(await friendsService.getOverlaps(otherUser, lectureId)).toEqual({ sameLecture: [], sameCourseDifferentSection: [], previousSemesterSameProfessor: [] })
     expect(await friendRepository.getFriendIdsWithScheduleAt(otherUser.id, [friend.id], [term], 0, 570)).toEqual([])
     const added = (await request(app.getHttpServer()).post(`${prefix}/${second}/custom-blocks`)
       .send({ ...block, times: [blockTime, { day: 4, begin: 700, end: 760 }] }).expect(201)).body
@@ -275,7 +306,9 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     const spring = (await request(app.getHttpServer()).post(prefix).send({ ...term, semester: 1, lectureIds: [] }).expect(201)).body.id
     await request(app.getHttpServer()).patch(`${prefix}/shared`).send({ ...term, semester: 1, timetableId: spring }).expect(200)
     await select(null)
-    expect((await shared()).body.timetableId).toBeNull()
+    expect((await shared()).body).toMatchObject({ timetableId: null, source: 'enrolled', lectures: [{ id: lectureId }] })
+    expect(await prisma.timetable_shared_selection.count({ where: { user_id: user.id, ...term } })).toBe(0)
+    expect(await friendRepository.getFriendIdsWithScheduleAt(otherUser.id, [friend.id], [term], 0, 570)).toEqual([friend.id])
     expect(await friendRepository.getFriendIdsWithScheduleAt(otherUser.id, [friend.id], [term], 4, 730)).toEqual([])
     // Simultaneous first-time requests still leave a single shared timetable.
     await prisma.timetable_shared_selection.deleteMany({ where: { user_id: user.id, ...term } })
@@ -284,7 +317,9 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     expect([first, second]).toContain(winner)
     expect(await prisma.timetable_shared_selection.count({ where: { user_id: user.id, ...term } })).toBe(1)
     await request(app.getHttpServer()).delete(prefix).send({ id: winner }).expect(200)
-    expect((await shared()).body.timetableId).toBeNull()
+    expect((await shared()).body).toMatchObject({ timetableId: null, source: 'enrolled', lectures: [{ id: lectureId }] })
+    expect(await prisma.timetable_shared_selection.count({ where: { user_id: user.id, ...term } })).toBe(0)
+    expect(await friendRepository.getFriendIdsWithScheduleAt(otherUser.id, [friend.id], [term], 0, 570)).toEqual([friend.id])
     expect((await request(app.getHttpServer()).get(`${prefix}/shared`).query({ ...term, semester: 1 }).expect(200)).body.timetableId).toBe(spring)
     await friendRepository.deletePair(otherUser.id, user.id)
   })

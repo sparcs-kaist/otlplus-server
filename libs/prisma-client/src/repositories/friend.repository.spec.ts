@@ -155,6 +155,7 @@ describe('current schedule query', () => {
               subject_classtime: { some: { day: 0, begin: { lte: time }, end: { gt: time } } },
             }
             return [
+              { timetable_shared_selections: { none: term }, taken_lectures: { some: { lecture } } },
               {
                 timetable_timetable: {
                   some: {
@@ -202,7 +203,7 @@ describe('current schedule query', () => {
   ])('represents minute %i as a UTC-anchored MySQL TIME with inclusive start and exclusive end', async (minute, iso) => {
     findMany.mockResolvedValue([])
     await repository.getFriendIdsWithScheduleAt(42, [101], [{ year: 2026, semester: 3 }], 6, minute)
-    const filter = findMany.mock.calls[0][0].where.friend_profile.OR[0].timetable_timetable.some.OR[0].timetable_timetable_lectures.some.subject_lecture.subject_classtime.some
+    const filter = findMany.mock.calls[0][0].where.friend_profile.OR[1].timetable_timetable.some.OR[0].timetable_timetable_lectures.some.subject_lecture.subject_classtime.some
     expect(filter).toEqual({ day: 6, begin: { lte: new Date(iso) }, end: { gt: new Date(iso) } })
     expect(queryRaw.mock.calls[0][0].values.slice(-3)).toEqual([6, minute, minute])
   })

@@ -824,9 +824,9 @@ model timetable_home_selection {
   user_id             Int
   year                Int
   semester            Int
-  timetable_id        Int?
+  timetable_id        Int
   session_userprofile session_userprofile  @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "timetable_home_selection_user_fk")
-  timetable_timetable timetable_timetable? @relation(fields: [timetable_id], references: [id], onDelete: SetNull, onUpdate: Restrict, map: "timetable_home_selection_timetable_fk")
+  timetable_timetable timetable_timetable  @relation(fields: [timetable_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "timetable_home_selection_timetable_fk")
 
   @@unique([user_id, year, semester], map: "timetable_home_selection_user_term_key")
   @@index([timetable_id], map: "timetable_home_selection_timetable_idx")
@@ -837,9 +837,9 @@ model timetable_shared_selection {
   user_id             Int
   year                Int
   semester            Int
-  timetable_id        Int?
+  timetable_id        Int
   session_userprofile session_userprofile  @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "timetable_shared_selection_user_fk")
-  timetable_timetable timetable_timetable? @relation(fields: [timetable_id], references: [id], onDelete: SetNull, onUpdate: Restrict, map: "timetable_shared_selection_timetable_fk")
+  timetable_timetable timetable_timetable  @relation(fields: [timetable_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "timetable_shared_selection_timetable_fk")
 
   @@unique([user_id, year, semester], map: "timetable_shared_selection_user_term_key")
   @@index([timetable_id], map: "timetable_shared_selection_timetable_idx")
