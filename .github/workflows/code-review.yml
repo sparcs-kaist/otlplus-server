@@ -9,20 +9,34 @@ on:
     types: [opened, reopened, synchronize]
 
 jobs:
-  gpt-review:
-    #    if: ${{ contains(github.event.*.labels.*.name, 'gpt review') }} # Optional; to run only when a label is attached
+  pr-review:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: anc95/ChatGPT-CodeReview@main
+      - name: Review with PR-Agent through LiteLLM
+        uses: the-pr-agent/pr-agent@main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          # Optional
-          LANGUAGE: Korean
-          OPENAI_API_ENDPOINT: https://api.openai.com/v1
-          MODEL: gpt-4o-mini # https://platform.openai.com/docs/models
-          PROMPT: # example: Please check if there are any confusions or irregularities in the following code diff:
-          top_p: 1 # https://platform.openai.com/docs/api-reference/chat/create#chat/create-top_p
-          temperature: 1 # https://platform.openai.com/docs/api-reference/chat/create#chat/create-temperature
-          max_tokens: 10000
-          MAX_PATCH_LENGTH: 10000 # if the patch/diff length is large than MAX_PATCH_LENGTH, will be ignored and won't review. By default, with no MAX_PATCH_LENGTH set, there is also no limit for the patch/diff length.
+          OPENAI__KEY: ${{ secrets.LITELLM_API_KEY }}
+          # Accept a gateway root or an OpenAI-compatible /v1 base URL.
+          OPENAI__API_BASE: >-
+            ${{ (endsWith(secrets.LITELLM_API_BASE, '/v1') || endsWith(secrets.LITELLM_API_BASE, '/v1/'))
+                && secrets.LITELLM_API_BASE
+                || (endsWith(secrets.LITELLM_API_BASE, '/')
+                    && format('{0}v1', secrets.LITELLM_API_BASE)
+                    || format('{0}/v1', secrets.LITELLM_API_BASE)) }}
+          CONFIG__MODEL: openai/${{ secrets.LITELLM_REVIEW_MODEL }}
+          CONFIG__FALLBACK_MODELS: '[]'
+          CONFIG__CUSTOM_MODEL_MAX_TOKENS: '32000'
+          CONFIG__MAX_OUTPUT_TOKENS: '10000'
+          CONFIG__NO_TEMPERATURE_MODELS: '["${{ secrets.LITELLM_REVIEW_MODEL }}"]'
+          CONFIG__RESPONSE_LANGUAGE: ko-KR
+          GITHUB_ACTION_CONFIG__AUTO_REVIEW: 'true'
+          GITHUB_ACTION_CONFIG__AUTO_DESCRIBE: 'false'
+          GITHUB_ACTION_CONFIG__AUTO_IMPROVE: 'false'
+          GITHUB_ACTION_CONFIG__HANDLE_PUSH_TRIGGER: 'true'
+          GITHUB_ACTION_CONFIG__PUSH_COMMANDS: '["/review"]'
+          PR_REVIEWER__INLINE_KEY_ISSUES: 'true'
+          PR_REVIEWER__EXTRA_INSTRUCTIONS: >-
+            Focus on actionable bugs, regressions, security issues, and performance
+            problems. Avoid speculative and style-only suggestions.
