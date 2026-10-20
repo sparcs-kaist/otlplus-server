@@ -287,7 +287,6 @@ describe('FriendsService', () => {
       friend_profile: {
         first_name: `Friend ${id}`,
         last_name: '',
-        timetable_shared_selections: saved.flat().map(({ year, semester }) => ({ year, semester })),
         taken_lectures: taken.map((item) => ({ lecture: item })),
         timetable_timetable: saved.map((items, index) => ({
           id: id * 100 + index,
@@ -346,7 +345,6 @@ describe('FriendsService', () => {
     const profile = {
       first_name: 'Test',
       last_name: 'Friend',
-      timetable_shared_selections: [{ year: 2025, semester: 1 }, { year: 2025, semester: 3 }],
       taken_lectures: [{ lecture: { ...priorLecture, year: 2024 } }],
       timetable_timetable: [
         { id: 80, year: 2025, semester: 1 },
@@ -402,7 +400,6 @@ describe('FriendsService', () => {
       friend_profile: {
         first_name: 'Test',
         last_name: 'Friend',
-        timetable_shared_selections: [],
         taken_lectures: [],
         timetable_timetable: [{
           id: 91,
@@ -439,7 +436,7 @@ describe('FriendsService', () => {
               { taken_lectures: { some: { lecture: { course_id: 100, deleted: false } } } },
               {
                 timetable_timetable: {
-                  some: { timetable_shared_selections: { some: {} }, timetable_timetable_lectures: { some: { subject_lecture: { course_id: 100 } } } },
+                  some: { is_shared: true, timetable_timetable_lectures: { some: { subject_lecture: { course_id: 100 } } } },
                 },
               },
             ],
@@ -450,10 +447,7 @@ describe('FriendsService', () => {
     expect(findMany.mock.calls[0][0].select.friend_profile.select).toHaveProperty('taken_lectures')
     const savedTimetables = findMany.mock.calls[0][0].select.friend_profile.select.timetable_timetable
     expect(savedTimetables.select).toMatchObject({ id: true, year: true, semester: true })
-    expect(savedTimetables.where).toEqual({
-      timetable_shared_selections: { some: {} },
-      timetable_timetable_lectures: { some: { subject_lecture: { course_id: 100 } } },
-    })
+    expect(savedTimetables.where).toEqual({ is_shared: true })
     expect(savedTimetables.select.timetable_timetable_lectures.where).toEqual({
       subject_lecture: { course_id: 100 },
     })

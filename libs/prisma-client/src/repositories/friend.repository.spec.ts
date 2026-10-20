@@ -155,12 +155,12 @@ describe('current schedule query', () => {
               subject_classtime: { some: { day: 0, begin: { lte: time }, end: { gt: time } } },
             }
             return [
-              { timetable_shared_selections: { none: term }, taken_lectures: { some: { lecture } } },
+              { timetable_timetable: { none: { ...term, is_shared: true } }, taken_lectures: { some: { lecture } } },
               {
                 timetable_timetable: {
                   some: {
                     ...term,
-                    timetable_shared_selections: { some: {} },
+                    is_shared: true,
                     OR: [
                       { timetable_timetable_lectures: { some: { subject_lecture: lecture } } },
                       {
@@ -190,7 +190,7 @@ describe('current schedule query', () => {
     const sql = query.sql.replace(/\s+/g, ' ').trim()
     expect(sql).toContain('friend.userprofile_id = ? AND friend.id IN (?,?,?)')
     expect(sql).toContain('timetable.user_id = friend.friend_userprofile_id')
-    expect(sql).toContain('JOIN timetable_shared_selection AS shared ON shared.timetable_id = timetable.id AND shared.user_id = timetable.user_id')
+    expect(sql).toContain('timetable.is_shared = TRUE')
     expect(sql).toContain('(timetable.year = ? AND timetable.semester = ?) OR (timetable.year = ? AND timetable.semester = ?)')
     expect(sql).toContain('slot.day = ? AND slot.begin <= ? AND slot.end > ?')
     expect(sql).toContain('first_slot.custom_block_id = slot.custom_block_id AND first_slot.id < slot.id')
