@@ -544,9 +544,9 @@ export class TimetablesServiceV2 {
   ): Promise<ITimetableV2.HomeTimetableResDto> {
     const { year, semester } = query
     const selection = await this.timetableRepository.getHomeTimetable(user.id, year, semester)
-    if (selection?.timetable_id != null) {
+    if (selection?.id != null) {
       try {
-        const timetable = await this.timetableRepository.getTimeTableWithItemsById(selection.timetable_id)
+        const timetable = await this.timetableRepository.getTimeTableWithItemsById(selection.id)
         if (timetable.user_id === user.id && timetable.year === year && timetable.semester === semester) {
           return {
             ...toJsonTimetableV2WithItems(timetable, language),
@@ -598,7 +598,7 @@ export class TimetablesServiceV2 {
     const { year, semester } = query
     const selection = await this.timetableRepository.getSharedTimetableSelection(user.id, year, semester)
     if (selection) {
-      const timetable = await this.timetableRepository.getSharedTimetableWithItems(selection.timetable_id, user.id)
+      const timetable = await this.timetableRepository.getSharedTimetableWithItems(selection.id, user.id)
       if (timetable) {
         return {
           ...toJsonTimetableV2WithItems(timetable, language),

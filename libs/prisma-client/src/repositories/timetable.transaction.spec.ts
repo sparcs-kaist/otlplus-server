@@ -99,13 +99,25 @@ integration('Timetable transaction storage (local MySQL)', () => {
       await timetables.deleteById(table.id, user.id)
       throw new Error('later failure')
     })).rejects.toThrow('later failure')
-    expect((await timetables.getHomeTimetable(user.id, 2026, 3))?.timetable_id).toBe(table.id)
+    expect((await timetables.getHomeTimetable(user.id, 2026, 3))?.id).toBe(table.id)
     expect(await customblocks.getCustomblocksList(table.id)).toEqual([block])
     await timetables.deleteById(table.id, user.id)
     expect(await prisma.timetable_timetable.findUnique({ where: { id: table.id } })).toBeNull()
     const remaining = (await timetables.getTimetableBasics(user, 2026, 3, { orderBy: { arrange_order: 'asc' } }))[0]
-    expect((await timetables.getHomeTimetable(user.id, 2026, 3))?.timetable_id).toBe(remaining.id)
+    expect((await timetables.getHomeTimetable(user.id, 2026, 3))?.id).toBe(remaining.id)
     expect(await customblocks.getCustomblocksList(table.id)).toEqual([])
+  })
+
+  it('rolls back cleared main and shared flags if selecting a missing timetable fails', async () => {
+    const table = await timetables.createTimetable(user, 2029, 1, 0, [])
+    await timetables.setSharedTimetableSelection(user.id, 2029, 1, table.id)
+    await expect(timetables.setHomeTimetable(user.id, 2029, 1, -1)).rejects.toThrow()
+    await expect(timetables.setSharedTimetableSelection(user.id, 2029, 1, -1)).rejects.toThrow()
+    expect(await prisma.timetable_timetable.findUnique({ where: { id: table.id } }))
+      .toMatchObject({ is_main: true, is_shared: true })
+    await timetables.setSharedTimetableSelection(user.id, 2029, 1, null)
+    expect(await prisma.timetable_timetable.findUnique({ where: { id: table.id } }))
+      .toMatchObject({ is_main: true, is_shared: false })
   })
 
   it('holds the row lock until commit so a concurrent writer reads the committed items', async () => {

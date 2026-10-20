@@ -153,7 +153,7 @@ export class FriendsService {
       const profile = friend.friend_profile
       const matchingLectures = [
         ...profile.taken_lectures
-          .filter(({ lecture: enrolled }) => !profile.timetable_shared_selections.some(
+          .filter(({ lecture: enrolled }) => !profile.timetable_timetable.some(
             (selection) => selection.year === enrolled.year && selection.semester === enrolled.semester,
           ))
           .map(({ lecture: enrolled }) => ({

@@ -40,19 +40,14 @@ export class TimetableRepository {
   async getHomeTimetable(userId: number, year: number, semester: number) {
     return this.txHost.withTransaction(async () => {
       await this.lockUserTimetables(userId)
-      const selection = await this.txHost.tx.timetable_home_selection.findUnique({
-        where: { user_id_year_semester: { user_id: userId, year, semester } },
-      })
-      if (selection) return selection
-      const first = await this.txHost.tx.timetable_timetable.findFirst({
+      const timetable = await this.txHost.tx.timetable_timetable.findFirst({
         where: { user_id: userId, year, semester },
-        orderBy: [{ arrange_order: 'asc' }, { id: 'asc' }],
+        orderBy: [{ is_main: 'desc' }, { arrange_order: 'asc' }, { id: 'asc' }],
       })
-      if (!first) return null
-      return this.txHost.tx.timetable_home_selection.create({
-        data: {
-          user_id: userId, year, semester, timetable_id: first.id,
-        },
+      if (!timetable || timetable.is_main) return timetable
+      return this.txHost.tx.timetable_timetable.update({
+        where: { id: timetable.id },
+        data: { is_main: true },
       })
     })
   }
@@ -60,31 +55,46 @@ export class TimetableRepository {
   async setHomeTimetable(userId: number, year: number, semester: number, timetableId: number) {
     return this.txHost.withTransaction(async () => {
       await this.lockUserTimetables(userId)
-      return this.txHost.tx.$executeRaw`
-        INSERT INTO timetable_home_selection (user_id, year, semester, timetable_id)
-        VALUES (${userId}, ${year}, ${semester}, ${timetableId})
-        ON DUPLICATE KEY UPDATE timetable_id = ${timetableId}
-      `
+      await this.txHost.tx.timetable_timetable.updateMany({
+        where: {
+          user_id: userId, year, semester, is_main: true,
+        },
+        data: { is_main: false },
+      })
+      return this.txHost.tx.timetable_timetable.update({
+        where: {
+          id: timetableId, user_id: userId, year, semester,
+        },
+        data: { is_main: true },
+      })
     })
   }
 
   async getSharedTimetableSelection(userId: number, year: number, semester: number) {
-    return this.txHost.tx.timetable_shared_selection.findUnique({
-      where: { user_id_year_semester: { user_id: userId, year, semester } },
+    return this.txHost.tx.timetable_timetable.findFirst({
+      where: {
+        user_id: userId, year, semester, is_shared: true,
+      },
+      select: { id: true },
     })
   }
 
   async setSharedTimetableSelection(userId: number, year: number, semester: number, timetableId: number | null) {
     return this.txHost.withTransaction(async () => {
       await this.lockUserTimetables(userId)
-      if (timetableId === null) {
-        return this.txHost.tx.timetable_shared_selection.deleteMany({ where: { user_id: userId, year, semester } })
-      }
-      return this.txHost.tx.$executeRaw`
-        INSERT INTO timetable_shared_selection (user_id, year, semester, timetable_id)
-        VALUES (${userId}, ${year}, ${semester}, ${timetableId})
-        ON DUPLICATE KEY UPDATE timetable_id = ${timetableId}
-      `
+      await this.txHost.tx.timetable_timetable.updateMany({
+        where: {
+          user_id: userId, year, semester, is_shared: true,
+        },
+        data: { is_shared: false },
+      })
+      if (timetableId === null) return null
+      return this.txHost.tx.timetable_timetable.update({
+        where: {
+          id: timetableId, user_id: userId, year, semester,
+        },
+        data: { is_shared: true },
+      })
     })
   }
 
@@ -92,7 +102,7 @@ export class TimetableRepository {
     return this.txHost.tx.timetable_timetable.findMany({
       include: ETimetable.Details.include,
       where: {
-        user_id: userId, year, semester, timetable_shared_selections: { some: { user_id: userId, year, semester } },
+        user_id: userId, year, semester, is_shared: true,
       },
     })
   }
@@ -100,7 +110,7 @@ export class TimetableRepository {
   async getSharedTimetableWithItems(timetableId: number, userId: number) {
     return this.txHost.tx.timetable_timetable.findFirst({
       include: ETimetable.WithItems.include,
-      where: { id: timetableId, user_id: userId, timetable_shared_selections: { some: { user_id: userId } } },
+      where: { id: timetableId, user_id: userId, is_shared: true },
     })
   }
 
@@ -179,13 +189,14 @@ export class TimetableRepository {
     name?: string,
   ): Promise<ETimetable.Details> {
     return this.txHost.withTransaction(async () => {
-      await this.lockUserTimetables(user.id)
-      const timetable = await this.txHost.tx.timetable_timetable.create({
+      const home = await this.getHomeTimetable(user.id, year, semester)
+      return this.txHost.tx.timetable_timetable.create({
         data: {
           user_id: user.id,
           year,
           semester,
           arrange_order: arrangeOrder,
+          is_main: home === null,
           name: name ?? '',
           timetable_timetable_lectures: {
             createMany: {
@@ -197,12 +208,6 @@ export class TimetableRepository {
         },
         include: ETimetable.Details.include,
       })
-      await this.txHost.tx.$executeRaw`
-        INSERT INTO timetable_home_selection (user_id, year, semester, timetable_id)
-        VALUES (${user.id}, ${year}, ${semester}, ${timetable.id})
-        ON DUPLICATE KEY UPDATE timetable_id = timetable_id
-      `
-      return timetable
     })
   }
 
