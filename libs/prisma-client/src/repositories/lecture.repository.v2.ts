@@ -124,7 +124,7 @@ export class LectureRepositoryV2 {
 
   public timeFilter(day?: number, begin?: number, end?: number): object | null {
     const datetimeBegin = begin !== undefined && begin !== null ? this.datetimeConverter(begin) : undefined
-    const datetimeEnd = end !== undefined && end !== null ? this.datetimeConverter(end) : undefined
+    const datetimeEnd = end !== undefined && end !== null && end < 1440 ? this.datetimeConverter(end) : undefined
 
     const result: any = {}
 
