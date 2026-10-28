@@ -67,7 +67,7 @@ describe('Timetable item request validation', () => {
       .toThrow(BadRequestException)
   })
 
-  it('retains optional creation fields and explicit home deselection through the validation pipe', async () => {
+  it('retains optional creation fields and allows academic selection only for sharing through the validation pipe', async () => {
     const term = { year: 2026, semester: 3 }
     for (const body of [{ ...term, lectureIds: [] }, { ...term, sourceTimetableId: 1 }]) {
       const parsed = await pipe.transform(body, { type: 'body', metatype: ITimetableV2.CreateReqDto })
@@ -75,9 +75,9 @@ describe('Timetable item request validation', () => {
       expect(() => validateCreateTimetableInput(parsed)).not.toThrow()
     }
     const deselection = { ...term, timetableId: null }
-    await expect(pipe.transform(deselection, { type: 'body', metatype: ITimetableV2.SetHomeTimetableReqDto }))
+    await expect(pipe.transform(deselection, { type: 'body', metatype: ITimetableV2.SetSharedTimetableReqDto }))
       .resolves.toEqual(deselection)
-    for (const body of [term, { ...term, timetableId: '1' }, { ...term, timetableId: 0 }]) {
+    for (const body of [deselection, term, { ...term, timetableId: '1' }, { ...term, timetableId: 0 }]) {
       await expect(pipe.transform(body, { type: 'body', metatype: ITimetableV2.SetHomeTimetableReqDto }))
         .rejects.toThrow(BadRequestException)
     }
