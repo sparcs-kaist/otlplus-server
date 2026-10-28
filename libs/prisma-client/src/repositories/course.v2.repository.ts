@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { CourseOrderQuery } from '@otl/server-nest/common/interfaces/v2/ICourseV2'
 import { Prisma } from '@prisma/client'
 
 import { formatNewLectureCodeWithDot } from '@otl/prisma-client/common'
@@ -52,12 +53,11 @@ export class CourseRepositoryV2 {
     level: number[] | undefined,
     keyword: string | undefined,
     term: number | undefined,
-    order: string | undefined,
+    order: CourseOrderQuery | undefined,
     offset: number | undefined,
     limit: number | undefined,
   ): Promise<{ queryResult: ECourseV2.BasicWithProfessors[], totalCount: number }> {
     const DEFAULT_LIMIT = 150
-    // const DEFAULT_ORDER = ['old_code'] satisfies (keyof ECourse.Details)[]
     const departmentFilter = this.departmentFilter(department)
     const typeFilter = this.typeFilter(type)
     const keywordFilter = this.keywordFilter(keyword)
@@ -67,12 +67,16 @@ export class CourseRepositoryV2 {
       (filter): filter is object => filter !== null,
     )
 
+    if (order === 'studentCount') {
+      return this.getCoursesByStudentCount(filterList, offset ?? 0, limit ?? DEFAULT_LIMIT)
+    }
+
     const queryResult = await this.prisma.subject_course.findMany({
       select: ECourseV2.BasicWithProfessorsArgs.select,
       where: {
         AND: filterList,
       },
-      orderBy: [{ new_code: 'asc' }],
+      orderBy: this.courseOrderBy(order),
       skip: offset ?? 0,
       take: limit ?? DEFAULT_LIMIT,
     })
@@ -83,13 +87,67 @@ export class CourseRepositoryV2 {
       },
     })
 
-    // Apply Ordering and Offset
-    // const orderedResult = applyOrder<ECourse.Details>(
-    //   levelFilteredResult,
-    //   (order as (keyof ECourse.Details)[]) ?? DEFAULT_ORDER,
-    // )
-    // return applyOffset<ECourse.Details>(orderedResult, offset ?? 0)
     return { queryResult, totalCount: queryCountResult }
+  }
+
+  /**
+   * [수강자 많은 순]
+   */
+  // Prisma cannot order by SUM of a relation column, so rank course ids in memory and fetch only the requested page.
+  private async getCoursesByStudentCount(
+    filterList: object[],
+    offset: number,
+    limit: number,
+  ): Promise<{ queryResult: ECourseV2.BasicWithProfessors[], totalCount: number }> {
+    // Already in code order, so the stable sort below keeps it as the tie-breaker.
+    const courseIds = (
+      await this.prisma.subject_course.findMany({
+        select: { id: true },
+        where: { AND: filterList },
+        orderBy: this.courseOrderBy('code'),
+      })
+    ).map((course) => course.id)
+
+    const studentCounts = await this.prisma.subject_lecture.groupBy({
+      by: ['course_id'],
+      where: { course_id: { in: courseIds }, deleted: false },
+      _sum: { num_people: true },
+    })
+    const studentCountById = new Map(studentCounts.map(({ course_id, _sum: sum }) => [course_id, sum.num_people ?? 0]))
+
+    const pageIds = [...courseIds]
+      .sort((a, b) => (studentCountById.get(b) ?? 0) - (studentCountById.get(a) ?? 0))
+      .slice(offset, offset + limit)
+
+    const courses = await this.prisma.subject_course.findMany({
+      select: ECourseV2.BasicWithProfessorsArgs.select,
+      where: { id: { in: pageIds } },
+    })
+    const courseById = new Map(courses.map((course) => [course.id, course]))
+    const queryResult = pageIds
+      .map((id) => courseById.get(id))
+      .filter((course): course is ECourseV2.BasicWithProfessors => course !== undefined)
+
+    return { queryResult, totalCount: courseIds.length }
+  }
+
+  /**
+   * [인기순]
+   * 1) review_total_weight 2) (new_code) 3) id
+   * 과목 사전은 new_code를, 시간표는 old_code를 기준으로 씀.
+   *
+   * [과목 코드 순]
+   * 1) new_code 2) id
+   * 기존 정렬 순서 유지
+   */
+  private courseOrderBy(order?: CourseOrderQuery): Prisma.subject_courseOrderByWithRelationInput[] {
+    switch (order) {
+      case 'popular':
+        return [{ review_total_weight: 'desc' }, { new_code: 'asc' }, { id: 'asc' }]
+      case 'code':
+      default:
+        return [{ new_code: 'asc' }, { id: 'asc' }]
+    }
   }
 
   public departmentFilter(department_ids?: number[]): object | null {
