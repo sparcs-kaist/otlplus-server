@@ -1,4 +1,4 @@
-FROM node:20 AS build
+FROM node:24 AS build
 
 RUN mkdir -p /var/www/otlplus-server-consumer
 RUN mkdir -p /var/www/otlplus-server-consumer/libs
@@ -27,7 +27,7 @@ COPY ./libs/redis ./libs/redis
 RUN yarn client:generate
 RUN yarn build:server-consumer
 
-FROM node:20-slim AS server
+FROM node:24-slim AS server
 RUN apt-get update -y && apt-get install -y openssl
 
 COPY --from=build /var/www/otlplus-server-consumer/dist/apps/server-consumer /var/www/otlplus-server-consumer/dist/apps/server-consumer
