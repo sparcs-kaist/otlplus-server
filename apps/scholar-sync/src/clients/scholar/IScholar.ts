@@ -172,34 +172,12 @@ export namespace IScholar {
     EXAM_DAY!: number
 
     /** 시험 시작 시간 */
-    @IsObject()
-    EXAM_BEGIN!: {
-      date: number
-      day: number
-      hours: number
-      minutes: number
-      month: number
-      nanos: number
-      seconds: number
-      time: number
-      timezoneOffset: number
-      year: number
-    }
+    @IsString()
+    EXAM_BEGIN!: string
 
     /** 시험 종료 시간 */
-    @IsObject()
-    EXAM_END!: {
-      date: number
-      day: number
-      hours: number
-      minutes: number
-      month: number
-      nanos: number
-      seconds: number
-      time: number
-      timezoneOffset: number
-      year: number
-    }
+    @IsString()
+    EXAM_END!: string
 
     /** 공지사항 */
     @IsString()

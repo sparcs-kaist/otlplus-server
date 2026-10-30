@@ -480,12 +480,14 @@ export class SyncService {
         }
       }
       catch (e: any) {
+        const errorMessage = e.message || 'Unknown error'
+        this.logger.error(`Failed to update ${type} for ${lecture.code}-${lecture.class_no}: ${errorMessage}`, e.stack)
         timeResultDetail.errors.push({
           lecture: {
             code: lecture.code,
             class_no: lecture.class_no,
           },
-          error: e.message || 'Unknown error',
+          error: errorMessage,
         })
       }
     }
