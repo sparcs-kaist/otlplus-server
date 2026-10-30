@@ -1,6 +1,7 @@
 import { DocumentBuilder } from '@nestjs/swagger'
 import dotenv from 'dotenv'
 import * as mariadb from 'mariadb'
+import { createHmac } from 'node:crypto'
 
 import { dotEnvOptions } from './dotenv-options'
 
@@ -63,7 +64,10 @@ const getRedisConfig = () => ({
 const getAWSConfig = () => ({})
 
 const getJwtConfig = () => ({
-  secret: process.env.JWT_SECRET,
+  // Copied databases must not make dev login tokens valid in production.
+  secret: process.env.NODE_ENV === 'dev' && process.env.JWT_SECRET
+    ? createHmac('sha256', process.env.JWT_SECRET).update('otl-dev-session').digest('hex')
+    : process.env.JWT_SECRET,
   signOptions: {
     expiresIn: process.env.EXPIRES_IN,
     refreshExpiresIn: process.env.REFRESH_EXPIRES_IN,

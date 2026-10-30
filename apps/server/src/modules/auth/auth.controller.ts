@@ -1,5 +1,5 @@
 import {
-  Body, Controller, Get, Post, Query, Req, Res, Session,
+  Body, Controller, ForbiddenException, Get, NotFoundException, Post, Query, Req, Res, Session, UnauthorizedException,
 } from '@nestjs/common'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { Public, Public as PublicForGuard } from '@otl/server-nest/common/decorators/skip-auth.decorator'
@@ -12,6 +12,13 @@ import { ESSOUser } from '@otl/prisma-client/entities'
 import { UserService } from '../user/user.service'
 import { AuthService } from './auth.service'
 import { Client } from './utils/sparcs-sso'
+
+const devSsoCookieOptions = {
+  httpOnly: true,
+  secure: true,
+  sameSite: 'strict' as const,
+  path: '/session/dev',
+}
 
 @Controller('session')
 export class AuthController {
@@ -34,7 +41,7 @@ export class AuthController {
     @Req() req: IAuth.Request,
     @Res() res: IAuth.Response,
   ): void {
-    if (req.user) {
+    if (req.user && process.env.NODE_ENV !== 'dev') {
       const accessToken = this.authService.extractTokenFromHeader(req, 'accessToken')
         ?? this.authService.extractTokenFromCookie(req, 'accessToken')
       const refreshToken = this.authService.extractTokenFromHeader(req, 'refreshToken')
@@ -47,10 +54,7 @@ export class AuthController {
       if (sid && uid) {
         const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https'
         const host = req.get('host')
-        const requestBaseUrl = host ? `${protocol}://${host}` : undefined
-        const baseUrl = process.env.NODE_ENV === 'dev'
-          ? (process.env.WEB_URL ?? requestBaseUrl)
-          : (requestBaseUrl ?? process.env.WEB_URL)
+        const baseUrl = host ? `${protocol}://${host}` : process.env.WEB_URL
 
         return res.redirect(`${baseUrl}/login/success#accessToken=${accessToken}&refreshToken=${refreshToken}`)
       }
@@ -59,7 +63,13 @@ export class AuthController {
     res.cookie('next', next ?? '/', { httpOnly: true, secure: true, sameSite: 'strict' })
     const request_url = req.get('host') ?? 'otl.kaist.ac.kr'
     const { url, state } = this.ssoClient.get_login_params(request_url)
-    res.cookie('sso_state', state, { httpOnly: true, secure: true, sameSite: 'strict' })
+    res.cookie('sso_state', state, {
+      httpOnly: true,
+      secure: true,
+      sameSite: process.env.NODE_ENV === 'dev' ? 'lax' : 'strict',
+      maxAge: 10 * 60 * 1000,
+    })
+    if (process.env.NODE_ENV === 'dev') res.clearCookie('devSsoToken', devSsoCookieOptions)
     // req.session['sso_state'] = state;
     if (social_login === '0') {
       return res.redirect(`${url}&social_enabled=0&show_disabled_button=0`)
@@ -77,6 +87,22 @@ export class AuthController {
     @Session() session: Record<string, any>,
     @Res() response: IAuth.Response,
   ): Promise<void> {
+    if (process.env.NODE_ENV === 'dev') {
+      if (typeof state !== 'string' || !state || state !== req.cookies?.sso_state
+        || typeof code !== 'string' || !code) {
+        throw new UnauthorizedException('Invalid SSO state or code')
+      }
+      response.clearCookie('sso_state', {
+        path: '/', httpOnly: true, secure: true, sameSite: 'lax',
+      })
+      const profile = await this.ssoClient.get_user_info(code)
+      response.cookie('devSsoToken', this.authService.createDevSsoToken(profile), {
+        ...devSsoCookieOptions,
+        maxAge: 10 * 60 * 1000,
+      })
+      response.setHeader('Cache-Control', 'no-store')
+      return response.redirect(`${process.env.WEB_URL}/login/success#devLogin=1`)
+    }
     const ssoProfile: ESSOUser.SSOUser = await this.ssoClient.get_user_info(code)
     // const studentDegree = req.session.ssoProfile?.kaist_v2_info?.std_status_kor
     const {
@@ -129,13 +155,30 @@ export class AuthController {
       console.warn('Invalid preferred_url received:', preferred_url)
     }
 
-    // dev는 API와 웹 origin이 다르므로 최종 redirect는 WEB_URL을 사용한다.
-    if (process.env.NODE_ENV === 'dev' && process.env.WEB_URL) {
-      base_url = process.env.WEB_URL
-    }
-
     const next_url = `${base_url}/login/success#accessToken=${accessToken}&refreshToken=${refreshToken}`
-    response.redirect(next_url)
+    return response.redirect(next_url)
+  }
+
+  @Public()
+  @Post('dev/login')
+  async devLogin(
+    @Body('studentId') studentId: unknown,
+    @Req() req: IAuth.Request,
+    @Res({ passthrough: true }) res: IAuth.Response,
+  ): Promise<IUser.TokenResponse> {
+    if (process.env.NODE_ENV !== 'dev') throw new NotFoundException()
+    const origin = req.get('origin')
+    if (!origin || !settings().getCorsConfig().origin.includes(origin)) {
+      throw new ForbiddenException('Invalid login origin')
+    }
+    const {
+      accessToken, accessTokenOptions, refreshToken, refreshTokenOptions,
+    } = await this.authService.devLogin(req.cookies?.devSsoToken, studentId)
+    res.cookie('accessToken', accessToken, accessTokenOptions)
+    res.cookie('refreshToken', refreshToken, refreshTokenOptions)
+    res.clearCookie('devSsoToken', devSsoCookieOptions)
+    res.setHeader('Cache-Control', 'no-store')
+    return { accessToken, refreshToken }
   }
 
   @PublicForGuard()
@@ -243,6 +286,19 @@ export class AuthController {
     @GetUser() user: session_userprofile,
   ): Promise<void> {
     const webURL = process.env.WEB_URL
+    if (process.env.NODE_ENV === 'dev') {
+      res.clearCookie('accessToken', {
+        path: '/', httpOnly: true, secure: true, sameSite: 'none',
+      })
+      res.clearCookie('refreshToken', {
+        path: '/', httpOnly: true, secure: true, sameSite: 'none',
+      })
+      res.clearCookie('devSsoToken', devSsoCookieOptions)
+      res.clearCookie('sso_state', {
+        path: '/', httpOnly: true, secure: true, sameSite: 'lax',
+      })
+      return res.redirect(`${webURL}/`)
+    }
     if (user) {
       const { sid } = user
       const { protocol } = req
