@@ -30,6 +30,7 @@ export class SyncSchedule {
   @Cron(CronExpression.EVERY_3_HOURS, {
     name: 'syncAll',
     timeZone: 'Asia/Seoul',
+    disabled: !settings().syncConfig().syncCronAutostart,
   })
   async syncAll(year?: number, semester?: number, interval?: number) {
     const semesters = await this.determineTargetSemesters(year, semester, interval)
