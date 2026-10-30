@@ -53,6 +53,8 @@ const getSyncConfig = () => ({
   slackKey: process.env.SLACK_KEY,
   scholarKey: process.env.SCHOLAR_AUTH_KEY,
   scholarUrl: process.env.SCHOLAR_BASE_URL,
+  // Initial state only; the running job can still be changed through the toggle API.
+  syncCronAutostart: process.env.SCHOLAR_SYNC_CRON_AUTOSTART === 'true',
 })
 
 const getVersion = () => String(process.env.npm_package_version)
