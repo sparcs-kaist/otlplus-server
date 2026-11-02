@@ -10,7 +10,7 @@ export class RabbitPublisherService {
   async publishToExchange(
     exchange: string,
     routingKey: string,
-    payload: any,
+    payload: unknown,
     options: { delay?: number } = {},
   ): Promise<void> {
     const connection = await this.rabbitMQService.getConnection()

@@ -14,13 +14,15 @@ export class LectureProfessorsMiddleware implements IPrismaMiddleware.Middleware
     this.prisma = prisma
   }
 
-  async preExecute(_operations: IPrismaMiddleware.operationType, _args: any): Promise<boolean> {
+  async preExecute(_operations: IPrismaMiddleware.operationType, _args: unknown): Promise<boolean> {
     return true
   }
 
-  async postExecute(operations: IPrismaMiddleware.operationType, args: any, result: any): Promise<boolean> {
+  async postExecute(operations: IPrismaMiddleware.operationType, args: unknown, result: unknown): Promise<boolean> {
     if (operations === 'create' || operations === 'delete' || operations === 'deleteMany') {
-      const lectureId = result.lecture_id || args?.where?.lecture_id
+      const row = result as { lecture_id?: number }
+      const query = args as { where?: { lecture_id?: number } }
+      const lectureId = row.lecture_id || query.where?.lecture_id
       if (!lectureId) {
         console.warn('lecture_id not found. Can\'t recalculate lecture score.')
       }
