@@ -70,6 +70,7 @@ export class TimetablesService {
 
   @Transactional()
   private async createTimetableTransaction(timeTableBody: ITimetable.CreateDto, user: session_userprofile) {
+    await this.timetableRepository.lockUserTimetables(user.id)
     const { year, semester } = timeTableBody
     if (!(await this.validateYearAndSemester(year, semester))) {
       throw new BadRequestException('Wrong fields \'year\' and \'semester\' in request data')
@@ -237,10 +238,11 @@ export class TimetablesService {
 
   @Transactional()
   private async deleteTimetableTransaction(user: session_userprofile, timetableId: number) {
+    await this.timetableRepository.lockUserTimetables(user.id)
     await this.timetableRepository.lockTimetable(timetableId)
     const { semester, year, arrange_order } = await this.timetableRepository.getTimeTableById(timetableId)
     const lectureIds = await this.timetableRepository.getTimeTableLectures(timetableId)
-    await this.timetableRepository.deleteById(timetableId)
+    await this.timetableRepository.deleteById(timetableId, user.id)
     const relatedTimeTables = await this.timetableRepository.getTimetables(user, year, semester)
     const timeTablesToBeUpdated = relatedTimeTables
       .filter((timeTable) => timeTable.arrange_order > arrange_order)

@@ -78,6 +78,24 @@ export class TimetablesControllerV2 {
     return await this.timetablesService.setHomeTimetable(user, body, language)
   }
 
+  @Get('/shared')
+  async getSharedTimetable(
+    @Query() query: ITimetableV2.HomeTimetableReqDto,
+    @GetUser() user: session_userprofile,
+    @GetLanguage() language: Language,
+  ): Promise<ITimetableV2.SharedTimetableResDto> {
+    return this.timetablesService.getSharedTimetable(user, query, language)
+  }
+
+  @Patch('/shared')
+  async setSharedTimetable(
+    @GetUser() user: session_userprofile,
+    @GetLanguage() language: Language,
+    @Body() body: ITimetableV2.SetSharedTimetableReqDto,
+  ): Promise<ITimetableV2.SharedTimetableResDto> {
+    return this.timetablesService.setSharedTimetable(user, body, language)
+  }
+
   @Get('/:timetableId')
   async getTimetable(
     @Param('timetableId', ParseIntPipe) timetableId: number,

@@ -37,7 +37,7 @@ export namespace ITimetableV2 {
   }
 
   export interface GetTimetablesResDto {
-    timetables: TimetableSummary[]
+    timetables: OwnTimetableSummary[]
   }
 
   export class DeleteReqDto {
@@ -346,6 +346,12 @@ export namespace ITimetableV2 {
   }
 
   export class SetHomeTimetableReqDto extends HomeTimetableReqDto {
+    @IsInt()
+    @Min(1)
+    timetableId!: number
+  }
+
+  export class SetSharedTimetableReqDto extends HomeTimetableReqDto {
     @ValidateIf((_, value) => value !== null)
     @IsInt()
     @Min(1)
@@ -362,6 +368,13 @@ export namespace ITimetableV2 {
     year!: number
 
     semester!: number
+  }
+
+  export class SharedTimetableResDto extends HomeTimetableResDto {}
+
+  export interface OwnTimetableSummary extends TimetableSummary {
+    isMain: boolean
+    isShared: boolean
   }
 
   export interface TimetableSummary {

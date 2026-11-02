@@ -1,10 +1,10 @@
 import { readFileSync } from 'fs'
 import path from 'path'
 
-it('documents unified items, change variants and required nullable home selection', () => {
+it('documents unified items, change variants and required main and nullable shared selections', () => {
   const document = JSON.parse(readFileSync(path.join(__dirname, 'swagger.json'), 'utf8'))
   const schemas = document.components.schemas
-  for (const name of ['TimetableDetailResDto', 'HomeTimetableResDto', 'UpdateItemsResDto']) {
+  for (const name of ['TimetableDetailResDto', 'HomeTimetableResDto', 'SharedTimetableResDto', 'UpdateItemsResDto']) {
     expect(schemas[`ITimetableV2.${name}`].properties.timetableItems.items.$ref)
       .toBe('#/components/schemas/ITimetableV2.TimetableItem')
   }
@@ -23,8 +23,12 @@ it('documents unified items, change variants and required nullable home selectio
     .toBe('#/components/schemas/TimetableItemKind')
   const selection = schemas['ITimetableV2.SetHomeTimetableReqDto']
   expect(selection.required).toContain('timetableId')
-  expect(selection.properties.timetableId.anyOf).toContainEqual({ type: 'null' })
+  expect(selection.properties.timetableId).toEqual({ type: 'integer', minimum: 1 })
+  expect(schemas['ITimetableV2.SetSharedTimetableReqDto'].properties.timetableId.anyOf).toContainEqual({ type: 'null' })
   expect(document.paths['/api/v2/timetables/home']).toHaveProperty('patch')
+  expect(document.paths['/api/v2/timetables/shared']).toHaveProperty('get')
+  expect(document.paths['/api/v2/timetables/shared']).toHaveProperty('patch')
+  expect(schemas['ITimetableV2.SharedTimetableResDto'].required).toContain('timetableId')
   expect(document.paths['/api/v2/timetables/{timetableId}/items']).toHaveProperty('patch')
 })
 
@@ -33,6 +37,10 @@ it('documents the same unified item contract for authorized friend timetables', 
   const paths = document.paths
   const schemas = document.components.schemas
   const response = (path: string) => paths[path].get.responses['200'].content['application/json'].schema.$ref
+  expect(response('/api/v2/friends/{friendId}/timetables/shared'))
+    .toBe('#/components/schemas/ITimetableV2.TimetableDetailResDto')
+  expect(schemas['ITimetableV2.OwnTimetableSummary'].required).toEqual(expect.arrayContaining(['isMain', 'isShared']))
+  expect(schemas['ITimetableV2.TimetableSummary'].properties).not.toHaveProperty('isMain')
   expect(response('/api/v2/friends/{friendId}/timetables/{timetableId}'))
     .toBe('#/components/schemas/ITimetableV2.TimetableDetailResDto')
   expect(response('/api/v2/friends/{friendId}/timetables/my-timetable'))
