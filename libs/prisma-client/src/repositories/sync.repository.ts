@@ -211,19 +211,23 @@ export class SyncRepository {
   }
 
   async updateLectureExamtimes(id: number, { added, removed }: { added: ExamtimeInfo[], removed: number[] }) {
-    if (removed.length) {
-      await this.prisma.subject_examtime.deleteMany({
-        where: { id: { in: removed } },
-      })
-    }
-    if (added.length) {
-      await this.prisma.subject_examtime.createMany({
-        data: added.map((examtime) => ({
-          lecture_id: id,
-          ...examtime,
-        })),
-      })
-    }
+    if (!added.length && !removed.length) return
+
+    await this.prisma.$transaction(async (transaction) => {
+      if (removed.length) {
+        await transaction.subject_examtime.deleteMany({
+          where: { id: { in: removed } },
+        })
+      }
+      if (added.length) {
+        await transaction.subject_examtime.createMany({
+          data: added.map((examtime) => ({
+            lecture_id: id,
+            ...examtime,
+          })),
+        })
+      }
+    })
   }
 
   async updateLectureClasstimes(id: number, { added, removed }: { added: ClassTimeInfo[], removed: number[] }) {

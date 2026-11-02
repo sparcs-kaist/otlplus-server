@@ -1,4 +1,4 @@
-FROM node:20 AS build
+FROM node:24 AS build
 
 RUN mkdir -p /var/www/otlplus-server && \
     mkdir -p /var/www/otlplus-server/libs && \
@@ -24,7 +24,7 @@ RUN yarn client:generate
 RUN yarn generate:server:api-docs && \
     yarn build:server
 
-FROM node:20-slim AS server
+FROM node:24-slim AS server
 RUN apt-get update -y && apt-get install -y openssl
 
 COPY --from=build /var/www/otlplus-server/dist/apps/server /var/www/otlplus-server/dist/apps/server

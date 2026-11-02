@@ -30,6 +30,7 @@ export class SyncSchedule {
   @Cron(CronExpression.EVERY_3_HOURS, {
     name: 'syncAll',
     timeZone: 'Asia/Seoul',
+    disabled: !settings().syncConfig().syncCronAutostart,
   })
   async syncAll(year?: number, semester?: number, interval?: number) {
     const semesters = await this.determineTargetSemesters(year, semester, interval)
@@ -45,12 +46,12 @@ export class SyncSchedule {
       const syncResultSummaries = summarizeSyncResults(syncResults)
       await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2))
       fs.writeFileSync(
-        `${this.logFileDir}/scholar-${year}-${semester}-${syncResultSummaries.time.toISOString()}.json`,
+        `${this.logFileDir}/scholar-${y}-${s}-${syncResultSummaries.time.toISOString()}.json`,
         JSON.stringify(syncResults, null, 2),
       )
-      await this.syncExamTime(year, semester)
-      await this.syncClassTime(year, semester)
-      await this.syncTakenLecture(year, semester)
+      await this.syncExamTime(y, s)
+      await this.syncClassTime(y, s)
+      await this.syncTakenLecture(y, s)
     }
     await this.syncDegree()
     await this.syncMajor()
@@ -94,7 +95,7 @@ export class SyncSchedule {
       const syncResultSummaries = summarizeSyncResults(syncResultDetail)
       await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2))
       fs.writeFileSync(
-        `${this.logFileDir}/examTime-${year}-${semester}-${syncResultSummaries.time.toISOString()}.json`,
+        `${this.logFileDir}/examTime-${y}-${s}-${syncResultSummaries.time.toISOString()}.json`,
         JSON.stringify(syncResultDetail, null, 2),
       )
     }
@@ -113,7 +114,7 @@ export class SyncSchedule {
       const syncResultSummaries = summarizeSyncResults(syncResultDetail)
       await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2))
       fs.writeFileSync(
-        `${this.logFileDir}/classTime-${year}-${semester}-${syncResultSummaries.time.toISOString()}.json`,
+        `${this.logFileDir}/classTime-${y}-${s}-${syncResultSummaries.time.toISOString()}.json`,
         JSON.stringify(syncResultDetail, null, 2),
       )
     }
@@ -132,7 +133,7 @@ export class SyncSchedule {
       const syncResultSummaries = summarizeSyncResults(syncResultDetail)
       await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2))
       fs.writeFileSync(
-        `${this.logFileDir}/taken_lecture-${year}-${semester}-${syncResultSummaries.time.toISOString()}.json`,
+        `${this.logFileDir}/taken_lecture-${y}-${s}-${syncResultSummaries.time.toISOString()}.json`,
         JSON.stringify(syncResultDetail, null, 2),
       )
     }
