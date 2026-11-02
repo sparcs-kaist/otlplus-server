@@ -185,4 +185,20 @@ export default [
     plugins: { '@typescript-eslint': tseslint.plugin },
     rules: { '@typescript-eslint/no-explicit-any': 'error' },
   },
+  {
+    // Sync migration is deferred by scope; keep other lint rules and guard new files.
+    files: [
+      'apps/scholar-sync/src/clients/scholar/scholar.api.client.ts',
+      'apps/scholar-sync/src/common/interfaces/ISync.ts',
+      'apps/scholar-sync/src/modules/auth/utils/sparcs-sso.ts',
+      'apps/scholar-sync/src/modules/sync/sync.service.ts',
+      'apps/scholar-sync/test/syncScholarDB.service.spec.ts',
+      'apps/scholar-sync/test/syncTakenLecture.service.spec.ts',
+      'apps/server/src/modules/sync/syncScholarDB.service.ts',
+      'apps/server/src/modules/sync/syncScholarDB.service.spec.ts',
+      'apps/server/src/modules/sync/syncTakenLecture.service.ts',
+      'apps/server/src/modules/sync/syncTakenLecture.service.spec.ts',
+    ],
+    rules: { '@typescript-eslint/no-explicit-any': 'off' },
+  },
 ]

@@ -216,7 +216,6 @@
       "^@otl/common/(.*)$": "<rootDir>/libs/common/src/$1",
       "^@otl/server-nest/(.*)$": "<rootDir>/apps/server/src/$1",
       "^@otl/server-consumer/(.*)$": "<rootDir>/apps/server-consumer/src/$1",
-      "^@otl/scholar-sync/(.*)$": "<rootDir>/apps/scholar-sync/src/$1",
       "^@otl/prisma-client/(.*)$": "<rootDir>/libs/prisma-client/src/$1"
     },
     "coverageDirectory": "../coverage",

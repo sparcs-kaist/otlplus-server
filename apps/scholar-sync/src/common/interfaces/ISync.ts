@@ -72,13 +72,13 @@ export class SyncResultDetail {
 
   type: SyncType
 
-  created: unknown[]
+  created: any[]
 
-  updated: unknown[]
+  updated: any[]
 
-  skipped: unknown[]
+  skipped: any[]
 
-  errors: unknown[]
+  errors: any[]
 
-  deleted: unknown[]
+  deleted: any[]
 }

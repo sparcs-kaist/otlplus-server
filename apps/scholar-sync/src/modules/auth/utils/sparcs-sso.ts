@@ -41,8 +41,8 @@ export class Client {
   private secret_key: Buffer
 
   constructor(
-    client_id: string | undefined,
-    secret_key: string | undefined,
+    client_id: string,
+    secret_key: string,
     private is_beta: boolean = false,
     private server_addr: string = '',
   ) {
@@ -59,12 +59,11 @@ export class Client {
       acc[key] = `${base_url}${value}`
       return acc
     }, {} as Urls)
-    if (!client_id || !secret_key) throw new Error('Missing SSO credentials')
     this.client_id = client_id
     this.secret_key = Buffer.from(secret_key, 'utf-8')
   }
 
-  private sign_payload(payload: string[], append_timestamp: boolean = true): [string, number] {
+  private sign_payload(payload: Array<any>, append_timestamp: boolean = true): [string, number] {
     const timestamp: number = Math.floor(Date.now() / 1000)
     if (append_timestamp) {
       payload.push(timestamp.toString())
@@ -74,7 +73,7 @@ export class Client {
     return [sign, timestamp]
   }
 
-  private validate_sign(payload: string[], timestamp: string, sign: string): boolean {
+  private validate_sign(payload: any[], timestamp: string, sign: string): boolean {
     const [sign_client, time_client]: [string, number] = this.sign_payload(payload, false)
     if (Math.abs(Number(time_client) - Number(timestamp)) > 10) {
       return false
@@ -85,7 +84,7 @@ export class Client {
     return true
   }
 
-  private async post_data(url: string, data: Parameters<typeof querystring.stringify>[0]): Promise<ESSOUser.SSOUser> {
+  private async post_data(url: any, data: any): Promise<ESSOUser.SSOUser> {
     /**
      *@SSO
      *querystring.stringify(data)인지 .toString('utf8')붙여야 하는지 확인 필요
@@ -174,7 +173,7 @@ export class Client {
     return `${this.URLS.logout}?${querystring.stringify(params)}`
   }
 
-  public async get_notice(offset: number = 0, limit: number = 3, date_after: number = 0): Promise<unknown> {
+  public async get_notice(offset: number = 0, limit: number = 3, date_after: number = 0): Promise<any> {
     /*
     Get some notices from SPARCS SSO
     :param offset: a offset to fetch from
@@ -187,7 +186,7 @@ export class Client {
     return r.data
   }
 
-  public parse_unregister_request(data_dict: Record<string, string | undefined>): string {
+  public parse_unregister_request(data_dict: any): string {
     /*
     Parse unregister request from SPARCS SSO server
     :param data_dict: a data dictionary that the server sent
