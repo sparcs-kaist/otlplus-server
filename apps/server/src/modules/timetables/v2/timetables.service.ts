@@ -44,8 +44,14 @@ export class TimetablesServiceV2 {
     user: session_userprofile,
     query: ITimetableV2.GetTimetablesReqDto,
   ): Promise<ITimetableV2.GetTimetablesResDto> {
-    const timetables = await this.timetableRepository.getTimetables(user, query.year, query.semester)
-    return { timetables: timetables.map(toJsonTimetableV2) }
+    const timetables = await this.timetableRepository.getTimetableBasics(user, query.year, query.semester)
+    return {
+      timetables: timetables.map((timetable) => ({
+        ...toJsonTimetableV2(timetable),
+        isMain: timetable.is_main,
+        isShared: timetable.is_shared,
+      })),
+    }
   }
 
   async getTimetablesBySemester(
@@ -596,18 +602,15 @@ export class TimetablesServiceV2 {
     language: Language,
   ): Promise<ITimetableV2.SharedTimetableResDto> {
     const { year, semester } = query
-    const selection = await this.timetableRepository.getSharedTimetableSelection(user.id, year, semester)
-    if (selection) {
-      const timetable = await this.timetableRepository.getSharedTimetableWithItems(selection.id, user.id)
-      if (timetable) {
-        return {
-          ...toJsonTimetableV2WithItems(timetable, language),
-          year,
-          semester,
-          timetableId: timetable.id,
-          source: 'saved',
-          name: timetable.name ?? '',
-        }
+    const timetable = await this.timetableRepository.getSharedTimetableForSemester(user.id, year, semester)
+    if (timetable) {
+      return {
+        ...toJsonTimetableV2WithItems(timetable, language),
+        year,
+        semester,
+        timetableId: timetable.id,
+        source: 'saved',
+        name: timetable.name ?? '',
       }
     }
     return {

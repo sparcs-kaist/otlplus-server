@@ -37,7 +37,7 @@ export namespace ITimetableV2 {
   }
 
   export interface GetTimetablesResDto {
-    timetables: TimetableSummary[]
+    timetables: OwnTimetableSummary[]
   }
 
   export class DeleteReqDto {
@@ -371,6 +371,11 @@ export namespace ITimetableV2 {
   }
 
   export class SharedTimetableResDto extends HomeTimetableResDto {}
+
+  export interface OwnTimetableSummary extends TimetableSummary {
+    isMain: boolean
+    isShared: boolean
+  }
 
   export interface TimetableSummary {
     id: number

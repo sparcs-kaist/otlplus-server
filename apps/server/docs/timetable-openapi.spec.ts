@@ -37,6 +37,10 @@ it('documents the same unified item contract for authorized friend timetables', 
   const paths = document.paths
   const schemas = document.components.schemas
   const response = (path: string) => paths[path].get.responses['200'].content['application/json'].schema.$ref
+  expect(response('/api/v2/friends/{friendId}/timetables/shared'))
+    .toBe('#/components/schemas/ITimetableV2.TimetableDetailResDto')
+  expect(schemas['ITimetableV2.OwnTimetableSummary'].required).toEqual(expect.arrayContaining(['isMain', 'isShared']))
+  expect(schemas['ITimetableV2.TimetableSummary'].properties).not.toHaveProperty('isMain')
   expect(response('/api/v2/friends/{friendId}/timetables/{timetableId}'))
     .toBe('#/components/schemas/ITimetableV2.TimetableDetailResDto')
   expect(response('/api/v2/friends/{friendId}/timetables/my-timetable'))

@@ -64,3 +64,20 @@ it('rejects a row lock outside a transaction', async () => {
   await expect(repository.lockTimetable(42)).rejects.toThrow('Timetable locks require a transaction')
   await expect(repository.lockUserTimetables(7)).rejects.toThrow('Timetable selections require a transaction')
 })
+
+it('reads the persisted main selection without opening a transaction, locking or writing', async () => {
+  const findFirst = jest.fn().mockResolvedValue(null)
+  const repository = new TimetableRepository({ tx: { timetable_timetable: { findFirst } } } as never)
+  await expect(repository.getHomeTimetable(7, 2026, 3)).resolves.toBeNull()
+  expect(findFirst).toHaveBeenCalledWith({ where: { user_id: 7, year: 2026, semester: 3, is_main: true } })
+})
+
+it('reads a shared timetable and its items together, scoped to the owner and semester', async () => {
+  const findFirst = jest.fn().mockResolvedValue(null)
+  const repository = new TimetableRepository({ tx: { timetable_timetable: { findFirst } } } as never)
+  await expect(repository.getSharedTimetableForSemester(7, 2026, 3)).resolves.toBeNull()
+  expect(findFirst).toHaveBeenCalledWith({
+    where: { user_id: 7, year: 2026, semester: 3, is_shared: true },
+    include: ETimetable.WithItems.include,
+  })
+})

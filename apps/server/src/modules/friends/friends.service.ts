@@ -108,6 +108,21 @@ export class FriendsService {
     return { timetables: timetables.map(toJsonTimetableV2) }
   }
 
+  @Transactional()
+  async getSharedTimetable(
+    user: session_userprofile,
+    friendId: number,
+    query: ITimetableV2.MyTimetableReqDto,
+    language: Language,
+  ): Promise<ITimetableV2.TimetableDetailResDto> {
+    const friend = await this.getFriend(user.id, friendId)
+    const timetable = await this.timetableRepository.getSharedTimetableForSemester(friend.friend_userprofile_id, query.year, query.semester)
+    if (timetable) return toJsonTimetableV2WithItems(timetable, language)
+    const lectures = await this.lectureRepository.getTakenLecturesBySemester(friend.friend_userprofile_id, query.year, query.semester)
+    const serialized = toJsonLectures(lectures, language).lectures
+    return { lectures: serialized, timetableItems: serialized.map((data) => ({ kind: TimetableItemKind.LECTURE, data })) }
+  }
+
   async getMyTimetable(
     user: session_userprofile,
     friendId: number,

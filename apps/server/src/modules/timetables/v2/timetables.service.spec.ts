@@ -64,8 +64,7 @@ function setup(current = timetable()) {
     createTimetable: jest.fn().mockResolvedValue({ id: 43 }),
     addLectureToTimetable: jest.fn().mockResolvedValue(undefined),
     removeLectureFromTimetable: jest.fn().mockResolvedValue(undefined),
-    getSharedTimetableWithItems: jest.fn().mockResolvedValue(current),
-    getSharedTimetableSelection: jest.fn().mockResolvedValue(null),
+    getSharedTimetableForSemester: jest.fn().mockResolvedValue(null),
     setSharedTimetableSelection: jest.fn().mockResolvedValue(undefined),
     getHomeTimetable: jest.fn().mockResolvedValue(null),
     setHomeTimetable: jest.fn().mockResolvedValue(undefined),
@@ -326,10 +325,10 @@ describe('friend sharing selection', () => {
     await expect(service.getSharedTimetable(user, term, 'en')).resolves.toMatchObject({
       ...term, timetableId: null, source: 'enrolled', lectures: [{ id: 9 }],
     })
-    repo.getSharedTimetableSelection.mockResolvedValue({ id: 42 })
+    repo.getSharedTimetableForSemester.mockResolvedValue(timetable())
     await expect(service.setSharedTimetable(user, { ...term, timetableId: 42 }, 'en')).resolves.toMatchObject({ ...term, timetableId: 42, source: 'saved' })
     expect(repo.setSharedTimetableSelection).toHaveBeenCalledWith(user.id, 2026, 3, 42)
-    repo.getSharedTimetableSelection.mockResolvedValue(null)
+    repo.getSharedTimetableForSemester.mockResolvedValue(null)
     await expect(service.setSharedTimetable(user, { ...term, timetableId: null }, 'en')).resolves.toMatchObject({ source: 'enrolled' })
     expect(repo.setSharedTimetableSelection).toHaveBeenLastCalledWith(user.id, 2026, 3, null)
     expect(repo.setHomeTimetable).not.toHaveBeenCalled()
@@ -340,4 +339,13 @@ describe('friend sharing selection', () => {
     await expect(service.setSharedTimetable(user, { ...term, timetableId: 42 }, 'en')).rejects.toThrow()
     expect(repo.setSharedTimetableSelection).not.toHaveBeenCalled()
   })
+})
+
+it('returns main and shared flags with the own timetable list without loading items', async () => {
+  const { service, repo } = setup({ ...timetable(), is_main: true, is_shared: false })
+  await expect(service.getTimetables(user, term)).resolves.toMatchObject({
+    timetables: [{ id: 42, ...term, isMain: true, isShared: false }],
+  })
+  expect(repo.getTimetableBasics).toHaveBeenCalledWith(user, term.year, term.semester)
+  expect(repo.getTimeTableWithItemsById).not.toHaveBeenCalled()
 })
