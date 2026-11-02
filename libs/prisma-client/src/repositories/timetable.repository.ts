@@ -38,17 +38,10 @@ export class TimetableRepository {
   }
 
   async getHomeTimetable(userId: number, year: number, semester: number) {
-    return this.txHost.withTransaction(async () => {
-      await this.lockUserTimetables(userId)
-      const timetable = await this.txHost.tx.timetable_timetable.findFirst({
-        where: { user_id: userId, year, semester },
-        orderBy: [{ is_main: 'desc' }, { arrange_order: 'asc' }, { id: 'asc' }],
-      })
-      if (!timetable || timetable.is_main) return timetable
-      return this.txHost.tx.timetable_timetable.update({
-        where: { id: timetable.id },
-        data: { is_main: true },
-      })
+    return this.txHost.tx.timetable_timetable.findFirst({
+      where: {
+        user_id: userId, year, semester, is_main: true,
+      },
     })
   }
 
@@ -100,10 +93,18 @@ export class TimetableRepository {
 
   async getSharedTimetables(userId: number, year: number, semester: number) {
     return this.txHost.tx.timetable_timetable.findMany({
-      include: ETimetable.Details.include,
       where: {
         user_id: userId, year, semester, is_shared: true,
       },
+    })
+  }
+
+  async getSharedTimetableForSemester(userId: number, year: number, semester: number) {
+    return this.txHost.tx.timetable_timetable.findFirst({
+      where: {
+        user_id: userId, year, semester, is_shared: true,
+      },
+      include: ETimetable.WithItems.include,
     })
   }
 
@@ -189,6 +190,7 @@ export class TimetableRepository {
     name?: string,
   ): Promise<ETimetable.Details> {
     return this.txHost.withTransaction(async () => {
+      await this.lockUserTimetables(user.id)
       const home = await this.getHomeTimetable(user.id, year, semester)
       return this.txHost.tx.timetable_timetable.create({
         data: {
@@ -267,8 +269,14 @@ export class TimetableRepository {
         where: { timetable_id: timetableId },
       })
       const deleted = await tx.timetable_timetable.delete({ where: { id: timetableId } })
-      if (deleted.year !== null && deleted.semester !== null) {
-        await this.getHomeTimetable(userId, deleted.year, deleted.semester)
+      if (deleted.is_main && deleted.year !== null && deleted.semester !== null) {
+        const next = await tx.timetable_timetable.findFirst({
+          where: { user_id: userId, year: deleted.year, semester: deleted.semester },
+          orderBy: [{ arrange_order: 'asc' }, { id: 'asc' }],
+        })
+        if (next) {
+          await tx.timetable_timetable.update({ where: { id: next.id }, data: { is_main: true } })
+        }
       }
       return deleted
     })

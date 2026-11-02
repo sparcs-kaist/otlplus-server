@@ -8,6 +8,8 @@ import { existsSync, rmSync, writeFileSync } from 'fs'
 import request from 'supertest'
 
 import { PrismaService } from '@otl/prisma-client/prisma.service'
+import { FriendsController } from '@otl/server-nest/modules/friends/friends.controller'
+import { FriendCodeRateLimitGuard } from '@otl/server-nest/modules/friends/friend-code-rate-limit.guard'
 import { FriendsService } from '@otl/server-nest/modules/friends/friends.service'
 import { SemesterRepository } from '@otl/prisma-client/repositories/semester.repository'
 import { FriendRepository } from '@otl/prisma-client/repositories/friend.repository'
@@ -60,10 +62,10 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
           adapter: new TransactionalAdapterPrisma({ prismaInjectionToken: PrismaService }),
         })],
       })],
-      controllers: [TimetablesControllerV2],
-      providers: [TimetablesServiceV2, TimetableRepository, CustomblockRepository, LectureRepository, CourseRepository,
+      controllers: [TimetablesControllerV2, FriendsController],
+      providers: [TimetablesServiceV2, FriendsService, FriendRepository, SemesterRepository, TimetableRepository, CustomblockRepository, LectureRepository, CourseRepository,
         { provide: TIMETABLE_MQ, useValue: { publishLectureNumUpdate: async () => true } }],
-    }).compile()
+    }).overrideGuard(FriendCodeRateLimitGuard).useValue({ canActivate: () => true }).compile()
     app = module.createNestApplication()
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }))
     if (process.env.TIMETABLE_HTTP_PORT) app.enableCors({ origin: true, credentials: true })
@@ -275,6 +277,8 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     await friendRepository.createPair(otherUser.id, user.id)
     const friend = (await friendRepository.getFriendByTarget(otherUser.id, user.id))!
     const friendsService = new FriendsService(friendRepository, lectures, timetables, {} as SemesterRepository)
+    const friendShared = () => request(app.getHttpServer())
+      .get(`/api/v2/friends/${friend.id}/timetables/shared`).set('x-test-other-user', '1').query(term).expect(200)
     const shared = () => request(app.getHttpServer()).get(`${prefix}/shared`).query(term).expect(200)
     const select = (timetableId: number | null) => request(app.getHttpServer()).patch(`${prefix}/shared`).send({ ...term, timetableId }).expect(200)
     expect((await shared()).body).toMatchObject({ ...term, timetableId: null, source: 'enrolled', lectures: [{ id: lectureId }] })
@@ -283,7 +287,14 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     expect(await friendRepository.getFriendIdsWithScheduleAt(otherUser.id, [friend.id], [term], 0, 570)).toEqual([friend.id])
     await request(app.getHttpServer()).patch(`${prefix}/home`).send({ ...term, timetableId: first }).expect(200)
     expect((await friendsService.getMyTimetable(otherUser, friend.id, term, 'en')).lectures.map(({ id }) => id)).toEqual([lectureId])
+    expect((await friendShared()).body.lectures.map(({ id }: { id: number }) => id)).toEqual([lectureId])
+    await request(app.getHttpServer()).get(`/api/v2/friends/${friend.id}/timetables/shared`).query(term).expect(404)
+    await request(app.getHttpServer()).get(`/api/v2/friends/${friend.id}/timetables/shared`)
+      .set('x-test-other-user', '1').query({ year: 2026, semester: 9 }).expect(400)
     await select(first)
+    expect((await friendShared()).body.lectures.map(({ id }: { id: number }) => id)).toEqual([lectureId])
+    expect((await request(app.getHttpServer()).get(prefix).query(term).expect(200)).body.timetables)
+      .toContainEqual(expect.objectContaining({ id: first, isMain: true, isShared: true }))
     expect(await prisma.timetable_timetable.findUnique({ where: { id: first } })).toMatchObject({ is_main: true, is_shared: true })
     await expect(friendsService.getMyTimetable(otherUser, friend.id, term, 'en')).rejects.toThrow('Enrolled timetable is not shared')
     expect((await timetables.getSharedTimetables(user.id, term.year, term.semester)).map(({ id }) => id)).toEqual([first])
@@ -292,6 +303,7 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     expect((await friendRepository.getFriendsWithCourse(otherUser.id, courseId)).map(({ id }) => id)).toEqual([friend.id])
     expect(await friendRepository.getFriendIdsWithScheduleAt(otherUser.id, [friend.id], [term], 0, 570)).toEqual([friend.id])
     await select(second)
+    expect((await friendShared()).body).toEqual({ lectures: [], timetableItems: [] })
     expect(await timetables.getSharedTimetableWithItems(first, user.id)).toBeNull()
     expect((await timetables.getSharedTimetables(user.id, term.year, term.semester)).map(({ id }) => id)).toEqual([second])
     expect(await friendsService.getOverlaps(otherUser, lectureId)).toEqual({ sameLecture: [], sameCourseDifferentSection: [], previousSemesterSameProfessor: [] })
@@ -299,6 +311,7 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     const added = (await request(app.getHttpServer()).post(`${prefix}/${second}/custom-blocks`)
       .send({ ...block, times: [blockTime, { day: 4, begin: 700, end: 760 }] }).expect(201)).body
     customIds.add(added.id)
+    expect((await friendShared()).body.timetableItems).toEqual([{ kind: 'custom', data: expect.objectContaining({ id: added.id, times: [blockTime, { day: 4, begin: 700, end: 760 }] }) }])
     expect(await friendRepository.getFriendIdsWithScheduleAt(otherUser.id, [friend.id], [term], 4, 730)).toEqual([friend.id])
     expect((await request(app.getHttpServer()).get(`${prefix}/home`).query(term).expect(200)).body.timetableId).toBe(first)
     await request(app.getHttpServer()).patch(`${prefix}/shared`).set('x-test-other-user', '1').send({ ...term, timetableId: first }).expect(403)
@@ -324,7 +337,10 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     expect(await prisma.timetable_timetable.count({ where: { user_id: user.id, ...term, is_shared: true } })).toBe(0)
     expect(await friendRepository.getFriendIdsWithScheduleAt(otherUser.id, [friend.id], [term], 0, 570)).toEqual([friend.id])
     expect((await request(app.getHttpServer()).get(`${prefix}/shared`).query({ ...term, semester: 1 }).expect(200)).body.timetableId).toBe(spring)
+    expect((await friendShared()).body.lectures.map(({ id }: { id: number }) => id)).toEqual([lectureId])
     await friendRepository.deletePair(otherUser.id, user.id)
+    await request(app.getHttpServer()).get(`/api/v2/friends/${friend.id}/timetables/shared`)
+      .set('x-test-other-user', '1').query(term).expect(404)
   })
 
   it('stores one grouped block, preserves legacy edits, clones and restores all times', async () => {
