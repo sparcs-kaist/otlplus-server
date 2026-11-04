@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { ICourseV2, IProfessorV2 } from '@otl/server-nest/common/interfaces/v2'
-import { session_userprofile } from '@prisma/client'
+import { SemestersServiceV2 } from '@otl/server-nest/modules/semesters/v2/semesters.service'
+import { session_userprofile, subject_semester } from '@prisma/client'
 
 import { ECourseV2 } from '@otl/prisma-client/entities'
 import { CourseRepositoryV2, LectureRepository } from '@otl/prisma-client/repositories'
@@ -24,7 +25,12 @@ type courseHistory = {
 
 const fallbackEmpty = (preferred?: string | null, fallback?: string | null) => (preferred ?? '').trim() || (fallback ?? '')
 
-function toICourseBasic(c: ECourseV2.BasicWithProfessors, lang: language, completed: boolean): ICourseV2.Basic {
+function toICourseBasic(
+  c: ECourseV2.BasicWithProfessors,
+  lang: language,
+  open: boolean,
+  completed: boolean,
+): ICourseV2.Basic {
   return {
     id: c.id,
     name: lang === 'en' ? fallbackEmpty(c.title_en, c.title) : c.title,
@@ -45,7 +51,7 @@ function toICourseBasic(c: ECourseV2.BasicWithProfessors, lang: language, comple
           : p.professor.professor_name,
     })),
     summary: c.summury, // @Todo : summary db 필드 오타 수정
-    open: false, // TODO: 현재 학기 개설 여부 로직
+    open,
     completed,
   }
 }
@@ -56,6 +62,7 @@ export class CoursesServiceV2 {
     private readonly courseRepository: CourseRepositoryV2,
     private readonly lectureRepository: LectureRepository,
     private readonly professorRepository: ProfessorRepositoryV2,
+    private readonly semestersService: SemestersServiceV2,
   ) {}
 
   public async getCourses(
@@ -77,9 +84,20 @@ export class CoursesServiceV2 {
       limit,
     )
 
-    const userTakenCourseIds = !user ? [] : await this.courseRepository.getTakenCourseIdsByUser(user.id)
+    // 학기 정보가 없으면 모든 course를 미개설로 취급
+    const currentSemester: subject_semester | undefined = await this.semestersService.getCurrentSemester()
+    const [openCourseIds, userTakenCourseIds] = await Promise.all([
+      currentSemester
+        ? this.courseRepository.getOpenCourseIds(
+          queryResult.map((course) => course.id),
+          currentSemester.year,
+          currentSemester.semester,
+        )
+        : Promise.resolve<number[]>([]),
+      user ? this.courseRepository.getTakenCourseIdsByUser(user.id) : Promise.resolve<number[]>([]),
+    ])
 
-    const localizedResult = queryResult.map((course) => toICourseBasic(course, lang, userTakenCourseIds.includes(course.id)))
+    const localizedResult = queryResult.map((course) => toICourseBasic(course, lang, openCourseIds.includes(course.id), userTakenCourseIds.includes(course.id)))
     return {
       courses: localizedResult,
       totalCount,
