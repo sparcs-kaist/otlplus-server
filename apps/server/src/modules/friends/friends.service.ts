@@ -59,6 +59,10 @@ export class FriendsService {
     return { code: await this.friendRepository.getOrCreateCode(user.id) }
   }
 
+  async regenerateCode(user: session_userprofile): Promise<IFriendV2.GetCodeResDto> {
+    return { code: await this.friendRepository.regenerateCode(user.id) }
+  }
+
   @Transactional()
   async addFriend(user: session_userprofile, code: string): Promise<IFriendV2.AddFriendResDto> {
     const inviterId = await this.friendRepository.getUserIdByCode(code)
@@ -100,12 +104,27 @@ export class FriendsService {
     query: ITimetableV2.GetTimetablesReqDto,
   ): Promise<IFriendV2.GetTimetablesResDto> {
     const friend = await this.getFriend(user.id, friendId)
-    const timetables = await this.timetableRepository.getTimetablesByUserId(
+    const timetables = await this.timetableRepository.getSharedTimetables(
       friend.friend_userprofile_id,
       query.year,
       query.semester,
     )
     return { timetables: timetables.map(toJsonTimetableV2) }
+  }
+
+  @Transactional()
+  async getSharedTimetable(
+    user: session_userprofile,
+    friendId: number,
+    query: ITimetableV2.MyTimetableReqDto,
+    language: Language,
+  ): Promise<ITimetableV2.TimetableDetailResDto> {
+    const friend = await this.getFriend(user.id, friendId)
+    const timetable = await this.timetableRepository.getSharedTimetableForSemester(friend.friend_userprofile_id, query.year, query.semester)
+    if (timetable) return toJsonTimetableV2WithItems(timetable, language)
+    const lectures = await this.lectureRepository.getTakenLecturesBySemester(friend.friend_userprofile_id, query.year, query.semester)
+    const serialized = toJsonLectures(lectures, language).lectures
+    return { lectures: serialized, timetableItems: serialized.map((data) => ({ kind: TimetableItemKind.LECTURE, data })) }
   }
 
   async getMyTimetable(
@@ -115,11 +134,9 @@ export class FriendsService {
     language: Language,
   ): Promise<ITimetableV2.MyTimetableResDto> {
     const friend = await this.getFriend(user.id, friendId)
-    const lectures = await this.lectureRepository.getTakenLecturesBySemester(
-      friend.friend_userprofile_id,
-      query.year,
-      query.semester,
-    )
+    const selection = await this.timetableRepository.getSharedTimetableSelection(friend.friend_userprofile_id, query.year, query.semester)
+    if (selection) throw new NotFoundException('Enrolled timetable is not shared for this semester')
+    const lectures = await this.lectureRepository.getTakenLecturesBySemester(friend.friend_userprofile_id, query.year, query.semester)
     const serialized = toJsonLectures(lectures, language).lectures
     return { lectures: serialized, timetableItems: serialized.map((data) => ({ kind: TimetableItemKind.LECTURE, data })) }
   }
@@ -131,7 +148,7 @@ export class FriendsService {
     language: Language,
   ): Promise<ITimetableV2.TimetableDetailResDto> {
     const friend = await this.getFriend(user.id, friendId)
-    const timetable = await this.timetableRepository.getTimeTableWithItemsByIdAndUserId(
+    const timetable = await this.timetableRepository.getSharedTimetableWithItems(
       timetableId,
       friend.friend_userprofile_id,
     )
@@ -154,10 +171,14 @@ export class FriendsService {
     for (const friend of friends) {
       const profile = friend.friend_profile
       const matchingLectures = [
-        ...profile.taken_lectures.map(({ lecture: takenLecture }) => ({
-          lecture: takenLecture,
-          timetable: { id: null, year: takenLecture.year, semester: takenLecture.semester },
-        })),
+        ...profile.taken_lectures
+          .filter(({ lecture: enrolled }) => !profile.timetable_timetable.some(
+            (selection) => selection.year === enrolled.year && selection.semester === enrolled.semester,
+          ))
+          .map(({ lecture: enrolled }) => ({
+            lecture: enrolled,
+            timetable: { id: null, year: enrolled.year, semester: enrolled.semester },
+          })),
         ...profile.timetable_timetable.flatMap((timetable) => timetable.timetable_timetable_lectures.map(({ subject_lecture: savedLecture }) => ({
           lecture: savedLecture,
           timetable: {

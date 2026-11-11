@@ -31,7 +31,7 @@ it.each([false, true])('deletes timetable relations inside a transaction (failur
     timetable_timetable: {
       delete: jest.fn(async () => {
         calls.push('timetable')
-        return { id: 42 }
+        return { id: 42, year: null, semester: null }
       }),
     },
   }
@@ -41,15 +41,15 @@ it.each([false, true])('deletes timetable relations inside a transaction (failur
     withTransaction: jest.fn((work: () => Promise<unknown>) => work()),
   }
   const repository = new TimetableRepository(host as unknown as TransactionHost<TransactionalAdapterPrisma>)
-  const result = repository.deleteById(42)
+  const result = repository.deleteById(42, 7)
 
   if (fail) {
     await expect(result).rejects.toBe(error)
-    expect(calls).toEqual(['lock', 'lectures', 'customblocks'])
+    expect(calls).toEqual(['lock', 'lock', 'lectures', 'customblocks'])
     expect(tx.timetable_timetable.delete).not.toHaveBeenCalled()
   } else {
-    await expect(result).resolves.toEqual({ id: 42 })
-    expect(calls).toEqual(['lock', 'lectures', 'customblocks', 'timetable'])
+    await expect(result).resolves.toEqual({ id: 42, year: null, semester: null })
+    expect(calls).toEqual(['lock', 'lock', 'lectures', 'customblocks', 'timetable'])
     expect(tx.timetable_timetable.delete).toHaveBeenCalledWith({ where: { id: 42 } })
   }
   expect(host.withTransaction).toHaveBeenCalledTimes(1)
@@ -62,4 +62,22 @@ it('rejects a row lock outside a transaction', async () => {
   const host = { isTransactionActive: () => false }
   const repository = new TimetableRepository(host as unknown as TransactionHost<TransactionalAdapterPrisma>)
   await expect(repository.lockTimetable(42)).rejects.toThrow('Timetable locks require a transaction')
+  await expect(repository.lockUserTimetables(7)).rejects.toThrow('Timetable selections require a transaction')
+})
+
+it('reads the persisted main selection without opening a transaction, locking or writing', async () => {
+  const findFirst = jest.fn().mockResolvedValue(null)
+  const repository = new TimetableRepository({ tx: { timetable_timetable: { findFirst } } } as never)
+  await expect(repository.getHomeTimetable(7, 2026, 3)).resolves.toBeNull()
+  expect(findFirst).toHaveBeenCalledWith({ where: { user_id: 7, year: 2026, semester: 3, is_main: true } })
+})
+
+it('reads a shared timetable and its items together, scoped to the owner and semester', async () => {
+  const findFirst = jest.fn().mockResolvedValue(null)
+  const repository = new TimetableRepository({ tx: { timetable_timetable: { findFirst } } } as never)
+  await expect(repository.getSharedTimetableForSemester(7, 2026, 3)).resolves.toBeNull()
+  expect(findFirst).toHaveBeenCalledWith({
+    where: { user_id: 7, year: 2026, semester: 3, is_shared: true },
+    include: ETimetable.WithItems.include,
+  })
 })

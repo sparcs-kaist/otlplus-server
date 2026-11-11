@@ -8,6 +8,10 @@ import { EFriend } from '@otl/prisma-client/entities/EFriend'
 
 export const FRIEND_CODE_ALPHABET = 'ACDEFHJKLMNPQRTUVWXY3479'
 
+function generateFriendCode(): string {
+  return Array.from({ length: 6 }, () => FRIEND_CODE_ALPHABET[randomInt(FRIEND_CODE_ALPHABET.length)]).join('')
+}
+
 @Injectable()
 export class FriendRepository {
   constructor(private readonly txHost: TransactionHost<TransactionalAdapterPrisma>) {}
@@ -18,7 +22,7 @@ export class FriendRepository {
     if (existing) return existing.code
 
     for (let attempt = 0; attempt < 10; attempt += 1) {
-      const code = Array.from({ length: 6 }, () => FRIEND_CODE_ALPHABET[randomInt(FRIEND_CODE_ALPHABET.length)]).join('')
+      const code = generateFriendCode()
       // A no-op upsert handles both unique keys without overwriting an existing code.
       await this.txHost.tx.$executeRaw`
         INSERT INTO session_userprofile_friend_codes (userprofile_id, code)
@@ -27,6 +31,25 @@ export class FriendRepository {
       `
       const winner = await codes.findUnique({ where: { userprofile_id: userId } })
       if (winner) return winner.code
+    }
+    throw new Error('Could not allocate a unique friend code')
+  }
+
+  async regenerateCode(userId: number): Promise<string> {
+    const previousCode = await this.getOrCreateCode(userId)
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      const code = generateFriendCode()
+      if (code === previousCode) continue
+      try {
+        await this.txHost.tx.session_userprofile_friend_codes.update({
+          where: { userprofile_id: userId },
+          data: { code },
+        })
+        return code
+      }
+      catch (error) {
+        if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== 'P2002') throw error
+      }
     }
     throw new Error('Could not allocate a unique friend code')
   }
@@ -69,11 +92,15 @@ export class FriendRepository {
           OR: semesters.flatMap((term): Prisma.session_userprofileWhereInput[] => {
             const lecture = { ...term, deleted: false, subject_classtime: { some: classtime } }
             return [
-              { taken_lectures: { some: { lecture } } },
+              {
+                timetable_timetable: { none: { ...term, is_shared: true } },
+                taken_lectures: { some: { lecture } },
+              },
               {
                 timetable_timetable: {
                   some: {
                     ...term,
+                    is_shared: true,
                     OR: [
                       { timetable_timetable_lectures: { some: { subject_lecture: lecture } } },
                       { timetable_timetable_customblocks: { some: { block_custom_blocks: customBlock } } },
@@ -97,7 +124,7 @@ export class FriendRepository {
           SELECT 1 FROM timetable_timetable AS timetable
           JOIN timetable_timetable_customblocks AS mapping ON mapping.timetable_id = timetable.id
           JOIN block_custom_block_times AS slot ON slot.custom_block_id = mapping.custom_block_id
-          WHERE timetable.user_id = friend.friend_userprofile_id
+          WHERE timetable.user_id = friend.friend_userprofile_id AND timetable.is_shared = TRUE
             AND (${Prisma.join(semesters.map(({ year, semester }) => Prisma.sql`(timetable.year = ${year} AND timetable.semester = ${semester})`), ' OR ')})
             AND slot.day = ${day} AND slot.begin <= ${minute} AND slot.end > ${minute}
             AND EXISTS (
@@ -163,10 +190,10 @@ export class FriendRepository {
         userprofile_id: userId,
         friend_profile: {
           OR: [
-            { taken_lectures: { some: { lecture: { course_id: courseId } } } },
+            { taken_lectures: { some: { lecture: { course_id: courseId, deleted: false } } } },
             {
               timetable_timetable: {
-                some: { timetable_timetable_lectures: { some: { subject_lecture: { course_id: courseId } } } },
+                some: { is_shared: true, timetable_timetable_lectures: { some: { subject_lecture: { course_id: courseId } } } },
               },
             },
           ],
