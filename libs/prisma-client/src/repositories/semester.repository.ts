@@ -36,6 +36,25 @@ export class SemesterRepository {
     })
   }
 
+  async getSemestersInYearRange(fromYear: number, toYear: number) {
+    return this.prisma.subject_semester.findMany({
+      where: { year: { gte: fromYear, lte: toYear } },
+      orderBy: [{ year: 'asc' }, { semester: 'asc' }],
+    })
+  }
+
+  async getFallbackSemester(now: Date): Promise<subject_semester | null> {
+    const endedSemester = await this.prisma.subject_semester.findFirst({
+      where: { end: { lte: now } },
+      orderBy: [{ year: 'desc' }, { semester: 'desc' }],
+    })
+    if (endedSemester) return endedSemester
+
+    return this.prisma.subject_semester.findFirst({
+      orderBy: [{ year: 'desc' }, { semester: 'desc' }],
+    })
+  }
+
   async getNotWritableSemester(): Promise<subject_semester | null> {
     const now = new Date()
     return await this.prisma.subject_semester.findFirst({

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, InternalServerErrorException } from '@nestjs/common'
 import { subject_semester } from '@prisma/client'
 
 import { SemesterRepository } from '@otl/prisma-client/repositories'
@@ -13,28 +13,28 @@ export class SemestersServiceV2 {
   }
 
   async getCurrentSemester(): Promise<subject_semester> {
-    const currentTime = new Date()
-    const semesters = await this.semesterRepository.getSemesters({
-      orderBy: [{ year: 'desc' }, { semester: 'desc' }],
-      take: 5,
-    })
+    const now = new Date()
+    const currentYear = now.getFullYear()
+    const semesters = await this.semesterRepository.getSemestersInYearRange(currentYear - 1, currentYear + 1)
+    const isRegular = (semester: subject_semester) => semester.semester === 1 || semester.semester === 3
+    const regular = [...semesters].reverse().find((s) => isRegular(s) && s.beginning <= now)
 
-    // Case 1: 현재 시간이 학기 기간 내에 있는 경우 (beginning <= now <= end)
-    const activeSemester = semesters.find((semester) => {
-      const beginning = new Date(semester.beginning)
-      const end = new Date(semester.end)
-      return beginning <= currentTime && currentTime <= end
-    })
-    if (activeSemester) return activeSemester
-
-    // Case 2: 학기 사이의 gap 기간 - 이전 학기가 끝났으면 다음 학기를 반환
-    const upcomingSemester = semesters.find((s) => new Date(s.beginning) > currentTime)
-    if (upcomingSemester) {
-      const pastSemesterExists = semesters.some((s) => new Date(s.end) < currentTime)
-      if (pastSemesterExists) return upcomingSemester
+    if (!regular) {
+      const fallback = await this.semesterRepository.getFallbackSemester(now)
+      if (!fallback) throw new InternalServerErrorException('No semester in DB')
+      return fallback
     }
 
-    // Case 3: Fallback - 다음 학기가 없는 경우, 가장 최근 종료된 학기 반환
-    return semesters.find((s) => new Date(s.end) <= currentTime) ?? semesters[0]
+    // 정규학기 종료 시각까지는 현재 정규학기를 유지합니다.
+    if (now <= regular.end) return regular
+
+    const seasonal = semesters.find((s) => s.year === regular.year && s.semester === regular.semester + 1)
+    if (seasonal?.courseAddDropPeriodEnd && now <= seasonal.courseAddDropPeriodEnd) return seasonal
+
+    // 배열은 연도·학기 오름차순이므로 가장 가까운 다음 정규학기를 선택합니다.
+    const nextRegular = semesters.find(
+      (s) => isRegular(s) && (s.year > regular.year || (s.year === regular.year && s.semester > regular.semester)),
+    )
+    return nextRegular ?? regular
   }
 }
