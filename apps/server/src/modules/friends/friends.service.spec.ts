@@ -15,6 +15,7 @@ describe('FriendsService', () => {
     getFriends: jest.fn(),
     getFriendIdsWithScheduleAt: jest.fn(),
     getOrCreateCode: jest.fn(),
+    regenerateCode: jest.fn(),
     getUserIdByCode: jest.fn(),
     getFriend: jest.fn(),
     getFriendsWithCourse: jest.fn(),
@@ -124,6 +125,14 @@ describe('FriendsService', () => {
     await expect(service.getCode(user)).resolves.toEqual({ code: 'K7L4MX' })
     expect(friends.getOrCreateCode).toHaveBeenNthCalledWith(1, 42)
     expect(friends.getOrCreateCode).toHaveBeenNthCalledWith(2, 42)
+  })
+
+  it('regenerates only the caller code without touching existing friendships', async () => {
+    friends.regenerateCode.mockResolvedValue('ACDEFH')
+    await expect(service.regenerateCode(user)).resolves.toEqual({ code: 'ACDEFH' })
+    expect(friends.regenerateCode).toHaveBeenCalledWith(42)
+    expect(friends.createPair).not.toHaveBeenCalled()
+    expect(friends.deletePair).not.toHaveBeenCalled()
   })
 
   it.each([null, 42])('rejects an unknown or self code owner (%s) without creating a friendship', async (ownerId) => {
