@@ -1,5 +1,5 @@
 import {
-  Body, Controller, Delete, Get, Header, Param, ParseIntPipe, Patch, Post, Query, UseGuards,
+  Body, Controller, Delete, Get, Header, HttpCode, Param, ParseIntPipe, Patch, Post, Query, UseGuards,
 } from '@nestjs/common'
 import { GetLanguage, Language } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
@@ -23,6 +23,13 @@ export class FriendsController {
   @Header('Cache-Control', 'private, no-store')
   getCode(@GetUser() user: session_userprofile) {
     return this.friendsService.getCode(user)
+  }
+
+  @Post('/code')
+  @HttpCode(200)
+  @Header('Cache-Control', 'private, no-store')
+  regenerateCode(@GetUser() user: session_userprofile): Promise<IFriendV2.GetCodeResDto> {
+    return this.friendsService.regenerateCode(user)
   }
 
   @Post()

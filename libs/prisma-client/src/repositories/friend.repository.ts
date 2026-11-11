@@ -8,6 +8,10 @@ import { EFriend } from '@otl/prisma-client/entities/EFriend'
 
 export const FRIEND_CODE_ALPHABET = 'ACDEFHJKLMNPQRTUVWXY3479'
 
+function generateFriendCode(): string {
+  return Array.from({ length: 6 }, () => FRIEND_CODE_ALPHABET[randomInt(FRIEND_CODE_ALPHABET.length)]).join('')
+}
+
 @Injectable()
 export class FriendRepository {
   constructor(private readonly txHost: TransactionHost<TransactionalAdapterPrisma>) {}
@@ -18,7 +22,7 @@ export class FriendRepository {
     if (existing) return existing.code
 
     for (let attempt = 0; attempt < 10; attempt += 1) {
-      const code = Array.from({ length: 6 }, () => FRIEND_CODE_ALPHABET[randomInt(FRIEND_CODE_ALPHABET.length)]).join('')
+      const code = generateFriendCode()
       // A no-op upsert handles both unique keys without overwriting an existing code.
       await this.txHost.tx.$executeRaw`
         INSERT INTO session_userprofile_friend_codes (userprofile_id, code)
@@ -27,6 +31,25 @@ export class FriendRepository {
       `
       const winner = await codes.findUnique({ where: { userprofile_id: userId } })
       if (winner) return winner.code
+    }
+    throw new Error('Could not allocate a unique friend code')
+  }
+
+  async regenerateCode(userId: number): Promise<string> {
+    const previousCode = await this.getOrCreateCode(userId)
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      const code = generateFriendCode()
+      if (code === previousCode) continue
+      try {
+        await this.txHost.tx.session_userprofile_friend_codes.update({
+          where: { userprofile_id: userId },
+          data: { code },
+        })
+        return code
+      }
+      catch (error) {
+        if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== 'P2002') throw error
+      }
     }
     throw new Error('Could not allocate a unique friend code')
   }

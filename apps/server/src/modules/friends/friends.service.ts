@@ -59,6 +59,10 @@ export class FriendsService {
     return { code: await this.friendRepository.getOrCreateCode(user.id) }
   }
 
+  async regenerateCode(user: session_userprofile): Promise<IFriendV2.GetCodeResDto> {
+    return { code: await this.friendRepository.regenerateCode(user.id) }
+  }
+
   @Transactional()
   async addFriend(user: session_userprofile, code: string): Promise<IFriendV2.AddFriendResDto> {
     const inviterId = await this.friendRepository.getUserIdByCode(code)

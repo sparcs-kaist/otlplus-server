@@ -12,6 +12,14 @@ const random = randomInt as jest.Mock
 function setup() {
   const rows = new Map<number, { userprofile_id: number; code: string }>()
   const codes = {
+    update: jest.fn(async ({ where, data }) => {
+      if ([...rows.values()].some((row) => row.userprofile_id !== where.userprofile_id && row.code === data.code)) {
+        throw new Prisma.PrismaClientKnownRequestError('Duplicate code', { code: 'P2002', clientVersion: '6.19.3' })
+      }
+      const row = { userprofile_id: where.userprofile_id, code: data.code }
+      rows.set(where.userprofile_id, row)
+      return row
+    }),
     findUnique: jest.fn(async ({ where }) =>
       where.userprofile_id === undefined
         ? ([...rows.values()].find((row) => row.code === where.code) ?? null)
@@ -126,6 +134,50 @@ it.each([true, false])('looks up the code owner or returns null (exists: %s)', a
 
   await expect(repository.getUserIdByCode('K7L4MX')).resolves.toBe(exists ? 42 : null)
   expect(codes.findUnique).toHaveBeenCalledWith({ where: { code: 'K7L4MX' }, select: { userprofile_id: true } })
+})
+
+describe('code regeneration', () => {
+  it('skips the current code and collisions without overwriting another owner', async () => {
+    const { repository, codes, rows } = setup()
+    rows.set(42, { userprofile_id: 42, code: 'AAAAAA' })
+    rows.set(7, { userprofile_id: 7, code: 'CCCCCC' })
+    let index = 0
+    random.mockImplementation(() => Math.floor(index++ / 6))
+
+    await expect(repository.regenerateCode(42)).resolves.toBe('DDDDDD')
+    expect(codes.update).toHaveBeenCalledTimes(2)
+    await expect(repository.getUserIdByCode('AAAAAA')).resolves.toBeNull()
+    await expect(repository.getUserIdByCode('DDDDDD')).resolves.toBe(42)
+    await expect(repository.getUserIdByCode('CCCCCC')).resolves.toBe(7)
+    await expect(repository.getOrCreateCode(42)).resolves.toBe('DDDDDD')
+  })
+
+  it('creates a code for a user who has not opened the invite dialog', async () => {
+    const { repository } = setup()
+    let index = 0
+    random.mockImplementation(() => Math.floor(index++ / 6))
+    await expect(repository.regenerateCode(42)).resolves.toBe('CCCCCC')
+    await expect(repository.getOrCreateCode(42)).resolves.toBe('CCCCCC')
+  })
+
+  it('keeps the previous code if all candidates collide', async () => {
+    const { repository, codes, rows } = setup()
+    rows.set(42, { userprofile_id: 42, code: 'K7L4MX' })
+    rows.set(7, { userprofile_id: 7, code: 'AAAAAA' })
+    await expect(repository.regenerateCode(42)).rejects.toThrow('Could not allocate a unique friend code')
+    expect(codes.update).toHaveBeenCalledTimes(10)
+    await expect(repository.getUserIdByCode('K7L4MX')).resolves.toBe(42)
+  })
+
+  it('does not retry an unrelated database error or clear the previous code', async () => {
+    const { repository, codes, rows } = setup()
+    rows.set(42, { userprofile_id: 42, code: 'K7L4MX' })
+    const error = new Error('Database unavailable')
+    codes.update.mockRejectedValueOnce(error)
+    await expect(repository.regenerateCode(42)).rejects.toBe(error)
+    expect(codes.update).toHaveBeenCalledTimes(1)
+    await expect(repository.getUserIdByCode('K7L4MX')).resolves.toBe(42)
+  })
 })
 
 describe('current schedule query', () => {
