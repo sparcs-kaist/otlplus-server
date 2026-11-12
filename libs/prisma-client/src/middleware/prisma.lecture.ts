@@ -16,13 +16,15 @@ export class LectureMiddleware implements IPrismaMiddleware.Middleware {
     this.prisma = prisma
   }
 
-  async preExecute(_operations: IPrismaMiddleware.operationType, _args: any): Promise<boolean> {
+  async preExecute(_operations: IPrismaMiddleware.operationType, _args: unknown): Promise<boolean> {
     return true
   }
 
-  async postExecute(operations: IPrismaMiddleware.operationType, args: any, result: any): Promise<boolean> {
+  async postExecute(operations: IPrismaMiddleware.operationType, args: unknown, rawResult: unknown): Promise<boolean> {
     if (operations === 'create' || operations === 'update' || operations === 'upsert') {
-      const t: XOR<Prisma.subject_lectureUpdateInput, Prisma.subject_lectureUncheckedUpdateInput> = args?.data
+      // Dispatched only for subject_lecture writes by the Prisma extension.
+      const result = rawResult as subject_lecture
+      const t: XOR<Prisma.subject_lectureUpdateInput, Prisma.subject_lectureUncheckedUpdateInput> = (args as Prisma.subject_lectureUpdateArgs).data
       if (!t.common_title && !t.class_title && !t.common_title_en && !t.class_title_en) {
         if (this.checkClassTitleUpdateRequired(result)) {
           await this.updateClassTitle(result)

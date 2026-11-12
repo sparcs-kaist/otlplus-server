@@ -1,7 +1,6 @@
 export function normalizeArray<T>(
   arr: T[],
-  // eslint-disable-next-line default-param-last
-  selector: (item: T) => string | number | symbol | null = (item: any) => item.id,
+  selector: (item: T) => PropertyKey | null,
   defaultObj?: { [key: string]: T | undefined },
 ): { [key: string | number | symbol]: T | undefined } {
   const normalizeObj: { [key: string | number | symbol]: T | undefined } = defaultObj || {}
@@ -14,7 +13,7 @@ export function normalizeArray<T>(
   return normalizeObj
 }
 
-export function groupBy<T, K extends keyof any>(arr: T[], selector: (i: T) => K): Record<K, T[] | undefined> {
+export function groupBy<T, K extends PropertyKey>(arr: T[], selector: (i: T) => K): Record<K, T[] | undefined> {
   return arr.reduce(
     (groups: Record<K, T[] | undefined>, item) => {
       // eslint-disable-next-line no-param-reassign

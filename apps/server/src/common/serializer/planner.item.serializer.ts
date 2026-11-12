@@ -17,7 +17,7 @@ export const toJsonTakenItem = (taken_item: EPlanners.EItems.Taken.Details): IPl
   course: toJsonCourseDetail(
     taken_item.subject_lecture.course,
     taken_item.subject_lecture,
-    taken_item.subject_lecture.course.subject_course_professors.map((x: { professor: any }) => x.professor),
+    taken_item.subject_lecture.course.subject_course_professors.map((x) => x.professor),
   ),
 })
 
@@ -55,16 +55,14 @@ export function toJsonPlannerItem<IT extends PlannerItemType>(
   item_type: IT,
   representative_lecture?: ELecture.Basic,
 ): IPlanner.IItem.IMutate {
-  const handlers = {
-    [PlannerItemType.Taken]: (e: EPlanners.EItems.Taken.Details) => toJsonTakenItem(e),
-    [PlannerItemType.Future]: (e: EPlanners.EItems.Future.Extended) => toJsonFutureItem(e, representative_lecture as ELecture.Basic),
-    [PlannerItemType.Arbitrary]: (e: EPlanners.EItems.Arbitrary.Extended) => toJsonArbitraryItem(e),
-  } satisfies Record<PlannerItemType, (e: any) => IPlanner.IItem.IMutate>
-
-  const handler = handlers[item_type]
-  if (handler) {
-    return handler(item as any)
+  if (item_type === PlannerItemType.Taken && 'subject_lecture' in item) {
+    return toJsonTakenItem(item)
   }
-
+  if (item_type === PlannerItemType.Future && 'subject_course' in item && representative_lecture) {
+    return toJsonFutureItem(item, representative_lecture)
+  }
+  if (item_type === PlannerItemType.Arbitrary && 'subject_department' in item) {
+    return toJsonArbitraryItem(item)
+  }
   throw new BadRequestException('Invalid Planner Item Type')
 }

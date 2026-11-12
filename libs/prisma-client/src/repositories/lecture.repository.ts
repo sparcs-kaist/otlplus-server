@@ -206,7 +206,7 @@ export class LectureRepository implements ServerConsumerLectureRepository {
     const datetimeBegin = begin !== undefined && begin !== null ? this.datetimeConverter(begin) : undefined
     const datetimeEnd = end !== undefined && end !== null ? this.datetimeConverter(end) : undefined
 
-    const result: any = {}
+    const result: Prisma.subject_classtimeWhereInput = {}
 
     if (day !== undefined && day !== null) {
       result.day = day

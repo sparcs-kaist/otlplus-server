@@ -67,7 +67,7 @@ export class DeadLetterController {
     logger.error(errorMessage)
   }
 
-  private async reportToSentry(errorMessage: string, deathInfo: any, content: any, headers: any) {
+  private async reportToSentry(errorMessage: string, deathInfo: { queue?: string, reason?: string, exchange?: string } | undefined, content: unknown, headers: unknown) {
     const error = new Error(errorMessage)
     // 👇 Sentry 리포팅 로직
     Sentry.withScope((scope) => {

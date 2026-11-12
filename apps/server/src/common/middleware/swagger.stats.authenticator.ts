@@ -45,8 +45,8 @@ export function createSwaggerStatsAuthenticator(authService: AuthService, jwtSer
       if (!user) return false
       return true
     }
-    catch (e: any) {
-      if (e.message === 'jwt expired' && refreshToken) {
+    catch (e: unknown) {
+      if ((e instanceof Error ? e.message : String(e)) === 'jwt expired' && refreshToken) {
         return handleRefreshToken(refreshToken)
       }
       return false

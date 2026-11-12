@@ -28,19 +28,19 @@ export class DevicePublicService implements DeviceInPublicPort {
     return userDevices[0]
   }
 
-  // sendNotification(_deviceToken: string, _title: string, _body: string): Promise<any> {
+  // sendNotification(_deviceToken: string, _title: string, _body: string): Promise<unknown> {
   //   return Promise.resolve({})
   // }
   //
-  // sendNotificationToAll(_title: string, _body: string): Promise<any[]> {
+  // sendNotificationToAll(_title: string, _body: string): Promise<unknown[]> {
   //   throw new OtlException(StatusCodes.NOT_IMPLEMENTED)
   // }
   //
-  // checkNotificationCompleted(_userId: number, _notificationRequestId: number): Promise<any> {
+  // checkNotificationCompleted(_userId: number, _notificationRequestId: number): Promise<unknown> {
   //   return Promise.resolve({})
   // }
   //
-  // checkNotificationPermission(_userId: number, _notificationId: number): Promise<any> {
+  // checkNotificationPermission(_userId: number, _notificationId: number): Promise<unknown> {
   //   return Promise.resolve({})
   // }
 }
