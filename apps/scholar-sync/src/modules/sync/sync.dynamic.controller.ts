@@ -1,5 +1,5 @@
 import {
-  Body, Controller, Get, Inject, Logger, Param, Patch, Post, Query,
+  BadRequestException, Body, Controller, Get, Inject, Logger, Param, Patch, Post, Query,
 } from '@nestjs/common'
 import { SchedulerRegistry } from '@nestjs/schedule'
 import { ApiQuery, ApiSecurity } from '@nestjs/swagger'
@@ -42,6 +42,23 @@ export class SyncDynamicController {
       this.logger.log(`job: ${key} -> next: ${next}`)
     })
     return jobResults
+  }
+
+  // 자동 동기화가 지금(또는 date의 KST 12:00에) 어떤 학기를 대상으로 하는지 보여준다. 동기화는 하지 않는다.
+  @Get('targets')
+  @ApiQuery({
+    name: 'date',
+    type: String,
+    required: false,
+    description: 'YYYY-MM-DD (KST)',
+  })
+  @ApiSecurity('X-API-KEY')
+  @SyncApiKeyAuth()
+  async getSyncTargets(@Query('date') date?: string) {
+    if (date === undefined) return this.syncSchedule.getSyncTargets()
+    const now = /^\d{4}-\d{2}-\d{2}$/.test(date) ? new Date(`${date}T12:00:00+09:00`) : new Date(Number.NaN)
+    if (Number.isNaN(now.getTime())) throw new BadRequestException('date must be YYYY-MM-DD')
+    return this.syncSchedule.getSyncTargets(now)
   }
 
   @Post('all')

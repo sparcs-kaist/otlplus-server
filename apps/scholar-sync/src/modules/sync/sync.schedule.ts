@@ -4,10 +4,21 @@ import { ScholarApiClient } from '@otl/scholar-sync/clients/scholar/scholar.api.
 import { SlackNotiService } from '@otl/scholar-sync/clients/slack/slackNoti.service'
 import { SyncResultDetails } from '@otl/scholar-sync/common/interfaces/ISync'
 import { SyncService } from '@otl/scholar-sync/modules/sync/sync.service'
+import {
+  isFirstRunOfKstDay,
+  selectSyncTargets,
+  SemesterKey,
+  SyncTargets,
+} from '@otl/scholar-sync/modules/sync/sync.target'
 import { putPreviousSemester, summarizeSyncResults } from '@otl/scholar-sync/modules/sync/util'
 import settings from '@otl/scholar-sync/settings'
 import fs from 'fs'
 import { WINSTON_MODULE_PROVIDER, WinstonLogger } from 'nest-winston'
+
+/** lecture: 강의 목록(강의·담당 교수)·수업 시간, taken: 수강 내역·시험 시간 */
+type SyncTargetKind = 'lecture' | 'taken'
+
+const formatSemesters = (semesters: SemesterKey[]) => (semesters.length ? semesters.map(([y, s]) => `${y}-${s}`).join(', ') : '없음')
 
 @Injectable()
 export class SyncSchedule {
@@ -33,28 +44,44 @@ export class SyncSchedule {
     disabled: !settings().syncConfig().syncCronAutostart,
   })
   async syncAll(year?: number, semester?: number, interval?: number) {
-    const semesters = await this.determineTargetSemesters(year, semester, interval)
-    for (const [y, s] of [...semesters].reverse()) {
-      const lectures = await this.scholarApiClient.getLectureType(y, s)
-      const charges = await this.scholarApiClient.getChargeType(y, s)
-      const syncResults: SyncResultDetails = await this.syncService.syncScholarDB({
-        year: y,
-        semester: s,
-        lectures,
-        charges,
-      })
-      const syncResultSummaries = summarizeSyncResults(syncResults)
-      await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2))
-      fs.writeFileSync(
-        `${this.logFileDir}/scholar-${y}-${s}-${syncResultSummaries.time.toISOString()}.json`,
-        JSON.stringify(syncResults, null, 2),
-      )
-      await this.syncExamTime(y, s)
-      await this.syncClassTime(y, s)
-      await this.syncTakenLecture(y, s)
+    if (this.isManualTerm(year, semester, interval)) {
+      // 수동 호출: 지정한 학기마다 네 종류를 모두 동기화한다.
+      for (const [y, s] of await this.getManualSemesters(year, semester, interval)) {
+        await this.runScholarDB(y, s)
+        await this.runExamTime(y, s)
+        await this.runClassTime(y, s)
+        await this.runTakenLecture(y, s)
+      }
+      await this.syncDegree()
+      await this.syncMajor()
+      return
     }
-    await this.syncDegree()
-    await this.syncMajor()
+
+    // 자동 동기화: 데이터 종류별로 대상 학기를 따로 고른다. (docs/plans/seasonal-semester.md D1)
+    const now = new Date()
+    const targets = await this.getSyncTargets(now)
+    await this.slackNoti.sendSyncNoti(
+      `syncAll targets (${targets.today}) — lecture: ${formatSemesters(targets.lectureTargets)} / taken: ${formatSemesters(targets.takenTargets)}`,
+    )
+    if (targets.warnings.length && isFirstRunOfKstDay(now)) {
+      await this.slackNoti.sendSyncNoti(`syncAll warnings:\n${targets.warnings.map((w) => `- ${w}`).join('\n')}`)
+    }
+
+    // 수강 내역·시험 시간은 DB의 강의에 연결되므로 강의 목록을 먼저 돌린다.
+    for (const [y, s] of targets.lectureTargets) {
+      await this.runIsolated(`lecture ${y}-${s}`, async () => {
+        await this.runScholarDB(y, s)
+        await this.runClassTime(y, s)
+      })
+    }
+    for (const [y, s] of targets.takenTargets) {
+      await this.runIsolated(`taken ${y}-${s}`, async () => {
+        await this.runExamTime(y, s)
+        await this.runTakenLecture(y, s)
+      })
+    }
+    await this.runIsolated('degree', () => this.syncDegree())
+    await this.runIsolated('major', () => this.syncMajor())
   }
 
   @Cron(CronExpression.EVERY_3_HOURS, {
@@ -63,22 +90,8 @@ export class SyncSchedule {
     disabled: true,
   })
   async syncScholarDB(year?: number, semester?: number, interval?: number) {
-    const semesters = await this.determineTargetSemesters(year, semester, interval)
-    for (const [y, s] of [...semesters].reverse()) {
-      const lectures = await this.scholarApiClient.getLectureType(y, s)
-      const charges = await this.scholarApiClient.getChargeType(y, s)
-      const syncResultDetails: SyncResultDetails = await this.syncService.syncScholarDB({
-        year: y,
-        semester: s,
-        lectures,
-        charges,
-      })
-      const syncResultSummaries = summarizeSyncResults(syncResultDetails)
-      await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2))
-      fs.writeFileSync(
-        `${this.logFileDir}/scholar-${syncResultSummaries.time.toISOString()}.json`,
-        JSON.stringify(syncResultDetails, null, 2),
-      )
+    for (const [y, s] of await this.determineTargetSemesters('lecture', year, semester, interval)) {
+      await this.runScholarDB(y, s)
     }
   }
 
@@ -88,16 +101,8 @@ export class SyncSchedule {
     disabled: true,
   })
   async syncExamTime(year?: number, semester?: number, interval?: number) {
-    const semesters = await this.determineTargetSemesters(year, semester, interval)
-    for (const [y, s] of [...semesters].reverse()) {
-      const examtimes = await this.scholarApiClient.getExamTimeType(y, s)
-      const syncResultDetail = await this.syncService.syncExamTime({ year: y, semester: s, examtimes })
-      const syncResultSummaries = summarizeSyncResults(syncResultDetail)
-      await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2))
-      fs.writeFileSync(
-        `${this.logFileDir}/examTime-${y}-${s}-${syncResultSummaries.time.toISOString()}.json`,
-        JSON.stringify(syncResultDetail, null, 2),
-      )
+    for (const [y, s] of await this.determineTargetSemesters('taken', year, semester, interval)) {
+      await this.runExamTime(y, s)
     }
   }
 
@@ -107,16 +112,8 @@ export class SyncSchedule {
     disabled: true,
   })
   async syncClassTime(year?: number, semester?: number, interval?: number) {
-    const semesters = await this.determineTargetSemesters(year, semester, interval)
-    for (const [y, s] of [...semesters].reverse()) {
-      const classtimes = await this.scholarApiClient.getClassTimeType(y, s)
-      const syncResultDetail = await this.syncService.syncClassTime({ year: y, semester: s, classtimes })
-      const syncResultSummaries = summarizeSyncResults(syncResultDetail)
-      await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2))
-      fs.writeFileSync(
-        `${this.logFileDir}/classTime-${y}-${s}-${syncResultSummaries.time.toISOString()}.json`,
-        JSON.stringify(syncResultDetail, null, 2),
-      )
+    for (const [y, s] of await this.determineTargetSemesters('lecture', year, semester, interval)) {
+      await this.runClassTime(y, s)
     }
   }
 
@@ -126,16 +123,8 @@ export class SyncSchedule {
     disabled: true,
   })
   async syncTakenLecture(year?: number, semester?: number, interval?: number) {
-    const semesters = await this.determineTargetSemesters(year, semester, interval)
-    for (const [y, s] of [...semesters].reverse()) {
-      const takenLectures = await this.scholarApiClient.getAttendType(y, s)
-      const syncResultDetail = await this.syncService.syncTakenLecture({ year: y, semester: s, attend: takenLectures })
-      const syncResultSummaries = summarizeSyncResults(syncResultDetail)
-      await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2))
-      fs.writeFileSync(
-        `${this.logFileDir}/taken_lecture-${y}-${s}-${syncResultSummaries.time.toISOString()}.json`,
-        JSON.stringify(syncResultDetail, null, 2),
-      )
+    for (const [y, s] of await this.determineTargetSemesters('taken', year, semester, interval)) {
+      await this.runTakenLecture(y, s)
     }
   }
 
@@ -189,17 +178,102 @@ export class SyncSchedule {
     await this.syncService.updateRepresentativeLectures()
   }
 
-  private async determineTargetSemesters(year?: number, semester?: number, interval?: number) {
+  /** 자동 동기화 대상 학기. 동기화는 하지 않는다. */
+  async getSyncTargets(now: Date = new Date()): Promise<SyncTargets> {
+    return selectSyncTargets(await this.syncService.getSemestersForSyncTarget(), now)
+  }
+
+  private async runScholarDB(year: number, semester: number) {
+    const lectures = await this.scholarApiClient.getLectureType(year, semester)
+    const charges = await this.scholarApiClient.getChargeType(year, semester)
+    const syncResults: SyncResultDetails = await this.syncService.syncScholarDB({
+      year,
+      semester,
+      lectures,
+      charges,
+    })
+    const syncResultSummaries = summarizeSyncResults(syncResults)
+    await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2))
+    fs.writeFileSync(
+      `${this.logFileDir}/scholar-${year}-${semester}-${syncResultSummaries.time.toISOString()}.json`,
+      JSON.stringify(syncResults, null, 2),
+    )
+  }
+
+  private async runExamTime(year: number, semester: number) {
+    const examtimes = await this.scholarApiClient.getExamTimeType(year, semester)
+    const syncResultDetail = await this.syncService.syncExamTime({ year, semester, examtimes })
+    const syncResultSummaries = summarizeSyncResults(syncResultDetail)
+    await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2))
+    fs.writeFileSync(
+      `${this.logFileDir}/examTime-${year}-${semester}-${syncResultSummaries.time.toISOString()}.json`,
+      JSON.stringify(syncResultDetail, null, 2),
+    )
+  }
+
+  private async runClassTime(year: number, semester: number) {
+    const classtimes = await this.scholarApiClient.getClassTimeType(year, semester)
+    const syncResultDetail = await this.syncService.syncClassTime({ year, semester, classtimes })
+    const syncResultSummaries = summarizeSyncResults(syncResultDetail)
+    await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2))
+    fs.writeFileSync(
+      `${this.logFileDir}/classTime-${year}-${semester}-${syncResultSummaries.time.toISOString()}.json`,
+      JSON.stringify(syncResultDetail, null, 2),
+    )
+  }
+
+  private async runTakenLecture(year: number, semester: number) {
+    const takenLectures = await this.scholarApiClient.getAttendType(year, semester)
+    const syncResultDetail = await this.syncService.syncTakenLecture({ year, semester, attend: takenLectures })
+    const syncResultSummaries = summarizeSyncResults(syncResultDetail)
+    await this.slackNoti.sendSyncNoti(JSON.stringify(syncResultSummaries, null, 2))
+    fs.writeFileSync(
+      `${this.logFileDir}/taken_lecture-${year}-${semester}-${syncResultSummaries.time.toISOString()}.json`,
+      JSON.stringify(syncResultDetail, null, 2),
+    )
+  }
+
+  /** 한 작업이 실패해도 자동 동기화의 나머지 작업은 계속한다. (D6) */
+  private async runIsolated(label: string, task: () => Promise<void>) {
+    try {
+      await task()
+    }
+    catch (e) {
+      const message = e instanceof Error ? e.message : String(e)
+      this.logger.error(`syncAll failed: ${label}: ${message}`, e instanceof Error ? e.stack : undefined)
+      await this.slackNoti.sendSyncNoti(`syncAll failed: ${label}: ${message}`).catch(() => undefined)
+    }
+  }
+
+  private isManualTerm(year?: number, semester?: number, interval?: number) {
+    return Boolean((year && semester) || interval)
+  }
+
+  /** 수동 호출의 대상 학기. 오래된 학기부터. */
+  private async getManualSemesters(year?: number, semester?: number, interval?: number): Promise<SemesterKey[]> {
+    let semesters: SemesterKey[]
     if (year && semester) {
-      const semesters: [number, number][] = [[year, semester]]
+      semesters = [[year, semester]]
       if (interval) {
         putPreviousSemester(semesters, interval)
       }
-      return semesters
     }
-    if (interval) {
-      return (await this.syncService.getSemesters(interval)).map((s) => [s.year, s.semester])
+    else {
+      semesters = (await this.syncService.getSemesters(interval)).map((s) => [s.year, s.semester])
     }
-    return (await this.syncService.getSemesters(1)).map((s) => [s.year, s.semester])
+    return semesters.reverse()
+  }
+
+  private async determineTargetSemesters(
+    kind: SyncTargetKind,
+    year?: number,
+    semester?: number,
+    interval?: number,
+  ): Promise<SemesterKey[]> {
+    if (this.isManualTerm(year, semester, interval)) {
+      return this.getManualSemesters(year, semester, interval)
+    }
+    const targets = await this.getSyncTargets()
+    return kind === 'lecture' ? targets.lectureTargets : targets.takenTargets
   }
 }
