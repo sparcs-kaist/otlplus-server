@@ -327,7 +327,7 @@ model session_userprofile {
   session_userprofile_specialized_major session_userprofile_specialized_major[]
   friend_relations                     session_userprofile_friends[]             @relation("friend_owner")
   friended_by                          session_userprofile_friends[]             @relation("friend_target")
-  friend_code                          session_userprofile_friend_codes?
+  friend_codes                         session_userprofile_friend_codes[]
   taken_lectures                        session_userprofile_taken_lectures[]
   subject_courseuser                    subject_courseuser[]
   support_rate                          support_rate[]
@@ -341,9 +341,12 @@ model session_userprofile {
 }
 
 model session_userprofile_friend_codes {
-  userprofile_id Int                 @id
-  code           String              @unique(map: "session_friend_code_uniq") @db.VarChar(6)
+  userprofile_id Int
+  code           String              @id @db.VarChar(6)
+  is_changed     Boolean             @default(false)
   userprofile    session_userprofile @relation(fields: [userprofile_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "session_friend_code_owner_fk")
+
+  @@index([userprofile_id, is_changed], map: "session_friend_code_owner_changed_idx")
 }
 
 model session_userprofile_friends {

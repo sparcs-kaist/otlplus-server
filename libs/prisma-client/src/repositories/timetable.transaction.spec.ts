@@ -3,10 +3,12 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { ClsPluginTransactional, TransactionHost } from '@nestjs-cls/transactional'
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma'
 import { session_userprofile } from '@prisma/client'
+import crypto from 'crypto'
 import { ClsModule } from 'nestjs-cls'
 
 import { PrismaService } from '../prisma.service'
 import { CustomblockRepository } from './customblock.repository'
+import { FriendRepository } from './friend.repository'
 import { TimetableRepository } from './timetable.repository'
 
 // Run against an isolated local database after applying schema.prisma.
@@ -20,6 +22,7 @@ integration('Timetable transaction storage (local MySQL)', () => {
   let timetables: TimetableRepository
   let customblocks: CustomblockRepository
   let user: session_userprofile
+  let friend: session_userprofile
   const createdBlockIds: number[] = []
   const blockData = { block_name: 'transaction test', place: '', day: 0, begin: 600, end: 660 }
 
@@ -50,7 +53,7 @@ integration('Timetable transaction storage (local MySQL)', () => {
           })],
         }),
       ],
-      providers: [TimetableRepository, CustomblockRepository],
+      providers: [TimetableRepository, CustomblockRepository, FriendRepository],
     }).compile()
     await module.init()
     host = module.get(TransactionHost)
@@ -59,9 +62,13 @@ integration('Timetable transaction storage (local MySQL)', () => {
     user = await prisma.session_userprofile.create({
       data: { student_id: 'tx-test', sid: 'tx-test', date_joined: new Date(), first_name: 'Transaction', last_name: 'Test' },
     })
+    friend = await prisma.session_userprofile.create({
+      data: { student_id: 'code-test', sid: 'code-test', date_joined: new Date(), first_name: 'Friend', last_name: 'Test' },
+    })
   })
 
   afterAll(async () => {
+    if (friend) await prisma.session_userprofile.delete({ where: { id: friend.id } })
     if (user) {
       const tables = await timetables.getTimetableBasics(user)
       for (const table of tables) await timetables.deleteById(table.id, user.id)
@@ -69,6 +76,63 @@ integration('Timetable transaction storage (local MySQL)', () => {
       await prisma.session_userprofile.delete({ where: { id: user.id } })
     }
     await module?.close()
+  })
+
+  describe('friend code history', () => {
+    let friends: FriendRepository
+
+    beforeEach(async () => {
+      friends = module.get(FriendRepository)
+      await prisma.session_userprofile_friend_codes.deleteMany({ where: { userprofile_id: { in: [user.id, friend.id] } } })
+    })
+    afterEach(() => jest.restoreAllMocks())
+
+    it('retains changed codes and existing friendships while only accepting the new code', async () => {
+      await friends.createPair(user.id, friend.id)
+      const relations = await friends.getFriends(user.id)
+      const oldCode = await friends.getOrCreateCode(user.id)
+      const newCode = await friends.regenerateCode(user.id)
+      expect(newCode).not.toBe(oldCode)
+      expect(await friends.getUserIdByCode(oldCode)).toBeNull()
+      expect(await friends.getUserIdByCode(newCode)).toBe(user.id)
+      expect(await friends.getFriends(user.id)).toEqual(relations)
+      expect(await prisma.session_userprofile_friend_codes.findUnique({ where: { code: oldCode } }))
+        .toMatchObject({ userprofile_id: user.id, is_changed: true })
+      expect(await friends.getOrCreateCode(user.id)).toBe(newCode)
+    })
+
+    it('never reallocates a changed code to another user', async () => {
+      await prisma.session_userprofile_friend_codes.create({ data: { userprofile_id: user.id, code: 'AAAAAA', is_changed: true } })
+      let index = 0
+      jest.spyOn(crypto, 'randomInt').mockImplementation((() => Math.floor(index++ / 6)) as typeof crypto.randomInt)
+      expect(await friends.getOrCreateCode(friend.id)).toBe('CCCCCC')
+      expect(await friends.getUserIdByCode('AAAAAA')).toBeNull()
+    })
+
+    it('rolls back invalidation when every generated code collides', async () => {
+      await prisma.session_userprofile_friend_codes.create({ data: { userprofile_id: user.id, code: 'AAAAAA' } })
+      jest.spyOn(crypto, 'randomInt').mockImplementation((() => 0) as typeof crypto.randomInt)
+      await expect(friends.regenerateCode(user.id)).rejects.toThrow('Could not allocate a unique friend code')
+      expect(await friends.getUserIdByCode('AAAAAA')).toBe(user.id)
+      expect(await prisma.session_userprofile_friend_codes.count({ where: { userprofile_id: user.id } })).toBe(1)
+    })
+
+    it('serializes concurrent first issuance and regeneration to keep one active code', async () => {
+      const first = await Promise.all(Array.from({ length: 3 }, () => friends.getOrCreateCode(user.id)))
+      expect(new Set(first).size).toBe(1)
+      const issued = await Promise.all([
+        friends.regenerateCode(user.id), friends.regenerateCode(user.id), friends.getOrCreateCode(user.id),
+      ])
+      const rows = await prisma.session_userprofile_friend_codes.findMany({ where: { userprofile_id: user.id } })
+      expect(rows).toHaveLength(3)
+      const active = rows.filter((row) => !row.is_changed)
+      expect(active).toHaveLength(1)
+      expect(issued).toContain(active[0].code)
+      expect(await friends.getUserIdByCode(first[0])).toBeNull()
+      for (const row of rows.filter((code) => code.is_changed)) {
+        expect(await friends.getUserIdByCode(row.code)).toBeNull()
+      }
+    })
   })
 
   it('rolls back changes in both repositories when a later write fails', async () => {

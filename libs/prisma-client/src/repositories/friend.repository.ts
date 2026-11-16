@@ -17,33 +17,35 @@ export class FriendRepository {
   constructor(private readonly txHost: TransactionHost<TransactionalAdapterPrisma>) {}
 
   async getOrCreateCode(userId: number): Promise<string> {
-    const codes = this.txHost.tx.session_userprofile_friend_codes
-    const existing = await codes.findUnique({ where: { userprofile_id: userId } })
+    const where = { userprofile_id: userId, is_changed: false }
+    const existing = await this.txHost.tx.session_userprofile_friend_codes.findFirst({ where })
     if (existing) return existing.code
 
-    for (let attempt = 0; attempt < 10; attempt += 1) {
-      const code = generateFriendCode()
-      // A no-op upsert handles both unique keys without overwriting an existing code.
-      await this.txHost.tx.$executeRaw`
-        INSERT INTO session_userprofile_friend_codes (userprofile_id, code)
-        VALUES (${userId}, ${code})
-        ON DUPLICATE KEY UPDATE userprofile_id = userprofile_id
-      `
-      const winner = await codes.findUnique({ where: { userprofile_id: userId } })
-      if (winner) return winner.code
-    }
-    throw new Error('Could not allocate a unique friend code')
+    return this.txHost.withTransaction(async () => {
+      // Creation and regeneration share the owner lock to keep one active code per user.
+      await this.txHost.tx.$queryRaw`SELECT id FROM session_userprofile WHERE id = ${userId} FOR UPDATE`
+      const current = await this.txHost.tx.session_userprofile_friend_codes.findFirst({ where })
+      return current?.code ?? this.createCode(userId)
+    })
   }
 
   async regenerateCode(userId: number): Promise<string> {
-    const previousCode = await this.getOrCreateCode(userId)
+    return this.txHost.withTransaction(async () => {
+      await this.txHost.tx.$queryRaw`SELECT id FROM session_userprofile WHERE id = ${userId} FOR UPDATE`
+      await this.txHost.tx.session_userprofile_friend_codes.updateMany({
+        where: { userprofile_id: userId, is_changed: false },
+        data: { is_changed: true },
+      })
+      return this.createCode(userId)
+    })
+  }
+
+  private async createCode(userId: number): Promise<string> {
     for (let attempt = 0; attempt < 10; attempt += 1) {
       const code = generateFriendCode()
-      if (code === previousCode) continue
       try {
-        await this.txHost.tx.session_userprofile_friend_codes.update({
-          where: { userprofile_id: userId },
-          data: { code },
+        await this.txHost.tx.session_userprofile_friend_codes.create({
+          data: { userprofile_id: userId, code },
         })
         return code
       }
@@ -55,8 +57,8 @@ export class FriendRepository {
   }
 
   async getUserIdByCode(code: string): Promise<number | null> {
-    const owner = await this.txHost.tx.session_userprofile_friend_codes.findUnique({
-      where: { code },
+    const owner = await this.txHost.tx.session_userprofile_friend_codes.findFirst({
+      where: { code, is_changed: false },
       select: { userprofile_id: true },
     })
     return owner?.userprofile_id ?? null
