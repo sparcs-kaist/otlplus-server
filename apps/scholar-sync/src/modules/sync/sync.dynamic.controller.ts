@@ -44,20 +44,25 @@ export class SyncDynamicController {
     return jobResults
   }
 
-  // 자동 동기화가 지금(또는 date의 KST 12:00에) 어떤 학기를 대상으로 하는지 보여준다. 동기화는 하지 않는다.
+  // 자동 동기화가 지금(또는 at 시각에) 어떤 학기를 대상으로 하는지 보여준다. 동기화는 하지 않는다.
   @Get('targets')
   @ApiQuery({
-    name: 'date',
+    name: 'at',
     type: String,
     required: false,
-    description: 'YYYY-MM-DD (KST)',
+    description: 'ISO 8601 시각, 시간대 필수 (예: 2027-01-05T15:00:00+09:00)',
   })
   @ApiSecurity('X-API-KEY')
   @SyncApiKeyAuth()
-  async getSyncTargets(@Query('date') date?: string) {
-    if (date === undefined) return this.syncSchedule.getSyncTargets()
-    const now = /^\d{4}-\d{2}-\d{2}$/.test(date) ? new Date(`${date}T12:00:00+09:00`) : new Date(Number.NaN)
-    if (Number.isNaN(now.getTime())) throw new BadRequestException('date must be YYYY-MM-DD')
+  async getSyncTargets(@Query('at') at?: string) {
+    if (at === undefined) return this.syncSchedule.getSyncTargets()
+    // 쿼리 문자열에서 인코딩하지 않은 '+'는 공백으로 들어온다.
+    const value = at.trim().replace(' ', '+')
+    const isIsoWithZone = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})$/.test(value)
+    const now = new Date(isIsoWithZone ? value : Number.NaN)
+    if (Number.isNaN(now.getTime())) {
+      throw new BadRequestException('at must be an ISO 8601 time with a zone, e.g. 2027-01-05T15:00:00+09:00')
+    }
     return this.syncSchedule.getSyncTargets(now)
   }
 

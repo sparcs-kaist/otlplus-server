@@ -51,11 +51,14 @@ describe('selectSyncTargets', () => {
     expect(result.warnings).toEqual([])
   })
 
-  it('계획서 제출일은 KST 날짜 기준이라 그날 00시부터 포함된다', () => {
-    const result = select('2026-11-06T00:30')
-    expect(result.today).toBe('2026-11-06')
-    expect(result.lectureTargets).toEqual([[2026, 4]])
-    expect(result.takenTargets).toEqual([[2026, 3]])
+  it('계획서 제출 시각(KST 23:59) 이후부터 강의 목록 대상이 된다', () => {
+    const before = select('2026-11-06T00:30')
+    expect(before.today).toBe('2026-11-06')
+    expect(before.lectureTargets).toEqual([])
+    expect(before.takenTargets).toEqual([[2026, 3]])
+
+    expect(select('2026-11-06T23:59').lectureTargets).toEqual([[2026, 4]])
+    expect(select('2026-11-07T00:00').lectureTargets).toEqual([[2026, 4]])
   })
 
   it('겨울과 다음 봄 강의 목록은 겹쳐서 모두 대상이 된다', () => {
@@ -67,9 +70,11 @@ describe('selectSyncTargets', () => {
     expect(result.takenTargets).toEqual([[2026, 3]])
   })
 
-  it('다음 학기 수강신청 시작일 00시(수강신청 12:30 전)부터 수강 내역 대상이 넘어간다', () => {
-    expect(select('2026-11-22T23:59').takenTargets).toEqual([[2026, 3]])
-    expect(select('2026-11-23T00:00').takenTargets).toEqual([[2026, 4]])
+  it('다음 학기 수강신청 시작 시각(KST 12:30)부터 수강 내역 대상이 넘어간다', () => {
+    expect(select('2026-11-23T00:00').takenTargets).toEqual([[2026, 3]])
+    expect(select('2026-11-23T12:00').takenTargets).toEqual([[2026, 3]])
+    expect(select('2026-11-23T12:30').takenTargets).toEqual([[2026, 4]])
+    expect(select('2026-11-23T15:00').takenTargets).toEqual([[2026, 4]])
   })
 
   it('수강 취소 마감일은 끝까지 포함된다', () => {
@@ -81,8 +86,15 @@ describe('selectSyncTargets', () => {
     expect(result.takenTargets).toEqual([[2026, 4]])
   })
 
-  it('수강 내역은 겹치지 않고 다음 학기 수강신청 시작일에 바로 넘어간다', () => {
-    const result = select('2027-01-05T00:00')
+  it('수강 취소 마감 다음 날에도 수강신청 시작 전까지는 이전 학기 수강 내역을 동기화한다', () => {
+    const midnight = select('2027-01-05T00:00')
+    expect(midnight.lectureTargets).toEqual([[2027, 1]])
+    expect(midnight.takenTargets).toEqual([[2026, 4]])
+    expect(select('2027-01-05T12:00').takenTargets).toEqual([[2026, 4]])
+  })
+
+  it('수강 내역은 겹치지 않고 다음 학기 수강신청 시작 시각에 바로 넘어간다', () => {
+    const result = select('2027-01-05T15:00')
     expect(result.lectureTargets).toEqual([[2027, 1]])
     expect(result.takenTargets).toEqual([[2027, 1]])
   })

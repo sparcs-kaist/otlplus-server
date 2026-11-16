@@ -10,6 +10,7 @@ export type SyncTargetSemester = Pick<
 export type SemesterKey = [number, number]
 
 export interface SyncTargets {
+  /** 기준 시각의 KST 날짜. 표시와 R5 경고의 "최근 2년" 판단에만 쓴다. */
   today: string
   /** 강의 목록(강의·담당 교수)·수업 시간 대상. 오래된 학기부터. */
   lectureTargets: SemesterKey[]
@@ -33,7 +34,7 @@ const kstHourFormat = new Intl.DateTimeFormat('en-US', {
   hourCycle: 'h23',
 })
 
-/** 시각을 KST 기준 날짜 'YYYY-MM-DD'로 바꾼다. DB 값은 UTC 시각으로 저장돼 있으므로 UTC 날짜를 그대로 쓰면 안 된다. */
+/** 시각을 KST 기준 날짜 'YYYY-MM-DD'로 바꾼다. 대상 판단에는 쓰지 않는다(시각 그대로 비교). */
 export function toKstDate(date: Date): string {
   return kstDateFormat.format(date)
 }
@@ -48,21 +49,23 @@ const formatSemester = (row: Pick<SyncTargetSemester, 'year' | 'semester'>) => `
 type CompleteSemester = {
   year: number
   semester: number
-  description: string
-  registrationStart: string
-  dropDeadline: string
+  description: number
+  registrationStart: number
+  dropDeadline: number
 }
 
 /**
  * 자동 동기화 대상 학기를 데이터 종류별로 고른다. (docs/plans/seasonal-semester.md D1, R4~R6, R8)
  *
- * - 강의 목록·수업 시간: 계획서 제출일 ≤ 오늘 ≤ 수강 취소 마감인 학기 전부
- * - 수강 내역·시험 시간: 수강신청 시작일 ≤ 오늘 < 다음 학기 수강신청 시작일인 학기 (다음 학기 행이 없으면 끝이 열려 있음)
+ * - 강의 목록·수업 시간: 계획서 제출 ≤ now ≤ 수강 취소 마감인 학기 전부
+ * - 수강 내역·시험 시간: 수강신청 시작 ≤ now < 다음 학기 수강신청 시작인 학기 (다음 학기 행이 없으면 끝이 열려 있음)
  * - 이전/다음 학기는 날짜가 모두 있는 행을 (연도, 학기) 순으로 정렬해 판단한다.
+ * - DB 값은 UTC 시각으로 저장돼 있으므로 시각 그대로 비교한다.
  */
 export function selectSyncTargets(rows: SyncTargetSemester[], now: Date): SyncTargets {
   const today = toKstDate(now)
   const currentYear = Number(today.slice(0, 4))
+  const nowTime = now.getTime()
   const warnings: string[] = []
 
   const complete: CompleteSemester[] = []
@@ -77,26 +80,26 @@ export function selectSyncTargets(rows: SyncTargetSemester[], now: Date): SyncTa
     complete.push({
       year: row.year,
       semester: row.semester,
-      description: toKstDate(courseDesciptionSubmission),
-      registrationStart: toKstDate(courseRegistrationPeriodStart),
-      dropDeadline: toKstDate(courseDropDeadline),
+      description: courseDesciptionSubmission.getTime(),
+      registrationStart: courseRegistrationPeriodStart.getTime(),
+      dropDeadline: courseDropDeadline.getTime(),
     })
   }
   complete.sort((a, b) => a.year - b.year || a.semester - b.semester)
 
   const lectureTargets: SemesterKey[] = complete
-    .filter((s) => s.description <= today && today <= s.dropDeadline)
+    .filter((s) => s.description <= nowTime && nowTime <= s.dropDeadline)
     .map((s) => [s.year, s.semester])
 
   const takenTargets: SemesterKey[] = complete
     .filter((s, i) => {
       const next = complete[i + 1]
-      return s.registrationStart <= today && (!next || today < next.registrationStart)
+      return s.registrationStart <= nowTime && (!next || nowTime < next.registrationStart)
     })
     .map((s) => [s.year, s.semester])
 
   const latest = complete[complete.length - 1]
-  if (latest && latest.dropDeadline < today) {
+  if (latest && latest.dropDeadline < nowTime) {
     warnings.push(`최신 학기 ${formatSemester(latest)}의 수강 취소 마감이 지났는데 다음 학기 행이 없음`)
   }
 
