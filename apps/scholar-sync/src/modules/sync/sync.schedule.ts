@@ -57,7 +57,7 @@ export class SyncSchedule {
       return
     }
 
-    // 자동 동기화: 데이터 종류별로 대상 학기를 따로 고른다. (docs/plans/seasonal-semester.md D1)
+    // 자동 동기화: 데이터 종류별로 대상 학기를 따로 고른다.
     const now = new Date()
     const targets = await this.getSyncTargets(now)
     await this.slackNoti.sendSyncNoti(

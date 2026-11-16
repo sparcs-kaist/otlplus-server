@@ -406,9 +406,8 @@ export class SyncRepository {
       select: {
         year: true,
         semester: true,
-        courseDesciptionSubmission: true,
         courseRegistrationPeriodStart: true,
-        courseDropDeadline: true,
+        courseAddDropPeriodEnd: true,
       },
       orderBy: [{ year: 'asc' }, { semester: 'asc' }],
     })

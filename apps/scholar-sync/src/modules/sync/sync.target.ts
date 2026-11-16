@@ -4,7 +4,7 @@ import type { subject_semester } from '@prisma/client'
 
 export type SyncTargetSemester = Pick<
   subject_semester,
-  'year' | 'semester' | 'courseDesciptionSubmission' | 'courseRegistrationPeriodStart' | 'courseDropDeadline'
+  'year' | 'semester' | 'courseRegistrationPeriodStart' | 'courseAddDropPeriodEnd'
 >
 
 export type SemesterKey = [number, number]
@@ -12,7 +12,7 @@ export type SemesterKey = [number, number]
 export interface SyncTargets {
   /** 기준 시각의 KST 날짜. 표시와 R5 경고의 "최근 2년" 판단에만 쓴다. */
   today: string
-  /** 강의 목록(강의·담당 교수)·수업 시간 대상. 오래된 학기부터. */
+  /** 강의 목록(강의·담당 교수)·수업 시간 대상. 0~1개. */
   lectureTargets: SemesterKey[]
   /** 수강 내역·시험 시간 대상. 0~1개. */
   takenTargets: SemesterKey[]
@@ -49,15 +49,14 @@ const formatSemester = (row: Pick<SyncTargetSemester, 'year' | 'semester'>) => `
 type CompleteSemester = {
   year: number
   semester: number
-  description: number
   registrationStart: number
-  dropDeadline: number
+  addDropEnd: number
 }
 
 /**
- * 자동 동기화 대상 학기를 데이터 종류별로 고른다. (docs/plans/seasonal-semester.md D1, R4~R6, R8)
+ * 자동 동기화 대상 학기를 데이터 종류별로 고른다.
  *
- * - 강의 목록·수업 시간: 계획서 제출 ≤ now ≤ 수강 취소 마감인 학기 전부
+ * - 강의 목록·수업 시간: 이전 학기 수강 변경 종료 < now ≤ 이번 학기 수강 변경 종료인 학기 (0~1개, 첫 학기는 시작이 열려 있음)
  * - 수강 내역·시험 시간: 수강신청 시작 ≤ now < 다음 학기 수강신청 시작인 학기 (다음 학기 행이 없으면 끝이 열려 있음)
  * - 이전/다음 학기는 날짜가 모두 있는 행을 (연도, 학기) 순으로 정렬해 판단한다.
  * - DB 값은 UTC 시각으로 저장돼 있으므로 시각 그대로 비교한다.
@@ -70,8 +69,8 @@ export function selectSyncTargets(rows: SyncTargetSemester[], now: Date): SyncTa
 
   const complete: CompleteSemester[] = []
   for (const row of rows) {
-    const { courseDesciptionSubmission, courseRegistrationPeriodStart, courseDropDeadline } = row
-    if (!courseDesciptionSubmission || !courseRegistrationPeriodStart || !courseDropDeadline) {
+    const { courseRegistrationPeriodStart, courseAddDropPeriodEnd } = row
+    if (!courseRegistrationPeriodStart || !courseAddDropPeriodEnd) {
       if (row.year >= currentYear - 1) {
         warnings.push(`${formatSemester(row)} 학기 행에 날짜가 없어 자동 동기화에서 제외됨`)
       }
@@ -80,15 +79,17 @@ export function selectSyncTargets(rows: SyncTargetSemester[], now: Date): SyncTa
     complete.push({
       year: row.year,
       semester: row.semester,
-      description: courseDesciptionSubmission.getTime(),
       registrationStart: courseRegistrationPeriodStart.getTime(),
-      dropDeadline: courseDropDeadline.getTime(),
+      addDropEnd: courseAddDropPeriodEnd.getTime(),
     })
   }
   complete.sort((a, b) => a.year - b.year || a.semester - b.semester)
 
   const lectureTargets: SemesterKey[] = complete
-    .filter((s) => s.description <= nowTime && nowTime <= s.dropDeadline)
+    .filter((s, i) => {
+      const prev = complete[i - 1]
+      return (!prev || prev.addDropEnd < nowTime) && nowTime <= s.addDropEnd
+    })
     .map((s) => [s.year, s.semester])
 
   const takenTargets: SemesterKey[] = complete
@@ -99,8 +100,10 @@ export function selectSyncTargets(rows: SyncTargetSemester[], now: Date): SyncTa
     .map((s) => [s.year, s.semester])
 
   const latest = complete[complete.length - 1]
-  if (latest && latest.dropDeadline < nowTime) {
-    warnings.push(`최신 학기 ${formatSemester(latest)}의 수강 취소 마감이 지났는데 다음 학기 행이 없음`)
+  if (latest && latest.addDropEnd < nowTime) {
+    warnings.push(
+      `최신 학기 ${formatSemester(latest)}의 수강 변경 종료가 지났는데 다음 학기 행이 없어 강의 목록 동기화가 멈춤`,
+    )
   }
 
   return {
