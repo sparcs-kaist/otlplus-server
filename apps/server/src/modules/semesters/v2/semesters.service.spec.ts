@@ -25,6 +25,8 @@ describe('SemestersServiceV2 current semester', () => {
     ['regular end instant', '2026-12-18T18:00:00+09:00', [fall, winter, spring], fall],
     ['after regular end, before seasonal beginning', '2026-12-18T18:00:00.001+09:00', [fall, winter, spring], winter],
     ['after seasonal add/drop end', '2026-12-23T18:00:00.001+09:00', [fall, winter, spring, laterFall], spring],
+    ['no next regular semester', '2026-12-24T12:00:00+09:00', [fall, winter], winter],
+    ['no seasonal or next regular semester', '2026-12-24T12:00:00+09:00', [fall], fall],
   ])('selects %s', async (_label, instant, semesters, expected) => {
     jest.useFakeTimers().setSystemTime(new Date(instant))
     const repository = {
@@ -40,9 +42,9 @@ describe('SemestersServiceV2 current semester', () => {
     jest.useFakeTimers().setSystemTime(new Date('2026-12-20T12:00:00+09:00'))
     const repository = {
       getSemestersInYearRange: jest.fn().mockResolvedValue([spring]),
-      getFallbackSemester: jest.fn().mockResolvedValue(fall),
+      getFallbackSemester: jest.fn().mockResolvedValue(spring),
     }
-    await expect(new SemestersServiceV2(repository as never).getCurrentSemester()).resolves.toEqual(fall)
+    await expect(new SemestersServiceV2(repository as never).getCurrentSemester()).resolves.toEqual(spring)
     expect(repository.getFallbackSemester).toHaveBeenCalledWith(new Date())
   })
 })

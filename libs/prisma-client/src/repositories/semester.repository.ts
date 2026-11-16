@@ -44,13 +44,14 @@ export class SemesterRepository {
   }
 
   async getFallbackSemester(now: Date): Promise<subject_semester | null> {
-    const endedSemester = await this.prisma.subject_semester.findFirst({
-      where: { end: { lte: now } },
-      orderBy: [{ year: 'desc' }, { semester: 'desc' }],
+    const upcomingSemester = await this.prisma.subject_semester.findFirst({
+      where: { beginning: { gt: now } },
+      orderBy: [{ beginning: 'asc' }, { year: 'asc' }, { semester: 'asc' }],
     })
-    if (endedSemester) return endedSemester
+    if (upcomingSemester) return upcomingSemester
 
     return this.prisma.subject_semester.findFirst({
+      where: { end: { lte: now } },
       orderBy: [{ year: 'desc' }, { semester: 'desc' }],
     })
   }

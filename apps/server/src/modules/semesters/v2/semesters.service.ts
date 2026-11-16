@@ -35,6 +35,6 @@ export class SemestersServiceV2 {
     const nextRegular = semesters.find(
       (s) => isRegular(s) && (s.year > regular.year || (s.year === regular.year && s.semester > regular.semester)),
     )
-    return nextRegular ?? regular
+    return nextRegular ?? seasonal ?? regular
   }
 }

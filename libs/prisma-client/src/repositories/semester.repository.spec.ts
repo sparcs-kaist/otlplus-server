@@ -15,15 +15,29 @@ describe('SemesterRepository active semesters', () => {
 })
 
 describe('SemesterRepository fallback semester', () => {
+  it('prefers the nearest upcoming semester over an ended semester', async () => {
+    const now = new Date('2026-12-18T09:00:00Z')
+    const upcoming = { year: 2027, semester: 1 }
+    const findFirst = jest.fn().mockResolvedValueOnce(upcoming)
+    const repository = new SemesterRepository({ subject_semester: { findFirst } } as never)
+
+    await expect(repository.getFallbackSemester(now)).resolves.toEqual(upcoming)
+    expect(findFirst).toHaveBeenCalledTimes(1)
+    expect(findFirst).toHaveBeenCalledWith({
+      where: { beginning: { gt: now } },
+      orderBy: [{ beginning: 'asc' }, { year: 'asc' }, { semester: 'asc' }],
+    })
+  })
+
   it('includes a semester ending at the exact instant and does not limit the year', async () => {
     const now = new Date('2026-12-18T09:00:00Z')
     const ended = { year: 2020, semester: 4 }
-    const findFirst = jest.fn().mockResolvedValue(ended)
+    const findFirst = jest.fn().mockResolvedValueOnce(null).mockResolvedValueOnce(ended)
     const repository = new SemesterRepository({ subject_semester: { findFirst } } as never)
 
     await expect(repository.getFallbackSemester(now)).resolves.toEqual(ended)
-    expect(findFirst).toHaveBeenCalledTimes(1)
-    expect(findFirst).toHaveBeenCalledWith({
+    expect(findFirst).toHaveBeenCalledTimes(2)
+    expect(findFirst).toHaveBeenNthCalledWith(2, {
       where: { end: { lte: now } },
       orderBy: [{ year: 'desc' }, { semester: 'desc' }],
     })
