@@ -350,6 +350,24 @@ export class CourseRepositoryV2 {
     return { course, lectures }
   }
 
+  // 주어진 course들 중 해당 학기에 개설된(삭제되지 않은 lecture가 있는) course의 id들
+  public async getOpenCourseIds(courseIds: number[], year: number, semester: number): Promise<number[]> {
+    if (courseIds.length === 0) {
+      return []
+    }
+    const openLectures = await this.prisma.subject_lecture.findMany({
+      where: {
+        course_id: { in: courseIds },
+        year,
+        semester,
+        deleted: false,
+      },
+      select: { course_id: true },
+      distinct: ['course_id'],
+    })
+    return openLectures.map((lecture) => lecture.course_id)
+  }
+
   // @Todo : 성능 최적화를 하려 한다면 User가 들은 coruse, lecture 찾는 메서드 캐싱
   // 수강 여부 확인을 위해 수강한 course의 id list를 반환하는 메서드
   public async getTakenCourseIdsByUser(userId: number): Promise<number[]> {

@@ -231,19 +231,23 @@ export class SyncRepository {
   }
 
   async updateLectureClasstimes(id: number, { added, removed }: { added: ClassTimeInfo[], removed: number[] }) {
-    if (removed.length) {
-      await this.prisma.subject_classtime.deleteMany({
-        where: { id: { in: removed } },
-      })
-    }
-    if (added.length) {
-      await this.prisma.subject_classtime.createMany({
-        data: added.map((classtime) => ({
-          lecture_id: id,
-          ...classtime,
-        })),
-      })
-    }
+    if (!added.length && !removed.length) return
+
+    await this.prisma.$transaction(async (transaction) => {
+      if (removed.length) {
+        await transaction.subject_classtime.deleteMany({
+          where: { id: { in: removed } },
+        })
+      }
+      if (added.length) {
+        await transaction.subject_classtime.createMany({
+          data: added.map((classtime) => ({
+            lecture_id: id,
+            ...classtime,
+          })),
+        })
+      }
+    })
   }
 
   async getUserExistingTakenLectures({
@@ -393,6 +397,19 @@ export class SyncRepository {
       take: take ?? 3,
       where: { courseDesciptionSubmission: { lt: now } },
       orderBy: { courseDesciptionSubmission: 'desc' },
+    })
+  }
+
+  // 자동 동기화 대상 계산용. 행 수가 적어 전체를 조회한다.
+  async getSemestersForSyncTarget() {
+    return this.prisma.subject_semester.findMany({
+      select: {
+        year: true,
+        semester: true,
+        courseRegistrationPeriodStart: true,
+        courseAddDropPeriodEnd: true,
+      },
+      orderBy: [{ year: 'asc' }, { semester: 'asc' }],
     })
   }
 
