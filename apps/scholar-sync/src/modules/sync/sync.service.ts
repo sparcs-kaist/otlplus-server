@@ -12,6 +12,7 @@ import { ProfessorInfo } from '@otl/scholar-sync/common/domain/ProfessorInfo'
 import { SyncResultDetail, SyncResultDetails, SyncTimeType } from '@otl/scholar-sync/common/interfaces/ISync'
 import { SCHOLAR_MQ, ScholarMQ } from '@otl/scholar-sync/domain/out/ScholarMQ'
 import { STATISTICS_MQ, SyncServerStatisticsMQ } from '@otl/scholar-sync/domain/out/StatisticsMQ'
+import { SyncTargetSemester } from '@otl/scholar-sync/modules/sync/sync.target'
 import { summarizeSyncResult } from '@otl/scholar-sync/modules/sync/util'
 import { review_review, subject_lecture, SyncType } from '@prisma/client'
 import {
@@ -50,6 +51,10 @@ export class SyncService {
 
   async getSemesters(take?: number): Promise<ESemester.Basic[]> {
     return await this.syncRepository.getSemesters(take)
+  }
+
+  async getSemestersForSyncTarget(): Promise<SyncTargetSemester[]> {
+    return await this.syncRepository.getSemestersForSyncTarget()
   }
 
   async syncScholarDB(data: IScholar.ScholarDBBody): Promise<SyncResultDetails> {
