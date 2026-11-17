@@ -4136,7 +4136,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ITimetableV2.TimetableDetailResDto"
+                  "$ref": "#/components/schemas/ITimetableV2.SharedTimetableResDto"
                 }
               }
             }
@@ -4171,6 +4171,50 @@
               ]
             },
             "description": "en/ko (기본: ko). 언어 헤더 파라미터"
+          }
+        ]
+      }
+    },
+    "/api/v2/timetables/shared/semesters": {
+      "get": {
+        "summary": "TimetablesControllerV2.getSharedTimetableSemesters",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ITimetableV2.SharedTimetableSemestersResDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/friends/{friendId}/timetables/shared/semesters": {
+      "get": {
+        "summary": "FriendsController.getSharedTimetableSemesters",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ITimetableV2.SharedTimetableSemestersResDto"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "friendId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
           }
         ]
       }
@@ -12406,6 +12450,34 @@
           "semester",
           "timeTableOrder",
           "year"
+        ],
+        "additionalProperties": false
+      },
+      "ITimetableV2.SharedTimetableSemestersResDto": {
+        "type": "object",
+        "properties": {
+          "semesters": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "year": {
+                  "type": "number"
+                },
+                "semester": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "year",
+                "semester"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "semesters"
         ],
         "additionalProperties": false
       }

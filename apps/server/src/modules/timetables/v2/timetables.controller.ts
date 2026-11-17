@@ -87,6 +87,11 @@ export class TimetablesControllerV2 {
     return this.timetablesService.getSharedTimetable(user, query, language)
   }
 
+  @Get('/shared/semesters')
+  async getSharedTimetableSemesters(@GetUser() user: session_userprofile): Promise<ITimetableV2.SharedTimetableSemestersResDto> {
+    return this.timetablesService.getSharedTimetableSemesters(user)
+  }
+
   @Patch('/shared')
   async setSharedTimetable(
     @GetUser() user: session_userprofile,

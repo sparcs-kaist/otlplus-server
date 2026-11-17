@@ -112,19 +112,39 @@ export class FriendsService {
     return { timetables: timetables.map(toJsonTimetableV2) }
   }
 
+  async getSharedTimetableSemesters(user: session_userprofile, friendId: number): Promise<ITimetableV2.SharedTimetableSemestersResDto> {
+    const friend = await this.getFriend(user.id, friendId)
+    return { semesters: await this.timetableRepository.getSharedTimetableSemesters(friend.friend_userprofile_id) }
+  }
+
   @Transactional()
   async getSharedTimetable(
     user: session_userprofile,
     friendId: number,
     query: ITimetableV2.MyTimetableReqDto,
     language: Language,
-  ): Promise<ITimetableV2.TimetableDetailResDto> {
+  ): Promise<ITimetableV2.SharedTimetableResDto> {
     const friend = await this.getFriend(user.id, friendId)
     const timetable = await this.timetableRepository.getSharedTimetableForSemester(friend.friend_userprofile_id, query.year, query.semester)
-    if (timetable) return toJsonTimetableV2WithItems(timetable, language)
+    if (timetable) {
+      return {
+        ...toJsonTimetableV2WithItems(timetable, language),
+        ...query,
+        source: 'saved',
+        timetableId: timetable.id,
+        name: timetable.name ?? '',
+      }
+    }
     const lectures = await this.lectureRepository.getTakenLecturesBySemester(friend.friend_userprofile_id, query.year, query.semester)
     const serialized = toJsonLectures(lectures, language).lectures
-    return { lectures: serialized, timetableItems: serialized.map((data) => ({ kind: TimetableItemKind.LECTURE, data })) }
+    return {
+      lectures: serialized,
+      timetableItems: serialized.map((data) => ({ kind: TimetableItemKind.LECTURE, data })),
+      ...query,
+      source: 'enrolled',
+      timetableId: null,
+      name: language === 'en' ? 'Enrolled timetable' : '학사 시간표',
+    }
   }
 
   async getMyTimetable(

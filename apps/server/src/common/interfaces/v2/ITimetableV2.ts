@@ -372,6 +372,10 @@ export namespace ITimetableV2 {
 
   export class SharedTimetableResDto extends HomeTimetableResDto {}
 
+  export interface SharedTimetableSemestersResDto {
+    semesters: { year: number, semester: number }[]
+  }
+
   export interface OwnTimetableSummary extends TimetableSummary {
     isMain: boolean
     isShared: boolean

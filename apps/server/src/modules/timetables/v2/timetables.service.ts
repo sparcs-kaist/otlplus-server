@@ -595,6 +595,10 @@ export class TimetablesServiceV2 {
     return this.getHomeTimetable(user, body, language)
   }
 
+  async getSharedTimetableSemesters(user: session_userprofile): Promise<ITimetableV2.SharedTimetableSemestersResDto> {
+    return { semesters: await this.timetableRepository.getSharedTimetableSemesters(user.id) }
+  }
+
   @Transactional()
   async getSharedTimetable(
     user: session_userprofile,

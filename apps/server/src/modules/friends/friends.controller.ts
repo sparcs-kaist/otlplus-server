@@ -78,8 +78,17 @@ export class FriendsController {
     @Param('friendId', ParseIntPipe) friendId: number,
     @Query() query: ITimetableV2.MyTimetableReqDto,
     @GetLanguage() language: Language,
-  ): Promise<ITimetableV2.TimetableDetailResDto> {
+  ): Promise<ITimetableV2.SharedTimetableResDto> {
     return this.friendsService.getSharedTimetable(user, friendId, query, language)
+  }
+
+  @Get('/:friendId/timetables/shared/semesters')
+  @Header('Cache-Control', 'private, no-store')
+  getSharedTimetableSemesters(
+    @GetUser() user: session_userprofile,
+    @Param('friendId', ParseIntPipe) friendId: number,
+  ): Promise<ITimetableV2.SharedTimetableSemestersResDto> {
+    return this.friendsService.getSharedTimetableSemesters(user, friendId)
   }
 
   @Get('/:friendId/timetables/my-timetable')

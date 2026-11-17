@@ -99,6 +99,25 @@ export class TimetableRepository {
     })
   }
 
+  async getSharedTimetableSemesters(userId: number) {
+    const [shared, enrolled] = await Promise.all([
+      this.txHost.tx.timetable_timetable.findMany({
+        where: { user_id: userId, is_shared: true },
+        select: { year: true, semester: true },
+      }),
+      this.txHost.tx.subject_lecture.findMany({
+        where: { students: { some: { userprofile_id: userId } } },
+        select: { year: true, semester: true },
+        distinct: ['year', 'semester'],
+      }),
+    ])
+    const semesters = new Map<string, { year: number, semester: number }>()
+    for (const { year, semester } of [...shared, ...enrolled]) {
+      if (year !== null && semester !== null) semesters.set(`${year}-${semester}`, { year, semester })
+    }
+    return [...semesters.values()].sort((a, b) => b.year - a.year || b.semester - a.semester)
+  }
+
   async getSharedTimetableForSemester(userId: number, year: number, semester: number) {
     return this.txHost.tx.timetable_timetable.findFirst({
       where: {

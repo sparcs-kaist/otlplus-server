@@ -81,3 +81,20 @@ it('reads a shared timetable and its items together, scoped to the owner and sem
     include: ETimetable.WithItems.include,
   })
 })
+
+
+it('merges enrolled and explicitly shared semesters once per term, newest first', async () => {
+  const shared = [{ year: 2026, semester: 1 }, { year: 2025, semester: 3 }, { year: null, semester: 3 }]
+  const enrolled = [{ year: 2025, semester: 3 }, { year: 2024, semester: 1 }]
+  const findShared = jest.fn().mockResolvedValue(shared)
+  const findEnrolled = jest.fn().mockResolvedValue(enrolled)
+  const repository = new TimetableRepository({ tx: {
+    timetable_timetable: { findMany: findShared },
+    subject_lecture: { findMany: findEnrolled },
+  } } as never)
+  await expect(repository.getSharedTimetableSemesters(7)).resolves.toEqual([
+    { year: 2026, semester: 1 }, { year: 2025, semester: 3 }, { year: 2024, semester: 1 },
+  ])
+  expect(findShared.mock.calls[0][0].where).toEqual({ user_id: 7, is_shared: true })
+  expect(findEnrolled.mock.calls[0][0].where).toEqual({ students: { some: { userprofile_id: 7 } } })
+})

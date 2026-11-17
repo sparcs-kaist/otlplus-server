@@ -24,7 +24,7 @@ describe('FriendsService', () => {
     deletePair: jest.fn(),
   }
   const lectures = { getLectureDetailById: jest.fn(), getTakenLecturesBySemester: jest.fn() }
-  const timetables = { getSharedTimetableForSemester: jest.fn(), getSharedTimetableSelection: jest.fn(), getSharedTimetableWithItems: jest.fn(), getSharedTimetables: jest.fn() }
+  const timetables = { getSharedTimetableSemesters: jest.fn(), getSharedTimetableForSemester: jest.fn(), getSharedTimetableSelection: jest.fn(), getSharedTimetableWithItems: jest.fn(), getSharedTimetables: jest.fn() }
   const semesters = { getActiveSemestersAt: jest.fn() }
   let service: FriendsService
 
@@ -223,6 +223,16 @@ describe('FriendsService', () => {
 
     beforeEach(() => friends.getFriend.mockResolvedValue({ friend_userprofile_id: 43 }))
 
+    it('lists available shared semesters only after validating the friend relationship', async () => {
+      timetables.getSharedTimetableSemesters.mockResolvedValue([term])
+      await expect(service.getSharedTimetableSemesters(user, 7)).resolves.toEqual({ semesters: [term] })
+      expect(timetables.getSharedTimetableSemesters).toHaveBeenCalledWith(43)
+      timetables.getSharedTimetableSemesters.mockClear()
+      friends.getFriend.mockResolvedValue(null)
+      await expect(service.getSharedTimetableSemesters(user, 7)).rejects.toBeInstanceOf(NotFoundException)
+      expect(timetables.getSharedTimetableSemesters).not.toHaveBeenCalled()
+    })
+
     it('resolves the shared source in one read and falls back only when no saved selection exists', async () => {
       timetables.getSharedTimetableForSemester.mockResolvedValue({
         timetable_timetable_lectures: [],
@@ -236,11 +246,12 @@ describe('FriendsService', () => {
       timetables.getSharedTimetableForSemester.mockResolvedValue({
         timetable_timetable_lectures: [], timetable_timetable_customblocks: [],
       })
-      await expect(service.getSharedTimetable(user, 7, term, 'en')).resolves.toEqual({ lectures: [], timetableItems: [] })
+      await expect(service.getSharedTimetable(user, 7, term, 'en')).resolves.toMatchObject({ source: 'saved', lectures: [], timetableItems: [] })
       expect(lectures.getTakenLecturesBySemester).not.toHaveBeenCalled()
       timetables.getSharedTimetableForSemester.mockResolvedValue(null)
       lectures.getTakenLecturesBySemester.mockResolvedValue([lecture])
       await expect(service.getSharedTimetable(user, 7, term, 'en')).resolves.toMatchObject({
+        ...term, source: 'enrolled', timetableId: null, name: 'Enrolled timetable',
         timetableItems: [{ kind: 'lecture', data: { id: 10 } }],
       })
       expect(lectures.getTakenLecturesBySemester).toHaveBeenCalledWith(43, 2026, 3)

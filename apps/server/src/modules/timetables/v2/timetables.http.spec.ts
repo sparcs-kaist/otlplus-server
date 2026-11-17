@@ -303,7 +303,7 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     expect((await friendRepository.getFriendsWithCourse(otherUser.id, courseId)).map(({ id }) => id)).toEqual([friend.id])
     expect(await friendRepository.getFriendIdsWithScheduleAt(otherUser.id, [friend.id], [term], 0, 570)).toEqual([friend.id])
     await select(second)
-    expect((await friendShared()).body).toEqual({ lectures: [], timetableItems: [] })
+    expect((await friendShared()).body).toMatchObject({ ...term, timetableId: second, source: 'saved', lectures: [], timetableItems: [] })
     expect(await timetables.getSharedTimetableWithItems(first, user.id)).toBeNull()
     expect((await timetables.getSharedTimetables(user.id, term.year, term.semester)).map(({ id }) => id)).toEqual([second])
     expect(await friendsService.getOverlaps(otherUser, lectureId)).toEqual({ sameLecture: [], sameCourseDifferentSection: [], previousSemesterSameProfessor: [] })
@@ -338,7 +338,14 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     expect(await friendRepository.getFriendIdsWithScheduleAt(otherUser.id, [friend.id], [term], 0, 570)).toEqual([friend.id])
     expect((await request(app.getHttpServer()).get(`${prefix}/shared`).query({ ...term, semester: 1 }).expect(200)).body.timetableId).toBe(spring)
     expect((await friendShared()).body.lectures.map(({ id }: { id: number }) => id)).toEqual([lectureId])
+    const semesterPath = `/api/v2/friends/${friend.id}/timetables/shared/semesters`
+    const expectedSemesters = { semesters: [term, { ...term, semester: 1 }] }
+    // Include a deliberately empty shared spring timetable, but no unshared saved terms.
+    expect((await request(app.getHttpServer()).get(`${prefix}/shared/semesters`).expect(200)).body).toEqual(expectedSemesters)
+    expect((await request(app.getHttpServer()).get(semesterPath).set('x-test-other-user', '1').expect(200)).body).toEqual(expectedSemesters)
+    await request(app.getHttpServer()).get(semesterPath).expect(404)
     await friendRepository.deletePair(otherUser.id, user.id)
+    await request(app.getHttpServer()).get(semesterPath).set('x-test-other-user', '1').expect(404)
     await request(app.getHttpServer()).get(`/api/v2/friends/${friend.id}/timetables/shared`)
       .set('x-test-other-user', '1').query(term).expect(404)
   })
