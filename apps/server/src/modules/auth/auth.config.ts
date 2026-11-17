@@ -52,8 +52,7 @@ export class AuthConfig {
 
   private getDevGuardConfig = () => this.authChain
     .register(this.isPublicCommand)
-  // dev 환경에서 학번을 이용한 x-auth-sid 인증 비활성화
-  // .register(this.studentHeaderCommand)
+    .register(this.studentHeaderCommand)
     .register(this.jwtHeaderCommand)
     .register(this.sidHeaderCommand)
     .register(this.sidCookieCommand)
