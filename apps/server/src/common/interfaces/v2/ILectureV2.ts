@@ -96,7 +96,6 @@ export namespace ILectureV2 {
     @ApiPropertyOptional({
       type: [Number],
       description: 'Department IDs (exact match). departmentCode와 함께 쓸 수 없음',
-      deprecated: true,
     })
     department?: number[] // 각 department의 id
 
