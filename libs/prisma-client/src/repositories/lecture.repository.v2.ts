@@ -20,6 +20,7 @@ export class LectureRepositoryV2 {
     keyword: string | undefined,
     type: string[] | undefined,
     department: number[] | undefined,
+    departmentCode: string[] | undefined,
     level: number[] | undefined,
     year: number, // year required
     semester: number, // semester required
@@ -36,6 +37,7 @@ export class LectureRepositoryV2 {
     const semesterFilter = this.semesterFilter(year, semester)
     const timeFilter = this.timeFilter(day, begin, end)
     const departmentFilter = this.courseRepository.departmentFilter(department)
+    const departmentCodeFilter = this.courseRepository.departmentCodeFilter(departmentCode)
     const typeFilter = this.courseRepository.typeFilter(type)
     const keywordFilter = this.courseRepository.keywordFilter(keyword, false)
     const levelFilter = this.courseRepository.levelFilter(level)
@@ -57,6 +59,7 @@ export class LectureRepositoryV2 {
       semesterFilter,
       timeFilter,
       departmentFilter,
+      departmentCodeFilter,
       typeFilter,
       keywordFilter,
       defaultFilter,

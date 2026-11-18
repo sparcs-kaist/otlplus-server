@@ -79,8 +79,22 @@ export namespace ICourseV2 {
     })
     @IsArray()
     @IsInt({ each: true })
-    @ApiPropertyOptional({ type: [Number], description: 'Department IDs' })
+    @ApiPropertyOptional({
+      type: [Number],
+      description: 'Department IDs (exact match). departmentCode와 함께 쓸 수 없음',
+      deprecated: true,
+    })
     department?: number[] // 각 department의 id
+
+    @IsOptional()
+    @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
+    @IsArray()
+    @IsString({ each: true })
+    @ApiPropertyOptional({
+      type: [String],
+      description: 'Department codes (e.g. CS). 같은 코드의 학과를 모두 조회, ETC는 주요 학과 외 전체',
+    })
+    departmentCode?: string[] // 학과 코드
 
     @IsOptional()
     @Transform(({ value }) => {
