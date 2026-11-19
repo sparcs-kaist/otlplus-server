@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { ICourseV2, IProfessorV2 } from '@otl/server-nest/common/interfaces/v2'
 import { SemestersServiceV2 } from '@otl/server-nest/modules/semesters/v2/semesters.service'
 import { session_userprofile, subject_semester } from '@prisma/client'
@@ -71,10 +71,14 @@ export class CoursesServiceV2 {
     lang: language,
   ): Promise<ICourseV2.GETCoursesResponse> {
     const {
-      department, type, level, keyword, term, order, offset, limit,
+      department, departmentCode, type, level, keyword, term, order, offset, limit,
     } = query
+    if (department && departmentCode) {
+      throw new BadRequestException('department and departmentCode cannot be used together')
+    }
     const { queryResult, totalCount } = await this.courseRepository.getCourses(
       department,
+      departmentCode,
       type,
       level,
       keyword,

@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common'
 import { session_userprofile } from '@prisma/client'
 
 import { ECourseV2 } from '@otl/prisma-client/entities'
@@ -65,6 +66,23 @@ describe('CoursesServiceV2.getCourses', () => {
       { id: 2, open: false, completed: true },
       { id: 3, open: false, completed: false },
     ])
+  })
+
+  it('passes departmentCode to the repository', async () => {
+    const { service, courseRepository } = setup([])
+
+    await service.getCourses({ departmentCode: ['TS'] } as any, null, 'ko')
+
+    expect(courseRepository.getCourses.mock.calls[0][1]).toEqual(['TS'])
+  })
+
+  it('rejects department and departmentCode used together', async () => {
+    const { service, courseRepository } = setup([])
+
+    await expect(
+      service.getCourses({ department: [17884], departmentCode: ['TS'] } as any, null, 'ko'),
+    ).rejects.toThrow(BadRequestException)
+    expect(courseRepository.getCourses).not.toHaveBeenCalled()
   })
 
   it('treats every course as not open when there is no semester', async () => {
