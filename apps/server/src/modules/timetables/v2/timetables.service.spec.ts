@@ -54,6 +54,7 @@ function timetable(lectures: ELecture.Details[] = [], blocks = [block]): ETimeta
 
 function setup(current = timetable()) {
   const repo = {
+    lockUserTimetables: jest.fn().mockResolvedValue(undefined),
     lockTimetable: jest.fn().mockResolvedValue(undefined),
     getTimeTableWithItemsById: jest.fn().mockResolvedValue(current),
     getTimeTableBasicById: jest.fn().mockResolvedValue(current),
@@ -63,6 +64,8 @@ function setup(current = timetable()) {
     createTimetable: jest.fn().mockResolvedValue({ id: 43 }),
     addLectureToTimetable: jest.fn().mockResolvedValue(undefined),
     removeLectureFromTimetable: jest.fn().mockResolvedValue(undefined),
+    getSharedTimetableForSemester: jest.fn().mockResolvedValue(null),
+    setSharedTimetableSelection: jest.fn().mockResolvedValue(undefined),
     getHomeTimetable: jest.fn().mockResolvedValue(null),
     setHomeTimetable: jest.fn().mockResolvedValue(undefined),
     getLecturesWithClassTimes: jest.fn().mockResolvedValue([]),
@@ -231,9 +234,9 @@ describe('TimetablesServiceV2 clone compatibility', () => {
 })
 
 describe('TimetablesServiceV2 home selection', () => {
-  it.each([null, { timetable_id: null }])('falls back to enrolled lectures without a saved selection: %o', async (selection) => {
+  it('falls back to enrolled lectures when there are no saved timetables', async () => {
     const { service, repo, lectures } = setup()
-    repo.getHomeTimetable.mockResolvedValue(selection)
+    repo.getHomeTimetable.mockResolvedValue(null)
     const result = await service.getHomeTimetable(user, term, 'en')
     expect(result).toMatchObject({ source: 'enrolled', timetableId: null, ...term })
     expect(result.timetableItems).toEqual([{ kind: 'lecture', data: expect.objectContaining({ id: 9 }) }])
@@ -242,7 +245,7 @@ describe('TimetablesServiceV2 home selection', () => {
 
   it('returns a selected custom-only timetable without changing actual enrollment', async () => {
     const { service, repo, lectures } = setup()
-    repo.getHomeTimetable.mockResolvedValue({ timetable_id: 42 })
+    repo.getHomeTimetable.mockResolvedValue({ id: 42 })
     const result = await service.getHomeTimetable(user, term, 'en')
     expect(result).toMatchObject({ source: 'saved', timetableId: 42, name: 'Saved', ...term, lectures: [] })
     expect(result.timetableItems).toEqual([{ kind: 'custom', data: { ...block, times: [{ day: 0, begin: 540, end: 600 }] } }])
@@ -255,10 +258,10 @@ describe('TimetablesServiceV2 home selection', () => {
     expect(repo.setHomeTimetable).not.toHaveBeenCalled()
   })
 
-  it('clears only the requested user/semester selection', async () => {
+  it('changes only the requested user/semester selection', async () => {
     const { service, repo } = setup()
-    await service.setHomeTimetable(user, { ...term, timetableId: null }, 'en')
-    expect(repo.setHomeTimetable).toHaveBeenCalledWith(user.id, term.year, term.semester, null)
+    await service.setHomeTimetable(user, { ...term, timetableId: 42 }, 'en')
+    expect(repo.setHomeTimetable).toHaveBeenCalledWith(user.id, term.year, term.semester, 42)
   })
 })
 
@@ -310,7 +313,39 @@ describe('multi-time custom blocks', () => {
     const { service, blocks, repo } = setup(timetable([], [grouped]))
     await service.createTimetable(user, { ...term, sourceTimetableId: 42 }, 'en')
     expect(blocks.createCustomblock).toHaveBeenCalledWith({ ...customInput, times })
-    repo.getHomeTimetable.mockResolvedValue({ timetable_id: 42 })
+    repo.getHomeTimetable.mockResolvedValue({ id: 42 })
     expect((await service.getHomeTimetable(user, term, 'en')).timetableItems).toEqual([{ kind: 'custom', data: grouped }])
   })
+})
+
+
+describe('friend sharing selection', () => {
+  it('defaults to enrollment and switches shared source independently of home selection', async () => {
+    const { service, repo } = setup()
+    await expect(service.getSharedTimetable(user, term, 'en')).resolves.toMatchObject({
+      ...term, timetableId: null, source: 'enrolled', lectures: [{ id: 9 }],
+    })
+    repo.getSharedTimetableForSemester.mockResolvedValue(timetable())
+    await expect(service.setSharedTimetable(user, { ...term, timetableId: 42 }, 'en')).resolves.toMatchObject({ ...term, timetableId: 42, source: 'saved' })
+    expect(repo.setSharedTimetableSelection).toHaveBeenCalledWith(user.id, 2026, 3, 42)
+    repo.getSharedTimetableForSemester.mockResolvedValue(null)
+    await expect(service.setSharedTimetable(user, { ...term, timetableId: null }, 'en')).resolves.toMatchObject({ source: 'enrolled' })
+    expect(repo.setSharedTimetableSelection).toHaveBeenLastCalledWith(user.id, 2026, 3, null)
+    expect(repo.setHomeTimetable).not.toHaveBeenCalled()
+  })
+
+  it.each([{ year: 2025 }, { semester: 1 }, { user_id: 999 }])('rejects wrong term or owner: %j', async (changes) => {
+    const { service, repo } = setup({ ...timetable(), ...changes })
+    await expect(service.setSharedTimetable(user, { ...term, timetableId: 42 }, 'en')).rejects.toThrow()
+    expect(repo.setSharedTimetableSelection).not.toHaveBeenCalled()
+  })
+})
+
+it('returns main and shared flags with the own timetable list without loading items', async () => {
+  const { service, repo } = setup({ ...timetable(), is_main: true, is_shared: false })
+  await expect(service.getTimetables(user, term)).resolves.toMatchObject({
+    timetables: [{ id: 42, ...term, isMain: true, isShared: false }],
+  })
+  expect(repo.getTimetableBasics).toHaveBeenCalledWith(user, term.year, term.semester)
+  expect(repo.getTimeTableWithItemsById).not.toHaveBeenCalled()
 })

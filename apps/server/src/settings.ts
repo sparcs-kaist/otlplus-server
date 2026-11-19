@@ -27,7 +27,7 @@ const getCorsConfig = () => {
   }
   if (NODE_ENV === 'dev') {
     return {
-      origin: ['https://otl.dev.sparcs.org', 'http://localhost:5173'],
+      origin: ['https://otl.dev.sparcs.org', 'http://localhost:5173', 'https://sparcs-kaist.github.io'],
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
       credentials: true,
       preflightContinue: false,

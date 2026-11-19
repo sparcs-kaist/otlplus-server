@@ -10,23 +10,31 @@ jest.mock('crypto', () => ({ ...jest.requireActual('crypto'), randomInt: jest.fn
 const random = randomInt as jest.Mock
 
 function setup() {
-  const rows = new Map<number, { userprofile_id: number; code: string }>()
+  const rows = new Map<string, { userprofile_id: number; code: string; is_changed: boolean }>()
   const codes = {
-    findUnique: jest.fn(async ({ where }) =>
-      where.userprofile_id === undefined
-        ? ([...rows.values()].find((row) => row.code === where.code) ?? null)
-        : (rows.get(where.userprofile_id) ?? null),
-    ),
+    findFirst: jest.fn(async ({ where }) => [...rows.values()].find((row) =>
+      Object.entries(where).every(([key, value]) => row[key as keyof typeof row] === value)) ?? null),
+    create: jest.fn(async ({ data }) => {
+      if (rows.has(data.code)) {
+        throw new Prisma.PrismaClientKnownRequestError('Duplicate code', { code: 'P2002', clientVersion: '6.19.3' })
+      }
+      const row = { ...data, is_changed: false }
+      rows.set(data.code, row)
+      return row
+    }),
+    updateMany: jest.fn(async ({ where, data }) => {
+      for (const row of rows.values()) {
+        if (row.userprofile_id === where.userprofile_id && row.is_changed === where.is_changed) Object.assign(row, data)
+      }
+    }),
   }
-  const executeRaw = jest.fn(async (_query, userId: number, code: string) => {
-    if (rows.has(userId) || [...rows.values()].some((row) => row.code === code)) return 0
-    rows.set(userId, { userprofile_id: userId, code })
-    return 1
-  })
+  const queryRaw = jest.fn()
+  const withTransaction = jest.fn(async (work: () => unknown) => work())
   const repository = new FriendRepository({
-    tx: { session_userprofile_friend_codes: codes, $executeRaw: executeRaw },
+    tx: { session_userprofile_friend_codes: codes, $queryRaw: queryRaw },
+    withTransaction,
   } as unknown as TransactionHost<TransactionalAdapterPrisma>)
-  return { repository, codes, executeRaw, rows }
+  return { repository, codes, queryRaw, withTransaction, rows }
 }
 
 beforeEach(() => {
@@ -34,27 +42,26 @@ beforeEach(() => {
   random.mockReturnValue(0)
 })
 
-it('returns the existing permanent code without generating or writing', async () => {
-  const { repository, codes, executeRaw, rows } = setup()
-  rows.set(42, { userprofile_id: 42, code: 'K7L4MX' })
-
+it('returns only the active code without generating, writing or locking', async () => {
+  const { repository, queryRaw, withTransaction, rows } = setup()
+  rows.set('AAAAAA', { userprofile_id: 42, code: 'AAAAAA', is_changed: true })
+  rows.set('K7L4MX', { userprofile_id: 42, code: 'K7L4MX', is_changed: false })
   await expect(repository.getOrCreateCode(42)).resolves.toBe('K7L4MX')
-  expect(codes.findUnique).toHaveBeenCalledWith({ where: { userprofile_id: 42 } })
   expect(random).not.toHaveBeenCalled()
-  expect(executeRaw).not.toHaveBeenCalled()
+  expect(queryRaw).not.toHaveBeenCalled()
+  expect(withTransaction).not.toHaveBeenCalled()
 })
 
 it('creates six characters using every symbol in the agreed alphabet with crypto.randomInt', async () => {
-  const { repository, executeRaw } = setup()
+  const { repository, codes } = setup()
   let index = 0
   random.mockImplementation(() => index++)
-
   const generated: string[] = []
   for (let userId = 1; userId <= 4; userId += 1) {
     const code = await repository.getOrCreateCode(userId)
     generated.push(code)
     expect(code).toMatch(/^[ACDEFHJKLMNPQRTUVWXY3479]{6}$/)
-    expect(executeRaw).toHaveBeenCalledWith(expect.any(Array), userId, code)
+    expect(codes.create).toHaveBeenCalledWith({ data: { userprofile_id: userId, code } })
   }
   expect(generated.join('')).toBe('ACDEFHJKLMNPQRTUVWXY3479')
   expect(new Set(FRIEND_CODE_ALPHABET).size).toBe(24)
@@ -62,70 +69,72 @@ it('creates six characters using every symbol in the agreed alphabet with crypto
   expect(random.mock.calls.every((args) => args.length === 1 && args[0] === 24)).toBe(true)
 })
 
-it('retries a code collision without changing the other owner', async () => {
-  const { repository, executeRaw, rows } = setup()
-  rows.set(7, { userprofile_id: 7, code: 'AAAAAA' })
+it.each([false, true])('does not reissue another owner code, including changed codes (%s)', async (isChanged) => {
+  const { repository, codes, rows } = setup()
+  rows.set('AAAAAA', { userprofile_id: 7, code: 'AAAAAA', is_changed: isChanged })
   let index = 0
   random.mockImplementation(() => Math.floor(index++ / 6))
-
   await expect(repository.getOrCreateCode(42)).resolves.toBe('CCCCCC')
-  expect(executeRaw).toHaveBeenNthCalledWith(1, expect.any(Array), 42, 'AAAAAA')
-  expect(executeRaw).toHaveBeenNthCalledWith(2, expect.any(Array), 42, 'CCCCCC')
-  expect(rows.get(7)).toEqual({ userprofile_id: 7, code: 'AAAAAA' })
+  expect(codes.create).toHaveBeenCalledTimes(2)
+  expect(rows.get('AAAAAA')).toEqual({ userprofile_id: 7, code: 'AAAAAA', is_changed: isChanged })
 })
 
-it('returns the same winning code to concurrent requests without overwriting', async () => {
-  const { repository, executeRaw, rows } = setup()
-  let index = 0
-  random.mockImplementation(() => Math.floor(index++ / 6))
-
-  await expect(Promise.all([repository.getOrCreateCode(42), repository.getOrCreateCode(42)])).resolves.toEqual([
-    'AAAAAA',
-    'AAAAAA',
-  ])
-  expect(executeRaw).toHaveBeenCalledTimes(2)
-  expect(rows.size).toBe(1)
-  expect(rows.get(42)).toEqual({ userprofile_id: 42, code: 'AAAAAA' })
-  await expect(repository.getOrCreateCode(42)).resolves.toBe('AAAAAA')
-  expect(executeRaw).toHaveBeenCalledTimes(2)
+it('checks for a winning concurrent allocation after acquiring the owner lock', async () => {
+  const { repository, codes, queryRaw, rows } = setup()
+  queryRaw.mockImplementationOnce(async () => {
+    rows.set('K7L4MX', { userprofile_id: 42, code: 'K7L4MX', is_changed: false })
+  })
+  await expect(repository.getOrCreateCode(42)).resolves.toBe('K7L4MX')
+  expect(codes.create).not.toHaveBeenCalled()
 })
 
-it('stops after ten collisions instead of retrying forever', async () => {
-  const { repository, codes, executeRaw, rows } = setup()
-  rows.set(7, { userprofile_id: 7, code: 'AAAAAA' })
-
+it('stops after ten collisions', async () => {
+  const { repository, codes, rows } = setup()
+  rows.set('AAAAAA', { userprofile_id: 7, code: 'AAAAAA', is_changed: true })
   await expect(repository.getOrCreateCode(42)).rejects.toThrow('Could not allocate a unique friend code')
-  expect(executeRaw).toHaveBeenCalledTimes(10)
-  expect(codes.findUnique).toHaveBeenCalledTimes(11)
+  expect(codes.create).toHaveBeenCalledTimes(10)
 })
 
 it.each([
   new Error('Database unavailable'),
-  new Prisma.PrismaClientKnownRequestError('Foreign key constraint failed', { code: 'P2010', clientVersion: '6.19.3' }),
+  new Prisma.PrismaClientKnownRequestError('Foreign key constraint failed', { code: 'P2003', clientVersion: '6.19.3' }),
 ])('propagates non-unique creation errors: %s', async (error) => {
-  const { repository, codes, executeRaw } = setup()
-  executeRaw.mockRejectedValue(error)
-
+  const { repository, codes } = setup()
+  codes.create.mockRejectedValue(error)
   await expect(repository.getOrCreateCode(42)).rejects.toBe(error)
-  expect(executeRaw).toHaveBeenCalledTimes(1)
-  expect(codes.findUnique).toHaveBeenCalledTimes(1)
+  expect(codes.create).toHaveBeenCalledTimes(1)
 })
 
 it('propagates lookup errors without attempting to create a new code', async () => {
-  const { repository, codes, executeRaw } = setup()
+  const { repository, codes } = setup()
   const error = new Error('Database unavailable')
-  codes.findUnique.mockRejectedValue(error)
-
+  codes.findFirst.mockRejectedValue(error)
   await expect(repository.getOrCreateCode(42)).rejects.toBe(error)
-  expect(executeRaw).not.toHaveBeenCalled()
+  expect(codes.create).not.toHaveBeenCalled()
 })
 
-it.each([true, false])('looks up the code owner or returns null (exists: %s)', async (exists) => {
-  const { repository, codes, rows } = setup()
-  if (exists) rows.set(42, { userprofile_id: 42, code: 'K7L4MX' })
+it.each(['active', 'changed', 'missing'])('accepts only an active code (%s)', async (state) => {
+  const { repository, rows } = setup()
+  if (state !== 'missing') rows.set('K7L4MX', { userprofile_id: 42, code: 'K7L4MX', is_changed: state === 'changed' })
+  await expect(repository.getUserIdByCode('K7L4MX')).resolves.toBe(state === 'active' ? 42 : null)
+})
 
-  await expect(repository.getUserIdByCode('K7L4MX')).resolves.toBe(exists ? 42 : null)
-  expect(codes.findUnique).toHaveBeenCalledWith({ where: { code: 'K7L4MX' }, select: { userprofile_id: true } })
+it('marks the current code changed and preserves it when creating its replacement', async () => {
+  const { repository, codes, rows } = setup()
+  rows.set('AAAAAA', { userprofile_id: 42, code: 'AAAAAA', is_changed: false })
+  let index = 0
+  random.mockImplementation(() => Math.floor(index++ / 6))
+  await expect(repository.regenerateCode(42)).resolves.toBe('CCCCCC')
+  expect(codes.create).toHaveBeenCalledTimes(2)
+  expect(rows.get('AAAAAA')).toEqual({ userprofile_id: 42, code: 'AAAAAA', is_changed: true })
+  await expect(repository.getUserIdByCode('AAAAAA')).resolves.toBeNull()
+  await expect(repository.getOrCreateCode(42)).resolves.toBe('CCCCCC')
+})
+
+it('creates just one code when regeneration is the first request', async () => {
+  const { repository, rows } = setup()
+  await expect(repository.regenerateCode(42)).resolves.toBe('AAAAAA')
+  expect(rows.size).toBe(1)
 })
 
 describe('current schedule query', () => {
@@ -135,7 +144,7 @@ describe('current schedule query', () => {
 
   beforeEach(() => queryRaw.mockResolvedValue([]))
 
-  it('matches enrolled lectures or any term-scoped timetable lecture/custom block, selecting only owned relation IDs', async () => {
+  it('matches only shared timetable lectures/custom blocks, selecting only owned relation IDs', async () => {
     const terms = [{ year: 2026, semester: 3 }, { year: 2027, semester: 1 }]
     findMany.mockResolvedValue([{ id: 101 }, { id: 102 }])
     await expect(repository.getFriendIdsWithScheduleAt(42, [101, 102, 103], terms, 0, 635)).resolves.toEqual([101, 102])
@@ -155,11 +164,12 @@ describe('current schedule query', () => {
               subject_classtime: { some: { day: 0, begin: { lte: time }, end: { gt: time } } },
             }
             return [
-              { taken_lectures: { some: { lecture } } },
+              { timetable_timetable: { none: { ...term, is_shared: true } }, taken_lectures: { some: { lecture } } },
               {
                 timetable_timetable: {
                   some: {
                     ...term,
+                    is_shared: true,
                     OR: [
                       { timetable_timetable_lectures: { some: { subject_lecture: lecture } } },
                       {
@@ -189,6 +199,7 @@ describe('current schedule query', () => {
     const sql = query.sql.replace(/\s+/g, ' ').trim()
     expect(sql).toContain('friend.userprofile_id = ? AND friend.id IN (?,?,?)')
     expect(sql).toContain('timetable.user_id = friend.friend_userprofile_id')
+    expect(sql).toContain('timetable.is_shared = TRUE')
     expect(sql).toContain('(timetable.year = ? AND timetable.semester = ?) OR (timetable.year = ? AND timetable.semester = ?)')
     expect(sql).toContain('slot.day = ? AND slot.begin <= ? AND slot.end > ?')
     expect(sql).toContain('first_slot.custom_block_id = slot.custom_block_id AND first_slot.id < slot.id')
@@ -201,7 +212,7 @@ describe('current schedule query', () => {
   ])('represents minute %i as a UTC-anchored MySQL TIME with inclusive start and exclusive end', async (minute, iso) => {
     findMany.mockResolvedValue([])
     await repository.getFriendIdsWithScheduleAt(42, [101], [{ year: 2026, semester: 3 }], 6, minute)
-    const filter = findMany.mock.calls[0][0].where.friend_profile.OR[0].taken_lectures.some.lecture.subject_classtime.some
+    const filter = findMany.mock.calls[0][0].where.friend_profile.OR[1].timetable_timetable.some.OR[0].timetable_timetable_lectures.some.subject_lecture.subject_classtime.some
     expect(filter).toEqual({ day: 6, begin: { lte: new Date(iso) }, end: { gt: new Date(iso) } })
     expect(queryRaw.mock.calls[0][0].values.slice(-3)).toEqual([6, minute, minute])
   })

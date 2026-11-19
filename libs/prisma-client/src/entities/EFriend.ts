@@ -35,11 +35,12 @@ export namespace EFriend {
         select: {
           ...Summary.select.friend_profile.select,
           taken_lectures: {
-            where: { lecture: { course_id: courseId } },
+            where: { lecture: { course_id: courseId, deleted: false } },
             select: { lecture: overlapLecture },
           },
           timetable_timetable: {
-            where: { timetable_timetable_lectures: { some: { subject_lecture: { course_id: courseId } } } },
+            // Empty shared timetables also suppress enrollment for their semester.
+            where: { is_shared: true },
             select: {
               id: true,
               year: true,
