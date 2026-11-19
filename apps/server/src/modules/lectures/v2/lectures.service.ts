@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { Language } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { ILectureV2 } from '@otl/server-nest/common/interfaces/v2'
 import { session_userprofile } from '@prisma/client'
@@ -34,13 +34,17 @@ export class LecturesServiceV2 {
 
     // 1) Fetch lectures matching the filter
     const {
-      keyword, type, department, level, year, semester, day, begin, end, order, limit, offset,
+      keyword, type, department, departmentCode, level, year, semester, day, begin, end, order, limit, offset,
     } = query
+    if (department && departmentCode) {
+      throw new BadRequestException('department and departmentCode cannot be used together')
+    }
     const choose = (ko?: string | null, en?: string | null) => (language === 'en' ? (en ?? '').trim() || (ko ?? '') : (ko ?? '').trim() || (en ?? ''))
     const lectures = await this.lectureRepository.filterByRequest(
       keyword,
       type as unknown as string[] | undefined,
       department as unknown as number[] | undefined,
+      departmentCode,
       level as unknown as number[] | undefined,
       year,
       semester,
