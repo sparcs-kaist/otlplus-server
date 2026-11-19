@@ -16,8 +16,8 @@ export namespace IPrismaMiddleware {
     | 'count'
     | 'aggregate'
   export interface Middleware {
-    preExecute: (operations: operationType, args: any) => Promise<boolean>
+    preExecute: (operations: operationType, args: unknown) => Promise<boolean>
 
-    postExecute: (operations: operationType, args: any, result: any) => Promise<boolean>
+    postExecute: (operations: operationType, args: unknown, result: unknown) => Promise<boolean>
   }
 }

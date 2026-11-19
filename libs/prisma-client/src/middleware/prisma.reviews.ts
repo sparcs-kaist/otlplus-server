@@ -16,11 +16,13 @@ export class ReviewMiddleware implements IPrismaMiddleware.Middleware {
     this.prisma = prisma
   }
 
-  async preExecute(_operations: IPrismaMiddleware.operationType, _args: any): Promise<boolean> {
+  async preExecute(_operations: IPrismaMiddleware.operationType, _args: unknown): Promise<boolean> {
     return true
   }
 
-  async postExecute(operations: IPrismaMiddleware.operationType, args: any, result: any): Promise<boolean> {
+  async postExecute(operations: IPrismaMiddleware.operationType, args: unknown, rawResult: unknown): Promise<boolean> {
+    // Dispatched only for review_review by the Prisma extension.
+    const result = rawResult as review_review
     if (operations === 'create' || operations === 'update' || operations === 'upsert') {
       await this.reviewSavedMiddleware(result, operations)
       return true
@@ -225,13 +227,12 @@ export class ReviewMiddleware implements IPrismaMiddleware.Middleware {
     await Promise.all(professors.map(async (professor) => await this.professorRecalcScore(professor)))
   }
 
-  private async reviewSavedMiddleware(result: any, action: string) {
+  private async reviewSavedMiddleware(result: review_review, action: string) {
     await this.recalcRelatedScore(result)
     if (action === 'create') {
-      const course = await result.course
       await this.prisma.subject_course.update({
         where: {
-          id: course.id,
+          id: result.course_id,
         },
         data: {
           latest_written_datetime: result.written_datetime,
@@ -243,7 +244,7 @@ export class ReviewMiddleware implements IPrismaMiddleware.Middleware {
     }
   }
 
-  private async reviewDeletedMiddleware(result: any) {
+  private async reviewDeletedMiddleware(result: review_review) {
     await this.recalcRelatedScore(result)
   }
 }

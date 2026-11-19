@@ -4,6 +4,7 @@ import {
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
 import { IDevice } from '@otl/server-nest/common/interfaces/IDevice'
 import { DEVICE_IN_PORT, DeviceInPort } from '@otl/server-nest/modules/device/domain/device.in.port'
+import { session_userprofile } from '@prisma/client'
 import { StatusCodes } from 'http-status-codes'
 
 import { getCurrentMethodName } from '@otl/common'
@@ -18,7 +19,7 @@ export class DeviceController {
 
   @Post('/')
   public async registerDevice(
-    @GetUser() user: any,
+    @GetUser() user: session_userprofile,
     @Body() registerDeviceDto: IDevice.RegisterDeviceDto,
   ): Promise<IDevice.Response.DeviceResponseDto> {
     const {
@@ -36,7 +37,7 @@ export class DeviceController {
 
   @Delete('/')
   public async unregisterDevice(
-    @GetUser() user: any,
+    @GetUser() user: session_userprofile,
     @Query() unregisterDeviceDto: IDevice.UnregisterDeviceDto,
   ): Promise<IDevice.Response.DeviceResponseDto> {
     const { deviceToken } = unregisterDeviceDto
@@ -58,7 +59,7 @@ export class DeviceController {
   }
 
   @Get('/user')
-  public async getUserDevice(@GetUser() user: any): Promise<IDevice.Response.UserDeviceResponseDto[] | null> {
+  public async getUserDevice(@GetUser() user: session_userprofile): Promise<IDevice.Response.UserDeviceResponseDto[] | null> {
     const devices = await this.notificationInPort.getDeviceToken(user.id)
     if (devices == null) {
       throw new UserException(StatusCodes.NOT_FOUND, UserException.DEVICE_NOT_FOUND, getCurrentMethodName())
@@ -68,7 +69,7 @@ export class DeviceController {
 
   @Patch('/')
   public async updateDevice(
-    @GetUser() user: any,
+    @GetUser() user: session_userprofile,
     @Body() updateDeviceDto: IDevice.UpdateDeviceDto,
   ): Promise<IDevice.Response.UserDeviceResponseDto> {
     const {

@@ -31,8 +31,8 @@ export class JwtCookieCommand implements AuthCommand {
       request.user = user
       return this.setAuthenticated(prevResult)
     }
-    catch (e: any) {
-      if (e.message === 'jwt expired' && refreshToken) {
+    catch (e: unknown) {
+      if ((e instanceof Error ? e.message : String(e)) === 'jwt expired' && refreshToken) {
         return this.handleRefreshToken(refreshToken, request, response, prevResult)
       }
       return prevResult

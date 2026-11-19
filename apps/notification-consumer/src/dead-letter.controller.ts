@@ -28,8 +28,8 @@ export class DeadLetterController {
     errorBehavior: MessageHandlerErrorBehavior.ACK,
     errorHandler: ackErrorHandler,
   })
-  handleNotificationINFODLQ(msg: any, amqpMsg: ConsumeMessage) {
-    logger.error(msg, amqpMsg)
+  handleNotificationINFODLQ(msg: unknown, amqpMsg: ConsumeMessage) {
+    logger.error(JSON.stringify(msg), amqpMsg)
   }
 
   @RabbitSubscribe({
@@ -37,7 +37,7 @@ export class DeadLetterController {
     errorBehavior: MessageHandlerErrorBehavior.ACK,
     errorHandler: ackErrorHandler,
   })
-  handleNotificationADDLQ(msg: any, amqpMsg: ConsumeMessage) {
+  handleNotificationADDLQ(msg: unknown, amqpMsg: ConsumeMessage) {
     const request = plainToInstance(FCMNotificationRequest, msg)
     logger.error(JSON.stringify(request), amqpMsg)
   }
@@ -47,7 +47,7 @@ export class DeadLetterController {
     errorBehavior: MessageHandlerErrorBehavior.ACK,
     errorHandler: ackErrorHandler,
   })
-  handleNotificationNightADDLQ(msg: any, amqpMsg: ConsumeMessage) {
-    logger.error(msg, amqpMsg)
+  handleNotificationNightADDLQ(msg: unknown, amqpMsg: ConsumeMessage) {
+    logger.error(JSON.stringify(msg), amqpMsg)
   }
 }

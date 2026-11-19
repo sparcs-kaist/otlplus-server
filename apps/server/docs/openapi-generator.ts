@@ -2,13 +2,16 @@ import 'tsconfig-paths/register'
 import { targetConstructorToSchema } from 'class-validator-jsonschema'
 import fs from 'fs'
 import {
-  OpenAPIObject, OperationObject, PathItemObject, SchemaObject,
+  OpenAPIObject, OperationObject, ParameterObject, PathItemObject, ReferenceObject,
+  SchemaObject as OpenApiSchema,
 } from 'openapi3-ts/oas31'
 import path from 'path'
 import { createGenerator, SchemaGenerator } from 'ts-json-schema-generator'
 import {
-  Decorator, Project, SourceFile, SyntaxKind,
+  Decorator, Node, Project, SourceFile, SyntaxKind,
 } from 'ts-morph'
+
+type SchemaObject = OpenApiSchema & Partial<ReferenceObject>
 
 /** 간단 path normalize */
 function normalizePath(p: string) {
@@ -31,12 +34,13 @@ function isExcludedPath(filePath: string): boolean {
   })
 }
 
-function convertTypeArrayToOneOf(obj: any) {
+function convertTypeArrayToOneOf(obj: unknown) {
   if (typeof obj !== 'object' || obj === null) return
+  const record = obj as Record<string, unknown>
 
   // eslint-disable-next-line guard-for-in,no-restricted-syntax
   for (const key in obj) {
-    const value = obj[key]
+    const value = record[key]
     if (typeof value === 'object' && value !== null) {
       convertTypeArrayToOneOf(value)
     }
@@ -44,10 +48,8 @@ function convertTypeArrayToOneOf(obj: any) {
     // type: ['string', 'null'] => oneOf
     if (key === 'type' && Array.isArray(value)) {
       const oneOf = value.map((t) => ({ type: t }))
-      // eslint-disable-next-line no-param-reassign
-      delete obj.type
-      // eslint-disable-next-line no-param-reassign
-      obj.oneOf = oneOf
+      delete record.type
+      record.oneOf = oneOf
     }
   }
 }
@@ -65,7 +67,7 @@ function createFullSchemaGenerator(tsConfigPath: string, sourceFile: string): Sc
   return createGenerator(config)
 }
 
-function getNamespaceChain(node: { getFirstAncestorByKind: (arg0: SyntaxKind) => any }) {
+function getNamespaceChain(node: Node) {
   const chain: string[] = []
   let current = node.getFirstAncestorByKind(SyntaxKind.ModuleDeclaration)
   while (current) {
@@ -74,19 +76,19 @@ function getNamespaceChain(node: { getFirstAncestorByKind: (arg0: SyntaxKind) =>
   }
   return chain
 }
-function replaceRefs(obj: any) {
+function replaceRefs(obj: unknown) {
   if (typeof obj !== 'object' || obj === null) return
+  const record = obj as Record<string, unknown>
 
   // eslint-disable-next-line guard-for-in,no-restricted-syntax
   for (const key in obj) {
-    const value = obj[key]
+    const value = record[key]
     if (typeof value === 'object') {
       replaceRefs(value)
     }
     else if (key === '$ref' && typeof value === 'string') {
       if (value.startsWith('#/definitions/')) {
-        // eslint-disable-next-line no-param-reassign
-        obj[key] = value.replace('#/definitions/', '#/components/schemas/')
+        record[key] = value.replace('#/definitions/', '#/components/schemas/')
       }
     }
   }
@@ -157,8 +159,8 @@ async function main() {
 
   // const schemaInterfacesPaths = []
   // const schemaTypeAliasPaths = []
-  const classValidatorSchemas: Record<string, any> = {}
-  const interfacesSchema: Record<string, any> = {}
+  const classValidatorSchemas: Record<string, SchemaObject> = {}
+  const interfacesSchema: Record<string, SchemaObject> = {}
   const schemaSourceFiles = project
     .getSourceFiles('apps/server/src/common/interfaces/**/*.ts')
     .filter((sourceFile) => !isExcludedPath(sourceFile.getFilePath()))
@@ -179,7 +181,7 @@ async function main() {
       for (const [typeName, schema] of Object.entries(definitions)) {
         // 중복되면 덮어쓸 수도 있고, 필요하면 이름 충돌 처리를 해야 함
         // console.log(typeName, schema)
-        interfacesSchema[typeName] = schema
+        interfacesSchema[typeName] = schema as SchemaObject
       }
     }
     const classes = modules.flatMap((m) => m.getClasses())
@@ -188,22 +190,23 @@ async function main() {
       const className = classDec.getName()
       if (!className) continue
       const nsChain = getNamespaceChain(classDec)
-      let ctx: any = mod
-      for (const ns of nsChain) ctx = ctx?.[ns]
-      const ctor = ctx?.[className]
+      let ctx: unknown = mod
+      for (const ns of nsChain) ctx = typeof ctx === 'object' && ctx !== null ? (ctx as Record<string, unknown>)[ns] : undefined
+      const ctor = typeof ctx === 'object' && ctx !== null ? (ctx as Record<string, unknown>)[className] : undefined
 
-      if (!ctor) continue // 여전히 못 찾으면 skip
+      if (typeof ctor !== 'function') continue // 여전히 못 찾으면 skip
       const schemaKey = [...nsChain, className].join('.')
       // console.log(schemaKey)
-      const validationSchema = targetConstructorToSchema(ctor)
+      const validationSchema = targetConstructorToSchema(ctor) as SchemaObject
       const typeSchema = interfacesSchema[schemaKey]
       // Keep the TypeScript shape (including unions and undecorated response fields).
       // Validation metadata adds constraints but cannot describe these by itself.
       if (typeSchema?.properties) {
-        const properties = { ...typeSchema.properties }
+        const typeProperties = typeSchema.properties as Record<string, SchemaObject>
+        const properties = { ...typeProperties }
         for (const [name, constraints] of Object.entries(validationSchema.properties ?? {})) {
           const typed = properties[name] ?? {}
-          const validated = constraints as any
+          const validated = constraints as SchemaObject
           const merged = { ...typed, ...validated }
           if (typed.items) merged.items = { ...validated.items, ...typed.items }
           if (Array.isArray(typed.type) && typed.type.includes('null')) {
@@ -217,7 +220,7 @@ async function main() {
           properties,
           required: typeSchema.required?.filter((name: string) => !validationSchema.properties?.[name]
             || validationSchema.required?.includes(name)
-            || (Array.isArray(typeSchema.properties[name].type) && typeSchema.properties[name].type.includes('null'))),
+            || (Array.isArray(typeProperties[name].type) && (typeProperties[name].type as string[]).includes('null'))),
         }
       }
       else classValidatorSchemas[schemaKey] = validationSchema
@@ -237,8 +240,8 @@ async function main() {
       if (!controllerDeco) continue
       const controllerArg = controllerDeco.getCallExpression()?.getArguments()[0]
       let basePath = ''
-      if (controllerArg && controllerArg.getKind() === SyntaxKind.StringLiteral) {
-        basePath = (controllerArg as any).getLiteralValue()
+      if (controllerArg && Node.isStringLiteral(controllerArg)) {
+        basePath = controllerArg.getLiteralValue()
       }
 
       // 메서드 순회
@@ -249,8 +252,8 @@ async function main() {
         // path
         const routeArg = routeDecorator.getCallExpression()?.getArguments()[0]
         let routePath = ''
-        if (routeArg && routeArg.getKind() === SyntaxKind.StringLiteral) {
-          routePath = (routeArg as any).getLiteralValue()
+        if (routeArg && Node.isStringLiteral(routeArg)) {
+          routePath = routeArg.getLiteralValue()
         }
         let fullPath = normalizePath(`/${basePath}/${routePath}`)
         fullPath = fullPath === '' ? '/' : fullPath
@@ -260,8 +263,8 @@ async function main() {
         const isPublic = hasPublicDecorator(method.getDecorators())
 
         // 파라미터들
-        const parameters: any[] = []
-        const bodyParams: any[] = []
+        const parameters: ParameterObject[] = []
+        const bodyParams: { name: string, schemaRef: string, required: boolean }[] = []
         // console.log(method.getParameters())
         method.getParameters().forEach((param) => {
           const deco = param.getDecorators()[0]
@@ -303,7 +306,7 @@ async function main() {
             const decoArgs = callExpr ? callExpr.getArguments() : []
             const hasParseIntPipe = decoArgs.some((arg) => arg.getText().includes('ParseIntPipe'))
 
-            let inferredType: any = { type: 'string' }
+            let inferredType: SchemaObject = { type: 'string' }
             if (hasParseIntPipe) {
               inferredType = { type: 'integer' }
             }
@@ -337,7 +340,7 @@ async function main() {
             }
             parameters.push({
               name: param.getName(),
-              in: dName, // query, param
+              in: 'query', // query, param
               required: !param.isOptional(),
               schema: schemaObject,
             })
@@ -405,7 +408,7 @@ async function main() {
               const typeName = currentType.getText(method)
               // typeName = typeName.replace(/^import\(".*?"\)\./, '') // import 제거
 
-              let itemsSchema: any = {
+              let itemsSchema: SchemaObject = {
                 $ref: `#/components/schemas/${typeName}`,
               }
               // eslint-disable-next-line no-plusplus
@@ -443,7 +446,7 @@ async function main() {
           const typeName = currentType.getText(method)
           // typeName = typeName.replace(/^import\(".*?"\)\./, '') // import 제거
 
-          let itemsSchema: any = {
+          let itemsSchema: SchemaObject = {
             $ref: `#/components/schemas/${typeName}`,
           }
           // eslint-disable-next-line no-plusplus
@@ -458,7 +461,7 @@ async function main() {
         }
         else if (returnType.isObject() && !returnType.isClassOrInterface()) {
           const props = returnType.getProperties()
-          const properties: Record<string, any> = {}
+          const properties: Record<string, SchemaObject> = {}
           const required: string[] = []
 
           for (const prop of props) {
@@ -484,7 +487,7 @@ async function main() {
               if (elemType.isString() || elemType.isNumber() || elemType.isBoolean()) {
                 properties[propName] = {
                   type: 'array',
-                  items: { type: elemType.getText(method) },
+                  items: { type: elemType.isString() ? 'string' : elemType.isNumber() ? 'number' : 'boolean' },
                 }
               }
               else {

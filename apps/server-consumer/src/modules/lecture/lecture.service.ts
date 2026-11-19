@@ -35,10 +35,10 @@ export class LectureService {
       }
       return await this.addTitleFormatEn(lectures)
     }
-    catch (err: any) {
+    catch (err: unknown) {
       if (err instanceof ExecutionError || err instanceof ResourceLockedError) {
         // 일단 락을 획득하지 못하면 그저 넘어가도록 함 (다르게 획득된 락이 3번 retry를 시도하기 때문)
-        logger.warn(`Failed to acquire lock for courseId: ${courseId}. Reason: ${err.message}`)
+        logger.warn(`Failed to acquire lock for courseId: ${courseId}. Reason: ${(err instanceof Error ? err.message : String(err))}`)
         return false
       }
       throw err

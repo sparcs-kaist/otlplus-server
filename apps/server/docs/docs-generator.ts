@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import { resolve } from 'path'
 import {
-  ImportDeclaration, ModuleDeclaration, Project, SourceFile, VariableDeclarationKind,
+  ImportDeclaration, ModuleDeclaration, ParameterDeclaration, Project, SourceFile, VariableDeclarationKind,
 } from 'ts-morph'
 
 // 프로젝트 초기화
@@ -17,7 +17,7 @@ if (!fs.existsSync(outputDir)) {
 project.addSourceFilesAtPaths(resolve(__dirname, '../../../../../apps/server/src/**/*.ts'))
 const sourceFiles = project.getSourceFiles('/**/*.controller.ts')
 
-function hasParameterDecorator(parameter: any, decoratorName: string) {
+function hasParameterDecorator(parameter: ParameterDeclaration, decoratorName: string) {
   return parameter.getDecorators().some((decorator: { getName: () => string }) => decorator.getName() === decoratorName)
 }
 
