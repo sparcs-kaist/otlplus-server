@@ -61,16 +61,6 @@ export class FriendsController {
     return this.friendsService.deleteFriend(user, friendId)
   }
 
-  @Get('/:friendId/timetables')
-  @Header('Cache-Control', 'private, no-store')
-  getTimetables(
-    @GetUser() user: session_userprofile,
-    @Param('friendId', ParseIntPipe) friendId: number,
-    @Query() query: ITimetableV2.GetTimetablesReqDto,
-  ) {
-    return this.friendsService.getTimetables(user, friendId, query)
-  }
-
   @Get('/:friendId/timetables/shared')
   @Header('Cache-Control', 'private, no-store')
   getSharedTimetable(
@@ -89,27 +79,5 @@ export class FriendsController {
     @Param('friendId', ParseIntPipe) friendId: number,
   ): Promise<ITimetableV2.SharedTimetableSemestersResDto> {
     return this.friendsService.getSharedTimetableSemesters(user, friendId)
-  }
-
-  @Get('/:friendId/timetables/my-timetable')
-  @Header('Cache-Control', 'private, no-store')
-  getMyTimetable(
-    @GetUser() user: session_userprofile,
-    @Param('friendId', ParseIntPipe) friendId: number,
-    @Query() query: ITimetableV2.MyTimetableReqDto,
-    @GetLanguage() language: Language,
-  ): Promise<ITimetableV2.MyTimetableResDto> {
-    return this.friendsService.getMyTimetable(user, friendId, query, language)
-  }
-
-  @Get('/:friendId/timetables/:timetableId')
-  @Header('Cache-Control', 'private, no-store')
-  getTimetable(
-    @GetUser() user: session_userprofile,
-    @Param('friendId', ParseIntPipe) friendId: number,
-    @Param('timetableId', ParseIntPipe) timetableId: number,
-    @GetLanguage() language: Language,
-  ): Promise<ITimetableV2.TimetableDetailResDto> {
-    return this.friendsService.getTimetable(user, friendId, timetableId, language)
   }
 }

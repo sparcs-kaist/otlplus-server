@@ -4,7 +4,6 @@ import { Language } from '@otl/server-nest/common/decorators/get-language.decora
 import { IFriendV2, ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
 import {
   toJsonLectures,
-  toJsonTimetableV2,
   toJsonTimetableV2WithItems,
 } from '@otl/server-nest/common/serializer/v2/timetable.serializer'
 import { session_userprofile } from '@prisma/client'
@@ -98,20 +97,6 @@ export class FriendsService {
     return { id: friendId }
   }
 
-  async getTimetables(
-    user: session_userprofile,
-    friendId: number,
-    query: ITimetableV2.GetTimetablesReqDto,
-  ): Promise<IFriendV2.GetTimetablesResDto> {
-    const friend = await this.getFriend(user.id, friendId)
-    const timetables = await this.timetableRepository.getSharedTimetables(
-      friend.friend_userprofile_id,
-      query.year,
-      query.semester,
-    )
-    return { timetables: timetables.map(toJsonTimetableV2) }
-  }
-
   async getSharedTimetableSemesters(user: session_userprofile, friendId: number): Promise<ITimetableV2.SharedTimetableSemestersResDto> {
     const friend = await this.getFriend(user.id, friendId)
     return { semesters: await this.timetableRepository.getSharedTimetableSemesters(friend.friend_userprofile_id) }
@@ -147,45 +132,14 @@ export class FriendsService {
     }
   }
 
-  async getMyTimetable(
-    user: session_userprofile,
-    friendId: number,
-    query: ITimetableV2.MyTimetableReqDto,
-    language: Language,
-  ): Promise<ITimetableV2.MyTimetableResDto> {
-    const friend = await this.getFriend(user.id, friendId)
-    const selection = await this.timetableRepository.getSharedTimetableSelection(friend.friend_userprofile_id, query.year, query.semester)
-    if (selection) throw new NotFoundException('Enrolled timetable is not shared for this semester')
-    const lectures = await this.lectureRepository.getTakenLecturesBySemester(friend.friend_userprofile_id, query.year, query.semester)
-    const serialized = toJsonLectures(lectures, language).lectures
-    return { lectures: serialized, timetableItems: serialized.map((data) => ({ kind: TimetableItemKind.LECTURE, data })) }
-  }
-
-  async getTimetable(
-    user: session_userprofile,
-    friendId: number,
-    timetableId: number,
-    language: Language,
-  ): Promise<ITimetableV2.TimetableDetailResDto> {
-    const friend = await this.getFriend(user.id, friendId)
-    const timetable = await this.timetableRepository.getSharedTimetableWithItems(
-      timetableId,
-      friend.friend_userprofile_id,
-    )
-    if (!timetable) throw new NotFoundException('Timetable not found')
-    return toJsonTimetableV2WithItems(timetable, language)
-  }
-
   async getOverlaps(user: session_userprofile, lectureId: number): Promise<IFriendV2.GetOverlapsResDto> {
     const lecture = await this.lectureRepository.getLectureDetailById(lectureId)
     if (!lecture) throw new NotFoundException('Lecture not found')
 
-    const professorIds = new Set(lecture.subject_lecture_professors.map(({ professor_id }) => professor_id))
     const friends = await this.friendRepository.getFriendsWithCourse(user.id, lecture.course_id)
     const result: IFriendV2.GetOverlapsResDto = {
       sameLecture: [],
-      sameCourseDifferentSection: [],
-      previousSemesterSameProfessor: [],
+      sameCourseOtherSemester: [],
     }
 
     for (const friend of friends) {
@@ -212,17 +166,12 @@ export class FriendsService {
         || (a.timetable.id ?? 0) - (b.timetable.id ?? 0))
       const serialized = this.toFriend(friend)
       const sameLecture = matchingLectures.find(({ lecture: item }) => item.id === lecture.id)
-      const sameTerm = matchingLectures.find(({ lecture: item }) => item.year === lecture.year && item.semester === lecture.semester)
-      const otherTerm = matchingLectures.find(({ lecture: item }) => (item.year !== lecture.year || item.semester !== lecture.semester)
-        && item.subject_lecture_professors.some(({ professor_id }) => professorIds.has(professor_id)))
+      const otherTerm = matchingLectures.find(({ lecture: item }) => item.year !== lecture.year || item.semester !== lecture.semester)
       if (sameLecture) {
         result.sameLecture.push({ ...serialized, timetable: sameLecture.timetable })
       }
-      else if (sameTerm) {
-        result.sameCourseDifferentSection.push({ ...serialized, timetable: sameTerm.timetable })
-      }
       else if (otherTerm) {
-        result.previousSemesterSameProfessor.push({ ...serialized, timetable: otherTerm.timetable })
+        result.sameCourseOtherSemester.push({ ...serialized, timetable: otherTerm.timetable })
       }
     }
     return result

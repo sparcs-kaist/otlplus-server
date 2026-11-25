@@ -32,8 +32,8 @@ it('documents unified items, change variants and required main and nullable shar
   expect(document.paths['/api/v2/timetables/{timetableId}/items']).toHaveProperty('patch')
 })
 
-it('documents the same unified item contract for authorized friend timetables', () => {
-  const document = JSON.parse(readFileSync(path.join(__dirname, 'swagger.json'), 'utf8'))
+it.each(['docs', 'src'])('documents only shared friend timetable reads and two overlap groups in %s/swagger.json', (directory) => {
+  const document = JSON.parse(readFileSync(path.join(__dirname, '..', directory, 'swagger.json'), 'utf8'))
   const paths = document.paths
   const schemas = document.components.schemas
   const response = (path: string) => paths[path].get.responses['200'].content['application/json'].schema.$ref
@@ -44,12 +44,13 @@ it('documents the same unified item contract for authorized friend timetables', 
   }
   expect(schemas['ITimetableV2.OwnTimetableSummary'].required).toEqual(expect.arrayContaining(['isMain', 'isShared']))
   expect(schemas['ITimetableV2.TimetableSummary'].properties).not.toHaveProperty('isMain')
-  expect(response('/api/v2/friends/{friendId}/timetables/{timetableId}'))
-    .toBe('#/components/schemas/ITimetableV2.TimetableDetailResDto')
-  expect(response('/api/v2/friends/{friendId}/timetables/my-timetable'))
-    .toBe('#/components/schemas/ITimetableV2.MyTimetableResDto')
-  expect(schemas['IFriendV2.GetTimetablesResDto'].properties.timetables.items.$ref)
-    .toBe('#/components/schemas/ITimetableV2.TimetableSummary')
+  for (const suffix of ['', '/my-timetable', '/{timetableId}']) {
+    expect(paths).not.toHaveProperty(`/api/v2/friends/{friendId}/timetables${suffix}`)
+  }
+  expect(schemas).not.toHaveProperty('IFriendV2.GetTimetablesResDto')
+  expect(response('/api/v2/friends/lectures/{lectureId}/overlaps')).toBe('#/components/schemas/IFriendV2.GetOverlapsResDto')
+  expect(Object.keys(schemas['IFriendV2.GetOverlapsResDto'].properties)).toEqual(['sameLecture', 'sameCourseOtherSemester'])
+  expect(schemas['IFriendV2.GetOverlapsResDto'].required).toEqual(['sameLecture', 'sameCourseOtherSemester'])
   expect(schemas['IFriendV2.FriendListItem'].required).toContain('hasScheduleNow')
 })
 

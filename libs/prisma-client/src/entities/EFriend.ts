@@ -24,7 +24,6 @@ export namespace EFriend {
       course_id: true,
       year: true,
       semester: true,
-      subject_lecture_professors: { select: { professor_id: true } },
     },
   })
 

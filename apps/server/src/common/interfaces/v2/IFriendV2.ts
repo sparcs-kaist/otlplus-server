@@ -1,8 +1,6 @@
 import { Transform } from 'class-transformer'
 import { IsBoolean, IsString, Matches } from 'class-validator'
 
-import { ITimetableV2 } from './ITimetableV2'
-
 export namespace IFriendV2 {
   export interface Friend {
     id: number
@@ -48,10 +46,6 @@ export namespace IFriendV2 {
     id: number
   }
 
-  export interface GetTimetablesResDto {
-    timetables: ITimetableV2.TimetableSummary[]
-  }
-
   export interface OverlapFriend extends Friend {
     timetable: {
       /** null identifies the official academic timetable for this term. */
@@ -63,7 +57,6 @@ export namespace IFriendV2 {
 
   export interface GetOverlapsResDto {
     sameLecture: OverlapFriend[]
-    sameCourseDifferentSection: OverlapFriend[]
-    previousSemesterSameProfessor: OverlapFriend[]
+    sameCourseOtherSemester: OverlapFriend[]
   }
 }

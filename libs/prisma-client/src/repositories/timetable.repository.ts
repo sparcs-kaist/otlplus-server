@@ -63,15 +63,6 @@ export class TimetableRepository {
     })
   }
 
-  async getSharedTimetableSelection(userId: number, year: number, semester: number) {
-    return this.txHost.tx.timetable_timetable.findFirst({
-      where: {
-        user_id: userId, year, semester, is_shared: true,
-      },
-      select: { id: true },
-    })
-  }
-
   async setSharedTimetableSelection(userId: number, year: number, semester: number, timetableId: number | null) {
     return this.txHost.withTransaction(async () => {
       await this.lockUserTimetables(userId)
@@ -88,14 +79,6 @@ export class TimetableRepository {
         },
         data: { is_shared: true },
       })
-    })
-  }
-
-  async getSharedTimetables(userId: number, year: number, semester: number) {
-    return this.txHost.tx.timetable_timetable.findMany({
-      where: {
-        user_id: userId, year, semester, is_shared: true,
-      },
     })
   }
 
@@ -124,13 +107,6 @@ export class TimetableRepository {
         user_id: userId, year, semester, is_shared: true,
       },
       include: ETimetable.WithItems.include,
-    })
-  }
-
-  async getSharedTimetableWithItems(timetableId: number, userId: number) {
-    return this.txHost.tx.timetable_timetable.findFirst({
-      include: ETimetable.WithItems.include,
-      where: { id: timetableId, user_id: userId, is_shared: true },
     })
   }
 
