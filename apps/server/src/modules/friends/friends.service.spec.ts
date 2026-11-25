@@ -292,13 +292,15 @@ describe('FriendsService', () => {
     const lecture = {
       id: 10,
       course_id: 100,
+      title: '자료구조',
+      title_en: 'Data Structures',
       year: 2026,
       semester: 3,
       subject_lecture_professors: [{ professor_id: 5 }],
     }
     const otherSection = { ...lecture, id: 11 }
     const priorTerm = { ...lecture, id: 12, year: 2025 }
-    const otherProfessor = { ...priorTerm, id: 13, subject_lecture_professors: [{ professor_id: 6 }] }
+    const otherProfessor = { ...priorTerm, id: 13, title: '자료구조 개론', title_en: 'Introduction to Data Structures', subject_lecture_professors: [{ professor_id: 6 }] }
     const withLectures = (id: number, taken: (typeof lecture)[], saved: (typeof lecture)[][] = []) => ({
       id,
       is_favorite: false,
@@ -355,7 +357,7 @@ describe('FriendsService', () => {
   })
 
   it.each([2025, 2026])('does not expose enrollment hidden by an empty shared timetable in %i', async (year) => {
-    const lecture = { id: 10, course_id: 100, year: 2026, semester: 3 }
+    const lecture = { id: 10, course_id: 100, title: '자료구조', title_en: 'Data Structures', year: 2026, semester: 3 }
     lectures.getLectureDetailById.mockResolvedValue(lecture)
     friends.getFriendsWithCourse.mockResolvedValue([{
       id: 7,
@@ -374,6 +376,8 @@ describe('FriendsService', () => {
     const lecture = {
       id: 10,
       course_id: 100,
+      title: '자료구조',
+      title_en: 'Data Structures',
       year: 2026,
       semester: 3,
       subject_lecture_professors: [{ professor_id: 5 }],
@@ -426,6 +430,8 @@ describe('FriendsService', () => {
     const lecture = {
       id: 10,
       course_id: 100,
+      title: '자료구조',
+      title_en: 'Data Structures',
       year: 2026,
       semester: 3,
       subject_lecture_professors: [],
@@ -454,6 +460,117 @@ describe('FriendsService', () => {
         timetable: { id: 91, year: 2026, semester: 3 },
       }],
       sameCourseOtherSemester: [],
+    })
+  })
+
+  describe('special-topic overlaps', () => {
+    const lecture = {
+      id: 10,
+      course_id: 100,
+      year: 2026,
+      semester: 3,
+      title: '전산학특강<AI 프로토타이핑>',
+      title_en: 'Special Topics in Computer Science<AI Prototyping>',
+      subject_lecture_professors: [{ professor_id: 5 }],
+    }
+    const prior = { ...lecture, id: 11, year: 2025, subject_lecture_professors: [{ professor_id: 6 }] }
+    const saved = (item: typeof lecture) => ({
+      id: item.id * 100,
+      year: item.year,
+      semester: item.semester,
+      timetable_timetable_lectures: [{ subject_lecture: item }],
+    })
+    const friend = (taken: (typeof lecture)[], shared: ReturnType<typeof saved>[] = []) => ({
+      id: 7,
+      is_favorite: false,
+      friend_profile: {
+        first_name: 'Test',
+        last_name: 'Friend',
+        taken_lectures: taken.map((item) => ({ lecture: item })),
+        timetable_timetable: shared,
+      },
+    })
+
+    it.each([
+      ['same topic with another professor', {}, {}, true],
+      ['whitespace and letter case differences', {}, { title: ' 전산학 특강 < ai\t프로토타이핑 > ' }, true],
+      ['full-width title characters', {}, { title: '전산학특강＜ＡＩ 프로토타이핑＞' }, true],
+      ['different topic despite the same English title', {}, { title: '전산학특강<시스템 설계>' }, false],
+      ['English-only Special Topics', { title: '' }, { title: '  ', title_en: 'special topics in computer science<ai prototyping>' }, true],
+      ['English Special Lectures detection with a Korean title', { title: '컴퓨터과학[AI]', title_en: 'Special Lectures[AI]' }, { title: '컴퓨터과학[AI]', title_en: 'Special Lectures[AI]' }, true],
+      ['different English Special Lectures topic', { title: '', title_en: 'Special Lectures[AI]' }, { title: '', title_en: 'Special Lectures[Systems]' }, false],
+      ['English special-topic detection with repeated spaces', { title: '', title_en: 'Special  Topics [AI]' }, { title: '', title_en: 'Special Topics [Systems]' }, false],
+      ['generic Korean title without a topic', { title: '전산학특강' }, { title: '전산학특강' }, false],
+      ['generic English title without a topic', { title: '', title_en: 'Special Topics' }, { title: '', title_en: 'Special Topics' }, false],
+      ['empty angle-bracket topic', { title: '전산학특강<>' }, { title: '전산학특강<>' }, false],
+      ['blank square-bracket topic', { title: '전산학특강[ \t ]' }, { title: '전산학특강[ \t ]' }, false],
+      ['candidate without either title', {}, { title: '', title_en: '' }, false],
+      ['candidate with only a generic topic title', {}, { title: '전산학특강' }, false],
+    ] as const)('%s applies to shared selections and enrolled fallbacks', async (_label, selectedTitles, candidateTitles, matches) => {
+      const selected = { ...lecture, ...selectedTitles }
+      const candidate = { ...prior, ...candidateTitles }
+      lectures.getLectureDetailById.mockResolvedValue(selected)
+      for (const shared of [false, true]) {
+        friends.getFriendsWithCourse.mockResolvedValue([
+          shared ? friend([], [saved(candidate)]) : friend([candidate]),
+        ])
+        const result = await service.getOverlaps(user, selected.id)
+        expect(result.sameLecture).toEqual([])
+        expect(result.sameCourseOtherSemester.map(({ id, timetable }) => ({ id, timetable }))).toEqual(matches
+          ? [{ id: 7, timetable: { id: shared ? 1100 : null, year: 2025, semester: 3 } }]
+          : [])
+      }
+      expect(friends.getFriendsWithCourse).toHaveBeenCalledWith(42, 100)
+    })
+
+    it.each(['전산학특강', '전산학특강<>'])('keeps exact lecture matching for %s without topic information', async (title) => {
+      const selected = { ...lecture, title }
+      lectures.getLectureDetailById.mockResolvedValue(selected)
+      friends.getFriendsWithCourse.mockResolvedValue([friend([selected, { ...prior, title }])])
+      await expect(service.getOverlaps(user, selected.id)).resolves.toMatchObject({
+        sameLecture: [{ id: 7, timetable: { id: null, year: 2026, semester: 3 } }],
+        sameCourseOtherSemester: [],
+      })
+    })
+
+    it('selects the latest matching topic across shared timetables and fallback terms, skipping newer different topics', async () => {
+      const latestWrongTopic = { ...prior, id: 12, year: 2026, semester: 1, title: '전산학특강<시스템 설계>' }
+      const olderSameTopic = { ...prior, id: 13, year: 2024 }
+      lectures.getLectureDetailById.mockResolvedValue(lecture)
+      friends.getFriendsWithCourse.mockResolvedValue([
+        friend([olderSameTopic], [saved(latestWrongTopic), saved(prior)]),
+      ])
+      await expect(service.getOverlaps(user, lecture.id)).resolves.toMatchObject({
+        sameCourseOtherSemester: [{ id: 7, timetable: { id: 1100, year: 2025, semester: 3 } }],
+      })
+      friends.getFriendsWithCourse.mockResolvedValue([
+        friend([prior], [saved(olderSameTopic), saved(latestWrongTopic)]),
+      ])
+      await expect(service.getOverlaps(user, lecture.id)).resolves.toMatchObject({
+        sameCourseOtherSemester: [{ id: 7, timetable: { id: null, year: 2025, semester: 3 } }],
+      })
+    })
+
+    it('does not reveal a matching enrolled topic when that semester shares a different topic', async () => {
+      lectures.getLectureDetailById.mockResolvedValue(lecture)
+      friends.getFriendsWithCourse.mockResolvedValue([
+        friend([prior], [saved({ ...prior, id: 12, title: '전산학특강<시스템 설계>' })]),
+      ])
+      await expect(service.getOverlaps(user, lecture.id)).resolves.toEqual({
+        sameLecture: [], sameCourseOtherSemester: [],
+      })
+    })
+
+    it.each(['한국어 교육<특강>', '한국어 교육＜특강＞'])('keeps %s a regular course when only its subtitle mentions 특강', async (title) => {
+      lectures.getLectureDetailById.mockResolvedValue({
+        ...lecture, title, title_en: 'Korean Language Education<Special Topics>',
+      })
+      friends.getFriendsWithCourse.mockResolvedValue([
+        friend([{ ...prior, title: '한국어 교육', title_en: 'Korean Language Education' }]),
+      ])
+      await expect(service.getOverlaps(user, lecture.id)).resolves.toMatchObject({
+        sameCourseOtherSemester: [{ id: 7, timetable: { id: null, year: 2025, semester: 3 } }],
+      })
     })
   })
 
@@ -489,6 +606,10 @@ describe('FriendsService', () => {
     })
     expect(savedTimetables.select.timetable_timetable_lectures.select.subject_lecture.select)
       .not.toHaveProperty('subject_lecture_professors')
+    expect(savedTimetables.select.timetable_timetable_lectures.select.subject_lecture.select)
+      .toMatchObject({ title: true, title_en: true })
+    expect(findMany.mock.calls[0][0].select.friend_profile.select.taken_lectures.select.lecture.select)
+      .toMatchObject({ title: true, title_en: true })
   })
 
   it('preserves JSON false and rejects string booleans', async () => {

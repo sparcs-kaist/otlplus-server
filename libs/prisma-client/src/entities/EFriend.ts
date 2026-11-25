@@ -22,6 +22,8 @@ export namespace EFriend {
     select: {
       id: true,
       course_id: true,
+      title: true,
+      title_en: true,
       year: true,
       semester: true,
     },

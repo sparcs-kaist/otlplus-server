@@ -18,6 +18,12 @@ import {
   TimetableRepository,
 } from '@otl/prisma-client/repositories'
 
+function specialCourseTitle(lecture: { title: string, title_en: string }): string | null {
+  const title = (lecture.title.trim() || lecture.title_en.trim()).normalize('NFKC').replace(/\s+/g, '').toLowerCase()
+  // A generic special-course name without a topic cannot identify the same class across semesters.
+  return /<.+>|\[.+\]/.test(title) ? title : null
+}
+
 @Injectable()
 export class FriendsService {
   constructor(
@@ -136,6 +142,10 @@ export class FriendsService {
     const lecture = await this.lectureRepository.getLectureDetailById(lectureId)
     if (!lecture) throw new NotFoundException('Lecture not found')
 
+    const courseTitle = lecture.title.normalize('NFKC').split('<')[0].split('[')[0]
+    const courseTitleEn = lecture.title_en.normalize('NFKC').split('<')[0].split('[')[0]
+    const isSpecialCourse = courseTitle.includes('특강') || /Special\s+(Topics|Lectures)/i.test(courseTitleEn)
+    const specialTitle = isSpecialCourse ? specialCourseTitle(lecture) : null
     const friends = await this.friendRepository.getFriendsWithCourse(user.id, lecture.course_id)
     const result: IFriendV2.GetOverlapsResDto = {
       sameLecture: [],
@@ -166,7 +176,10 @@ export class FriendsService {
         || (a.timetable.id ?? 0) - (b.timetable.id ?? 0))
       const serialized = this.toFriend(friend)
       const sameLecture = matchingLectures.find(({ lecture: item }) => item.id === lecture.id)
-      const otherTerm = matchingLectures.find(({ lecture: item }) => item.year !== lecture.year || item.semester !== lecture.semester)
+      const otherTerm = matchingLectures.find(({ lecture: item }) => (
+        (item.year !== lecture.year || item.semester !== lecture.semester)
+        && (!isSpecialCourse || (specialTitle !== null && specialCourseTitle(item) === specialTitle))
+      ))
       if (sameLecture) {
         result.sameLecture.push({ ...serialized, timetable: sameLecture.timetable })
       }
