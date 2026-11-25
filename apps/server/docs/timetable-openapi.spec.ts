@@ -52,3 +52,32 @@ it('documents the same unified item contract for authorized friend timetables', 
     .toBe('#/components/schemas/ITimetableV2.TimetableSummary')
   expect(schemas['IFriendV2.FriendListItem'].required).toContain('hasScheduleNow')
 })
+
+it.each(['docs', 'src'])('documents method-specific items without client operations in %s/swagger.json', (directory) => {
+  const document = JSON.parse(readFileSync(path.join(__dirname, '..', directory, 'swagger.json'), 'utf8'))
+  const schemas = document.components.schemas
+  const endpoint = document.paths['/api/v2/timetables/{timetableId}/items']
+  expect(endpoint.patch.requestBody.content['application/json'].schema.$ref)
+    .toBe('#/components/schemas/ITimetableV2.UpdateItemsReqDto')
+  for (const [method, name] of [['post', 'AddItemsReqDto'], ['delete', 'RemoveItemsReqDto']]) {
+    const requestSchema = schemas[`ITimetableV2.${name}`]
+    expect(endpoint[method].requestBody.content['application/json'].schema.$ref)
+      .toBe(`#/components/schemas/ITimetableV2.${name}`)
+    expect(endpoint[method].responses['200'].content['application/json'].schema.$ref)
+      .toBe('#/components/schemas/ITimetableV2.UpdateItemsResDto')
+    expect(requestSchema.required).toEqual(['items'])
+    expect(requestSchema.additionalProperties).toBe(false)
+    expect(requestSchema.properties.items.minItems).toBe(1)
+    expect(requestSchema.properties).not.toHaveProperty('op')
+  }
+  expect(schemas['ITimetableV2.AddItemsReqDto'].properties.items.items.$ref)
+    .toBe('#/components/schemas/ITimetableV2.AddTimetableItem')
+  const additions = schemas['ITimetableV2.AddTimetableItem'].anyOf
+  expect(additions.map((item: any) => item.properties.kind.const)).toEqual(['lecture', 'custom'])
+  const removal = schemas['ITimetableV2.RemoveItemsReqDto'].properties.items.items
+  expect(removal.required).toEqual(['kind', 'id'])
+  for (const item of [...additions, removal]) {
+    expect(item.properties).not.toHaveProperty('op')
+    expect(item.additionalProperties).toBe(false)
+  }
+})

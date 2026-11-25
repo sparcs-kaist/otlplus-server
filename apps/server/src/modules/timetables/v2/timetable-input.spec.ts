@@ -4,7 +4,7 @@ import { BadRequestException, ValidationPipe } from '@nestjs/common'
 import { ICustomblock } from '@otl/server-nest/common/interfaces/ICustomblock'
 import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
 
-import { parseTimetableChanges, validateCreateTimetableInput } from './timetable-input'
+import { parseTimetableChanges, parseTimetableItems, validateCreateTimetableInput } from './timetable-input'
 
 const block = { block_name: 'Study', place: '', day: 0, begin: 600, end: 660 }
 const pipe = new ValidationPipe({ transform: true, whitelist: true })
@@ -81,6 +81,48 @@ describe('Timetable item request validation', () => {
       await expect(pipe.transform(body, { type: 'body', metatype: ITimetableV2.SetHomeTimetableReqDto }))
         .rejects.toThrow(BadRequestException)
     }
+  })
+})
+
+describe('method-specific timetable items', () => {
+  it('adds the server-selected operation and retains item order and grouped times', () => {
+    const data = { block_name: 'Study', place: '', times: [{ day: 1, begin: 600, end: 660 }] }
+    expect(parseTimetableItems({ items: [
+      { kind: 'custom', data }, { kind: 'lecture', lectureId: 1 },
+    ] }, 'add')).toEqual([
+      { op: 'add', kind: 'custom', data }, { op: 'add', kind: 'lecture', lectureId: 1 },
+    ])
+    expect(parseTimetableItems({ items: [
+      { kind: 'lecture', id: 1 }, { kind: 'custom', id: 1 },
+    ] }, 'remove')).toEqual([
+      { op: 'remove', kind: 'lecture', id: 1 }, { op: 'remove', kind: 'custom', id: 1 },
+    ])
+  })
+
+  it.each([
+    undefined, null, [], {},
+    { items: null }, { items: [] }, { items: {} }, { items: [null] },
+    { items: [{ kind: 'lecture', id: 1, lectureId: 1 }] },
+    { items: [{ kind: 'lecture', id: 1, lectureId: 1 }], extra: true },
+  ].map((body) => [body]))('rejects invalid envelopes and malformed items: %j', (body) => {
+    for (const op of ['add', 'remove'] as const) {
+      expect(() => parseTimetableItems(body, op)).toThrow(BadRequestException)
+    }
+  })
+
+  it.each(['add', 'remove'] as const)('rejects client operations and unknown fields on %s', (operation) => {
+    const item = operation === 'add' ? { kind: 'lecture', lectureId: 1 } : { kind: 'lecture', id: 1 }
+    for (const op of ['add', 'remove', 'update', null]) {
+      expect(() => parseTimetableItems({ items: [{ ...item, op }] }, operation)).toThrow(BadRequestException)
+      expect(() => parseTimetableItems({ items: [item], op }, operation)).toThrow(BadRequestException)
+    }
+    expect(() => parseTimetableItems({ items: [{ ...item, extra: true }] }, operation)).toThrow(BadRequestException)
+    expect(() => parseTimetableItems({ items: [item, item] }, operation)).toThrow(BadRequestException)
+  })
+
+  it('uses the existing custom-data validator for additions', () => {
+    expect(() => parseTimetableItems({ items: [{ kind: 'custom', data: { ...block, day: 7 } }] }, 'add'))
+      .toThrow(BadRequestException)
   })
 })
 

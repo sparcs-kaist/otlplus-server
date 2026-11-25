@@ -40,6 +40,7 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
   let courseId: number
   let departmentId: number
   const customIds = new Set<number>()
+  const publishLectureNumUpdate = jest.fn(async (_lectureId: number) => true)
 
   beforeAll(async () => {
     const url = new URL(databaseUrl!)
@@ -64,7 +65,7 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
       })],
       controllers: [TimetablesControllerV2, FriendsController],
       providers: [TimetablesServiceV2, FriendsService, FriendRepository, SemesterRepository, TimetableRepository, CustomblockRepository, LectureRepository, CourseRepository,
-        { provide: TIMETABLE_MQ, useValue: { publishLectureNumUpdate: async () => true } }],
+        { provide: TIMETABLE_MQ, useValue: { publishLectureNumUpdate } }],
     }).overrideGuard(FriendCodeRateLimitGuard).useValue({ canActivate: () => true }).compile()
     app = module.createNestApplication()
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }))
@@ -182,6 +183,91 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     await request(app.getHttpServer()).patch(url).send({ changes: [{ op: 'add', kind: 'lecture', lectureId }] }).expect(409)
     const current = (await request(app.getHttpServer()).get(`${prefix}/${id}`).expect(200)).body
     expect(current.timetableItems).toEqual(replaced.timetableItems)
+  })
+
+  it('adds and deletes mixed items without operations and preserves result order and lecture updates', async () => {
+    const id = await create()
+    const url = `${prefix}/${id}`
+    const data = { block_name: block.block_name, place: block.place, times: [blockTime, { day: 3, begin: 720, end: 780 }] }
+    publishLectureNumUpdate.mockClear()
+    const added = (await request(app.getHttpServer()).post(`${url}/items`).set('Accept-Language', 'en').send({ items: [
+      { kind: 'custom', data }, { kind: 'lecture', lectureId },
+    ] }).expect(200)).body
+    const customId = added.results[0].id
+    customIds.add(customId)
+    expect(added.results).toEqual([
+      { index: 0, kind: 'custom', id: customId }, { index: 1, kind: 'lecture', id: lectureId },
+    ])
+    expect(added.timetableItems).toEqual([
+      { kind: 'lecture', data: expect.objectContaining({ id: lectureId, name: 'HTTP lecture' }) },
+      { kind: 'custom', data: { ...block, id: customId, times: data.times } },
+    ])
+    expect((await request(app.getHttpServer()).get(url).set('Accept-Language', 'en').expect(200)).body.timetableItems).toEqual(added.timetableItems)
+    expect(publishLectureNumUpdate.mock.calls).toEqual([[lectureId]])
+
+    const removed = (await request(app.getHttpServer()).delete(`${url}/items`).send({ items: [
+      { kind: 'custom', id: customId }, { kind: 'lecture', id: lectureId },
+    ] }).expect(200)).body
+    expect(removed).toEqual({ timetableItems: [], results: added.results })
+    expect((await request(app.getHttpServer()).get(url).expect(200)).body.timetableItems).toEqual([])
+    expect(publishLectureNumUpdate.mock.calls).toEqual([[lectureId], [lectureId]])
+  })
+
+  it('rejects item creation collisions, wrong semesters and incomplete removals atomically', async () => {
+    const id = await create()
+    const url = `${prefix}/${id}`
+    publishLectureNumUpdate.mockClear()
+    await request(app.getHttpServer()).post(`${url}/items`).send({ items: [
+      { kind: 'custom', data: { ...block, day: 0, begin: 570, end: 630 } }, { kind: 'lecture', lectureId },
+    ] }).expect(409)
+    expect((await request(app.getHttpServer()).get(url).expect(200)).body.timetableItems).toEqual([])
+
+    const otherTerm = (await request(app.getHttpServer()).post(prefix).send({ ...term, semester: 1, lectureIds: [] }).expect(201)).body.id
+    await request(app.getHttpServer()).post(`${prefix}/${otherTerm}/items`).send({ items: [
+      { kind: 'custom', data: block }, { kind: 'lecture', lectureId },
+    ] }).expect(400)
+    expect((await request(app.getHttpServer()).get(`${prefix}/${otherTerm}`).expect(200)).body.timetableItems).toEqual([])
+    expect(publishLectureNumUpdate).not.toHaveBeenCalled()
+
+    await request(app.getHttpServer()).post(`${url}/items`).send({ items: [{ kind: 'lecture', lectureId }] }).expect(200)
+    const before = (await request(app.getHttpServer()).get(url).expect(200)).body
+    publishLectureNumUpdate.mockClear()
+    await request(app.getHttpServer()).delete(`${url}/items`).send({ items: [
+      { kind: 'lecture', id: lectureId }, { kind: 'custom', id: 2147483647 },
+    ] }).expect(404)
+    expect((await request(app.getHttpServer()).get(url).expect(200)).body).toEqual(before)
+    expect(publishLectureNumUpdate).not.toHaveBeenCalled()
+  })
+
+  it.each(['post', 'delete'] as const)('rejects malformed %s item bodies without changing the timetable', async (method) => {
+    const id = await create(method === 'delete' ? [lectureId] : [])
+    const url = `${prefix}/${id}`
+    const before = (await request(app.getHttpServer()).get(url).expect(200)).body
+    const item = method === 'post' ? { kind: 'lecture', lectureId } : { kind: 'lecture', id: lectureId }
+    const bodies = [
+      {}, { items: [] }, { items: {} }, { items: [null] }, { items: [[]] },
+      { items: [item], unexpected: true }, { items: [{ ...item, unexpected: true }] },
+      { items: [{ ...item, op: method === 'post' ? 'add' : 'remove' }] },
+      { items: [{ ...item, op: method === 'post' ? 'remove' : 'add' }] },
+      { items: [{ ...item, kind: 'unknown' }] }, { items: [item, item] },
+      { items: [{ kind: 'lecture', [method === 'post' ? 'lectureId' : 'id']: 0 }] },
+      { items: [{ kind: 'custom', data: { ...block, times: [] } }] },
+    ]
+    publishLectureNumUpdate.mockClear()
+    for (const body of bodies) await request(app.getHttpServer())[method](`${url}/items`).send(body).expect(400)
+    expect((await request(app.getHttpServer()).get(url).expect(200)).body).toEqual(before)
+    expect(publishLectureNumUpdate).not.toHaveBeenCalled()
+  })
+
+  it.each(['post', 'delete'] as const)('checks ownership and timetable existence for %s items', async (method) => {
+    const id = await create(method === 'delete' ? [lectureId] : [])
+    const body = { items: [method === 'post' ? { kind: 'lecture', lectureId } : { kind: 'lecture', id: lectureId }] }
+    const before = (await request(app.getHttpServer()).get(`${prefix}/${id}`).expect(200)).body
+    publishLectureNumUpdate.mockClear()
+    await request(app.getHttpServer())[method](`${prefix}/${id}/items`).set('x-test-other-user', '1').send(body).expect(403)
+    await request(app.getHttpServer())[method](`${prefix}/2147483647/items`).send(body).expect(404)
+    expect((await request(app.getHttpServer()).get(`${prefix}/${id}`).expect(200)).body).toEqual(before)
+    expect(publishLectureNumUpdate).not.toHaveBeenCalled()
   })
 
   it.each([

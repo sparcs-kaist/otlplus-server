@@ -27,7 +27,7 @@ import { CustomblockRepository, LectureRepository, TimetableRepository } from '@
 import { ECustomblock } from '@otl/prisma-client/entities/ECustomblock'
 
 import {
-  parseCustomblockData, parseTimetableChanges, validateCreateTimetableInput, validateCustomblockTimes,
+  parseCustomblockData, parseTimetableChanges, parseTimetableItems, validateCreateTimetableInput, validateCustomblockTimes,
 } from './timetable-input'
 
 @Injectable()
@@ -430,7 +430,33 @@ export class TimetablesServiceV2 {
     timetableId: number,
     language: Language,
   ): Promise<ITimetableV2.UpdateItemsResDto> {
-    const changes = parseTimetableChanges(body.changes)
+    return this.applyTimetableChanges(user, parseTimetableChanges(body.changes), timetableId, language)
+  }
+
+  async addTimetableItems(
+    user: session_userprofile,
+    body: ITimetableV2.AddItemsReqDto,
+    timetableId: number,
+    language: Language,
+  ): Promise<ITimetableV2.UpdateItemsResDto> {
+    return this.applyTimetableChanges(user, parseTimetableItems(body, 'add'), timetableId, language)
+  }
+
+  async removeTimetableItems(
+    user: session_userprofile,
+    body: ITimetableV2.RemoveItemsReqDto,
+    timetableId: number,
+    language: Language,
+  ): Promise<ITimetableV2.UpdateItemsResDto> {
+    return this.applyTimetableChanges(user, parseTimetableItems(body, 'remove'), timetableId, language)
+  }
+
+  private async applyTimetableChanges(
+    user: session_userprofile,
+    changes: ITimetableV2.TimetableChange[],
+    timetableId: number,
+    language: Language,
+  ): Promise<ITimetableV2.UpdateItemsResDto> {
     const result = await this.updateTimetableItemsInTransaction(user, changes, timetableId, language)
     await this.publishLectureUpdates(changes.flatMap((change) => match(change)
       .with({ kind: TimetableItemKind.LECTURE, op: 'add' }, ({ lectureId }) => [lectureId])

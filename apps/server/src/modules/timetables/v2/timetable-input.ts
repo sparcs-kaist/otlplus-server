@@ -119,6 +119,17 @@ export function parseTimetableChanges(input: unknown): ITimetableV2.TimetableCha
   })
 }
 
+export function parseTimetableItems(input: unknown, op: 'add' | 'remove'): ITimetableV2.TimetableChange[] {
+  const body = object(input)
+  keys(body, ['items'])
+  if (!Array.isArray(body.items) || body.items.length === 0) return fail('items must be a non-empty array')
+  return parseTimetableChanges(body.items.map((value) => {
+    const item = object(value)
+    if ('op' in item) fail('The HTTP method determines the item operation')
+    return { ...item, op }
+  }))
+}
+
 export function validateCreateTimetableInput(body: ITimetableV2.CreateReqDto): void {
   const hasLectures = body.lectureIds !== undefined
   const hasSource = body.sourceTimetableId !== undefined
