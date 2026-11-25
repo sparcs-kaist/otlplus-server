@@ -133,9 +133,9 @@ describe('FriendCodeRateLimitGuard with FriendsController', () => {
     expect(redis.eval).not.toHaveBeenCalled()
   })
 
-  it('regenerates the authenticated caller code, ignoring an injected owner or code', async () => {
+  it('regenerates the authenticated caller code via PUT, ignoring an injected owner or code', async () => {
     const response = await request(app.getHttpServer())
-      .post('/api/v2/friends/code').set('x-test-user', '42')
+      .put('/api/v2/friends/code').set('x-test-user', '42')
       .send({ userId: 999, code: 'AAAAAA' }).expect(200)
     expect(response.body).toEqual({ code: 'ACDEFH' })
     expect(response.headers['cache-control']).toBe('private, no-store')
@@ -143,11 +143,12 @@ describe('FriendCodeRateLimitGuard with FriendsController', () => {
     expect(redis.eval).not.toHaveBeenCalled()
   })
 
-  it.each(['/api/v2/friends/invites', '/api/v2/friends/invites/accept'])(
+  it.each(['/api/v2/friends/invites', '/api/v2/friends/invites/accept', '/api/v2/friends/code'])(
     'removes the old POST %s endpoint',
     async (url) => {
       await request(app.getHttpServer()).post(url).set('x-test-user', '42').send({ token: 'old-token' }).expect(404)
       expect(service.addFriend).not.toHaveBeenCalled()
+      expect(service.regenerateCode).not.toHaveBeenCalled()
       expect(redis.eval).not.toHaveBeenCalled()
     },
   )

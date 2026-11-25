@@ -727,7 +727,7 @@
           }
         }
       },
-      "post": {
+      "put": {
         "summary": "FriendsController.regenerateCode",
         "responses": {
           "200": {

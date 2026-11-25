@@ -37,6 +37,10 @@ it.each(['docs', 'src'])('documents only shared friend timetable reads and two o
   const paths = document.paths
   const schemas = document.components.schemas
   const response = (path: string) => paths[path].get.responses['200'].content['application/json'].schema.$ref
+  expect(paths['/api/v2/friends/code']).not.toHaveProperty('post')
+  expect(paths['/api/v2/friends/code'].put.responses['200'].content['application/json'].schema.$ref)
+    .toBe('#/components/schemas/IFriendV2.GetCodeResDto')
+  expect(response('/api/v2/friends/code')).toBe('#/components/schemas/IFriendV2.GetCodeResDto')
   expect(response('/api/v2/friends/{friendId}/timetables/shared'))
     .toBe('#/components/schemas/ITimetableV2.SharedTimetableResDto')
   for (const prefix of ['/api/v2/timetables', '/api/v2/friends/{friendId}/timetables']) {
