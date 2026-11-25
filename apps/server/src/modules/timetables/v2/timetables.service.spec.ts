@@ -89,6 +89,27 @@ function setup(current = timetable()) {
 }
 
 describe('TimetablesServiceV2 unified items', () => {
+  it('returns only added IDs in each request group order', async () => {
+    const { service, repo, blocks, mq } = setup(timetable([lecture(11, 6)], []))
+    repo.getLecturesByIds.mockResolvedValue([lecture(12, 4), lecture(13, 0)])
+    blocks.createCustomblock
+      .mockResolvedValueOnce({ id: 101, ...customInput })
+      .mockResolvedValueOnce({ id: 100, ...customInput })
+    await expect(service.addTimetableItems(user, {
+      lectureIds: [13, 12],
+      customBlocks: [{ ...customInput, day: 1 }, { ...customInput, day: 2 }],
+    }, 42, 'en')).resolves.toEqual({ lectureIds: [13, 12], customBlockIds: [101, 100] })
+    expect(mq.publishLectureNumUpdate.mock.calls).toEqual([[13], [12]])
+  })
+
+  it('returns only removed IDs in each request group order', async () => {
+    const { service, mq } = setup(timetable([lecture(11), lecture(12), lecture(13)], [block, { ...block, id: 12 }]))
+    await expect(service.removeTimetableItems(user, {
+      lectureIds: [13, 12], customBlockIds: [12, 11],
+    }, 42, 'en')).resolves.toEqual({ lectureIds: [13, 12], customBlockIds: [12, 11] })
+    expect(mq.publishLectureNumUpdate.mock.calls).toEqual([[13], [12]])
+  })
+
   it('dispatches every kind/operation and preserves result order in a mixed batch', async () => {
     const { service, repo, blocks, mq } = setup(timetable([lecture(11)], [block, { ...block, id: 12, day: 1 }]))
     repo.getLecturesByIds.mockResolvedValue([lecture(13, 2)])

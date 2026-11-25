@@ -438,8 +438,9 @@ export class TimetablesServiceV2 {
     body: ITimetableV2.AddItemsReqDto,
     timetableId: number,
     language: Language,
-  ): Promise<ITimetableV2.UpdateItemsResDto> {
-    return this.applyTimetableChanges(user, parseTimetableItems(body, 'add'), timetableId, language)
+  ): Promise<ITimetableV2.ItemIdsResDto> {
+    const result = await this.applyTimetableChanges(user, parseTimetableItems(body, 'add'), timetableId, language)
+    return this.toItemIds(result)
   }
 
   async removeTimetableItems(
@@ -447,8 +448,16 @@ export class TimetablesServiceV2 {
     body: ITimetableV2.RemoveItemsReqDto,
     timetableId: number,
     language: Language,
-  ): Promise<ITimetableV2.UpdateItemsResDto> {
-    return this.applyTimetableChanges(user, parseTimetableItems(body, 'remove'), timetableId, language)
+  ): Promise<ITimetableV2.ItemIdsResDto> {
+    const result = await this.applyTimetableChanges(user, parseTimetableItems(body, 'remove'), timetableId, language)
+    return this.toItemIds(result)
+  }
+
+  private toItemIds({ results }: ITimetableV2.UpdateItemsResDto): ITimetableV2.ItemIdsResDto {
+    return {
+      lectureIds: results.filter(({ kind }) => kind === TimetableItemKind.LECTURE).map(({ id }) => id),
+      customBlockIds: results.filter(({ kind }) => kind === TimetableItemKind.CUSTOM).map(({ id }) => id),
+    }
   }
 
   private async applyTimetableChanges(

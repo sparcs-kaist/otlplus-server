@@ -268,19 +268,25 @@ export namespace ITimetableV2 {
     changes!: TimetableChange[]
   }
 
-  export type AddTimetableItem =
-    | { kind: typeof TimetableItemKind.LECTURE, lectureId: number }
-    | { kind: typeof TimetableItemKind.CUSTOM, data: ICustomblock.CreateDto }
-
   // Keep the raw body for strict parsing instead of silently stripping unknown fields.
+  /** At least one lecture ID or custom block is required. */
   export interface AddItemsReqDto {
-    /** @minItems 1 */
-    items: AddTimetableItem[]
+    lectureIds?: number[]
+
+    customBlocks?: ICustomblock.CreateDto[]
   }
 
+  /** At least one lecture ID or custom block ID is required. */
   export interface RemoveItemsReqDto {
-    /** @minItems 1 */
-    items: { kind: TimetableItemKind, id: number }[]
+    lectureIds?: number[]
+
+    customBlockIds?: number[]
+  }
+
+  export class ItemIdsResDto {
+    lectureIds!: number[]
+
+    customBlockIds!: number[]
   }
 
   export class UpdateItemsResDto {

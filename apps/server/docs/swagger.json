@@ -3608,7 +3608,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ITimetableV2.UpdateItemsResDto"
+                  "$ref": "#/components/schemas/ITimetableV2.ItemIdsResDto"
                 }
               }
             }
@@ -3656,7 +3656,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ITimetableV2.UpdateItemsResDto"
+                  "$ref": "#/components/schemas/ITimetableV2.ItemIdsResDto"
                 }
               }
             }
@@ -12580,83 +12580,60 @@
       "ITimetableV2.AddItemsReqDto": {
         "type": "object",
         "properties": {
-          "items": {
+          "lectureIds": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ITimetableV2.AddTimetableItem"
-            },
-            "minItems": 1
+              "type": "number"
+            }
+          },
+          "customBlocks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ICustomblock.CreateDto"
+            }
           }
         },
-        "required": [
-          "items"
-        ],
-        "additionalProperties": false
-      },
-      "ITimetableV2.AddTimetableItem": {
-        "anyOf": [
-          {
-            "type": "object",
-            "properties": {
-              "kind": {
-                "type": "string",
-                "const": "lecture"
-              },
-              "lectureId": {
-                "type": "number"
-              }
-            },
-            "required": [
-              "kind",
-              "lectureId"
-            ],
-            "additionalProperties": false
-          },
-          {
-            "type": "object",
-            "properties": {
-              "kind": {
-                "type": "string",
-                "const": "custom"
-              },
-              "data": {
-                "$ref": "#/components/schemas/ICustomblock.CreateDto"
-              }
-            },
-            "required": [
-              "kind",
-              "data"
-            ],
-            "additionalProperties": false
-          }
-        ]
+        "additionalProperties": false,
+        "description": "At least one lecture ID or custom block is required."
       },
       "ITimetableV2.RemoveItemsReqDto": {
         "type": "object",
         "properties": {
-          "items": {
+          "lectureIds": {
             "type": "array",
             "items": {
-              "type": "object",
-              "properties": {
-                "kind": {
-                  "$ref": "#/components/schemas/TimetableItemKind"
-                },
-                "id": {
-                  "type": "number"
-                }
-              },
-              "required": [
-                "kind",
-                "id"
-              ],
-              "additionalProperties": false
-            },
-            "minItems": 1
+              "type": "number"
+            }
+          },
+          "customBlockIds": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "additionalProperties": false,
+        "description": "At least one lecture ID or custom block ID is required."
+      },
+      "ITimetableV2.ItemIdsResDto": {
+        "type": "object",
+        "properties": {
+          "lectureIds": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "customBlockIds": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
           }
         },
         "required": [
-          "items"
+          "lectureIds",
+          "customBlockIds"
         ],
         "additionalProperties": false
       }

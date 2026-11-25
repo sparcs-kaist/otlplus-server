@@ -185,31 +185,37 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     expect(current.timetableItems).toEqual(replaced.timetableItems)
   })
 
-  it('adds and deletes mixed items without operations and preserves result order and lecture updates', async () => {
+  it('returns only changed IDs in group order and preserves content and lecture updates', async () => {
     const id = await create()
     const url = `${prefix}/${id}`
     const data = { block_name: block.block_name, place: block.place, times: [blockTime, { day: 3, begin: 720, end: 780 }] }
+    const secondData = { block_name: 'Second block', place: 'Dormitory', times: [{ ...blockTime, day: 4 }] }
+    const existingData = { ...block, block_name: 'Existing block', day: 2 }
+    const existingId = (await request(app.getHttpServer()).post(`${url}/custom-blocks`).send(existingData).expect(201)).body.id
+    customIds.add(existingId)
+    const existing = { kind: 'custom', data: { ...existingData, id: existingId, times: [{ ...blockTime, day: 2 }] } }
     publishLectureNumUpdate.mockClear()
-    const added = (await request(app.getHttpServer()).post(`${url}/items`).set('Accept-Language', 'en').send({ items: [
-      { kind: 'custom', data }, { kind: 'lecture', lectureId },
-    ] }).expect(200)).body
-    const customId = added.results[0].id
-    customIds.add(customId)
-    expect(added.results).toEqual([
-      { index: 0, kind: 'custom', id: customId }, { index: 1, kind: 'lecture', id: lectureId },
-    ])
-    expect(added.timetableItems).toEqual([
+    const added = (await request(app.getHttpServer()).post(`${url}/items`).set('Accept-Language', 'en').send({
+      lectureIds: [lectureId], customBlocks: [data, secondData],
+    }).expect(200)).body
+    expect(added).toEqual({ lectureIds: [lectureId], customBlockIds: [expect.any(Number), expect.any(Number)] })
+    const [customId, secondCustomId] = added.customBlockIds
+    added.customBlockIds.forEach((customBlockId: number) => customIds.add(customBlockId))
+    const current = (await request(app.getHttpServer()).get(url).set('Accept-Language', 'en').expect(200)).body
+    expect(current.timetableItems).toHaveLength(4)
+    expect(current.timetableItems).toEqual(expect.arrayContaining([
+      existing,
       { kind: 'lecture', data: expect.objectContaining({ id: lectureId, name: 'HTTP lecture' }) },
       { kind: 'custom', data: { ...block, id: customId, times: data.times } },
-    ])
-    expect((await request(app.getHttpServer()).get(url).set('Accept-Language', 'en').expect(200)).body.timetableItems).toEqual(added.timetableItems)
+      { kind: 'custom', data: { ...secondData, ...secondData.times[0], id: secondCustomId } },
+    ]))
     expect(publishLectureNumUpdate.mock.calls).toEqual([[lectureId]])
 
-    const removed = (await request(app.getHttpServer()).delete(`${url}/items`).send({ items: [
-      { kind: 'custom', id: customId }, { kind: 'lecture', id: lectureId },
-    ] }).expect(200)).body
-    expect(removed).toEqual({ timetableItems: [], results: added.results })
-    expect((await request(app.getHttpServer()).get(url).expect(200)).body.timetableItems).toEqual([])
+    const removed = (await request(app.getHttpServer()).delete(`${url}/items`).send({
+      lectureIds: [lectureId], customBlockIds: [secondCustomId, customId],
+    }).expect(200)).body
+    expect(removed).toEqual({ lectureIds: [lectureId], customBlockIds: [secondCustomId, customId] })
+    expect((await request(app.getHttpServer()).get(url).expect(200)).body.timetableItems).toEqual([existing])
     expect(publishLectureNumUpdate.mock.calls).toEqual([[lectureId], [lectureId]])
   })
 
@@ -217,41 +223,63 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     const id = await create()
     const url = `${prefix}/${id}`
     publishLectureNumUpdate.mockClear()
-    await request(app.getHttpServer()).post(`${url}/items`).send({ items: [
-      { kind: 'custom', data: { ...block, day: 0, begin: 570, end: 630 } }, { kind: 'lecture', lectureId },
-    ] }).expect(409)
+    await request(app.getHttpServer()).post(`${url}/items`).send({
+      lectureIds: [lectureId], customBlocks: [{ ...block, day: 0, begin: 570, end: 630 }],
+    }).expect(409)
     expect((await request(app.getHttpServer()).get(url).expect(200)).body.timetableItems).toEqual([])
 
     const otherTerm = (await request(app.getHttpServer()).post(prefix).send({ ...term, semester: 1, lectureIds: [] }).expect(201)).body.id
-    await request(app.getHttpServer()).post(`${prefix}/${otherTerm}/items`).send({ items: [
-      { kind: 'custom', data: block }, { kind: 'lecture', lectureId },
-    ] }).expect(400)
+    await request(app.getHttpServer()).post(`${prefix}/${otherTerm}/items`).send({
+      lectureIds: [lectureId], customBlocks: [block],
+    }).expect(400)
     expect((await request(app.getHttpServer()).get(`${prefix}/${otherTerm}`).expect(200)).body.timetableItems).toEqual([])
     expect(publishLectureNumUpdate).not.toHaveBeenCalled()
 
-    await request(app.getHttpServer()).post(`${url}/items`).send({ items: [{ kind: 'lecture', lectureId }] }).expect(200)
+    await request(app.getHttpServer()).post(`${url}/items`).send({ lectureIds: [lectureId] }).expect(200)
     const before = (await request(app.getHttpServer()).get(url).expect(200)).body
     publishLectureNumUpdate.mockClear()
-    await request(app.getHttpServer()).delete(`${url}/items`).send({ items: [
-      { kind: 'lecture', id: lectureId }, { kind: 'custom', id: 2147483647 },
-    ] }).expect(404)
+    await request(app.getHttpServer()).delete(`${url}/items`).send({
+      lectureIds: [lectureId], customBlockIds: [2147483647],
+    }).expect(404)
     expect((await request(app.getHttpServer()).get(url).expect(200)).body).toEqual(before)
     expect(publishLectureNumUpdate).not.toHaveBeenCalled()
+  })
+
+  it('accepts either item group alone or with an empty companion group', async () => {
+    const id = await create()
+    const url = `${prefix}/${id}`
+    const customAdded = (await request(app.getHttpServer()).post(`${url}/items`).send({ customBlocks: [block] }).expect(200)).body
+    expect(customAdded).toEqual({ lectureIds: [], customBlockIds: [expect.any(Number)] })
+    const [customId] = customAdded.customBlockIds
+    customIds.add(customId)
+    const customRemoved = (await request(app.getHttpServer()).delete(`${url}/items`).send({ customBlockIds: [customId] }).expect(200)).body
+    expect(customRemoved).toEqual(customAdded)
+    const lectureAdded = (await request(app.getHttpServer()).post(`${url}/items`).send({ lectureIds: [lectureId], customBlocks: [] }).expect(200)).body
+    expect(lectureAdded).toEqual({ lectureIds: [lectureId], customBlockIds: [] })
+    const lectureRemoved = (await request(app.getHttpServer()).delete(`${url}/items`).send({ lectureIds: [lectureId], customBlockIds: [] }).expect(200)).body
+    expect(lectureRemoved).toEqual(lectureAdded)
+    expect((await request(app.getHttpServer()).get(url).expect(200)).body.timetableItems).toEqual([])
   })
 
   it.each(['post', 'delete'] as const)('rejects malformed %s item bodies without changing the timetable', async (method) => {
     const id = await create(method === 'delete' ? [lectureId] : [])
     const url = `${prefix}/${id}`
     const before = (await request(app.getHttpServer()).get(url).expect(200)).body
-    const item = method === 'post' ? { kind: 'lecture', lectureId } : { kind: 'lecture', id: lectureId }
+    const customField = method === 'post' ? 'customBlocks' : 'customBlockIds'
     const bodies = [
-      {}, { items: [] }, { items: {} }, { items: [null] }, { items: [[]] },
-      { items: [item], unexpected: true }, { items: [{ ...item, unexpected: true }] },
-      { items: [{ ...item, op: method === 'post' ? 'add' : 'remove' }] },
-      { items: [{ ...item, op: method === 'post' ? 'remove' : 'add' }] },
-      { items: [{ ...item, kind: 'unknown' }] }, { items: [item, item] },
-      { items: [{ kind: 'lecture', [method === 'post' ? 'lectureId' : 'id']: 0 }] },
-      { items: [{ kind: 'custom', data: { ...block, times: [] } }] },
+      {}, { lectureIds: [] }, { [customField]: [] }, { lectureIds: [], [customField]: [] },
+      { lectureIds: null }, { lectureIds: {} }, { lectureIds: [null] }, { lectureIds: [[]] },
+      { lectureIds: [0] }, { lectureIds: [String(lectureId)] }, { lectureIds: [lectureId, lectureId] },
+      { lectureIds: [lectureId], [customField]: null }, { lectureIds: [lectureId], [customField]: {} },
+      { lectureIds: [lectureId], unexpected: true }, { lectureIds: [lectureId], op: 'remove' },
+      { lectureIds: [lectureId], kind: 'lecture' }, { lectureIds: [lectureId], items: [] },
+      { [customField]: [null] }, { [customField]: [[]] },
+      ...(method === 'post'
+        ? [
+          { customBlocks: [{ ...block, times: [] }] }, { customBlocks: [{ ...block, unexpected: true }] },
+          { customBlocks: [{ ...block, op: 'remove' }] }, { customBlockIds: [1] },
+        ]
+        : [{ customBlockIds: [0] }, { customBlockIds: [1, 1] }, { customBlocks: [block] }]),
     ]
     publishLectureNumUpdate.mockClear()
     for (const body of bodies) await request(app.getHttpServer())[method](`${url}/items`).send(body).expect(400)
@@ -261,7 +289,7 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
 
   it.each(['post', 'delete'] as const)('checks ownership and timetable existence for %s items', async (method) => {
     const id = await create(method === 'delete' ? [lectureId] : [])
-    const body = { items: [method === 'post' ? { kind: 'lecture', lectureId } : { kind: 'lecture', id: lectureId }] }
+    const body = { lectureIds: [lectureId] }
     const before = (await request(app.getHttpServer()).get(`${prefix}/${id}`).expect(200)).body
     publishLectureNumUpdate.mockClear()
     await request(app.getHttpServer())[method](`${prefix}/${id}/items`).set('x-test-other-user', '1').send(body).expect(403)

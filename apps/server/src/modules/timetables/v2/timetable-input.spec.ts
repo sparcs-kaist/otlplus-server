@@ -85,44 +85,56 @@ describe('Timetable item request validation', () => {
 })
 
 describe('method-specific timetable items', () => {
-  it('adds the server-selected operation and retains item order and grouped times', () => {
+  it('builds changes from separate lecture and custom block groups and retains grouped times', () => {
     const data = { block_name: 'Study', place: '', times: [{ day: 1, begin: 600, end: 660 }] }
-    expect(parseTimetableItems({ items: [
-      { kind: 'custom', data }, { kind: 'lecture', lectureId: 1 },
-    ] }, 'add')).toEqual([
-      { op: 'add', kind: 'custom', data }, { op: 'add', kind: 'lecture', lectureId: 1 },
+    expect(parseTimetableItems({ lectureIds: [1], customBlocks: [data] }, 'add')).toEqual([
+      { op: 'add', kind: 'lecture', lectureId: 1 }, { op: 'add', kind: 'custom', data },
     ])
-    expect(parseTimetableItems({ items: [
-      { kind: 'lecture', id: 1 }, { kind: 'custom', id: 1 },
-    ] }, 'remove')).toEqual([
+    expect(parseTimetableItems({ lectureIds: [1], customBlockIds: [1] }, 'remove')).toEqual([
       { op: 'remove', kind: 'lecture', id: 1 }, { op: 'remove', kind: 'custom', id: 1 },
     ])
   })
 
+  it('accepts a single populated group with the other group omitted or empty', () => {
+    for (const op of ['add', 'remove'] as const) {
+      const customField = op === 'add' ? 'customBlocks' : 'customBlockIds'
+      const customItems = op === 'add' ? [block] : [1]
+      for (const body of [
+        { lectureIds: [1] }, { lectureIds: [1], [customField]: [] },
+        { [customField]: customItems }, { lectureIds: [], [customField]: customItems },
+      ]) {
+        expect(parseTimetableItems(body, op)).toHaveLength(1)
+      }
+    }
+  })
+
   it.each([
     undefined, null, [], {},
-    { items: null }, { items: [] }, { items: {} }, { items: [null] },
-    { items: [{ kind: 'lecture', id: 1, lectureId: 1 }] },
-    { items: [{ kind: 'lecture', id: 1, lectureId: 1 }], extra: true },
-  ].map((body) => [body]))('rejects invalid envelopes and malformed items: %j', (body) => {
+    { lectureIds: null }, { lectureIds: [] }, { lectureIds: {} }, { lectureIds: [null] },
+    { lectureIds: ['1'] }, { lectureIds: [0] }, { lectureIds: [1, 1] },
+    { lectureIds: [1], extra: true }, { lectureIds: [1], op: 'add' },
+    { lectureIds: [1], kind: 'lecture' }, { items: [{ kind: 'lecture', lectureId: 1 }] },
+  ].map((body) => [body]))('rejects invalid grouped requests: %j', (body) => {
     for (const op of ['add', 'remove'] as const) {
       expect(() => parseTimetableItems(body, op)).toThrow(BadRequestException)
     }
   })
 
-  it.each(['add', 'remove'] as const)('rejects client operations and unknown fields on %s', (operation) => {
-    const item = operation === 'add' ? { kind: 'lecture', lectureId: 1 } : { kind: 'lecture', id: 1 }
-    for (const op of ['add', 'remove', 'update', null]) {
-      expect(() => parseTimetableItems({ items: [{ ...item, op }] }, operation)).toThrow(BadRequestException)
-      expect(() => parseTimetableItems({ items: [item], op }, operation)).toThrow(BadRequestException)
+  it.each(['add', 'remove'] as const)('rejects invalid custom groups on %s', (operation) => {
+    const customField = operation === 'add' ? 'customBlocks' : 'customBlockIds'
+    for (const value of [null, {}, [null], [1.5], ['1']]) {
+      expect(() => parseTimetableItems({ lectureIds: [1], [customField]: value }, operation)).toThrow(BadRequestException)
     }
-    expect(() => parseTimetableItems({ items: [{ ...item, extra: true }] }, operation)).toThrow(BadRequestException)
-    expect(() => parseTimetableItems({ items: [item, item] }, operation)).toThrow(BadRequestException)
+    expect(() => parseTimetableItems({ lectureIds: [], [customField]: [] }, operation)).toThrow(BadRequestException)
+    const wrongField = operation === 'add' ? 'customBlockIds' : 'customBlocks'
+    expect(() => parseTimetableItems({ lectureIds: [1], [wrongField]: [] }, operation)).toThrow(BadRequestException)
+    expect(() => parseTimetableItems({ customBlockIds: [1, 1] }, 'remove')).toThrow(BadRequestException)
   })
 
-  it('uses the existing custom-data validator for additions', () => {
-    expect(() => parseTimetableItems({ items: [{ kind: 'custom', data: { ...block, day: 7 } }] }, 'add'))
-      .toThrow(BadRequestException)
+  it('validates custom data directly without accepting item wrappers or client operations', () => {
+    for (const data of [{ ...block, day: 7 }, { ...block, op: 'add' }, { kind: 'custom', data: block }]) {
+      expect(() => parseTimetableItems({ customBlocks: [data] }, 'add')).toThrow(BadRequestException)
+    }
   })
 })
 

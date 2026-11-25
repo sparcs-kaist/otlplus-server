@@ -121,13 +121,20 @@ export function parseTimetableChanges(input: unknown): ITimetableV2.TimetableCha
 
 export function parseTimetableItems(input: unknown, op: 'add' | 'remove'): ITimetableV2.TimetableChange[] {
   const body = object(input)
-  keys(body, ['items'])
-  if (!Array.isArray(body.items) || body.items.length === 0) return fail('items must be a non-empty array')
-  return parseTimetableChanges(body.items.map((value) => {
-    const item = object(value)
-    if ('op' in item) fail('The HTTP method determines the item operation')
-    return { ...item, op }
-  }))
+  const customField = op === 'add' ? 'customBlocks' : 'customBlockIds'
+  keys(body, ['lectureIds', customField])
+  const lectureIds = body.lectureIds === undefined ? [] : body.lectureIds
+  const customItems = body[customField] === undefined ? [] : body[customField]
+  if (!Array.isArray(lectureIds) || !Array.isArray(customItems)) return fail('Timetable item groups must be arrays')
+  if (lectureIds.length + customItems.length === 0) return fail('At least one lecture or custom block is required')
+  return parseTimetableChanges([
+    ...lectureIds.map((lectureId) => (op === 'add'
+      ? { op, kind: TimetableItemKind.LECTURE, lectureId }
+      : { op, kind: TimetableItemKind.LECTURE, id: lectureId })),
+    ...customItems.map((value) => (op === 'add'
+      ? { op, kind: TimetableItemKind.CUSTOM, data: value }
+      : { op, kind: TimetableItemKind.CUSTOM, id: value })),
+  ])
 }
 
 export function validateCreateTimetableInput(body: ITimetableV2.CreateReqDto): void {

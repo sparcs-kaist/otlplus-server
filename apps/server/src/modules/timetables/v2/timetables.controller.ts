@@ -136,7 +136,7 @@ export class TimetablesControllerV2 {
     @Param('timetableId', ParseIntPipe) timetableId: number,
     @Body() body: ITimetableV2.AddItemsReqDto,
     @GetLanguage() language: Language,
-  ): Promise<ITimetableV2.UpdateItemsResDto> {
+  ): Promise<ITimetableV2.ItemIdsResDto> {
     return this.timetablesService.addTimetableItems(user, body, timetableId, language)
   }
 
@@ -146,7 +146,7 @@ export class TimetablesControllerV2 {
     @Param('timetableId', ParseIntPipe) timetableId: number,
     @Body() body: ITimetableV2.RemoveItemsReqDto,
     @GetLanguage() language: Language,
-  ): Promise<ITimetableV2.UpdateItemsResDto> {
+  ): Promise<ITimetableV2.ItemIdsResDto> {
     return this.timetablesService.removeTimetableItems(user, body, timetableId, language)
   }
 
