@@ -185,7 +185,7 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     expect(current.timetableItems).toEqual(replaced.timetableItems)
   })
 
-  it('returns only changed IDs in group order and preserves content and lecture updates', async () => {
+  it('returns added objects and removed IDs in group order and preserves content and lecture updates', async () => {
     const id = await create()
     const url = `${prefix}/${id}`
     const data = { block_name: block.block_name, place: block.place, times: [blockTime, { day: 3, begin: 720, end: 780 }] }
@@ -198,10 +198,17 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     const added = (await request(app.getHttpServer()).post(`${url}/items`).set('Accept-Language', 'en').send({
       lectureIds: [lectureId], customBlocks: [data, secondData],
     }).expect(200)).body
-    expect(added).toEqual({ lectureIds: [lectureId], customBlockIds: [expect.any(Number), expect.any(Number)] })
-    const [customId, secondCustomId] = added.customBlockIds
-    added.customBlockIds.forEach((customBlockId: number) => customIds.add(customBlockId))
+    expect(added).toEqual({
+      lectures: [expect.objectContaining({ id: lectureId, name: 'HTTP lecture' })],
+      customBlocks: [
+        { ...block, id: expect.any(Number), times: data.times },
+        { ...secondData, ...secondData.times[0], id: expect.any(Number) },
+      ],
+    })
+    const [customId, secondCustomId] = added.customBlocks.map((customBlock: { id: number }) => customBlock.id)
+    added.customBlocks.forEach((customBlock: { id: number }) => customIds.add(customBlock.id))
     const current = (await request(app.getHttpServer()).get(url).set('Accept-Language', 'en').expect(200)).body
+    expect(added.lectures).toEqual(current.lectures)
     expect(current.timetableItems).toHaveLength(4)
     expect(current.timetableItems).toEqual(expect.arrayContaining([
       existing,
@@ -249,15 +256,16 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     const id = await create()
     const url = `${prefix}/${id}`
     const customAdded = (await request(app.getHttpServer()).post(`${url}/items`).send({ customBlocks: [block] }).expect(200)).body
-    expect(customAdded).toEqual({ lectureIds: [], customBlockIds: [expect.any(Number)] })
-    const [customId] = customAdded.customBlockIds
+    expect(customAdded).toEqual({ lectures: [], customBlocks: [{ ...block, id: expect.any(Number), times: [blockTime] }] })
+    const customId = customAdded.customBlocks[0].id
     customIds.add(customId)
     const customRemoved = (await request(app.getHttpServer()).delete(`${url}/items`).send({ customBlockIds: [customId] }).expect(200)).body
-    expect(customRemoved).toEqual(customAdded)
+    expect(customRemoved).toEqual({ lectureIds: [], customBlockIds: [customId] })
     const lectureAdded = (await request(app.getHttpServer()).post(`${url}/items`).send({ lectureIds: [lectureId], customBlocks: [] }).expect(200)).body
-    expect(lectureAdded).toEqual({ lectureIds: [lectureId], customBlockIds: [] })
+    expect(lectureAdded).toEqual({ lectures: [expect.objectContaining({ id: lectureId })], customBlocks: [] })
+    expect(lectureAdded.lectures).toEqual((await request(app.getHttpServer()).get(url).expect(200)).body.lectures)
     const lectureRemoved = (await request(app.getHttpServer()).delete(`${url}/items`).send({ lectureIds: [lectureId], customBlockIds: [] }).expect(200)).body
-    expect(lectureRemoved).toEqual(lectureAdded)
+    expect(lectureRemoved).toEqual({ lectureIds: [lectureId], customBlockIds: [] })
     expect((await request(app.getHttpServer()).get(url).expect(200)).body.timetableItems).toEqual([])
   })
 

@@ -3608,7 +3608,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ITimetableV2.ItemIdsResDto"
+                  "$ref": "#/components/schemas/ITimetableV2.AddItemsResDto"
                 }
               }
             }
@@ -12634,6 +12634,28 @@
         "required": [
           "lectureIds",
           "customBlockIds"
+        ],
+        "additionalProperties": false
+      },
+      "ITimetableV2.AddItemsResDto": {
+        "type": "object",
+        "properties": {
+          "lectures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ITimetableV2.LectureResDto"
+            }
+          },
+          "customBlocks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ICustomblock.Basic"
+            }
+          }
+        },
+        "required": [
+          "lectures",
+          "customBlocks"
         ],
         "additionalProperties": false
       }

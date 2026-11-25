@@ -283,6 +283,12 @@ export namespace ITimetableV2 {
     customBlockIds?: number[]
   }
 
+  export class AddItemsResDto {
+    lectures!: LectureResDto[]
+
+    customBlocks!: ICustomblock.Basic[]
+  }
+
   export class ItemIdsResDto {
     lectureIds!: number[]
 

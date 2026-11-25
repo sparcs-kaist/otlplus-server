@@ -89,8 +89,14 @@ function setup(current = timetable()) {
 }
 
 describe('TimetablesServiceV2 unified items', () => {
-  it('returns only added IDs in each request group order', async () => {
-    const { service, repo, blocks, mq } = setup(timetable([lecture(11, 6)], []))
+  it('returns only added objects in each request group order despite database ordering', async () => {
+    const current = timetable([lecture(11, 6)], [])
+    const { service, repo, blocks, mq } = setup(current)
+    const firstBlock = { id: 101, ...customInput, day: 1 }
+    const secondBlock = { id: 100, ...customInput, day: 2 }
+    repo.getTimeTableWithItemsById
+      .mockResolvedValueOnce(current)
+      .mockResolvedValueOnce(timetable([lecture(12, 4), lecture(11, 6), lecture(13, 0)], [secondBlock, firstBlock]))
     repo.getLecturesByIds.mockResolvedValue([lecture(12, 4), lecture(13, 0)])
     blocks.createCustomblock
       .mockResolvedValueOnce({ id: 101, ...customInput })
@@ -98,7 +104,12 @@ describe('TimetablesServiceV2 unified items', () => {
     await expect(service.addTimetableItems(user, {
       lectureIds: [13, 12],
       customBlocks: [{ ...customInput, day: 1 }, { ...customInput, day: 2 }],
-    }, 42, 'en')).resolves.toEqual({ lectureIds: [13, 12], customBlockIds: [101, 100] })
+    }, 42, 'en')).resolves.toEqual({
+      lectures: [expect.objectContaining({ id: 13, name: 'Lecture' }), expect.objectContaining({ id: 12, name: 'Lecture' })],
+      customBlocks: [firstBlock, secondBlock].map((data) => ({
+        ...data, times: [{ day: data.day, begin: data.begin, end: data.end }],
+      })),
+    })
     expect(mq.publishLectureNumUpdate.mock.calls).toEqual([[13], [12]])
   })
 

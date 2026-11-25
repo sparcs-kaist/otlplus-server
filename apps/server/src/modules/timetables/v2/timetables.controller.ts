@@ -136,7 +136,7 @@ export class TimetablesControllerV2 {
     @Param('timetableId', ParseIntPipe) timetableId: number,
     @Body() body: ITimetableV2.AddItemsReqDto,
     @GetLanguage() language: Language,
-  ): Promise<ITimetableV2.ItemIdsResDto> {
+  ): Promise<ITimetableV2.AddItemsResDto> {
     return this.timetablesService.addTimetableItems(user, body, timetableId, language)
   }
 

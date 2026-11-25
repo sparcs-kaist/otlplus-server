@@ -438,9 +438,17 @@ export class TimetablesServiceV2 {
     body: ITimetableV2.AddItemsReqDto,
     timetableId: number,
     language: Language,
-  ): Promise<ITimetableV2.ItemIdsResDto> {
+  ): Promise<ITimetableV2.AddItemsResDto> {
     const result = await this.applyTimetableChanges(user, parseTimetableItems(body, 'add'), timetableId, language)
-    return this.toItemIds(result)
+    const addedItems = result.results.map(({ kind, id }) => {
+      const item = result.timetableItems.find((entry) => entry.kind === kind && entry.data.id === id)
+      if (!item) throw new Error('Added timetable item is missing from its result')
+      return item
+    })
+    return {
+      lectures: addedItems.flatMap((item) => (item.kind === TimetableItemKind.LECTURE ? [item.data] : [])),
+      customBlocks: addedItems.flatMap((item) => (item.kind === TimetableItemKind.CUSTOM ? [item.data] : [])),
+    }
   }
 
   async removeTimetableItems(
@@ -449,11 +457,7 @@ export class TimetablesServiceV2 {
     timetableId: number,
     language: Language,
   ): Promise<ITimetableV2.ItemIdsResDto> {
-    const result = await this.applyTimetableChanges(user, parseTimetableItems(body, 'remove'), timetableId, language)
-    return this.toItemIds(result)
-  }
-
-  private toItemIds({ results }: ITimetableV2.UpdateItemsResDto): ITimetableV2.ItemIdsResDto {
+    const { results } = await this.applyTimetableChanges(user, parseTimetableItems(body, 'remove'), timetableId, language)
     return {
       lectureIds: results.filter(({ kind }) => kind === TimetableItemKind.LECTURE).map(({ id }) => id),
       customBlockIds: results.filter(({ kind }) => kind === TimetableItemKind.CUSTOM).map(({ id }) => id),

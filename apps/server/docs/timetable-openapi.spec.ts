@@ -53,7 +53,7 @@ it('documents the same unified item contract for authorized friend timetables', 
   expect(schemas['IFriendV2.FriendListItem'].required).toContain('hasScheduleNow')
 })
 
-it.each(['docs', 'src'])('documents grouped requests and changed ID responses in %s/swagger.json', (directory) => {
+it.each(['docs', 'src'])('documents grouped requests, added objects and removed IDs in %s/swagger.json', (directory) => {
   const document = JSON.parse(readFileSync(path.join(__dirname, '..', directory, 'swagger.json'), 'utf8'))
   const schemas = document.components.schemas
   const endpoint = document.paths['/api/v2/timetables/{timetableId}/items']
@@ -64,7 +64,7 @@ it.each(['docs', 'src'])('documents grouped requests and changed ID responses in
     expect(endpoint[method].requestBody.content['application/json'].schema.$ref)
       .toBe(`#/components/schemas/ITimetableV2.${name}`)
     expect(endpoint[method].responses['200'].content['application/json'].schema.$ref)
-      .toBe('#/components/schemas/ITimetableV2.ItemIdsResDto')
+      .toBe(`#/components/schemas/ITimetableV2.${method === 'post' ? 'AddItemsResDto' : 'ItemIdsResDto'}`)
     expect(requestSchema.required ?? []).toEqual([])
     expect(requestSchema.additionalProperties).toBe(false)
     expect(Object.keys(requestSchema.properties)).toEqual(method === 'post'
@@ -78,6 +78,11 @@ it.each(['docs', 'src'])('documents grouped requests and changed ID responses in
   expect(schemas['ITimetableV2.RemoveItemsReqDto'].properties.customBlockIds)
     .toEqual({ type: 'array', items: { type: 'number' } })
   expect(schemas).not.toHaveProperty('ITimetableV2.AddTimetableItem')
+  const addition = schemas['ITimetableV2.AddItemsResDto']
+  expect(Object.keys(addition.properties)).toEqual(['lectures', 'customBlocks'])
+  expect(addition.required).toEqual(['lectures', 'customBlocks'])
+  expect(addition.properties.lectures.items.$ref).toBe('#/components/schemas/ITimetableV2.LectureResDto')
+  expect(addition.properties.customBlocks.items.$ref).toBe('#/components/schemas/ICustomblock.Basic')
   const response = schemas['ITimetableV2.ItemIdsResDto']
   expect(Object.keys(response.properties)).toEqual(['lectureIds', 'customBlockIds'])
   expect(response.required).toEqual(['lectureIds', 'customBlockIds'])
