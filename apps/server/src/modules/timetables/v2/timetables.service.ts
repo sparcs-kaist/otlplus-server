@@ -628,8 +628,7 @@ export class TimetablesServiceV2 {
   async setHomeTimetable(
     user: session_userprofile,
     body: ITimetableV2.SetHomeTimetableReqDto,
-    language: Language,
-  ): Promise<ITimetableV2.HomeTimetableResDto> {
+  ): Promise<ITimetableV2.TimetableSelectionResDto> {
     const { year, semester, timetableId } = body
     await this.timetableRepository.lockUserTimetables(user.id)
     await this.timetableRepository.lockTimetable(timetableId)
@@ -638,7 +637,13 @@ export class TimetablesServiceV2 {
       throw new BadRequestException('Home timetable must be in the requested year and semester')
     }
     await this.timetableRepository.setHomeTimetable(user.id, year, semester, timetableId)
-    return this.getHomeTimetable(user, body, language)
+    return {
+      year,
+      semester,
+      timetableId,
+      source: 'saved',
+      name: timetable.name ?? '',
+    }
   }
 
   async getSharedTimetableSemesters(user: session_userprofile): Promise<ITimetableV2.SharedTimetableSemestersResDto> {
@@ -678,7 +683,7 @@ export class TimetablesServiceV2 {
     user: session_userprofile,
     body: ITimetableV2.SetSharedTimetableReqDto,
     language: Language,
-  ): Promise<ITimetableV2.SetSharedTimetableResDto> {
+  ): Promise<ITimetableV2.TimetableSelectionResDto> {
     const { year, semester, timetableId } = body
     let name = language === 'en' ? 'Enrolled timetable' : '학사 시간표'
     await this.timetableRepository.lockUserTimetables(user.id)

@@ -12,11 +12,12 @@ it.each(['docs', 'src'])('documents split timetable contents and preserves mixed
     expect(schema.properties).not.toHaveProperty('timetableItems')
   }
   const metadataFields = ['source', 'timetableId', 'name', 'year', 'semester'].sort()
-  const sharedSelection = schemas['ITimetableV2.SetSharedTimetableResDto']
-  expect(Object.keys(sharedSelection.properties).sort()).toEqual(metadataFields)
-  expect([...sharedSelection.required].sort()).toEqual(metadataFields)
-  expect(sharedSelection.properties.source.enum).toEqual(['saved', 'enrolled'])
-  expect(sharedSelection.properties.timetableId.oneOf).toEqual([{ type: 'number' }, { type: 'null' }])
+  const selectionResponse = schemas['ITimetableV2.TimetableSelectionResDto']
+  expect(Object.keys(selectionResponse.properties).sort()).toEqual(metadataFields)
+  expect([...selectionResponse.required].sort()).toEqual(metadataFields)
+  expect(selectionResponse.properties.source.enum).toEqual(['saved', 'enrolled'])
+  expect(selectionResponse.properties.timetableId.oneOf).toEqual([{ type: 'number' }, { type: 'null' }])
+  expect(schemas).not.toHaveProperty('ITimetableV2.SetSharedTimetableResDto')
   expect(schemas['ITimetableV2.UpdateItemsResDto'].properties.timetableItems.items.$ref)
     .toBe('#/components/schemas/ITimetableV2.TimetableItem')
   expect(Object.keys(schemas['ITimetableV2.UpdateItemsResDto'].properties)).toEqual(['timetableItems', 'results'])
@@ -38,6 +39,8 @@ it.each(['docs', 'src'])('documents split timetable contents and preserves mixed
   expect(selection.properties.timetableId).toEqual({ type: 'integer', minimum: 1 })
   expect(schemas['ITimetableV2.SetSharedTimetableReqDto'].properties.timetableId.anyOf).toContainEqual({ type: 'null' })
   expect(document.paths['/api/v2/timetables/home']).toHaveProperty('patch')
+  expect(document.paths['/api/v2/timetables/home'].patch.parameters ?? [])
+    .not.toContainEqual(expect.objectContaining({ in: 'header', name: 'accept-language' }))
   expect(document.paths['/api/v2/timetables/shared']).toHaveProperty('get')
   expect(document.paths['/api/v2/timetables/shared']).toHaveProperty('patch')
   expect(schemas['ITimetableV2.SharedTimetableResDto'].required).toContain('timetableId')
@@ -46,9 +49,9 @@ it.each(['docs', 'src'])('documents split timetable contents and preserves mixed
     ['/api/v2/timetables/{timetableId}', 'get', 'TimetableDetailResDto'],
     ['/api/v2/timetables/my-timetable', 'get', 'MyTimetableResDto'],
     ['/api/v2/timetables/home', 'get', 'HomeTimetableResDto'],
-    ['/api/v2/timetables/home', 'patch', 'HomeTimetableResDto'],
+    ['/api/v2/timetables/home', 'patch', 'TimetableSelectionResDto'],
     ['/api/v2/timetables/shared', 'get', 'SharedTimetableResDto'],
-    ['/api/v2/timetables/shared', 'patch', 'SetSharedTimetableResDto'],
+    ['/api/v2/timetables/shared', 'patch', 'TimetableSelectionResDto'],
     ['/api/v2/friends/{friendId}/timetables/shared', 'get', 'SharedTimetableResDto'],
     ['/api/v2/timetables/{timetableId}/items', 'patch', 'UpdateItemsResDto'],
   ]) {

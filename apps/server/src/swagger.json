@@ -3312,27 +3312,12 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ITimetableV2.HomeTimetableResDto"
+                  "$ref": "#/components/schemas/ITimetableV2.TimetableSelectionResDto"
                 }
               }
             }
           }
         },
-        "parameters": [
-          {
-            "name": "accept-language",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "en",
-                "ko"
-              ]
-            },
-            "description": "en/ko (기본: ko). 언어 헤더 파라미터"
-          }
-        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -4059,7 +4044,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ITimetableV2.SetSharedTimetableResDto"
+                  "$ref": "#/components/schemas/ITimetableV2.TimetableSelectionResDto"
                 }
               }
             }
@@ -12506,7 +12491,7 @@
         ],
         "additionalProperties": false
       },
-      "ITimetableV2.SetSharedTimetableResDto": {
+      "ITimetableV2.TimetableSelectionResDto": {
         "type": "object",
         "additionalProperties": false,
         "properties": {

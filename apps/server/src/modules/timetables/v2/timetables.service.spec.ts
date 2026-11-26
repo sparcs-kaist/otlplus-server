@@ -289,14 +289,19 @@ describe('TimetablesServiceV2 home selection', () => {
 
   it.each([{ user_id: 8 }, { semester: 1 }])('rejects selecting an inaccessible timetable: %o', async (override) => {
     const { service, repo } = setup({ ...timetable(), ...override })
-    await expect(service.setHomeTimetable(user, { ...term, timetableId: 42 }, 'en')).rejects.toThrow()
+    await expect(service.setHomeTimetable(user, { ...term, timetableId: 42 })).rejects.toThrow()
     expect(repo.setHomeTimetable).not.toHaveBeenCalled()
   })
 
-  it('changes only the requested user/semester selection', async () => {
-    const { service, repo } = setup()
-    await service.setHomeTimetable(user, { ...term, timetableId: 42 }, 'en')
+  it('changes only the requested user/semester selection and returns metadata without reading contents', async () => {
+    const { service, repo, lectures } = setup()
+    await expect(service.setHomeTimetable(user, { ...term, timetableId: 42 })).resolves.toEqual({
+      ...term, timetableId: 42, source: 'saved', name: 'Saved',
+    })
     expect(repo.setHomeTimetable).toHaveBeenCalledWith(user.id, term.year, term.semester, 42)
+    expect(repo.getHomeTimetable).not.toHaveBeenCalled()
+    expect(repo.getTimeTableWithItemsById).not.toHaveBeenCalled()
+    expect(lectures.getTakenLecturesBySemester).not.toHaveBeenCalled()
   })
 })
 

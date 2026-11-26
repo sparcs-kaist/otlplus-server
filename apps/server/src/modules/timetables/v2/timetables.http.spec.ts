@@ -367,7 +367,8 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     expect((await selection())?.id).toBe(first)
     expect((await getHome()).body).toEqual({ ...homeTerm, source: 'saved', timetableId: first, name: expect.any(String), lectures: [], customBlocks: [] })
     const selected = (await request(app.getHttpServer()).patch(`${prefix}/home`).send({ ...homeTerm, timetableId: second }).expect(200)).body
-    expect(selected).toEqual({ ...homeTerm, source: 'saved', timetableId: second, name: expect.any(String), lectures: [], customBlocks: [] })
+    expect(selected).toEqual({ ...homeTerm, source: 'saved', timetableId: second, name: expect.any(String) })
+    expect((await getHome()).body).toEqual({ ...selected, lectures: [], customBlocks: [] })
     expect((await selection())?.id).toBe(second)
     await request(app.getHttpServer()).patch(`${prefix}/home`).send({ ...homeTerm, timetableId: null }).expect(400)
     await request(app.getHttpServer()).patch(`${prefix}/home`).send(homeTerm).expect(400)
@@ -516,7 +517,9 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     const updated = await getBlock()
     expect(updated).toEqual({ ...block, id: customId, block_name: 'Grouped', ...replacement[0], times: replacement })
     const home = (await request(app.getHttpServer()).patch(`${prefix}/home`).send({ ...term, timetableId: id }).expect(200)).body
-    expect(home).toEqual({ ...term, timetableId: id, source: 'saved', name: expect.any(String), lectures: [], customBlocks: [updated] })
+    expect(home).toEqual({ ...term, timetableId: id, source: 'saved', name: expect.any(String) })
+    const homeContent = (await request(app.getHttpServer()).get(`${prefix}/home`).query(term).expect(200)).body
+    expect(homeContent).toEqual({ ...home, lectures: [], customBlocks: [updated] })
 
     const cloneId = (await request(app.getHttpServer()).post(prefix).send({ ...term, sourceTimetableId: id }).expect(201)).body.id
     const copy = (await request(app.getHttpServer()).get(`${prefix}/${cloneId}/custom-blocks`).expect(200)).body.custom_blocks[0]

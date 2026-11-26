@@ -73,9 +73,8 @@ export class TimetablesControllerV2 {
   async setHomeTimetable(
     @GetUser() user: session_userprofile,
     @Body() body: ITimetableV2.SetHomeTimetableReqDto,
-    @GetLanguage() language: Language,
-  ): Promise<ITimetableV2.HomeTimetableResDto> {
-    return await this.timetablesService.setHomeTimetable(user, body, language)
+  ): Promise<ITimetableV2.TimetableSelectionResDto> {
+    return await this.timetablesService.setHomeTimetable(user, body)
   }
 
   @Get('/shared')
@@ -97,7 +96,7 @@ export class TimetablesControllerV2 {
     @GetUser() user: session_userprofile,
     @GetLanguage() language: Language,
     @Body() body: ITimetableV2.SetSharedTimetableReqDto,
-  ): Promise<ITimetableV2.SetSharedTimetableResDto> {
+  ): Promise<ITimetableV2.TimetableSelectionResDto> {
     return this.timetablesService.setSharedTimetable(user, body, language)
   }
 
