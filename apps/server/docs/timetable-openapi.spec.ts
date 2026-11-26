@@ -1,13 +1,25 @@
 import { readFileSync } from 'fs'
 import path from 'path'
 
-it('documents unified items, change variants and required main and nullable shared selections', () => {
-  const document = JSON.parse(readFileSync(path.join(__dirname, 'swagger.json'), 'utf8'))
+it.each(['docs', 'src'])('documents split timetable contents and preserves mixed PATCH items in %s/swagger.json', (directory) => {
+  const document = JSON.parse(readFileSync(path.join(__dirname, '..', directory, 'swagger.json'), 'utf8'))
   const schemas = document.components.schemas
-  for (const name of ['TimetableDetailResDto', 'HomeTimetableResDto', 'SharedTimetableResDto', 'UpdateItemsResDto']) {
-    expect(schemas[`ITimetableV2.${name}`].properties.timetableItems.items.$ref)
-      .toBe('#/components/schemas/ITimetableV2.TimetableItem')
+  for (const name of ['TimetableDetailResDto', 'MyTimetableResDto', 'HomeTimetableResDto', 'SharedTimetableResDto']) {
+    const schema = schemas[`ITimetableV2.${name}`]
+    expect(schema.properties.lectures.items.$ref).toBe('#/components/schemas/ITimetableV2.LectureResDto')
+    expect(schema.properties.customBlocks.items.$ref).toBe('#/components/schemas/ICustomblock.Basic')
+    expect(schema.required).toEqual(expect.arrayContaining(['lectures', 'customBlocks']))
+    expect(schema.properties).not.toHaveProperty('timetableItems')
   }
+  const metadataFields = ['source', 'timetableId', 'name', 'year', 'semester'].sort()
+  const sharedSelection = schemas['ITimetableV2.SetSharedTimetableResDto']
+  expect(Object.keys(sharedSelection.properties).sort()).toEqual(metadataFields)
+  expect([...sharedSelection.required].sort()).toEqual(metadataFields)
+  expect(sharedSelection.properties.source.enum).toEqual(['saved', 'enrolled'])
+  expect(sharedSelection.properties.timetableId.oneOf).toEqual([{ type: 'number' }, { type: 'null' }])
+  expect(schemas['ITimetableV2.UpdateItemsResDto'].properties.timetableItems.items.$ref)
+    .toBe('#/components/schemas/ITimetableV2.TimetableItem')
+  expect(Object.keys(schemas['ITimetableV2.UpdateItemsResDto'].properties)).toEqual(['timetableItems', 'results'])
   expect(schemas['ITimetableV2.UpdateItemsReqDto'].properties.changes.items.$ref)
     .toBe('#/components/schemas/ITimetableV2.TimetableChange')
   expect(schemas['ITimetableV2.TimetableItem'].anyOf).toHaveLength(2)
@@ -30,6 +42,19 @@ it('documents unified items, change variants and required main and nullable shar
   expect(document.paths['/api/v2/timetables/shared']).toHaveProperty('patch')
   expect(schemas['ITimetableV2.SharedTimetableResDto'].required).toContain('timetableId')
   expect(document.paths['/api/v2/timetables/{timetableId}/items']).toHaveProperty('patch')
+  for (const [endpoint, method, dto] of [
+    ['/api/v2/timetables/{timetableId}', 'get', 'TimetableDetailResDto'],
+    ['/api/v2/timetables/my-timetable', 'get', 'MyTimetableResDto'],
+    ['/api/v2/timetables/home', 'get', 'HomeTimetableResDto'],
+    ['/api/v2/timetables/home', 'patch', 'HomeTimetableResDto'],
+    ['/api/v2/timetables/shared', 'get', 'SharedTimetableResDto'],
+    ['/api/v2/timetables/shared', 'patch', 'SetSharedTimetableResDto'],
+    ['/api/v2/friends/{friendId}/timetables/shared', 'get', 'SharedTimetableResDto'],
+    ['/api/v2/timetables/{timetableId}/items', 'patch', 'UpdateItemsResDto'],
+  ]) {
+    expect(document.paths[endpoint][method].responses['200'].content['application/json'].schema.$ref)
+      .toBe(`#/components/schemas/ITimetableV2.${dto}`)
+  }
 })
 
 it.each(['docs', 'src'])('documents only shared friend timetable reads and two overlap groups in %s/swagger.json', (directory) => {

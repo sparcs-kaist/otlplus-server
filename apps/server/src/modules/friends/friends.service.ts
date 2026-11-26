@@ -4,11 +4,9 @@ import { Language } from '@otl/server-nest/common/decorators/get-language.decora
 import { IFriendV2, ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
 import {
   toJsonLectures,
-  toJsonTimetableV2WithItems,
+  toJsonTimetableV2Detail,
 } from '@otl/server-nest/common/serializer/v2/timetable.serializer'
 import { session_userprofile } from '@prisma/client'
-
-import { TimetableItemKind } from '@otl/common/enum/timetable'
 
 import { EFriend } from '@otl/prisma-client/entities'
 import {
@@ -119,7 +117,7 @@ export class FriendsService {
     const timetable = await this.timetableRepository.getSharedTimetableForSemester(friend.friend_userprofile_id, query.year, query.semester)
     if (timetable) {
       return {
-        ...toJsonTimetableV2WithItems(timetable, language),
+        ...toJsonTimetableV2Detail(timetable, language),
         ...query,
         source: 'saved',
         timetableId: timetable.id,
@@ -130,7 +128,7 @@ export class FriendsService {
     const serialized = toJsonLectures(lectures, language).lectures
     return {
       lectures: serialized,
-      timetableItems: serialized.map((data) => ({ kind: TimetableItemKind.LECTURE, data })),
+      customBlocks: [],
       ...query,
       source: 'enrolled',
       timetableId: null,

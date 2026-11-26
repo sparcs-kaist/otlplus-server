@@ -14,7 +14,7 @@ import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
 import {
   toJsonLectures,
   toJsonTimetableV2,
-  toJsonTimetableV2WithItems,
+  toJsonTimetableV2Detail,
 } from '@otl/server-nest/common/serializer/v2/timetable.serializer'
 import { TIMETABLE_MQ, TimetableMQ } from '@otl/server-nest/modules/timetables/domain/out/TimetableMQ'
 import { Prisma, session_userprofile } from '@prisma/client'
@@ -326,7 +326,7 @@ export class TimetablesServiceV2 {
         throw new UnauthorizedException('Current user does not match owner of requested timetable')
       }
 
-      return toJsonTimetableV2WithItems(timetable, language)
+      return toJsonTimetableV2Detail(timetable, language)
     }
     catch (error) {
       // catch prisma.timetable_timetable.findUniqueOrThrow() + not found, throw 400
@@ -578,7 +578,14 @@ export class TimetablesServiceV2 {
       results.push({ index, kind: change.kind, id: itemId })
     }
     const updated = await this.timetableRepository.getTimeTableWithItemsById(timetableId)
-    return { timetableItems: toJsonTimetableV2WithItems(updated, language).timetableItems, results }
+    const { lectures: serializedLectures, customBlocks } = toJsonTimetableV2Detail(updated, language)
+    return {
+      timetableItems: [
+        ...serializedLectures.map((data) => ({ kind: TimetableItemKind.LECTURE, data })),
+        ...customBlocks.map((data) => ({ kind: TimetableItemKind.CUSTOM, data })),
+      ],
+      results,
+    }
   }
 
   @Transactional()
@@ -594,7 +601,7 @@ export class TimetablesServiceV2 {
         const timetable = await this.timetableRepository.getTimeTableWithItemsById(selection.id)
         if (timetable.user_id === user.id && timetable.year === year && timetable.semester === semester) {
           return {
-            ...toJsonTimetableV2WithItems(timetable, language),
+            ...toJsonTimetableV2Detail(timetable, language),
             source: 'saved',
             timetableId: timetable.id,
             name: timetable.name ?? '',
@@ -648,7 +655,7 @@ export class TimetablesServiceV2 {
     const timetable = await this.timetableRepository.getSharedTimetableForSemester(user.id, year, semester)
     if (timetable) {
       return {
-        ...toJsonTimetableV2WithItems(timetable, language),
+        ...toJsonTimetableV2Detail(timetable, language),
         year,
         semester,
         timetableId: timetable.id,
@@ -671,8 +678,9 @@ export class TimetablesServiceV2 {
     user: session_userprofile,
     body: ITimetableV2.SetSharedTimetableReqDto,
     language: Language,
-  ): Promise<ITimetableV2.SharedTimetableResDto> {
+  ): Promise<ITimetableV2.SetSharedTimetableResDto> {
     const { year, semester, timetableId } = body
+    let name = language === 'en' ? 'Enrolled timetable' : '학사 시간표'
     await this.timetableRepository.lockUserTimetables(user.id)
     if (timetableId !== null) {
       await this.timetableRepository.lockTimetable(timetableId)
@@ -680,9 +688,16 @@ export class TimetablesServiceV2 {
       if (timetable.year !== year || timetable.semester !== semester) {
         throw new BadRequestException('Shared timetable must be in the requested year and semester')
       }
+      name = timetable.name ?? ''
     }
     await this.timetableRepository.setSharedTimetableSelection(user.id, year, semester, timetableId)
-    return this.getSharedTimetable(user, body, language)
+    return {
+      year,
+      semester,
+      timetableId,
+      source: timetableId === null ? 'enrolled' : 'saved',
+      name,
+    }
   }
 
   private async publishLectureUpdates(lectureIds: number[]) {
@@ -792,6 +807,6 @@ export class TimetablesServiceV2 {
     }
 
     const serialized = toJsonLectures(lectures, language).lectures
-    return { lectures: serialized, timetableItems: serialized.map((data) => ({ kind: TimetableItemKind.LECTURE, data })) }
+    return { lectures: serialized, customBlocks: [] }
   }
 }

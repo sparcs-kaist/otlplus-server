@@ -253,7 +253,7 @@ export namespace ITimetableV2 {
     | { kind: typeof TimetableItemKind.CUSTOM, data: ICustomblock.Basic }
 
   export class TimetableDetailResDto extends GetResDto {
-    timetableItems!: TimetableItem[]
+    customBlocks!: ICustomblock.Basic[]
   }
 
   export type TimetableChange =
@@ -398,6 +398,8 @@ export namespace ITimetableV2 {
   }
 
   export class SharedTimetableResDto extends HomeTimetableResDto {}
+
+  export interface SetSharedTimetableResDto extends Omit<SharedTimetableResDto, 'lectures' | 'customBlocks'> {}
 
   export interface SharedTimetableSemestersResDto {
     semesters: { year: number, semester: number }[]

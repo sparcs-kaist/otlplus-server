@@ -271,7 +271,9 @@ describe('TimetablesServiceV2 home selection', () => {
     repo.getHomeTimetable.mockResolvedValue(null)
     const result = await service.getHomeTimetable(user, term, 'en')
     expect(result).toMatchObject({ source: 'enrolled', timetableId: null, ...term })
-    expect(result.timetableItems).toEqual([{ kind: 'lecture', data: expect.objectContaining({ id: 9 }) }])
+    expect(result.lectures).toEqual([expect.objectContaining({ id: 9 })])
+    expect(result.customBlocks).toEqual([])
+    expect(result).not.toHaveProperty('timetableItems')
     expect(lectures.getTakenLecturesBySemester).toHaveBeenCalledWith(user.id, term.year, term.semester)
   })
 
@@ -280,7 +282,8 @@ describe('TimetablesServiceV2 home selection', () => {
     repo.getHomeTimetable.mockResolvedValue({ id: 42 })
     const result = await service.getHomeTimetable(user, term, 'en')
     expect(result).toMatchObject({ source: 'saved', timetableId: 42, name: 'Saved', ...term, lectures: [] })
-    expect(result.timetableItems).toEqual([{ kind: 'custom', data: { ...block, times: [{ day: 0, begin: 540, end: 600 }] } }])
+    expect(result.customBlocks).toEqual([{ ...block, times: [{ day: 0, begin: 540, end: 600 }] }])
+    expect(result).not.toHaveProperty('timetableItems')
     expect(lectures.getTakenLecturesBySemester).not.toHaveBeenCalled()
   })
 
@@ -346,24 +349,31 @@ describe('multi-time custom blocks', () => {
     await service.createTimetable(user, { ...term, sourceTimetableId: 42 }, 'en')
     expect(blocks.createCustomblock).toHaveBeenCalledWith({ ...customInput, times })
     repo.getHomeTimetable.mockResolvedValue({ id: 42 })
-    expect((await service.getHomeTimetable(user, term, 'en')).timetableItems).toEqual([{ kind: 'custom', data: grouped }])
+    expect((await service.getHomeTimetable(user, term, 'en')).customBlocks).toEqual([grouped])
   })
 })
 
 
 describe('friend sharing selection', () => {
   it('defaults to enrollment and switches shared source independently of home selection', async () => {
-    const { service, repo } = setup()
+    const { service, repo, lectures } = setup()
     await expect(service.getSharedTimetable(user, term, 'en')).resolves.toMatchObject({
-      ...term, timetableId: null, source: 'enrolled', lectures: [{ id: 9 }],
+      ...term, timetableId: null, source: 'enrolled', lectures: [{ id: 9 }], customBlocks: [],
     })
-    repo.getSharedTimetableForSemester.mockResolvedValue(timetable())
-    await expect(service.setSharedTimetable(user, { ...term, timetableId: 42 }, 'en')).resolves.toMatchObject({ ...term, timetableId: 42, source: 'saved' })
+    repo.getSharedTimetableForSemester.mockClear()
+    lectures.getTakenLecturesBySemester.mockClear()
+    await expect(service.setSharedTimetable(user, { ...term, timetableId: 42 }, 'en')).resolves.toEqual({
+      ...term, timetableId: 42, source: 'saved', name: 'Saved',
+    })
     expect(repo.setSharedTimetableSelection).toHaveBeenCalledWith(user.id, 2026, 3, 42)
-    repo.getSharedTimetableForSemester.mockResolvedValue(null)
-    await expect(service.setSharedTimetable(user, { ...term, timetableId: null }, 'en')).resolves.toMatchObject({ source: 'enrolled' })
+    await expect(service.setSharedTimetable(user, { ...term, timetableId: null }, 'en')).resolves.toEqual({
+      ...term, timetableId: null, source: 'enrolled', name: 'Enrolled timetable',
+    })
     expect(repo.setSharedTimetableSelection).toHaveBeenLastCalledWith(user.id, 2026, 3, null)
     expect(repo.setHomeTimetable).not.toHaveBeenCalled()
+    expect(repo.getSharedTimetableForSemester).not.toHaveBeenCalled()
+    expect(repo.getTimeTableWithItemsById).not.toHaveBeenCalled()
+    expect(lectures.getTakenLecturesBySemester).not.toHaveBeenCalled()
   })
 
   it.each([{ year: 2025 }, { semester: 1 }, { user_id: 999 }])('rejects wrong term or owner: %j', async (changes) => {

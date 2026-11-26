@@ -3,7 +3,6 @@ import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
 // import { toJsonClasstime } from '@otl/server-nest/common/serializer/classtime.serializer'
 import { toJsonExamtime } from '@otl/server-nest/common/serializer/examtime.serializer'
 
-import { TimetableItemKind } from '@otl/common/enum/timetable'
 import { getTimeNumeric } from '@otl/common/utils/util'
 
 import { ELecture, ETimetable } from '@otl/prisma-client/entities'
@@ -151,7 +150,7 @@ export const toJsonLectures = (lectures: ELecture.Details[], language: Language)
 })
 
 // Callers must authorize owner or friend access before serializing custom blocks.
-export const toJsonTimetableV2WithItems = (
+export const toJsonTimetableV2Detail = (
   timetable: ETimetable.WithItems,
   language: Language,
 ): ITimetableV2.TimetableDetailResDto => {
@@ -161,12 +160,6 @@ export const toJsonTimetableV2WithItems = (
   )
   return {
     lectures,
-    timetableItems: [
-      ...lectures.map((data) => ({ kind: TimetableItemKind.LECTURE, data })),
-      ...timetable.timetable_timetable_customblocks.map(({ block_custom_blocks: data }) => ({
-        kind: TimetableItemKind.CUSTOM,
-        data: ECustomblock.normalize(data),
-      })),
-    ],
+    customBlocks: timetable.timetable_timetable_customblocks.map(({ block_custom_blocks }) => ECustomblock.normalize(block_custom_blocks)),
   }
 }

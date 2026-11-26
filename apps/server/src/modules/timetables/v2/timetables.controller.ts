@@ -97,7 +97,7 @@ export class TimetablesControllerV2 {
     @GetUser() user: session_userprofile,
     @GetLanguage() language: Language,
     @Body() body: ITimetableV2.SetSharedTimetableReqDto,
-  ): Promise<ITimetableV2.SharedTimetableResDto> {
+  ): Promise<ITimetableV2.SetSharedTimetableResDto> {
     return this.timetablesService.setSharedTimetable(user, body, language)
   }
 

@@ -4059,7 +4059,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ITimetableV2.SharedTimetableResDto"
+                  "$ref": "#/components/schemas/ITimetableV2.SetSharedTimetableResDto"
                 }
               }
             }
@@ -11244,16 +11244,16 @@
               "$ref": "#/components/schemas/ITimetableV2.LectureResDto"
             }
           },
-          "timetableItems": {
+          "customBlocks": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ITimetableV2.TimetableItem"
+              "$ref": "#/components/schemas/ICustomblock.Basic"
             }
           }
         },
         "required": [
-          "lectures",
-          "timetableItems"
+          "customBlocks",
+          "lectures"
         ],
         "additionalProperties": false
       },
@@ -11518,16 +11518,16 @@
               "$ref": "#/components/schemas/ITimetableV2.LectureResDto"
             }
           },
-          "timetableItems": {
+          "customBlocks": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ITimetableV2.TimetableItem"
+              "$ref": "#/components/schemas/ICustomblock.Basic"
             }
           }
         },
         "required": [
-          "lectures",
-          "timetableItems"
+          "customBlocks",
+          "lectures"
         ]
       },
       "ITimetableV2.HomeTimetableReqDto": {
@@ -11579,10 +11579,10 @@
               "$ref": "#/components/schemas/ITimetableV2.LectureResDto"
             }
           },
-          "timetableItems": {
+          "customBlocks": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ITimetableV2.TimetableItem"
+              "$ref": "#/components/schemas/ICustomblock.Basic"
             }
           },
           "source": {
@@ -11613,12 +11613,12 @@
           }
         },
         "required": [
+          "customBlocks",
           "lectures",
           "name",
           "semester",
           "source",
           "timetableId",
-          "timetableItems",
           "year"
         ],
         "additionalProperties": false
@@ -12272,10 +12272,10 @@
               "$ref": "#/components/schemas/ITimetableV2.LectureResDto"
             }
           },
-          "timetableItems": {
+          "customBlocks": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ITimetableV2.TimetableItem"
+              "$ref": "#/components/schemas/ICustomblock.Basic"
             }
           },
           "source": {
@@ -12306,12 +12306,12 @@
           }
         },
         "required": [
+          "customBlocks",
           "lectures",
           "name",
           "semester",
           "source",
           "timetableId",
-          "timetableItems",
           "year"
         ]
       },
@@ -12505,6 +12505,45 @@
           "customBlocks"
         ],
         "additionalProperties": false
+      },
+      "ITimetableV2.SetSharedTimetableResDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "source": {
+            "type": "string",
+            "enum": [
+              "saved",
+              "enrolled"
+            ]
+          },
+          "timetableId": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "year": {
+            "type": "number"
+          },
+          "semester": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "name",
+          "semester",
+          "source",
+          "timetableId",
+          "year"
+        ]
       }
     },
     "securitySchemes": {
