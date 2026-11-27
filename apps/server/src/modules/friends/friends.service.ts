@@ -119,7 +119,7 @@ export class FriendsService {
       return {
         ...toJsonTimetableV2Detail(timetable, language),
         ...query,
-        source: 'saved',
+        timetableType: 'timetable',
         timetableId: timetable.id,
         name: timetable.name ?? '',
       }
@@ -130,7 +130,7 @@ export class FriendsService {
       lectures: serialized,
       customBlocks: [],
       ...query,
-      source: 'enrolled',
+      timetableType: 'scholar',
       timetableId: null,
       name: language === 'en' ? 'Enrolled timetable' : '학사 시간표',
     }

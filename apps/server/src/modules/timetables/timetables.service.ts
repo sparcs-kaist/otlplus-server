@@ -158,10 +158,13 @@ export class TimetablesService {
 
   private async validateCustomblockTime(
     timetableId: number,
-    candidates: ECustomblock.Time[],
+    times: ECustomblock.Time[],
     customblocks: ECustomblock.Basic[],
+    previousTimes: ECustomblock.Time[] = [],
   ) {
-    validateCustomblockTimes(candidates)
+    validateCustomblockTimes(times)
+    const candidates = times.filter((time) => !ECustomblock.hasTime(previousTimes, time))
+    if (candidates.length === 0) return
 
     const timetableLectures = await this.timetableRepository.getLecturesWithClassTimes(timetableId)
     const lectureTimes = timetableLectures
@@ -214,11 +217,13 @@ export class TimetablesService {
       throw new NotFoundException('No such custom block in timetable')
     }
     parseCustomblockData(body, true)
-    const updated = ECustomblock.applyUpdate(ECustomblock.normalize(current), body)
+    const previous = ECustomblock.normalize(current)
+    const updated = ECustomblock.applyUpdate(previous, body)
     await this.validateCustomblockTime(
       timetableId,
       updated.times,
       customblocks.filter((customblock) => customblock.id !== customblockId),
+      previous.times,
     )
     return this.customblockRepository.updateCustomblock(customblockId, { ...body, times: updated.times })
   }

@@ -1,10 +1,12 @@
 import { BadRequestException, ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common'
 import { session_userprofile } from '@prisma/client'
 
-import { CustomblockRepository, LectureRepository, TimetableRepository } from '@otl/prisma-client'
+import { CustomblockRepository, LectureRepository, SemesterRepository, TimetableRepository } from '@otl/prisma-client'
 import { ELecture } from '@otl/prisma-client/entities/ELecture'
 import { ETimetable } from '@otl/prisma-client/entities/ETimetable'
 import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
+
+import { TimetablesService } from '../timetables.service'
 
 import { TimetablesControllerV2 } from './timetables.controller'
 import { TimetablesServiceV2 } from './timetables.service'
@@ -14,6 +16,7 @@ jest.mock('@nestjs-cls/transactional', () => ({ Transactional: () => () => undef
 jest.mock('@otl/prisma-client', () => ({
   CustomblockRepository: class {},
   LectureRepository: class {},
+  SemesterRepository: class {},
   TimetableRepository: class {},
 }), { virtual: true })
 jest.mock('@otl/common/logger/logger', () => ({ __esModule: true, default: { error: jest.fn() } }))
@@ -22,6 +25,11 @@ const user = { id: 7 } as session_userprofile
 const term = { year: 2026, semester: 3 }
 const customInput = { block_name: 'Study', place: 'Library', day: 0, begin: 540, end: 600 }
 const block = { id: 11, ...customInput }
+const empty = {
+  adds: { lectures: [], customBlocks: [] },
+  deletes: { lectures: [], customBlocks: [] },
+  updates: { customBlocks: [] },
+}
 
 function lecture(id: number, day = 0, begin = 540, end = 600): ELecture.Details {
   return {
@@ -98,12 +106,12 @@ describe('Timetable PATCH version routing', () => {
     const controller = new TimetablesControllerV2(service)
     const body: ITimetableV2.UpdateItemsReqDtoV1 | ITimetableV2.UpdateItemsReqDtoV2 = version === 1
       ? { changes: [{ op: 'update', kind: 'custom', id: block.id, data: { place: block.place } }] }
-      : { customBlocks: [{ id: block.id, place: block.place }] }
+      : { ...empty, updates: { customBlocks: [{ id: block.id, place: block.place }] } }
     const updated = { ...block, times: [{ day: block.day, begin: block.begin, end: block.end }] }
 
     await expect(controller.updateTimetableItems(user, 42, body, 'en')).resolves.toEqual(version === 1
       ? { timetableItems: [{ kind: 'custom', data: updated }], results: [{ index: 0, kind: 'custom', id: block.id }] }
-      : { customBlocks: [updated] })
+      : { lectures: [], customBlocks: [updated] })
     const [called, unused] = version === 1 ? [legacy, current] : [current, legacy]
     expect(called).toHaveBeenCalledTimes(1)
     expect(called).toHaveBeenCalledWith(user, body, 42, 'en')
@@ -112,33 +120,45 @@ describe('Timetable PATCH version routing', () => {
 })
 
 describe('TimetablesServiceV2 unified items', () => {
-  it('returns only updated custom blocks in request order while preserving omitted contents', async () => {
-    const second = { ...block, id: 12, day: 1, block_name: 'Second' }
-    const omitted = { ...block, id: 13, day: 2, block_name: 'Omitted' }
-    const current = timetable([lecture(11, 6)], [block, second, omitted])
+  it('writes a mixed V2 batch in delete, update, add order and returns the full timetable', async () => {
+    const deletedBlock = { ...block, id: 12, day: 1 }
+    const untouched = { ...block, id: 13, day: 2 }
+    const current = timetable([lecture(12, 3), lecture(15, 6)], [block, deletedBlock, untouched])
     const { service, repo, blocks, mq } = setup(current)
-    const renamed = { ...block, block_name: 'Renamed' }
-    const moved = { ...second, place: '' }
+    const moved = { ...block, day: 1 }
+    const addedInput = { ...customInput, block_name: 'New', day: 3 }
+    const added = { ...addedInput, id: 100 }
+    const addedLecture = lecture(14)
+    repo.getLecturesByIds.mockResolvedValue([addedLecture])
     repo.getTimeTableWithItemsById
       .mockResolvedValueOnce(current)
-      .mockResolvedValueOnce(timetable([lecture(11, 6)], [omitted, renamed, moved]))
+      .mockResolvedValueOnce(timetable([addedLecture, lecture(15, 6)], [untouched, moved, added]))
 
     await expect(service.updateTimetableItems(user, {
-      customBlocks: [{ id: 12, place: '' }, { id: 11, block_name: 'Renamed' }],
+      adds: { lectures: [{ id: 14 }], customBlocks: [{ ...addedInput, id: deletedBlock.id }] },
+      deletes: { lectures: [{ id: 12 }], customBlocks: [{ id: 12 }] },
+      updates: { customBlocks: [{ id: block.id, day: 1 }] },
     }, 42, 'en')).resolves.toEqual({
-      customBlocks: [moved, renamed].map((data) => ({
+      lectures: [expect.objectContaining({ id: 14 }), expect.objectContaining({ id: 15 })],
+      customBlocks: [untouched, moved, added].map((data) => ({
         ...data, times: [{ day: data.day, begin: data.begin, end: data.end }],
       })),
     })
-    expect(blocks.updateCustomblock.mock.calls).toEqual([
-      [12, { place: '', times: [{ day: 1, begin: 540, end: 600 }] }],
-      [11, { block_name: 'Renamed', times: [{ day: 0, begin: 540, end: 600 }] }],
-    ])
-    expect(blocks.createCustomblock).not.toHaveBeenCalled()
-    expect(blocks.removeCustomblockFromTimetable).not.toHaveBeenCalled()
-    expect(repo.addLectureToTimetable).not.toHaveBeenCalled()
-    expect(repo.removeLectureFromTimetable).not.toHaveBeenCalled()
-    expect(mq.publishLectureNumUpdate).not.toHaveBeenCalled()
+
+    expect(repo.removeLectureFromTimetable).toHaveBeenCalledWith(42, 12)
+    expect(blocks.removeCustomblockFromTimetable).toHaveBeenCalledWith(42, 12)
+    expect(blocks.updateCustomblock).toHaveBeenCalledWith(11, { day: 1, times: [{ day: 1, begin: 540, end: 600 }] })
+    expect(repo.addLectureToTimetable).toHaveBeenCalledWith(42, 14)
+    expect(blocks.createCustomblock).toHaveBeenCalledWith(addedInput)
+    expect(blocks.addCustomblockToTimetable).toHaveBeenCalledWith(42, 100)
+    const updateOrder = blocks.updateCustomblock.mock.invocationCallOrder[0]
+    for (const remove of [repo.removeLectureFromTimetable, blocks.removeCustomblockFromTimetable]) {
+      expect(remove.mock.invocationCallOrder[0]).toBeLessThan(updateOrder)
+    }
+    for (const add of [repo.addLectureToTimetable, blocks.createCustomblock, blocks.addCustomblockToTimetable]) {
+      expect(add.mock.invocationCallOrder[0]).toBeGreaterThan(updateOrder)
+    }
+    expect(mq.publishLectureNumUpdate.mock.calls).toEqual([[12], [14]])
   })
 
   it('allows a V2 batch to swap occupied custom block times using the final composition', async () => {
@@ -149,12 +169,13 @@ describe('TimetablesServiceV2 unified items', () => {
       .mockResolvedValueOnce(current)
       .mockResolvedValueOnce(timetable([], [{ ...block, day: 1 }, { ...second, day: 0 }]))
     await expect(service.updateTimetableItems(user, {
-      customBlocks: [{ id: 12, day: 0 }, { id: 11, day: 1 }],
+      ...empty, updates: { customBlocks: [{ id: 12, day: 0 }, { id: 11, day: 1 }] },
     }, 42, 'en')).resolves.toEqual({
-      customBlocks: [
+      lectures: [],
+      customBlocks: expect.arrayContaining([
         { ...second, day: 0, times: [{ day: 0, begin: 540, end: 600 }] },
         { ...block, day: 1, times: [{ day: 1, begin: 540, end: 600 }] },
-      ],
+      ]),
     })
     expect(blocks.updateCustomblock).toHaveBeenCalledTimes(2)
   })
@@ -162,7 +183,7 @@ describe('TimetablesServiceV2 unified items', () => {
   it('rejects a V2 batch with a later missing custom block before writing earlier edits', async () => {
     const { service, blocks } = setup()
     await expect(service.updateTimetableItems(user, {
-      customBlocks: [{ id: 11, place: 'Changed' }, { id: 99, place: 'Missing' }],
+      ...empty, updates: { customBlocks: [{ id: 11, place: 'Changed' }, { id: 99, place: 'Missing' }] },
     }, 42, 'en')).rejects.toBeInstanceOf(NotFoundException)
     expect(blocks.updateCustomblock).not.toHaveBeenCalled()
   })
@@ -170,7 +191,7 @@ describe('TimetablesServiceV2 unified items', () => {
   it('rejects a V2 batch with a later lecture collision before writing earlier edits', async () => {
     const { service, blocks } = setup(timetable([lecture(20, 2)], [block, { ...block, id: 12, day: 1 }]))
     await expect(service.updateTimetableItems(user, {
-      customBlocks: [{ id: 11, place: 'Changed' }, { id: 12, day: 2 }],
+      ...empty, updates: { customBlocks: [{ id: 11, place: 'Changed' }, { id: 12, day: 2 }] },
     }, 42, 'en')).rejects.toBeInstanceOf(ConflictException)
     expect(blocks.updateCustomblock).not.toHaveBeenCalled()
   })
@@ -178,41 +199,9 @@ describe('TimetablesServiceV2 unified items', () => {
   it('rejects V2 custom-block edits to another user’s timetable', async () => {
     const { service, blocks } = setup({ ...timetable(), user_id: 8 })
     await expect(service.updateTimetableItems(user, {
-      customBlocks: [{ id: 11, block_name: 'Renamed' }],
+      ...empty, updates: { customBlocks: [{ id: 11, block_name: 'Renamed' }] },
     }, 42, 'en')).rejects.toBeInstanceOf(ForbiddenException)
     expect(blocks.updateCustomblock).not.toHaveBeenCalled()
-  })
-
-  it('returns only added objects in each request group order despite database ordering', async () => {
-    const current = timetable([lecture(11, 6)], [])
-    const { service, repo, blocks, mq } = setup(current)
-    const firstBlock = { id: 101, ...customInput, day: 1 }
-    const secondBlock = { id: 100, ...customInput, day: 2 }
-    repo.getTimeTableWithItemsById
-      .mockResolvedValueOnce(current)
-      .mockResolvedValueOnce(timetable([lecture(12, 4), lecture(11, 6), lecture(13, 0)], [secondBlock, firstBlock]))
-    repo.getLecturesByIds.mockResolvedValue([lecture(12, 4), lecture(13, 0)])
-    blocks.createCustomblock
-      .mockResolvedValueOnce({ id: 101, ...customInput })
-      .mockResolvedValueOnce({ id: 100, ...customInput })
-    await expect(service.addTimetableItems(user, {
-      lectureIds: [13, 12],
-      customBlocks: [{ ...customInput, day: 1 }, { ...customInput, day: 2 }],
-    }, 42, 'en')).resolves.toEqual({
-      lectures: [expect.objectContaining({ id: 13, name: 'Lecture' }), expect.objectContaining({ id: 12, name: 'Lecture' })],
-      customBlocks: [firstBlock, secondBlock].map((data) => ({
-        ...data, times: [{ day: data.day, begin: data.begin, end: data.end }],
-      })),
-    })
-    expect(mq.publishLectureNumUpdate.mock.calls).toEqual([[13], [12]])
-  })
-
-  it('returns only removed IDs in each request group order', async () => {
-    const { service, mq } = setup(timetable([lecture(11), lecture(12), lecture(13)], [block, { ...block, id: 12 }]))
-    await expect(service.removeTimetableItems(user, {
-      lectureIds: [13, 12], customBlockIds: [12, 11],
-    }, 42, 'en')).resolves.toEqual({ lectureIds: [13, 12], customBlockIds: [12, 11] })
-    expect(mq.publishLectureNumUpdate.mock.calls).toEqual([[13], [12]])
   })
 
   it('dispatches every kind/operation and preserves result order in a mixed batch', async () => {
@@ -364,7 +353,7 @@ describe('TimetablesServiceV2 home selection', () => {
     const { service, repo, lectures } = setup()
     repo.getHomeTimetable.mockResolvedValue(null)
     const result = await service.getHomeTimetable(user, term, 'en')
-    expect(result).toMatchObject({ source: 'enrolled', timetableId: null, ...term })
+    expect(result).toMatchObject({ timetableType: 'scholar', timetableId: null, ...term })
     expect(result.lectures).toEqual([expect.objectContaining({ id: 9 })])
     expect(result.customBlocks).toEqual([])
     expect(result).not.toHaveProperty('timetableItems')
@@ -375,7 +364,7 @@ describe('TimetablesServiceV2 home selection', () => {
     const { service, repo, lectures } = setup()
     repo.getHomeTimetable.mockResolvedValue({ id: 42 })
     const result = await service.getHomeTimetable(user, term, 'en')
-    expect(result).toMatchObject({ source: 'saved', timetableId: 42, name: 'Saved', ...term, lectures: [] })
+    expect(result).toMatchObject({ timetableType: 'timetable', timetableId: 42, name: 'Saved', ...term, lectures: [] })
     expect(result.customBlocks).toEqual([{ ...block, times: [{ day: 0, begin: 540, end: 600 }] }])
     expect(result).not.toHaveProperty('timetableItems')
     expect(lectures.getTakenLecturesBySemester).not.toHaveBeenCalled()
@@ -390,7 +379,7 @@ describe('TimetablesServiceV2 home selection', () => {
   it('changes only the requested user/semester selection and returns metadata without reading contents', async () => {
     const { service, repo, lectures } = setup()
     await expect(service.setHomeTimetable(user, { ...term, timetableId: 42 })).resolves.toEqual({
-      ...term, timetableId: 42, source: 'saved', name: 'Saved',
+      ...term, timetableId: 42, timetableType: 'timetable', name: 'Saved',
     })
     expect(repo.setHomeTimetable).toHaveBeenCalledWith(user.id, term.year, term.semester, 42)
     expect(repo.getHomeTimetable).not.toHaveBeenCalled()
@@ -401,6 +390,32 @@ describe('TimetablesServiceV2 home selection', () => {
 
 
 describe('multi-time custom blocks', () => {
+  it('preserves an old overlap but rejects new collisions through the standalone v1 service', async () => {
+    const retained = { day: block.day, begin: block.begin, end: block.end }
+    const appended = { ...retained, day: 1 }
+    const current = timetable([lecture(11)], [block, { ...block, id: 12, day: 2 }])
+    const { repo, lectures, blocks, mq } = setup(current)
+    repo.getLecturesWithClassTimes.mockResolvedValue(current.timetable_timetable_lectures)
+    const service = new TimetablesService(
+      repo as unknown as TimetableRepository,
+      lectures as unknown as LectureRepository,
+      {} as SemesterRepository,
+      blocks as unknown as CustomblockRepository,
+      mq,
+    )
+    await expect(service.updateCustomblock(42, block.id, { times: [retained, appended] }, user))
+      .resolves.toEqual({ ...block, times: [retained, appended] })
+    for (const times of [
+      [{ ...retained, begin: 570 }, appended],
+      [retained, { ...appended, day: 2 }],
+    ]) {
+      await expect(service.updateCustomblock(42, block.id, { times }, user)).rejects.toBeInstanceOf(ConflictException)
+    }
+    await expect(service.updateCustomblock(42, block.id, { times: [retained, { ...retained, begin: 570 }] }, user))
+      .rejects.toBeInstanceOf(BadRequestException)
+    expect(blocks.updateCustomblock).toHaveBeenCalledTimes(1)
+  })
+
   const times = [{ day: 0, begin: 540, end: 600 }, { day: 2, begin: 720, end: 780 }]
   const grouped = { ...block, times }
 
@@ -457,16 +472,16 @@ describe('friend sharing selection', () => {
   it('defaults to enrollment and switches shared source independently of home selection', async () => {
     const { service, repo, lectures } = setup()
     await expect(service.getSharedTimetable(user, term, 'en')).resolves.toMatchObject({
-      ...term, timetableId: null, source: 'enrolled', lectures: [{ id: 9 }], customBlocks: [],
+      ...term, timetableId: null, timetableType: 'scholar', lectures: [{ id: 9 }], customBlocks: [],
     })
     repo.getSharedTimetableForSemester.mockClear()
     lectures.getTakenLecturesBySemester.mockClear()
     await expect(service.setSharedTimetable(user, { ...term, timetableId: 42 }, 'en')).resolves.toEqual({
-      ...term, timetableId: 42, source: 'saved', name: 'Saved',
+      ...term, timetableId: 42, timetableType: 'timetable', name: 'Saved',
     })
     expect(repo.setSharedTimetableSelection).toHaveBeenCalledWith(user.id, 2026, 3, 42)
     await expect(service.setSharedTimetable(user, { ...term, timetableId: null }, 'en')).resolves.toEqual({
-      ...term, timetableId: null, source: 'enrolled', name: 'Enrolled timetable',
+      ...term, timetableId: null, timetableType: 'scholar', name: 'Enrolled timetable',
     })
     expect(repo.setSharedTimetableSelection).toHaveBeenLastCalledWith(user.id, 2026, 3, null)
     expect(repo.setHomeTimetable).not.toHaveBeenCalled()

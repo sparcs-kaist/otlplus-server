@@ -11,11 +11,16 @@ it.each(['docs', 'src'])('documents split timetable contents and preserves mixed
     expect(schema.required).toEqual(expect.arrayContaining(['lectures', 'customBlocks']))
     expect(schema.properties).not.toHaveProperty('timetableItems')
   }
-  const metadataFields = ['source', 'timetableId', 'name', 'year', 'semester'].sort()
+  const metadataFields = ['timetableType', 'timetableId', 'name', 'year', 'semester'].sort()
   const selectionResponse = schemas['ITimetableV2.TimetableSelectionResDto']
   expect(Object.keys(selectionResponse.properties).sort()).toEqual(metadataFields)
   expect([...selectionResponse.required].sort()).toEqual(metadataFields)
-  expect(selectionResponse.properties.source.enum).toEqual(['saved', 'enrolled'])
+  for (const name of ['HomeTimetableResDto', 'SharedTimetableResDto', 'TimetableSelectionResDto']) {
+    const schema = schemas[`ITimetableV2.${name}`]
+    expect(schema.required).toContain('timetableType')
+    expect(schema.properties.timetableType).toMatchObject({ type: 'string', enum: ['scholar', 'timetable'] })
+    expect(schema.properties).not.toHaveProperty('source')
+  }
   expect(selectionResponse.properties.timetableId.oneOf).toEqual([{ type: 'number' }, { type: 'null' }])
   expect(schemas).not.toHaveProperty('ITimetableV2.SetSharedTimetableResDto')
   expect(schemas['ITimetableV2.UpdateItemsResDtoV1'].properties.timetableItems.items.$ref)
@@ -86,74 +91,49 @@ it.each(['docs', 'src'])('documents only shared friend timetable reads and two o
   expect(schemas['IFriendV2.FriendListItem'].required).toContain('hasScheduleNow')
 })
 
-it.each(['docs', 'src'])('documents grouped requests, added objects and removed IDs in %s/swagger.json', (directory) => {
+it.each(['docs', 'src'])('documents both PATCH /items contracts in %s/swagger.json', (directory) => {
   const document = JSON.parse(readFileSync(path.join(__dirname, '..', directory, 'swagger.json'), 'utf8'))
   const schemas = document.components.schemas
   const endpoint = document.paths['/api/v2/timetables/{timetableId}/items']
-  for (const [method, name] of [['post', 'AddItemsReqDto'], ['delete', 'RemoveItemsReqDto']]) {
-    const requestSchema = schemas[`ITimetableV2.${name}`]
-    expect(endpoint[method].requestBody.content['application/json'].schema.$ref)
-      .toBe(`#/components/schemas/ITimetableV2.${name}`)
-    expect(endpoint[method].responses['200'].content['application/json'].schema.$ref)
-      .toBe(`#/components/schemas/ITimetableV2.${method === 'post' ? 'AddItemsResDto' : 'ItemIdsResDto'}`)
-    expect(requestSchema.required ?? []).toEqual([])
-    expect(requestSchema.additionalProperties).toBe(false)
-    expect(Object.keys(requestSchema.properties)).toEqual(method === 'post'
-      ? ['lectureIds', 'customBlocks']
-      : ['lectureIds', 'customBlockIds'])
-    expect(requestSchema.properties.lectureIds).toEqual({ type: 'array', items: { type: 'number' } })
-    expect(requestSchema.description).toContain('At least one')
-  }
-  expect(schemas['ITimetableV2.AddItemsReqDto'].properties.customBlocks.items.$ref)
-    .toBe('#/components/schemas/ICustomblock.CreateDto')
-  expect(schemas['ITimetableV2.RemoveItemsReqDto'].properties.customBlockIds)
-    .toEqual({ type: 'array', items: { type: 'number' } })
-  expect(schemas).not.toHaveProperty('ITimetableV2.AddTimetableItem')
-  const addition = schemas['ITimetableV2.AddItemsResDto']
-  expect(Object.keys(addition.properties)).toEqual(['lectures', 'customBlocks'])
-  expect(addition.required).toEqual(['lectures', 'customBlocks'])
-  expect(addition.properties.lectures.items.$ref).toBe('#/components/schemas/ITimetableV2.LectureResDto')
-  expect(addition.properties.customBlocks.items.$ref).toBe('#/components/schemas/ICustomblock.Basic')
-  const response = schemas['ITimetableV2.ItemIdsResDto']
-  expect(Object.keys(response.properties)).toEqual(['lectureIds', 'customBlockIds'])
-  expect(response.required).toEqual(['lectureIds', 'customBlockIds'])
-  for (const field of ['lectureIds', 'customBlockIds']) {
-    expect(response.properties[field]).toEqual({ type: 'array', items: { type: 'number' } })
-  }
-})
-
-it.each(['docs', 'src'])('documents mutually exclusive PATCH versions and their corresponding responses in %s/swagger.json', (directory) => {
-  const document = JSON.parse(readFileSync(path.join(__dirname, '..', directory, 'swagger.json'), 'utf8'))
-  const schemas = document.components.schemas
-  const patch = document.paths['/api/v2/timetables/{timetableId}/items'].patch
+  expect(Object.keys(endpoint).sort()).toEqual(['get', 'patch'])
+  const { patch } = endpoint
   expect(patch.requestBody.content['application/json'].schema).toEqual({
     oneOf: ['UpdateItemsReqDtoV1', 'UpdateItemsReqDtoV2'].map((name) => ({ $ref: `#/components/schemas/ITimetableV2.${name}` })),
   })
   expect(patch.responses['200'].content['application/json'].schema).toEqual({
     oneOf: ['UpdateItemsResDtoV1', 'UpdateItemsResDtoV2'].map((name) => ({ $ref: `#/components/schemas/ITimetableV2.${name}` })),
   })
-  for (const [version, field] of [['V1', 'changes'], ['V2', 'customBlocks']]) {
-    const requestSchema = schemas[`ITimetableV2.UpdateItemsReqDto${version}`]
-    expect(Object.keys(requestSchema.properties)).toEqual([field])
-    expect(requestSchema.required).toEqual([field])
-    expect(requestSchema.additionalProperties).toBe(false)
-    expect(requestSchema.properties[field].minItems).toBe(1)
-    expect(requestSchema.description).toMatch(/cannot be combined/i)
-    expect(requestSchema.description).toContain(`UpdateItemsResDto${version}`)
+
+  const legacy = schemas['ITimetableV2.UpdateItemsReqDtoV1']
+  expect(Object.keys(legacy.properties)).toEqual(['changes'])
+  expect(legacy.required).toEqual(['changes'])
+  expect(legacy.additionalProperties).toBe(false)
+  expect(legacy.properties.changes.minItems).toBe(1)
+
+  const grouped = schemas['ITimetableV2.UpdateItemsReqDtoV2']
+  expect(Object.keys(grouped.properties)).toEqual(['adds', 'deletes', 'updates'])
+  expect(grouped.required).toEqual(['adds', 'deletes', 'updates'])
+  expect(grouped.additionalProperties).toBe(false)
+  for (const [field, name, blockDto, hasLectures] of [
+    ['adds', 'AddItemsDto', 'AddCustomBlockDto', true],
+    ['deletes', 'DeleteItemsDto', 'UpdateCustomBlockDto', true],
+    ['updates', 'UpdateItemsDto', 'UpdateCustomBlockDto', false],
+  ] as const) {
+    const group = schemas[`ITimetableV2.${name}`]
+    const fields = hasLectures ? ['customBlocks', 'lectures'] : ['customBlocks']
+    expect(grouped.properties[field].$ref).toBe(`#/components/schemas/ITimetableV2.${name}`)
+    expect(Object.keys(group.properties).sort()).toEqual(fields)
+    expect([...group.required].sort()).toEqual(fields)
+    expect(group.additionalProperties).toBe(false)
+    expect(group.properties.customBlocks.items.$ref).toBe(`#/components/schemas/ITimetableV2.${blockDto}`)
+    if (hasLectures) {
+      expect(group.properties.lectures.items.$ref).toBe('#/components/schemas/ITimetableV2.TimetableLectureRef')
+    }
   }
-  expect(schemas['ITimetableV2.UpdateItemsReqDtoV2'].properties.customBlocks.items.$ref)
-    .toBe('#/components/schemas/ITimetableV2.UpdateCustomBlockDto')
-  const update = schemas['ITimetableV2.UpdateCustomBlockDto']
-  expect(update.required).toEqual(['id'])
-  expect(update.properties.id.type).toBe('number')
-  expect(update.properties).toHaveProperty('times')
-  expect(update.properties).not.toHaveProperty('kind')
-  expect(update.properties).not.toHaveProperty('op')
-  expect(update.properties).not.toHaveProperty('data')
+
   const response = schemas['ITimetableV2.UpdateItemsResDtoV2']
-  expect(Object.keys(response.properties)).toEqual(['customBlocks'])
-  expect(response.required).toEqual(['customBlocks'])
+  expect(Object.keys(response.properties).sort()).toEqual(['customBlocks', 'lectures'])
+  expect([...response.required].sort()).toEqual(['customBlocks', 'lectures'])
+  expect(response.properties.lectures.items.$ref).toBe('#/components/schemas/ITimetableV2.LectureResDto')
   expect(response.properties.customBlocks.items.$ref).toBe('#/components/schemas/ICustomblock.Basic')
-  expect(schemas).not.toHaveProperty('ITimetableV2.UpdateItemsReqDto')
-  expect(schemas).not.toHaveProperty('ITimetableV2.UpdateItemsResDto')
 })

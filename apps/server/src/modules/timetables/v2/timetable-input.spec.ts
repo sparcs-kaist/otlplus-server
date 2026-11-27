@@ -5,7 +5,7 @@ import { ICustomblock } from '@otl/server-nest/common/interfaces/ICustomblock'
 import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
 
 import {
-  parseTimetableChanges, parseTimetableItems, parseTimetableItemUpdate, parseTimetableItemUpdateForBuddyMigration, validateCreateTimetableInput,
+  parseTimetableChanges, parseTimetableItemUpdate, parseTimetableItemUpdateForBuddyMigration, validateCreateTimetableInput,
 } from './timetable-input'
 
 const block = { block_name: 'Study', place: '', day: 0, begin: 600, end: 660 }
@@ -93,111 +93,71 @@ describe('versioned timetable item updates', () => {
     expect(parseTimetableItemUpdateForBuddyMigration({ changes, unrelated: true })).toEqual(changes)
   })
 
+  const empty = {
+    adds: { lectures: [], customBlocks: [] },
+    deletes: { lectures: [], customBlocks: [] },
+    updates: { customBlocks: [] },
+  }
+
   it.each([
     undefined, null, [], {},
     { changes: [] }, { changes: null },
     { customBlocks: [{ id: 11, place: 'Library' }] },
-    { changes: [{ op: 'remove', kind: 'lecture', id: 1 }], customBlocks: [] },
-    { changes: [{ op: 'remove', kind: 'lecture', id: 1 }], customBlocks: [{ id: 11, place: 'Library' }] },
+    ...Object.entries(empty).map(([group, operations]) => ({
+      changes: [{ op: 'remove', kind: 'lecture', id: 1 }], [group]: operations,
+    })),
   ].map((body) => [body]))('rejects malformed or mixed requests in the V1 parser: %j', (body) => {
     expect(() => parseTimetableItemUpdateForBuddyMigration(body)).toThrow(BadRequestException)
   })
 
-  it('converts V2 partial and full custom-block updates in request order without changing the input', () => {
+  it('converts V2 operations in delete, update, add order without modifying the request', () => {
     const times = [{ day: 0, begin: 600, end: 660 }, { day: 2, begin: 600, end: 660 }]
-    const body = { customBlocks: [{ id: 12, place: '' }, { id: 11, ...block, times }] }
+    const body = {
+      adds: { lectures: [{ id: 9, name: 'Lecture' }], customBlocks: [{ id: 99, ...block, times }] },
+      deletes: { lectures: [{ id: 1, name: 'Removed lecture' }], customBlocks: [{ id: 1, ...block, times }] },
+      updates: { customBlocks: [{ id: 12, place: '' }, { id: 11, ...block, times }] },
+    }
+    const before = structuredClone(body)
     expect(parseTimetableItemUpdate(body)).toEqual([
+      { op: 'remove', kind: 'lecture', id: 1 },
+      { op: 'remove', kind: 'custom', id: 1 },
       { op: 'update', kind: 'custom', id: 12, data: { place: '' } },
       { op: 'update', kind: 'custom', id: 11, data: { ...block, times } },
+      { op: 'add', kind: 'lecture', lectureId: 9 },
+      { op: 'add', kind: 'custom', data: { ...block, times } },
     ])
-    expect(body).toEqual({ customBlocks: [{ id: 12, place: '' }, { id: 11, ...block, times }] })
+    expect(body).toEqual(before)
   })
 
   it.each([
-    undefined, null, [], {},
-    { changes: [] }, { changes: null },
-    { changes: [{ op: 'remove', kind: 'lecture', id: 1 }] },
-    { changes: [{ op: 'remove', kind: 'lecture', id: 1 }], customBlocks: [] },
-    { changes: [], customBlocks: [{ id: 11, place: 'Library' }] },
-    { changes: null, customBlocks: [{ id: 11, place: 'Library' }] },
-    { customBlocks: [] }, { customBlocks: null }, { customBlocks: {} }, { customBlocks: [null] },
-    { customBlocks: [{ place: 'Library' }] },
-    { customBlocks: [{ id: 0, place: 'Library' }] },
-    { customBlocks: [{ id: -1, place: 'Library' }] },
-    { customBlocks: [{ id: 1.5, place: 'Library' }] },
-    { customBlocks: [{ id: '11', place: 'Library' }] },
-    { customBlocks: [{ id: 2147483648, place: 'Library' }] },
-    { customBlocks: [{ id: 11 }] },
-    { customBlocks: [{ id: 11, place: 'Library' }, { id: 11, block_name: 'Duplicate' }] },
-    { customBlocks: [{ id: 11, place: 'Library' }], extra: true },
-    { customBlocks: [{ id: 11, place: 'Library', extra: true }] },
-    { customBlocks: [{ id: 11, op: 'update', place: 'Library' }] },
-    { customBlocks: [{ id: 11, kind: 'custom', data: { place: 'Library' } }] },
-    { customBlocks: [{ id: 11, block_name: ' ' }] },
-    { customBlocks: [{ id: 11, place: null }] },
-    { customBlocks: [{ id: 11, day: 7 }] },
-    { customBlocks: [{ id: 11, begin: '600' }] },
-    { customBlocks: [{ id: 11, begin: 600, end: 600 }] },
-    { customBlocks: [{ id: 11, times: [] }] },
+    undefined, null, [], {}, empty,
+    { customBlocks: [{ id: 11, place: 'Library' }] },
+    { ...empty, changes: [{ op: 'remove', kind: 'lecture', id: 1 }] },
+    { ...empty, extra: true },
+    { ...empty, adds: null },
+    { ...empty, adds: { customBlocks: [block] } },
+    { ...empty, adds: { lectures: [{ id: 1 }], customBlocks: [], extra: true } },
+    { ...empty, deletes: { lectures: [{ id: 1 }], customBlocks: null } },
+    { ...empty, updates: { customBlocks: [], lectures: [{ id: 1 }] } },
+    { ...empty, adds: { lectures: [{ id: 1 }], customBlocks: [{ ...block, op: 'add' }] } },
+    { ...empty, adds: { lectures: [{ id: 1 }], customBlocks: [{ ...block, times: [] }] } },
+    { ...empty, adds: { lectures: [{ id: 1 }], customBlocks: [] }, deletes: { lectures: [{ id: 1 }], customBlocks: [] } },
+    { ...empty, deletes: { lectures: [], customBlocks: [{ id: 11 }] }, updates: { customBlocks: [{ id: 11, place: '' }] } },
+    ...[null, [], 1, {}, { id: 0 }, { id: '11' }, { id: 2147483648 }].flatMap((invalid) => [
+      { ...empty, adds: { lectures: [invalid], customBlocks: [] } },
+      { ...empty, deletes: { lectures: [invalid], customBlocks: [] } },
+      { ...empty, deletes: { lectures: [], customBlocks: [invalid] } },
+    ]),
+    ...[
+      null, { place: 'Library' }, { id: 0, place: 'Library' }, { id: -1, place: 'Library' },
+      { id: 1.5, place: 'Library' }, { id: '11', place: 'Library' }, { id: 11 },
+      { id: 11, place: 'Library', extra: true }, { id: 11, block_name: ' ' },
+      { id: 11, place: null }, { id: 11, day: 7 }, { id: 11, times: [] },
+    ].map((invalid) => ({ ...empty, updates: { customBlocks: [invalid] } })),
   ].map((body) => [body]))('rejects ambiguous or malformed V2 updates: %j', (body) => {
     expect(() => parseTimetableItemUpdate(body)).toThrow(BadRequestException)
   })
 })
-
-describe('method-specific timetable items', () => {
-  it('builds changes from separate lecture and custom block groups and retains grouped times', () => {
-    const data = { block_name: 'Study', place: '', times: [{ day: 1, begin: 600, end: 660 }] }
-    expect(parseTimetableItems({ lectureIds: [1], customBlocks: [data] }, 'add')).toEqual([
-      { op: 'add', kind: 'lecture', lectureId: 1 }, { op: 'add', kind: 'custom', data },
-    ])
-    expect(parseTimetableItems({ lectureIds: [1], customBlockIds: [1] }, 'remove')).toEqual([
-      { op: 'remove', kind: 'lecture', id: 1 }, { op: 'remove', kind: 'custom', id: 1 },
-    ])
-  })
-
-  it('accepts a single populated group with the other group omitted or empty', () => {
-    for (const op of ['add', 'remove'] as const) {
-      const customField = op === 'add' ? 'customBlocks' : 'customBlockIds'
-      const customItems = op === 'add' ? [block] : [1]
-      for (const body of [
-        { lectureIds: [1] }, { lectureIds: [1], [customField]: [] },
-        { [customField]: customItems }, { lectureIds: [], [customField]: customItems },
-      ]) {
-        expect(parseTimetableItems(body, op)).toHaveLength(1)
-      }
-    }
-  })
-
-  it.each([
-    undefined, null, [], {},
-    { lectureIds: null }, { lectureIds: [] }, { lectureIds: {} }, { lectureIds: [null] },
-    { lectureIds: ['1'] }, { lectureIds: [0] }, { lectureIds: [1, 1] },
-    { lectureIds: [1], extra: true }, { lectureIds: [1], op: 'add' },
-    { lectureIds: [1], kind: 'lecture' }, { items: [{ kind: 'lecture', lectureId: 1 }] },
-  ].map((body) => [body]))('rejects invalid grouped requests: %j', (body) => {
-    for (const op of ['add', 'remove'] as const) {
-      expect(() => parseTimetableItems(body, op)).toThrow(BadRequestException)
-    }
-  })
-
-  it.each(['add', 'remove'] as const)('rejects invalid custom groups on %s', (operation) => {
-    const customField = operation === 'add' ? 'customBlocks' : 'customBlockIds'
-    for (const value of [null, {}, [null], [1.5], ['1']]) {
-      expect(() => parseTimetableItems({ lectureIds: [1], [customField]: value }, operation)).toThrow(BadRequestException)
-    }
-    expect(() => parseTimetableItems({ lectureIds: [], [customField]: [] }, operation)).toThrow(BadRequestException)
-    const wrongField = operation === 'add' ? 'customBlockIds' : 'customBlocks'
-    expect(() => parseTimetableItems({ lectureIds: [1], [wrongField]: [] }, operation)).toThrow(BadRequestException)
-    expect(() => parseTimetableItems({ customBlockIds: [1, 1] }, 'remove')).toThrow(BadRequestException)
-  })
-
-  it('validates custom data directly without accepting item wrappers or client operations', () => {
-    for (const data of [{ ...block, day: 7 }, { ...block, op: 'add' }, { kind: 'custom', data: block }]) {
-      expect(() => parseTimetableItems({ customBlocks: [data] }, 'add')).toThrow(BadRequestException)
-    }
-  })
-})
-
 
 describe('custom block time arrays', () => {
   const first = { day: 0, begin: 600, end: 660 }

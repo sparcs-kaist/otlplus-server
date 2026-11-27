@@ -262,7 +262,7 @@ export namespace ITimetableV2 {
     | { op: 'remove', kind: TimetableItemKind, id: number }
     | { op: 'update', kind: typeof TimetableItemKind.CUSTOM, id: number, data: ICustomblock.UpdateDto }
 
-  /** Legacy request. Cannot be combined with customBlocks; returns UpdateItemsResDtoV1. */
+  /** Legacy request. Cannot be combined with grouped changes; returns UpdateItemsResDtoV1. */
   export class UpdateItemsReqDtoV1 {
     @IsArray()
     @ArrayMinSize(1)
@@ -273,38 +273,38 @@ export namespace ITimetableV2 {
     id: number
   }
 
-  /** Update existing blocks by ID. Requires at least one block and one changed field per block.
-   * Cannot be combined with changes; returns UpdateItemsResDtoV2 in request order. */
-  export interface UpdateItemsReqDtoV2 {
-    /** @minItems 1 */
+  export interface TimetableLectureRef extends Partial<LectureResDto> {
+    id: number
+  }
+
+  export interface AddCustomBlockDto extends ICustomblock.CreateDto {
+    /** Existing item IDs are ignored on creation. */
+    id?: number
+  }
+
+  export interface AddItemsDto {
+    lectures: TimetableLectureRef[]
+
+    customBlocks: AddCustomBlockDto[]
+  }
+
+  export interface DeleteItemsDto {
+    lectures: TimetableLectureRef[]
+
     customBlocks: UpdateCustomBlockDto[]
   }
 
-  // Keep the raw body for strict parsing instead of silently stripping unknown fields.
-  /** At least one lecture ID or custom block is required. */
-  export interface AddItemsReqDto {
-    lectureIds?: number[]
-
-    customBlocks?: ICustomblock.CreateDto[]
+  export interface UpdateItemsDto {
+    customBlocks: UpdateCustomBlockDto[]
   }
 
-  /** At least one lecture ID or custom block ID is required. */
-  export interface RemoveItemsReqDto {
-    lectureIds?: number[]
+  /** Applies deletes, updates, then adds atomically. At least one item across the groups is required. */
+  export interface UpdateItemsReqDtoV2 {
+    adds: AddItemsDto
 
-    customBlockIds?: number[]
-  }
+    deletes: DeleteItemsDto
 
-  export class AddItemsResDto {
-    lectures!: LectureResDto[]
-
-    customBlocks!: ICustomblock.Basic[]
-  }
-
-  export class ItemIdsResDto {
-    lectureIds!: number[]
-
-    customBlockIds!: number[]
+    updates: UpdateItemsDto
   }
 
   export class UpdateItemsResDtoV1 {
@@ -314,6 +314,8 @@ export namespace ITimetableV2 {
   }
 
   export class UpdateItemsResDtoV2 {
+    lectures!: LectureResDto[]
+
     customBlocks!: ICustomblock.Basic[]
   }
 
@@ -402,7 +404,7 @@ export namespace ITimetableV2 {
   }
 
   export class HomeTimetableResDto extends TimetableDetailResDto {
-    source!: 'saved' | 'enrolled'
+    timetableType!: 'scholar' | 'timetable'
 
     timetableId!: number | null
 

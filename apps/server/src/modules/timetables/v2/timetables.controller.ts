@@ -1,5 +1,5 @@
 import {
-  Body, Controller, Delete, Get, HttpCode, Param, ParseIntPipe, Patch, Post, Query,
+  Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query,
 } from '@nestjs/common'
 import { GetLanguage, Language } from '@otl/server-nest/common/decorators/get-language.decorator'
 import { GetUser } from '@otl/server-nest/common/decorators/get-user.decorator'
@@ -138,27 +138,6 @@ export class TimetablesControllerV2 {
       return this.timetablesService.updateTimetableItemsForBuddyMigration(user, body, timetableId, language)
     }
     return await this.timetablesService.updateTimetableItems(user, body, timetableId, language)
-  }
-
-  @Post('/:timetableId/items')
-  @HttpCode(200)
-  async addTimetableItems(
-    @GetUser() user: session_userprofile,
-    @Param('timetableId', ParseIntPipe) timetableId: number,
-    @Body() body: ITimetableV2.AddItemsReqDto,
-    @GetLanguage() language: Language,
-  ): Promise<ITimetableV2.AddItemsResDto> {
-    return this.timetablesService.addTimetableItems(user, body, timetableId, language)
-  }
-
-  @Delete('/:timetableId/items')
-  async removeTimetableItems(
-    @GetUser() user: session_userprofile,
-    @Param('timetableId', ParseIntPipe) timetableId: number,
-    @Body() body: ITimetableV2.RemoveItemsReqDto,
-    @GetLanguage() language: Language,
-  ): Promise<ITimetableV2.ItemIdsResDto> {
-    return this.timetablesService.removeTimetableItems(user, body, timetableId, language)
   }
 
   @Get('/:timetableId/custom-blocks')

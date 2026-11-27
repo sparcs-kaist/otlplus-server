@@ -119,28 +119,10 @@ export function parseTimetableChanges(input: unknown): ITimetableV2.TimetableCha
   })
 }
 
-export function parseTimetableItems(input: unknown, op: 'add' | 'remove'): ITimetableV2.TimetableChange[] {
-  const body = object(input)
-  const customField = op === 'add' ? 'customBlocks' : 'customBlockIds'
-  keys(body, ['lectureIds', customField])
-  const lectureIds = body.lectureIds === undefined ? [] : body.lectureIds
-  const customItems = body[customField] === undefined ? [] : body[customField]
-  if (!Array.isArray(lectureIds) || !Array.isArray(customItems)) return fail('Timetable item groups must be arrays')
-  if (lectureIds.length + customItems.length === 0) return fail('At least one lecture or custom block is required')
-  return parseTimetableChanges([
-    ...lectureIds.map((lectureId) => (op === 'add'
-      ? { op, kind: TimetableItemKind.LECTURE, lectureId }
-      : { op, kind: TimetableItemKind.LECTURE, id: lectureId })),
-    ...customItems.map((value) => (op === 'add'
-      ? { op, kind: TimetableItemKind.CUSTOM, data: value }
-      : { op, kind: TimetableItemKind.CUSTOM, id: value })),
-  ])
-}
-
 export function parseTimetableItemUpdateForBuddyMigration(input: unknown): ITimetableV2.TimetableChange[] {
   const body = object(input)
-  if ('customBlocks' in body) {
-    return fail('Provide exactly one of changes and customBlocks')
+  if (['customBlocks', 'adds', 'deletes', 'updates'].some((field) => field in body)) {
+    return fail('Provide either changes or grouped timetable changes')
   }
   // The legacy ValidationPipe stripped unrelated top-level fields before parsing changes.
   return parseTimetableChanges(body.changes)
@@ -148,16 +130,36 @@ export function parseTimetableItemUpdateForBuddyMigration(input: unknown): ITime
 
 export function parseTimetableItemUpdate(input: unknown): ITimetableV2.TimetableChange[] {
   const body = object(input)
-  keys(body, ['customBlocks'])
-  if (!Array.isArray(body.customBlocks) || body.customBlocks.length === 0) {
-    return fail('customBlocks must be a non-empty array')
+  keys(body, ['adds', 'deletes', 'updates'])
+  const adds = object(body.adds)
+  const deletes = object(body.deletes)
+  const updates = object(body.updates)
+  keys(adds, ['lectures', 'customBlocks'])
+  keys(deletes, ['lectures', 'customBlocks'])
+  keys(updates, ['customBlocks'])
+  if (!Array.isArray(adds.lectures) || !Array.isArray(adds.customBlocks)
+    || !Array.isArray(deletes.lectures) || !Array.isArray(deletes.customBlocks)
+    || !Array.isArray(updates.customBlocks)) {
+    return fail('Timetable item groups must be arrays')
   }
-  return parseTimetableChanges(body.customBlocks.map((value) => {
-    const { id: blockId, ...data } = object(value)
-    return {
-      op: 'update', kind: TimetableItemKind.CUSTOM, id: blockId, data,
-    }
-  }))
+
+  const changes = [
+    ...deletes.lectures.map((value) => ({ op: 'remove', kind: TimetableItemKind.LECTURE, id: object(value).id })),
+    ...deletes.customBlocks.map((value) => ({ op: 'remove', kind: TimetableItemKind.CUSTOM, id: object(value).id })),
+    ...updates.customBlocks.map((value) => {
+      const { id: blockId, ...data } = object(value)
+      return {
+        op: 'update', kind: TimetableItemKind.CUSTOM, id: blockId, data,
+      }
+    }),
+    ...adds.lectures.map((value) => ({ op: 'add', kind: TimetableItemKind.LECTURE, lectureId: object(value).id })),
+    ...adds.customBlocks.map((value) => {
+      const { id: _sourceId, ...data } = object(value)
+      return { op: 'add', kind: TimetableItemKind.CUSTOM, data }
+    }),
+  ]
+  if (changes.length === 0) return fail('At least one timetable item change is required')
+  return parseTimetableChanges(changes)
 }
 
 export function validateCreateTimetableInput(body: ITimetableV2.CreateReqDto): void {

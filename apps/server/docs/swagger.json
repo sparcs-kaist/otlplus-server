@@ -3468,102 +3468,6 @@
           }
         }
       },
-      "post": {
-        "summary": "TimetablesControllerV2.addTimetableItems",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ITimetableV2.AddItemsResDto"
-                }
-              }
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "timetableId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          },
-          {
-            "name": "accept-language",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "en",
-                "ko"
-              ]
-            },
-            "description": "en/ko (기본: ko). 언어 헤더 파라미터"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ITimetableV2.AddItemsReqDto"
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "summary": "TimetablesControllerV2.removeTimetableItems",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ITimetableV2.ItemIdsResDto"
-                }
-              }
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "timetableId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          },
-          {
-            "name": "accept-language",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "en",
-                "ko"
-              ]
-            },
-            "description": "en/ko (기본: ko). 언어 헤더 파라미터"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ITimetableV2.RemoveItemsReqDto"
-              }
-            }
-          }
-        }
-      },
       "get": {
         "summary": "TimetablesControllerV2.getTimetableItems",
         "responses": {
@@ -11411,7 +11315,7 @@
           "changes"
         ],
         "additionalProperties": false,
-        "description": "Legacy request. Cannot be combined with customBlocks; returns UpdateItemsResDtoV1."
+        "description": "Legacy request. Cannot be combined with grouped changes; returns UpdateItemsResDtoV1."
       },
       "ITimetableV2.UpdateItemsResDtoV1": {
         "type": "object",
@@ -11623,13 +11527,6 @@
               "$ref": "#/components/schemas/ICustomblock.Basic"
             }
           },
-          "source": {
-            "type": "string",
-            "enum": [
-              "saved",
-              "enrolled"
-            ]
-          },
           "timetableId": {
             "oneOf": [
               {
@@ -11648,6 +11545,13 @@
           },
           "semester": {
             "type": "number"
+          },
+          "timetableType": {
+            "type": "string",
+            "enum": [
+              "scholar",
+              "timetable"
+            ]
           }
         },
         "required": [
@@ -11655,8 +11559,8 @@
           "lectures",
           "name",
           "semester",
-          "source",
           "timetableId",
+          "timetableType",
           "year"
         ],
         "additionalProperties": false
@@ -12316,13 +12220,6 @@
               "$ref": "#/components/schemas/ICustomblock.Basic"
             }
           },
-          "source": {
-            "type": "string",
-            "enum": [
-              "saved",
-              "enrolled"
-            ]
-          },
           "timetableId": {
             "oneOf": [
               {
@@ -12341,6 +12238,13 @@
           },
           "semester": {
             "type": "number"
+          },
+          "timetableType": {
+            "type": "string",
+            "enum": [
+              "scholar",
+              "timetable"
+            ]
           }
         },
         "required": [
@@ -12348,8 +12252,8 @@
           "lectures",
           "name",
           "semester",
-          "source",
           "timetableId",
+          "timetableType",
           "year"
         ]
       },
@@ -12462,99 +12366,10 @@
         ],
         "additionalProperties": false
       },
-      "ITimetableV2.AddItemsReqDto": {
-        "type": "object",
-        "properties": {
-          "lectureIds": {
-            "type": "array",
-            "items": {
-              "type": "number"
-            }
-          },
-          "customBlocks": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ICustomblock.CreateDto"
-            }
-          }
-        },
-        "additionalProperties": false,
-        "description": "At least one lecture ID or custom block is required."
-      },
-      "ITimetableV2.RemoveItemsReqDto": {
-        "type": "object",
-        "properties": {
-          "lectureIds": {
-            "type": "array",
-            "items": {
-              "type": "number"
-            }
-          },
-          "customBlockIds": {
-            "type": "array",
-            "items": {
-              "type": "number"
-            }
-          }
-        },
-        "additionalProperties": false,
-        "description": "At least one lecture ID or custom block ID is required."
-      },
-      "ITimetableV2.ItemIdsResDto": {
-        "type": "object",
-        "properties": {
-          "lectureIds": {
-            "type": "array",
-            "items": {
-              "type": "number"
-            }
-          },
-          "customBlockIds": {
-            "type": "array",
-            "items": {
-              "type": "number"
-            }
-          }
-        },
-        "required": [
-          "lectureIds",
-          "customBlockIds"
-        ],
-        "additionalProperties": false
-      },
-      "ITimetableV2.AddItemsResDto": {
-        "type": "object",
-        "properties": {
-          "lectures": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ITimetableV2.LectureResDto"
-            }
-          },
-          "customBlocks": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ICustomblock.Basic"
-            }
-          }
-        },
-        "required": [
-          "lectures",
-          "customBlocks"
-        ],
-        "additionalProperties": false
-      },
       "ITimetableV2.TimetableSelectionResDto": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "source": {
-            "type": "string",
-            "enum": [
-              "saved",
-              "enrolled"
-            ]
-          },
           "timetableId": {
             "oneOf": [
               {
@@ -12573,13 +12388,20 @@
           },
           "semester": {
             "type": "number"
+          },
+          "timetableType": {
+            "type": "string",
+            "enum": [
+              "scholar",
+              "timetable"
+            ]
           }
         },
         "required": [
           "name",
           "semester",
-          "source",
           "timetableId",
+          "timetableType",
           "year"
         ]
       },
@@ -12619,19 +12441,23 @@
       "ITimetableV2.UpdateItemsReqDtoV2": {
         "type": "object",
         "properties": {
-          "customBlocks": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ITimetableV2.UpdateCustomBlockDto"
-            },
-            "minItems": 1
+          "adds": {
+            "$ref": "#/components/schemas/ITimetableV2.AddItemsDto"
+          },
+          "deletes": {
+            "$ref": "#/components/schemas/ITimetableV2.DeleteItemsDto"
+          },
+          "updates": {
+            "$ref": "#/components/schemas/ITimetableV2.UpdateItemsDto"
           }
         },
         "required": [
-          "customBlocks"
+          "adds",
+          "deletes",
+          "updates"
         ],
         "additionalProperties": false,
-        "description": "Update existing blocks by ID. Requires at least one block and one changed field per block. Cannot be combined with changes; returns UpdateItemsResDtoV2 in request order."
+        "description": "Applies deletes, updates, then adds atomically. At least one item across the groups is required."
       },
       "ITimetableV2.UpdateItemsResDtoV2": {
         "type": "object",
@@ -12640,6 +12466,185 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ICustomblock.Basic"
+            }
+          },
+          "lectures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ITimetableV2.LectureResDto"
+            }
+          }
+        },
+        "required": [
+          "lectures",
+          "customBlocks"
+        ],
+        "additionalProperties": false
+      },
+      "ITimetableV2.TimetableLectureRef": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "courseId": {
+            "type": "number"
+          },
+          "classNo": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "subtitle": {
+            "type": "string"
+          },
+          "department": {
+            "$ref": "#/components/schemas/ITimetableV2.DepartmentResDto"
+          },
+          "type": {
+            "type": "string"
+          },
+          "limitPeople": {
+            "type": "number"
+          },
+          "numPeople": {
+            "type": "number"
+          },
+          "credit": {
+            "type": "number"
+          },
+          "creditAU": {
+            "type": "number"
+          },
+          "averageGrade": {
+            "type": "number"
+          },
+          "averageLoad": {
+            "type": "number"
+          },
+          "averageSpeech": {
+            "type": "number"
+          },
+          "isEnglish": {
+            "type": "boolean"
+          },
+          "professors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ITimetableV2.ProfessorResDto"
+            }
+          },
+          "classes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ITimetableV2.ClassResDto"
+            }
+          },
+          "examTimes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ITimetableV2.ExamTimeResDto"
+            }
+          },
+          "classDuration": {
+            "type": "number"
+          },
+          "expDuration": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "ITimetableV2.AddCustomBlockDto": {
+        "type": "object",
+        "properties": {
+          "block_name": {
+            "type": "string"
+          },
+          "place": {
+            "type": "string"
+          },
+          "day": {
+            "type": "number"
+          },
+          "begin": {
+            "type": "number"
+          },
+          "end": {
+            "type": "number"
+          },
+          "times": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ICustomblock.Time"
+            }
+          },
+          "id": {
+            "type": "number",
+            "description": "Existing item IDs are ignored on creation."
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "block_name",
+          "place"
+        ]
+      },
+      "ITimetableV2.AddItemsDto": {
+        "type": "object",
+        "properties": {
+          "lectures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ITimetableV2.TimetableLectureRef"
+            }
+          },
+          "customBlocks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ITimetableV2.AddCustomBlockDto"
+            }
+          }
+        },
+        "required": [
+          "lectures",
+          "customBlocks"
+        ],
+        "additionalProperties": false
+      },
+      "ITimetableV2.DeleteItemsDto": {
+        "type": "object",
+        "properties": {
+          "lectures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ITimetableV2.TimetableLectureRef"
+            }
+          },
+          "customBlocks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ITimetableV2.UpdateCustomBlockDto"
+            }
+          }
+        },
+        "required": [
+          "lectures",
+          "customBlocks"
+        ],
+        "additionalProperties": false
+      },
+      "ITimetableV2.UpdateItemsDto": {
+        "type": "object",
+        "properties": {
+          "customBlocks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ITimetableV2.UpdateCustomBlockDto"
             }
           }
         },

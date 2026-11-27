@@ -234,13 +234,13 @@ describe('FriendsService', () => {
       timetables.getSharedTimetableForSemester.mockResolvedValue({
         timetable_timetable_lectures: [], timetable_timetable_customblocks: [],
       })
-      await expect(service.getSharedTimetable(user, 7, term, 'en')).resolves.toMatchObject({ source: 'saved', lectures: [], customBlocks: [] })
+      await expect(service.getSharedTimetable(user, 7, term, 'en')).resolves.toMatchObject({ timetableType: 'timetable', lectures: [], customBlocks: [] })
       expect(lectures.getTakenLecturesBySemester).not.toHaveBeenCalled()
       timetables.getSharedTimetableForSemester.mockResolvedValue(null)
       lectures.getTakenLecturesBySemester.mockResolvedValue([lecture])
       const fallback = await service.getSharedTimetable(user, 7, term, 'en')
       expect(fallback).toMatchObject({
-        ...term, source: 'enrolled', timetableId: null, name: 'Enrolled timetable',
+        ...term, timetableType: 'scholar', timetableId: null, name: 'Enrolled timetable',
         lectures: [{ id: 10 }], customBlocks: [],
       })
       expect(fallback).not.toHaveProperty('timetableItems')
@@ -283,7 +283,7 @@ describe('FriendsService', () => {
         timetable_timetable_lectures: [], timetable_timetable_customblocks: [],
       })
       await expect(service.getSharedTimetable(user, 7, term, 'ko')).resolves.toMatchObject({
-        source: 'saved', lectures: [], customBlocks: [],
+        timetableType: 'timetable', lectures: [], customBlocks: [],
       })
     })
   })

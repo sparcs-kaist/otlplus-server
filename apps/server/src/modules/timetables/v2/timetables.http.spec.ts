@@ -8,6 +8,7 @@ import { existsSync, rmSync, writeFileSync } from 'fs'
 import request from 'supertest'
 
 import { PrismaService } from '@otl/prisma-client/prisma.service'
+import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
 import { FriendsController } from '@otl/server-nest/modules/friends/friends.controller'
 import { FriendCodeRateLimitGuard } from '@otl/server-nest/modules/friends/friend-code-rate-limit.guard'
 import { FriendsService } from '@otl/server-nest/modules/friends/friends.service'
@@ -149,6 +150,17 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     return response.body.id as number
   }
 
+  const emptyBatch = {
+    adds: { lectures: [], customBlocks: [] },
+    deletes: { lectures: [], customBlocks: [] },
+    updates: { customBlocks: [] },
+  }
+
+  function patchItems(timetableId: number, operations: Partial<ITimetableV2.UpdateItemsReqDtoV2>) {
+    return request(app.getHttpServer()).patch(`${prefix}/${timetableId}/items`)
+      .set('Accept-Language', 'en').send({ ...emptyBatch, ...operations })
+  }
+
   it('preserves old create, lecture PATCH and custom CRUD with separated detail responses', async () => {
     const id = await create()
     const url = `${prefix}/${id}`
@@ -198,101 +210,83 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     expect(current).toEqual({ lectures: [], customBlocks: [replaced.timetableItems[0].data] })
   })
 
-  it('returns added objects and removed IDs in group order and preserves content and lecture updates', async () => {
-    const id = await create()
+  it('applies a V2 replacement in one batch and returns the complete committed timetable', async () => {
+    const id = await create([lectureId])
     const url = `${prefix}/${id}`
-    const data = { block_name: block.block_name, place: block.place, times: [blockTime, { day: 3, begin: 720, end: 780 }] }
-    const secondData = { block_name: 'Second block', place: 'Dormitory', times: [{ ...blockTime, day: 4 }] }
-    const existingData = { ...block, block_name: 'Existing block', day: 2 }
-    const existingId = (await request(app.getHttpServer()).post(`${url}/custom-blocks`).send(existingData).expect(201)).body.id
-    customIds.add(existingId)
-    const existing = { ...existingData, id: existingId, times: [{ ...blockTime, day: 2 }] }
-    publishLectureNumUpdate.mockClear()
-    const added = (await request(app.getHttpServer()).post(`${url}/items`).set('Accept-Language', 'en').send({
-      lectureIds: [lectureId], customBlocks: [data, secondData],
-    }).expect(200)).body
-    expect(added).toEqual({
-      lectures: [expect.objectContaining({ id: lectureId, name: 'HTTP lecture' })],
-      customBlocks: [
-        { ...block, id: expect.any(Number), times: data.times },
-        { ...secondData, ...secondData.times[0], id: expect.any(Number) },
-      ],
-    })
-    const [customId, secondCustomId] = added.customBlocks.map((customBlock: { id: number }) => customBlock.id)
-    added.customBlocks.forEach((customBlock: { id: number }) => customIds.add(customBlock.id))
-    const current = (await request(app.getHttpServer()).get(url).set('Accept-Language', 'en').expect(200)).body
-    expect(current).toEqual({
-      lectures: added.lectures, customBlocks: expect.arrayContaining([existing, ...added.customBlocks]),
-    })
-    expect(current.customBlocks).toHaveLength(3)
-    expect(publishLectureNumUpdate.mock.calls).toEqual([[lectureId]])
+    const fixtures = [
+      { ...block, block_name: 'Moving' },
+      { ...block, block_name: 'Removing', day: 2 },
+      { ...block, block_name: 'Untouched', day: 3 },
+    ]
+    const saved = []
+    for (const data of fixtures) {
+      const { body: { id: customId } } = await request(app.getHttpServer()).post(`${url}/custom-blocks`).send(data).expect(201)
+      customIds.add(customId)
+      saved.push({ ...data, id: customId, times: [{ ...blockTime, day: data.day }] })
+    }
+    const [moving, removing, untouched] = saved
+    const { body: { lectures: [lecture] } } = await request(app.getHttpServer())
+      .get(`${url}/items`).set('Accept-Language', 'en').expect(200)
+    const takesLectureTime = { ...block, block_name: 'Former lecture time', day: 0, begin: 540, end: 600 }
+    const takesBlockTime = { ...block, block_name: 'Vacated block time' }
 
-    const removed = (await request(app.getHttpServer()).delete(`${url}/items`).send({
-      lectureIds: [lectureId], customBlockIds: [secondCustomId, customId],
-    }).expect(200)).body
-    expect(removed).toEqual({ lectureIds: [lectureId], customBlockIds: [secondCustomId, customId] })
-    expect((await request(app.getHttpServer()).get(url).expect(200)).body).toEqual({ lectures: [], customBlocks: [existing] })
+    publishLectureNumUpdate.mockClear()
+    const { body: result } = await patchItems(id, {
+      adds: { lectures: [], customBlocks: [{ ...takesLectureTime, id: removing.id }, takesBlockTime] },
+      deletes: { lectures: [lecture], customBlocks: [removing] },
+      updates: { customBlocks: [{ id: moving.id, day: removing.day }] },
+    }).expect(200)
+    const added = result.customBlocks.find((entry: { block_name: string }) => entry.block_name === takesLectureTime.block_name)
+    const second = result.customBlocks.find((entry: { block_name: string }) => entry.block_name === takesBlockTime.block_name)
+    customIds.add(added.id)
+    customIds.add(second.id)
+    expect(added.id).not.toBe(removing.id)
+    expect(result).toEqual({ lectures: [], customBlocks: expect.arrayContaining([
+      untouched,
+      { ...moving, day: removing.day, times: removing.times },
+      { ...takesLectureTime, id: added.id, times: [{ day: 0, begin: 540, end: 600 }] },
+      { ...takesBlockTime, id: second.id, times: [blockTime] },
+    ]) })
+    expect(result.customBlocks).toHaveLength(4)
+    expect((await request(app.getHttpServer()).get(`${url}/items`).expect(200)).body).toEqual(result)
+
+    const { body: restored } = await patchItems(id, {
+      deletes: { lectures: [], customBlocks: [{ id: added.id }] },
+      adds: { lectures: [{ ...lecture, name: 'Ignored client name' }], customBlocks: [] },
+    }).expect(200)
+    expect(restored.lectures).toEqual([lecture])
+    expect(restored.customBlocks).toEqual(result.customBlocks.filter((entry: { id: number }) => entry.id !== added.id))
     expect(publishLectureNumUpdate.mock.calls).toEqual([[lectureId], [lectureId]])
   })
 
-  it('updates only requested custom blocks and returns complete objects in request order', async () => {
-    const id = await create([lectureId])
-    const url = `${prefix}/${id}`
-    const added = (await request(app.getHttpServer()).post(`${url}/items`).send({ customBlocks: [
-      { ...block, times: [blockTime, { ...blockTime, day: 3 }] },
-      { ...block, block_name: 'Second', day: 2 },
-      { ...block, block_name: 'Untouched', day: 4 },
-    ] }).expect(200)).body.customBlocks
-    added.forEach((entry: { id: number }) => customIds.add(entry.id))
-    const [first, second, untouched] = added
-    const before = (await request(app.getHttpServer()).get(url).expect(200)).body
-    const times = [{ day: 5, begin: 720, end: 780 }, { day: 6, begin: 840, end: 900 }]
-    publishLectureNumUpdate.mockClear()
-    const updated = (await request(app.getHttpServer()).patch(`${url}/items`).send({ customBlocks: [
-      { id: second.id, place: '' },
-      { id: first.id, block_name: 'Updated', times },
-    ] }).expect(200)).body
-    expect(updated).toEqual({ customBlocks: [
-      { ...second, place: '' },
-      { ...first, block_name: 'Updated', ...times[0], times },
-    ] })
-    const current = (await request(app.getHttpServer()).get(url).expect(200)).body
-    expect(current.lectures).toEqual(before.lectures)
-    expect(current.customBlocks).toEqual(expect.arrayContaining([untouched, ...updated.customBlocks]))
-    expect(current.customBlocks).toHaveLength(3)
-    const full = { ...updated.customBlocks[0], block_name: 'Full object' }
-    expect((await request(app.getHttpServer()).patch(`${url}/items`)
-      .send({ customBlocks: [full] }).expect(200)).body).toEqual({ customBlocks: [full] })
-    expect(publishLectureNumUpdate).not.toHaveBeenCalled()
+  it.each(['post', 'delete'] as const)('does not accept %s for timetable items', async (method) => {
+    const id = await create()
+    await request(app.getHttpServer())[method](`${prefix}/${id}/items`).send(emptyBatch).expect(404)
+    expect((await request(app.getHttpServer()).get(`${prefix}/${id}/items`).expect(200)).body)
+      .toEqual({ lectures: [], customBlocks: [] })
   })
 
-  it('rejects malformed custom block PATCH bodies without changing stored content', async () => {
-    const id = await create()
-    const url = `${prefix}/${id}`
-    const customBlock = (await request(app.getHttpServer()).post(`${url}/items`)
-      .send({ customBlocks: [block] }).expect(200)).body.customBlocks[0]
+  it('rejects malformed or mixed grouped PATCH bodies without changing stored content', async () => {
+    const id = await create([lectureId])
+    const url = `${prefix}/${id}/items`
+    const { body: { customBlocks: [customBlock] } } = await patchItems(id, {
+      adds: { lectures: [], customBlocks: [block] },
+    }).expect(200)
     customIds.add(customBlock.id)
-    const valid = { id: customBlock.id, place: 'Changed' }
     const before = (await request(app.getHttpServer()).get(url).expect(200)).body
+    const valid = { id: customBlock.id, place: 'Changed' }
     const bodies = [
-      {}, { customBlocks: [] }, { customBlocks: null }, { customBlocks: {} },
-      { customBlocks: [null] }, { customBlocks: [[]] }, { customBlocks: [1] },
-      { customBlocks: [{ place: 'Missing ID' }] }, { customBlocks: [{ id: 0, place: '' }] },
-      { customBlocks: [{ id: -1, place: '' }] }, { customBlocks: [{ id: 1.5, place: '' }] },
-      { customBlocks: [{ id: String(customBlock.id), place: '' }] },
-      { customBlocks: [valid, valid] }, { customBlocks: [{ id: customBlock.id }] },
-      { changes: [], customBlocks: [valid] }, { changes: null, customBlocks: [valid] },
-      { changes: [{ op: 'update', kind: 'custom', id: customBlock.id, data: { place: '' } }], customBlocks: [] },
-      { customBlocks: [valid], unexpected: true },
-      ...[
-        { block_name: ' ' }, { block_name: 'x'.repeat(256) }, { place: null }, { day: 7 },
-        { begin: '600' }, { begin: 660 }, { begin: -1 }, { end: 1441 }, { times: [] },
-        { times: [blockTime, blockTime] }, { day: 2, times: [blockTime] },
-        { kind: 'custom' }, { op: 'update' }, { data: { place: 'Nested' } },
-      ].map((data) => ({ customBlocks: [{ id: customBlock.id, ...data }] })),
+      {}, emptyBatch, { customBlocks: [valid] },
+      { ...emptyBatch, changes: [{ op: 'remove', kind: 'lecture', id: lectureId }] },
+      { ...emptyBatch, updates: { customBlocks: [valid] }, unexpected: true },
+      { ...emptyBatch, adds: { lectures: [lectureId], customBlocks: [] } },
+      { ...emptyBatch, deletes: { lectures: [{ id: lectureId }] } },
+      { ...emptyBatch, updates: { customBlocks: [valid, valid] } },
+      { ...emptyBatch, updates: { customBlocks: [valid] }, deletes: { lectures: [], customBlocks: [customBlock] } },
+      { ...emptyBatch, updates: { customBlocks: [{ ...valid, times: [blockTime, blockTime] }] } },
     ]
     publishLectureNumUpdate.mockClear()
-    for (const body of bodies) await request(app.getHttpServer()).patch(`${url}/items`).send(body).expect(400)
+    for (const body of bodies) await request(app.getHttpServer()).patch(url).send(body).expect(400)
     expect((await request(app.getHttpServer()).get(url).expect(200)).body).toEqual(before)
     expect(publishLectureNumUpdate).not.toHaveBeenCalled()
   })
@@ -300,48 +294,49 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
   it('checks ownership and custom block membership for grouped PATCH requests', async () => {
     const id = await create()
     const otherId = await create()
-    const url = `${prefix}/${id}`
-    const own = (await request(app.getHttpServer()).post(`${url}/items`)
-      .send({ customBlocks: [block] }).expect(200)).body.customBlocks[0]
-    const foreign = (await request(app.getHttpServer()).post(`${prefix}/${otherId}/items`)
-      .send({ customBlocks: [block] }).expect(200)).body.customBlocks[0]
+    const adds = { lectures: [], customBlocks: [block] }
+    const { body: { customBlocks: [own] } } = await patchItems(id, { adds }).expect(200)
+    const { body: { customBlocks: [foreign] } } = await patchItems(otherId, { adds }).expect(200)
     customIds.add(own.id)
     customIds.add(foreign.id)
-    const body = { customBlocks: [{ id: own.id, place: 'Changed' }] }
-    await request(app.getHttpServer()).patch(`${url}/items`).set('x-test-other-user', '1').send(body).expect(403)
-    await request(app.getHttpServer()).patch(`${prefix}/2147483647/items`).send(body).expect(404)
+    const edit = { id: own.id, place: 'Changed' }
+    await patchItems(id, { updates: { customBlocks: [edit] } }).set('x-test-other-user', '1').expect(403)
+    await patchItems(2147483647, { updates: { customBlocks: [edit] } }).expect(404)
     for (const invalidId of [foreign.id, 2147483647]) {
-      await request(app.getHttpServer()).patch(`${url}/items`).send({ customBlocks: [
-        ...body.customBlocks, { id: invalidId, place: 'Invalid target' },
-      ] }).expect(404)
+      await patchItems(id, { updates: { customBlocks: [edit, { id: invalidId, place: 'Invalid target' }] } }).expect(404)
+      await patchItems(id, { deletes: { lectures: [], customBlocks: [{ id: invalidId }] } }).expect(404)
     }
-    expect((await request(app.getHttpServer()).get(url).expect(200)).body.customBlocks).toEqual([own])
-    expect((await request(app.getHttpServer()).get(`${prefix}/${otherId}`).expect(200)).body.customBlocks).toEqual([foreign])
+    expect((await request(app.getHttpServer()).get(`${prefix}/${id}/items`).expect(200)).body.customBlocks).toEqual([own])
+    expect((await request(app.getHttpServer()).get(`${prefix}/${otherId}/items`).expect(200)).body.customBlocks).toEqual([foreign])
   })
 
-  it('rolls back earlier custom block writes when a later grouped PATCH write fails', async () => {
-    const id = await create()
-    const url = `${prefix}/${id}`
-    const blocks = (await request(app.getHttpServer()).post(`${url}/items`).send({ customBlocks: [
-      block, { ...block, day: 2 },
-    ] }).expect(200)).body.customBlocks
-    blocks.forEach((entry: { id: number }) => customIds.add(entry.id))
+  it('rolls back deletes and updates when an addition fails after creating a block', async () => {
+    const id = await create([lectureId])
+    const url = `${prefix}/${id}/items`
+    const { body: { customBlocks: [moving, removing] } } = await patchItems(id, {
+      adds: { lectures: [], customBlocks: [block, { ...block, day: 2 }] },
+    }).expect(200)
+    customIds.add(moving.id)
+    customIds.add(removing.id)
     const before = (await request(app.getHttpServer()).get(url).expect(200)).body
     const repository = app.get(CustomblockRepository)
-    const update = repository.updateCustomblock.bind(repository)
-    const writes = jest.spyOn(repository, 'updateCustomblock')
-      .mockImplementationOnce(update)
-      .mockRejectedValueOnce(new Error('Injected second custom-block write failure'))
+    const mapping = jest.spyOn(repository, 'addCustomblockToTimetable')
+      .mockRejectedValueOnce(new Error('Injected custom-block attachment failure'))
+    const failedName = 'Must roll back new block'
+    publishLectureNumUpdate.mockClear()
     try {
-      await request(app.getHttpServer()).patch(`${url}/items`).send({ customBlocks: [
-        { id: blocks[0].id, place: 'Must roll back', times: [{ ...blockTime, day: 4 }] },
-        { id: blocks[1].id, place: 'Failed write' },
-      ] }).expect(500)
-      expect(writes.mock.calls.map(([id]) => id)).toEqual(blocks.map((entry: { id: number }) => entry.id))
+      await patchItems(id, {
+        deletes: { lectures: [{ id: lectureId }], customBlocks: [removing] },
+        updates: { customBlocks: [{ id: moving.id, place: 'Must roll back', day: 2 }] },
+        adds: { lectures: [], customBlocks: [{ ...block, block_name: failedName, day: 0, begin: 540, end: 600 }] },
+      }).expect(500)
+      expect(mapping).toHaveBeenCalledTimes(1)
+      expect(await prisma.block_custom_blocks.count({ where: { block_name: failedName } })).toBe(0)
       expect((await request(app.getHttpServer()).get(url).expect(200)).body).toEqual(before)
+      expect(publishLectureNumUpdate).not.toHaveBeenCalled()
     }
     finally {
-      writes.mockRestore()
+      mapping.mockRestore()
     }
   })
 
@@ -358,83 +353,26 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     })
   })
 
-  it('rejects item creation collisions, wrong semesters and incomplete removals atomically', async () => {
+  it('rejects final-state collisions, wrong semesters and incomplete removals atomically', async () => {
     const id = await create()
-    const url = `${prefix}/${id}`
+    const emptyDetail = { lectures: [], customBlocks: [] }
     publishLectureNumUpdate.mockClear()
-    await request(app.getHttpServer()).post(`${url}/items`).send({
-      lectureIds: [lectureId], customBlocks: [{ ...block, day: 0, begin: 570, end: 630 }],
+    await patchItems(id, {
+      adds: { lectures: [{ id: lectureId }], customBlocks: [{ ...block, day: 0, begin: 570, end: 630 }] },
     }).expect(409)
-    expect((await request(app.getHttpServer()).get(url).expect(200)).body).toEqual({ lectures: [], customBlocks: [] })
+    expect((await request(app.getHttpServer()).get(`${prefix}/${id}/items`).expect(200)).body).toEqual(emptyDetail)
 
-    const otherTerm = (await request(app.getHttpServer()).post(prefix).send({ ...term, semester: 1, lectureIds: [] }).expect(201)).body.id
-    await request(app.getHttpServer()).post(`${prefix}/${otherTerm}/items`).send({
-      lectureIds: [lectureId], customBlocks: [block],
-    }).expect(400)
-    expect((await request(app.getHttpServer()).get(`${prefix}/${otherTerm}`).expect(200)).body).toEqual({ lectures: [], customBlocks: [] })
+    const { body: { id: otherTerm } } = await request(app.getHttpServer()).post(prefix)
+      .send({ ...term, semester: 1, lectureIds: [] }).expect(201)
+    await patchItems(otherTerm, { adds: { lectures: [{ id: lectureId }], customBlocks: [block] } }).expect(400)
+    expect((await request(app.getHttpServer()).get(`${prefix}/${otherTerm}/items`).expect(200)).body).toEqual(emptyDetail)
     expect(publishLectureNumUpdate).not.toHaveBeenCalled()
 
-    await request(app.getHttpServer()).post(`${url}/items`).send({ lectureIds: [lectureId] }).expect(200)
-    const before = (await request(app.getHttpServer()).get(url).expect(200)).body
+    await patchItems(id, { adds: { lectures: [{ id: lectureId }], customBlocks: [] } }).expect(200)
+    const before = (await request(app.getHttpServer()).get(`${prefix}/${id}/items`).expect(200)).body
     publishLectureNumUpdate.mockClear()
-    await request(app.getHttpServer()).delete(`${url}/items`).send({
-      lectureIds: [lectureId], customBlockIds: [2147483647],
-    }).expect(404)
-    expect((await request(app.getHttpServer()).get(url).expect(200)).body).toEqual(before)
-    expect(publishLectureNumUpdate).not.toHaveBeenCalled()
-  })
-
-  it('accepts either item group alone or with an empty companion group', async () => {
-    const id = await create()
-    const url = `${prefix}/${id}`
-    const customAdded = (await request(app.getHttpServer()).post(`${url}/items`).send({ customBlocks: [block] }).expect(200)).body
-    expect(customAdded).toEqual({ lectures: [], customBlocks: [{ ...block, id: expect.any(Number), times: [blockTime] }] })
-    const customId = customAdded.customBlocks[0].id
-    customIds.add(customId)
-    const customRemoved = (await request(app.getHttpServer()).delete(`${url}/items`).send({ customBlockIds: [customId] }).expect(200)).body
-    expect(customRemoved).toEqual({ lectureIds: [], customBlockIds: [customId] })
-    const lectureAdded = (await request(app.getHttpServer()).post(`${url}/items`).send({ lectureIds: [lectureId], customBlocks: [] }).expect(200)).body
-    expect(lectureAdded).toEqual({ lectures: [expect.objectContaining({ id: lectureId })], customBlocks: [] })
-    expect(lectureAdded.lectures).toEqual((await request(app.getHttpServer()).get(url).expect(200)).body.lectures)
-    const lectureRemoved = (await request(app.getHttpServer()).delete(`${url}/items`).send({ lectureIds: [lectureId], customBlockIds: [] }).expect(200)).body
-    expect(lectureRemoved).toEqual({ lectureIds: [lectureId], customBlockIds: [] })
-    expect((await request(app.getHttpServer()).get(url).expect(200)).body).toEqual({ lectures: [], customBlocks: [] })
-  })
-
-  it.each(['post', 'delete'] as const)('rejects malformed %s item bodies without changing the timetable', async (method) => {
-    const id = await create(method === 'delete' ? [lectureId] : [])
-    const url = `${prefix}/${id}`
-    const before = (await request(app.getHttpServer()).get(url).expect(200)).body
-    const customField = method === 'post' ? 'customBlocks' : 'customBlockIds'
-    const bodies = [
-      {}, { lectureIds: [] }, { [customField]: [] }, { lectureIds: [], [customField]: [] },
-      { lectureIds: null }, { lectureIds: {} }, { lectureIds: [null] }, { lectureIds: [[]] },
-      { lectureIds: [0] }, { lectureIds: [String(lectureId)] }, { lectureIds: [lectureId, lectureId] },
-      { lectureIds: [lectureId], [customField]: null }, { lectureIds: [lectureId], [customField]: {} },
-      { lectureIds: [lectureId], unexpected: true }, { lectureIds: [lectureId], op: 'remove' },
-      { lectureIds: [lectureId], kind: 'lecture' }, { lectureIds: [lectureId], items: [] },
-      { [customField]: [null] }, { [customField]: [[]] },
-      ...(method === 'post'
-        ? [
-          { customBlocks: [{ ...block, times: [] }] }, { customBlocks: [{ ...block, unexpected: true }] },
-          { customBlocks: [{ ...block, op: 'remove' }] }, { customBlockIds: [1] },
-        ]
-        : [{ customBlockIds: [0] }, { customBlockIds: [1, 1] }, { customBlocks: [block] }]),
-    ]
-    publishLectureNumUpdate.mockClear()
-    for (const body of bodies) await request(app.getHttpServer())[method](`${url}/items`).send(body).expect(400)
-    expect((await request(app.getHttpServer()).get(url).expect(200)).body).toEqual(before)
-    expect(publishLectureNumUpdate).not.toHaveBeenCalled()
-  })
-
-  it.each(['post', 'delete'] as const)('checks ownership and timetable existence for %s items', async (method) => {
-    const id = await create(method === 'delete' ? [lectureId] : [])
-    const body = { lectureIds: [lectureId] }
-    const before = (await request(app.getHttpServer()).get(`${prefix}/${id}`).expect(200)).body
-    publishLectureNumUpdate.mockClear()
-    await request(app.getHttpServer())[method](`${prefix}/${id}/items`).set('x-test-other-user', '1').send(body).expect(403)
-    await request(app.getHttpServer())[method](`${prefix}/2147483647/items`).send(body).expect(404)
-    expect((await request(app.getHttpServer()).get(`${prefix}/${id}`).expect(200)).body).toEqual(before)
+    await patchItems(id, { deletes: { lectures: [{ id: lectureId }], customBlocks: [{ id: 2147483647 }] } }).expect(404)
+    expect((await request(app.getHttpServer()).get(`${prefix}/${id}/items`).expect(200)).body).toEqual(before)
     expect(publishLectureNumUpdate).not.toHaveBeenCalled()
   })
 
@@ -483,14 +421,14 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     const createHome = () => request(app.getHttpServer()).post(prefix).send({ ...homeTerm, lectureIds: [] }).expect(201)
     const selection = () => prisma.timetable_timetable.findFirst({ where: { user_id: user.id, ...homeTerm, is_main: true } })
     const enrolled = (await getHome()).body
-    expect(enrolled).toEqual({ ...homeTerm, source: 'enrolled', timetableId: null, name: expect.any(String), lectures: [], customBlocks: [] })
+    expect(enrolled).toEqual({ ...homeTerm, timetableType: 'scholar', timetableId: null, name: expect.any(String), lectures: [], customBlocks: [] })
     const first = (await createHome()).body.id
     expect((await selection())?.id).toBe(first)
     const second = (await createHome()).body.id
     expect((await selection())?.id).toBe(first)
-    expect((await getHome()).body).toEqual({ ...homeTerm, source: 'saved', timetableId: first, name: expect.any(String), lectures: [], customBlocks: [] })
+    expect((await getHome()).body).toEqual({ ...homeTerm, timetableType: 'timetable', timetableId: first, name: expect.any(String), lectures: [], customBlocks: [] })
     const selected = (await request(app.getHttpServer()).patch(`${prefix}/home`).send({ ...homeTerm, timetableId: second }).expect(200)).body
-    expect(selected).toEqual({ ...homeTerm, source: 'saved', timetableId: second, name: expect.any(String) })
+    expect(selected).toEqual({ ...homeTerm, timetableType: 'timetable', timetableId: second, name: expect.any(String) })
     expect((await getHome()).body).toEqual({ ...selected, lectures: [], customBlocks: [] })
     expect((await selection())?.id).toBe(second)
     await request(app.getHttpServer()).patch(`${prefix}/home`).send({ ...homeTerm, timetableId: null }).expect(400)
@@ -539,14 +477,14 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     const shared = () => request(app.getHttpServer()).get(`${prefix}/shared`).query(term).expect(200)
     const select = async (timetableId: number | null) => {
       const response = await request(app.getHttpServer()).patch(`${prefix}/shared`).send({ ...term, timetableId }).expect(200)
-      expect(response.body).toEqual({ ...term, timetableId, source: timetableId === null ? 'enrolled' : 'saved', name: expect.any(String) })
+      expect(response.body).toEqual({ ...term, timetableId, timetableType: timetableId === null ? 'scholar' : 'timetable', name: expect.any(String) })
       return response
     }
-    expect((await shared()).body).toEqual({ ...term, timetableId: null, source: 'enrolled', name: expect.any(String), lectures: [expect.objectContaining({ id: lectureId })], customBlocks: [] })
+    expect((await shared()).body).toEqual({ ...term, timetableId: null, timetableType: 'scholar', name: expect.any(String), lectures: [expect.objectContaining({ id: lectureId })], customBlocks: [] })
     expect((await friendsService.getOverlaps(otherUser, lectureId)).sameLecture.map(({ id }) => id)).toEqual([friend.id])
     expect(await friendRepository.getFriendIdsWithScheduleAt(otherUser.id, [friend.id], [term], 0, 570)).toEqual([friend.id])
     await request(app.getHttpServer()).patch(`${prefix}/home`).send({ ...term, timetableId: first }).expect(200)
-    expect((await friendShared()).body).toEqual({ ...term, source: 'enrolled', timetableId: null, name: expect.any(String), lectures: [expect.objectContaining({ id: lectureId })], customBlocks: [] })
+    expect((await friendShared()).body).toEqual({ ...term, timetableType: 'scholar', timetableId: null, name: expect.any(String), lectures: [expect.objectContaining({ id: lectureId })], customBlocks: [] })
     for (const suffix of ['', '/my-timetable', `/${first}`]) {
       await request(app.getHttpServer()).get(`/api/v2/friends/${friend.id}/timetables${suffix}`)
         .set('x-test-other-user', '1').query(term).expect(404)
@@ -555,21 +493,21 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     await request(app.getHttpServer()).get(`/api/v2/friends/${friend.id}/timetables/shared`)
       .set('x-test-other-user', '1').query({ year: 2026, semester: 9 }).expect(400)
     await select(first)
-    expect((await friendShared()).body).toEqual({ ...term, source: 'saved', timetableId: first, name: expect.any(String), lectures: [expect.objectContaining({ id: lectureId })], customBlocks: [] })
+    expect((await friendShared()).body).toEqual({ ...term, timetableType: 'timetable', timetableId: first, name: expect.any(String), lectures: [expect.objectContaining({ id: lectureId })], customBlocks: [] })
     expect((await request(app.getHttpServer()).get(prefix).query(term).expect(200)).body.timetables)
       .toContainEqual(expect.objectContaining({ id: first, isMain: true, isShared: true }))
     expect(await prisma.timetable_timetable.findUnique({ where: { id: first } })).toMatchObject({ is_main: true, is_shared: true })
     expect((await friendRepository.getFriendsWithCourse(otherUser.id, courseId)).map(({ id }) => id)).toEqual([friend.id])
     expect(await friendRepository.getFriendIdsWithScheduleAt(otherUser.id, [friend.id], [term], 0, 570)).toEqual([friend.id])
     await select(second)
-    expect((await friendShared()).body).toEqual({ ...term, timetableId: second, source: 'saved', name: expect.any(String), lectures: [], customBlocks: [] })
+    expect((await friendShared()).body).toEqual({ ...term, timetableId: second, timetableType: 'timetable', name: expect.any(String), lectures: [], customBlocks: [] })
     expect(await friendsService.getOverlaps(otherUser, lectureId)).toEqual({ sameLecture: [], sameCourseOtherSemester: [] })
     expect(await friendRepository.getFriendIdsWithScheduleAt(otherUser.id, [friend.id], [term], 0, 570)).toEqual([])
     const added = (await request(app.getHttpServer()).post(`${prefix}/${second}/custom-blocks`)
       .send({ ...block, times: [blockTime, { day: 4, begin: 700, end: 760 }] }).expect(201)).body
     customIds.add(added.id)
     expect((await friendShared()).body).toEqual({
-      ...term, timetableId: second, source: 'saved', name: expect.any(String), lectures: [],
+      ...term, timetableId: second, timetableType: 'timetable', name: expect.any(String), lectures: [],
       customBlocks: [{ ...block, id: added.id, times: [blockTime, { day: 4, begin: 700, end: 760 }] }],
     })
     expect((await shared()).body.customBlocks).toEqual([{ ...block, id: added.id, times: [blockTime, { day: 4, begin: 700, end: 760 }] }])
@@ -583,9 +521,9 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     }
     const spring = (await request(app.getHttpServer()).post(prefix).send({ ...term, semester: 1, lectureIds: [] }).expect(201)).body.id
     const selectedSpring = (await request(app.getHttpServer()).patch(`${prefix}/shared`).send({ ...term, semester: 1, timetableId: spring }).expect(200)).body
-    expect(selectedSpring).toEqual({ ...term, semester: 1, timetableId: spring, source: 'saved', name: expect.any(String) })
+    expect(selectedSpring).toEqual({ ...term, semester: 1, timetableId: spring, timetableType: 'timetable', name: expect.any(String) })
     await select(null)
-    expect((await shared()).body).toEqual({ ...term, timetableId: null, source: 'enrolled', name: expect.any(String), lectures: [expect.objectContaining({ id: lectureId })], customBlocks: [] })
+    expect((await shared()).body).toEqual({ ...term, timetableId: null, timetableType: 'scholar', name: expect.any(String), lectures: [expect.objectContaining({ id: lectureId })], customBlocks: [] })
     expect(await prisma.timetable_timetable.count({ where: { user_id: user.id, ...term, is_shared: true } })).toBe(0)
     expect(await friendRepository.getFriendIdsWithScheduleAt(otherUser.id, [friend.id], [term], 0, 570)).toEqual([friend.id])
     expect(await friendRepository.getFriendIdsWithScheduleAt(otherUser.id, [friend.id], [term], 4, 730)).toEqual([])
@@ -595,7 +533,7 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     expect([first, second]).toContain(winner)
     expect(await prisma.timetable_timetable.count({ where: { user_id: user.id, ...term, is_shared: true } })).toBe(1)
     await request(app.getHttpServer()).delete(prefix).send({ id: winner }).expect(200)
-    expect((await shared()).body).toEqual({ ...term, timetableId: null, source: 'enrolled', name: expect.any(String), lectures: [expect.objectContaining({ id: lectureId })], customBlocks: [] })
+    expect((await shared()).body).toEqual({ ...term, timetableId: null, timetableType: 'scholar', name: expect.any(String), lectures: [expect.objectContaining({ id: lectureId })], customBlocks: [] })
     expect(await prisma.timetable_timetable.count({ where: { user_id: user.id, ...term, is_shared: true } })).toBe(0)
     expect(await friendRepository.getFriendIdsWithScheduleAt(otherUser.id, [friend.id], [term], 0, 570)).toEqual([friend.id])
     expect((await request(app.getHttpServer()).get(`${prefix}/shared`).query({ ...term, semester: 1 }).expect(200)).body.timetableId).toBe(spring)
@@ -640,7 +578,7 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     const updated = await getBlock()
     expect(updated).toEqual({ ...block, id: customId, block_name: 'Grouped', ...replacement[0], times: replacement })
     const home = (await request(app.getHttpServer()).patch(`${prefix}/home`).send({ ...term, timetableId: id }).expect(200)).body
-    expect(home).toEqual({ ...term, timetableId: id, source: 'saved', name: expect.any(String) })
+    expect(home).toEqual({ ...term, timetableId: id, timetableType: 'timetable', name: expect.any(String) })
     const homeContent = (await request(app.getHttpServer()).get(`${prefix}/home`).query(term).expect(200)).body
     expect(homeContent).toEqual({ ...home, lectures: [], customBlocks: [updated] })
 
@@ -658,6 +596,30 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     customIds.add(restored.results[0].id)
     expect(restored.timetableItems[0].data).toEqual({ ...updated, id: restored.results[0].id })
     expect(restored.results[0].id).not.toBe(customId)
+  })
+
+  it.each(['v1 items', 'v2 items', 'custom block'])('appends a clear time through %s despite a retained overlap', async (endpoint) => {
+    const id = await create()
+    const url = `${prefix}/${id}`
+    const retained = { day: 0, begin: 540, end: 600 }
+    const { body: { id: customId } } = await request(app.getHttpServer()).post(`${url}/custom-blocks`)
+      .send({ ...block, ...retained }).expect(201)
+    customIds.add(customId)
+    await request(app.getHttpServer()).patch(url).send({ lectureId, action: 'add' }).expect(200)
+    const patch = (times: typeof blockTime[]) => {
+      if (endpoint === 'v2 items') return patchItems(id, { updates: { customBlocks: [{ id: customId, times }] } })
+      if (endpoint === 'v1 items') {
+        return request(app.getHttpServer()).patch(`${url}/items`).send({
+          changes: [{ op: 'update', kind: 'custom', id: customId, data: { times } }],
+        })
+      }
+      return request(app.getHttpServer()).patch(`${url}/custom-blocks/${customId}`).send({ times })
+    }
+    await patch([retained, blockTime]).expect(200)
+    await patch([{ ...retained, begin: 570 }, blockTime]).expect(409)
+    await patch([retained, { ...retained, begin: 570 }, blockTime]).expect(400)
+    const { body: { customBlocks } } = await request(app.getHttpServer()).get(`${url}/items`).expect(200)
+    expect(customBlocks).toEqual([{ ...block, ...retained, id: customId, times: [retained, blockTime] }])
   })
 
   it('normalizes pre-migration rows and rejects collisions in non-first occurrences atomically', async () => {

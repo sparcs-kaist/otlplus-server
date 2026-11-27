@@ -27,7 +27,7 @@ import { CustomblockRepository, LectureRepository, TimetableRepository } from '@
 import { ECustomblock } from '@otl/prisma-client/entities/ECustomblock'
 
 import {
-  parseCustomblockData, parseTimetableItems, parseTimetableItemUpdate, parseTimetableItemUpdateForBuddyMigration,
+  parseCustomblockData, parseTimetableItemUpdate, parseTimetableItemUpdateForBuddyMigration,
   validateCreateTimetableInput, validateCustomblockTimes,
 } from './timetable-input'
 
@@ -431,7 +431,14 @@ export class TimetablesServiceV2 {
     timetableId: number,
     language: Language,
   ): Promise<ITimetableV2.UpdateItemsResDtoV1> {
-    return this.applyTimetableChanges(user, parseTimetableItemUpdateForBuddyMigration(body), timetableId, language)
+    const { lectures, customBlocks, results } = await this.applyTimetableChanges(user, parseTimetableItemUpdateForBuddyMigration(body), timetableId, language)
+    return {
+      timetableItems: [
+        ...lectures.map((data) => ({ kind: TimetableItemKind.LECTURE, data })),
+        ...customBlocks.map((data) => ({ kind: TimetableItemKind.CUSTOM, data })),
+      ],
+      results,
+    }
   }
 
   async updateTimetableItems(
@@ -440,45 +447,8 @@ export class TimetablesServiceV2 {
     timetableId: number,
     language: Language,
   ): Promise<ITimetableV2.UpdateItemsResDtoV2> {
-    const result = await this.applyTimetableChanges(user, parseTimetableItemUpdate(body), timetableId, language)
-    return {
-      customBlocks: result.results.map(({ id }) => {
-        const item = result.timetableItems.find((entry) => entry.kind === TimetableItemKind.CUSTOM && entry.data.id === id)
-        if (!item || item.kind !== TimetableItemKind.CUSTOM) throw new Error('Updated custom block is missing from its result')
-        return item.data
-      }),
-    }
-  }
-
-  async addTimetableItems(
-    user: session_userprofile,
-    body: ITimetableV2.AddItemsReqDto,
-    timetableId: number,
-    language: Language,
-  ): Promise<ITimetableV2.AddItemsResDto> {
-    const result = await this.applyTimetableChanges(user, parseTimetableItems(body, 'add'), timetableId, language)
-    const addedItems = result.results.map(({ kind, id }) => {
-      const item = result.timetableItems.find((entry) => entry.kind === kind && entry.data.id === id)
-      if (!item) throw new Error('Added timetable item is missing from its result')
-      return item
-    })
-    return {
-      lectures: addedItems.flatMap((item) => (item.kind === TimetableItemKind.LECTURE ? [item.data] : [])),
-      customBlocks: addedItems.flatMap((item) => (item.kind === TimetableItemKind.CUSTOM ? [item.data] : [])),
-    }
-  }
-
-  async removeTimetableItems(
-    user: session_userprofile,
-    body: ITimetableV2.RemoveItemsReqDto,
-    timetableId: number,
-    language: Language,
-  ): Promise<ITimetableV2.ItemIdsResDto> {
-    const { results } = await this.applyTimetableChanges(user, parseTimetableItems(body, 'remove'), timetableId, language)
-    return {
-      lectureIds: results.filter(({ kind }) => kind === TimetableItemKind.LECTURE).map(({ id }) => id),
-      customBlockIds: results.filter(({ kind }) => kind === TimetableItemKind.CUSTOM).map(({ id }) => id),
-    }
+    const { lectures, customBlocks } = await this.applyTimetableChanges(user, parseTimetableItemUpdate(body), timetableId, language)
+    return { lectures, customBlocks }
   }
 
   private async applyTimetableChanges(
@@ -486,7 +456,7 @@ export class TimetablesServiceV2 {
     changes: ITimetableV2.TimetableChange[],
     timetableId: number,
     language: Language,
-  ): Promise<ITimetableV2.UpdateItemsResDtoV1> {
+  ) {
     const result = await this.updateTimetableItemsInTransaction(user, changes, timetableId, language)
     await this.publishLectureUpdates(changes.flatMap((change) => match(change)
       .with({ kind: TimetableItemKind.LECTURE, op: 'add' }, ({ lectureId }) => [lectureId])
@@ -502,17 +472,17 @@ export class TimetablesServiceV2 {
     changes: ITimetableV2.TimetableChange[],
     timetableId: number,
     language: Language,
-  ): Promise<ITimetableV2.UpdateItemsResDtoV1> {
+  ) {
     await this.timetableRepository.lockTimetable(timetableId)
     await this.TimetableValidation(user, timetableId)
     const timetable = await this.timetableRepository.getTimeTableWithItemsById(timetableId)
     const lectures = new Map(timetable.timetable_timetable_lectures.map(({ subject_lecture }) => [subject_lecture.id, subject_lecture]))
-    const blocks = new Map(timetable.timetable_timetable_customblocks.map(({ block_custom_blocks }) => [block_custom_blocks.id, ECustomblock.normalize(block_custom_blocks)]))
-    const addedLectureIds = changes.flatMap((change) => (change.op === 'add' && change.kind === TimetableItemKind.LECTURE
+    const originalBlocks = new Map(timetable.timetable_timetable_customblocks.map(({ block_custom_blocks }) => [block_custom_blocks.id, ECustomblock.normalize(block_custom_blocks)]))
+    const blocks = new Map(originalBlocks)
+    const addedLectureIds = new Set(changes.flatMap((change) => (change.op === 'add' && change.kind === TimetableItemKind.LECTURE
       ? [change.lectureId]
-      : []))
-    const addedLectures = await this.timetableRepository.getLecturesByIds(addedLectureIds)
-    const changedTimes = new Set<string>()
+      : [])))
+    const addedLectures = await this.timetableRepository.getLecturesByIds([...addedLectureIds])
 
     // Validate the final composition, allowing a conflicting item to be removed in the same batch.
     for (const [index, change] of changes.entries()) {
@@ -524,7 +494,6 @@ export class TimetablesServiceV2 {
           }
           if (lectures.has(lecture.id)) throw new ConflictException('Lecture is already in timetable')
           lectures.set(lecture.id, lecture)
-          changedTimes.add(`${TimetableItemKind.LECTURE}:${lecture.id}`)
         })
         .with({ kind: TimetableItemKind.LECTURE, op: 'remove' }, ({ id }) => {
           if (!lectures.delete(id)) throw new NotFoundException('No such lecture in timetable')
@@ -535,7 +504,6 @@ export class TimetablesServiceV2 {
           blocks.set(id, {
             id, block_name: data.block_name, place: data.place, ...times[0], times,
           })
-          changedTimes.add(`${TimetableItemKind.CUSTOM}:${id}`)
         })
         .with({ kind: TimetableItemKind.CUSTOM, op: 'remove' }, ({ id }) => {
           if (!blocks.delete(id)) throw new NotFoundException('No such custom block in timetable')
@@ -546,23 +514,28 @@ export class TimetablesServiceV2 {
           const updated = ECustomblock.applyUpdate(current, data)
           validateCustomblockTimes(updated.times)
           blocks.set(id, updated)
-          if (JSON.stringify(current.times) !== JSON.stringify(updated.times)) {
-            changedTimes.add(`${TimetableItemKind.CUSTOM}:${id}`)
-          }
         })
         .exhaustive()
     }
     const times = [
       ...[...lectures.values()].flatMap((lecture) => lecture.subject_classtime.map((time) => ({
         key: `${TimetableItemKind.LECTURE}:${lecture.id}`,
+        changed: addedLectureIds.has(lecture.id),
         day: time.day,
         begin: time.begin.getUTCHours() * 60 + time.begin.getUTCMinutes(),
         end: time.end.getUTCHours() * 60 + time.end.getUTCMinutes(),
       }))),
-      ...[...blocks.values()].flatMap((block) => block.times.map((time) => ({ ...time, key: `${TimetableItemKind.CUSTOM}:${block.id}` }))),
+      ...[...blocks.values()].flatMap((block) => {
+        const previousTimes = originalBlocks.get(block.id)?.times ?? []
+        return block.times.map((time) => ({
+          ...time,
+          key: `${TimetableItemKind.CUSTOM}:${block.id}`,
+          changed: !ECustomblock.hasTime(previousTimes, time),
+        }))
+      }),
     ]
     for (const time of times) {
-      if (changedTimes.has(time.key) && times.some((other) => other.key !== time.key && ECustomblock.overlaps(time, other))) {
+      if (time.changed && times.some((other) => other.key !== time.key && ECustomblock.overlaps(time, other))) {
         throw new ConflictException('Timetable items overlap')
       }
     }
@@ -595,14 +568,7 @@ export class TimetablesServiceV2 {
       results.push({ index, kind: change.kind, id: itemId })
     }
     const updated = await this.timetableRepository.getTimeTableWithItemsById(timetableId)
-    const { lectures: serializedLectures, customBlocks } = toJsonTimetableV2Detail(updated, language)
-    return {
-      timetableItems: [
-        ...serializedLectures.map((data) => ({ kind: TimetableItemKind.LECTURE, data })),
-        ...customBlocks.map((data) => ({ kind: TimetableItemKind.CUSTOM, data })),
-      ],
-      results,
-    }
+    return { ...toJsonTimetableV2Detail(updated, language), results }
   }
 
   @Transactional()
@@ -619,7 +585,7 @@ export class TimetablesServiceV2 {
         if (timetable.user_id === user.id && timetable.year === year && timetable.semester === semester) {
           return {
             ...toJsonTimetableV2Detail(timetable, language),
-            source: 'saved',
+            timetableType: 'timetable',
             timetableId: timetable.id,
             name: timetable.name ?? '',
             year,
@@ -633,7 +599,7 @@ export class TimetablesServiceV2 {
     }
     return {
       ...await this.getMyTimetable(user, query, language),
-      source: 'enrolled',
+      timetableType: 'scholar',
       timetableId: null,
       name: language === 'en' ? 'Enrolled timetable' : '실제 수강 시간표',
       year,
@@ -658,7 +624,7 @@ export class TimetablesServiceV2 {
       year,
       semester,
       timetableId,
-      source: 'saved',
+      timetableType: 'timetable',
       name: timetable.name ?? '',
     }
   }
@@ -681,7 +647,7 @@ export class TimetablesServiceV2 {
         year,
         semester,
         timetableId: timetable.id,
-        source: 'saved',
+        timetableType: 'timetable',
         name: timetable.name ?? '',
       }
     }
@@ -690,7 +656,7 @@ export class TimetablesServiceV2 {
       year,
       semester,
       timetableId: null,
-      source: 'enrolled',
+      timetableType: 'scholar',
       name: language === 'en' ? 'Enrolled timetable' : '학사 시간표',
     }
   }
@@ -717,7 +683,7 @@ export class TimetablesServiceV2 {
       year,
       semester,
       timetableId,
-      source: timetableId === null ? 'enrolled' : 'saved',
+      timetableType: timetableId === null ? 'scholar' : 'timetable',
       name,
     }
   }
@@ -745,10 +711,13 @@ export class TimetablesServiceV2 {
 
   private async validateCustomblockTime(
     timetableId: number,
-    candidates: ECustomblock.Time[],
+    times: ECustomblock.Time[],
     customblocks: ECustomblock.Basic[],
+    previousTimes: ECustomblock.Time[] = [],
   ) {
-    validateCustomblockTimes(candidates)
+    validateCustomblockTimes(times)
+    const candidates = times.filter((time) => !ECustomblock.hasTime(previousTimes, time))
+    if (candidates.length === 0) return
 
     const timetableLectures = await this.timetableRepository.getLecturesWithClassTimes(timetableId)
     const lectureTimes = timetableLectures
@@ -800,11 +769,13 @@ export class TimetablesServiceV2 {
       throw new NotFoundException('No such custom block in timetable')
     }
     parseCustomblockData(body, true)
-    const updated = ECustomblock.applyUpdate(ECustomblock.normalize(current), body)
+    const previous = ECustomblock.normalize(current)
+    const updated = ECustomblock.applyUpdate(previous, body)
     await this.validateCustomblockTime(
       timetableId,
       updated.times,
       customblocks.filter((customblock) => customblock.id !== customblockId),
+      previous.times,
     )
     return this.customblockRepository.updateCustomblock(customblockId, { ...body, times: updated.times })
   }
