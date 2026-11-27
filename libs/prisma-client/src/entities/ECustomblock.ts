@@ -41,5 +41,9 @@ export namespace ECustomblock {
     }
   }
 
+  export const hasTime = (times: Time[], { day, begin, end }: Time) => times.some(
+    (time) => time.day === day && time.begin === begin && time.end === end,
+  )
+
   export const overlaps = (left: Time, right: Time) => left.day === right.day && left.begin < right.end && right.begin < left.end
 }

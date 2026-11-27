@@ -37,7 +37,7 @@ export namespace ITimetableV2 {
   }
 
   export interface GetTimetablesResDto {
-    timetables: TimetableSummary[]
+    timetables: OwnTimetableSummary[]
   }
 
   export class DeleteReqDto {
@@ -253,7 +253,7 @@ export namespace ITimetableV2 {
     | { kind: typeof TimetableItemKind.CUSTOM, data: ICustomblock.Basic }
 
   export class TimetableDetailResDto extends GetResDto {
-    timetableItems!: TimetableItem[]
+    customBlocks!: ICustomblock.Basic[]
   }
 
   export type TimetableChange =
@@ -262,16 +262,57 @@ export namespace ITimetableV2 {
     | { op: 'remove', kind: TimetableItemKind, id: number }
     | { op: 'update', kind: typeof TimetableItemKind.CUSTOM, id: number, data: ICustomblock.UpdateDto }
 
-  export class UpdateItemsReqDto {
+  /** Legacy request. Cannot be combined with grouped changes; returns UpdateItemsResDtoV1. */
+  export class UpdateItemsReqDtoV1 {
     @IsArray()
     @ArrayMinSize(1)
     changes!: TimetableChange[]
   }
 
-  export class UpdateItemsResDto {
+  export interface UpdateCustomBlockDto extends ICustomblock.UpdateDto {
+    id: number
+  }
+
+  export interface AddCustomBlockDto extends ICustomblock.CreateDto {
+    /** Existing item IDs are ignored on creation. */
+    id?: number
+  }
+
+  export interface AddItemsDto {
+    lectureIds: number[]
+
+    customBlocks: AddCustomBlockDto[]
+  }
+
+  export interface DeleteItemsDto {
+    lectureIds: number[]
+
+    customBlockIds: number[]
+  }
+
+  export interface UpdateItemsDto {
+    customBlocks: UpdateCustomBlockDto[]
+  }
+
+  /** Applies deletes, updates, then adds atomically. At least one item across the groups is required. */
+  export interface UpdateItemsReqDtoV2 {
+    adds: AddItemsDto
+
+    deletes: DeleteItemsDto
+
+    updates: UpdateItemsDto
+  }
+
+  export class UpdateItemsResDtoV1 {
     timetableItems!: TimetableItem[]
 
     results!: { index: number, kind: TimetableItemKind, id: number }[]
+  }
+
+  export class UpdateItemsResDtoV2 {
+    lectures!: LectureResDto[]
+
+    customBlocks!: ICustomblock.Basic[]
   }
 
   export class UpdateLectureReqDto {
@@ -346,6 +387,12 @@ export namespace ITimetableV2 {
   }
 
   export class SetHomeTimetableReqDto extends HomeTimetableReqDto {
+    @IsInt()
+    @Min(1)
+    timetableId!: number
+  }
+
+  export class SetSharedTimetableReqDto extends HomeTimetableReqDto {
     @ValidateIf((_, value) => value !== null)
     @IsInt()
     @Min(1)
@@ -353,7 +400,7 @@ export namespace ITimetableV2 {
   }
 
   export class HomeTimetableResDto extends TimetableDetailResDto {
-    source!: 'saved' | 'enrolled'
+    timetableType!: 'scholar' | 'timetable'
 
     timetableId!: number | null
 
@@ -362,6 +409,19 @@ export namespace ITimetableV2 {
     year!: number
 
     semester!: number
+  }
+
+  export class SharedTimetableResDto extends HomeTimetableResDto {}
+
+  export interface TimetableSelectionResDto extends Omit<HomeTimetableResDto, 'lectures' | 'customBlocks'> {}
+
+  export interface SharedTimetableSemestersResDto {
+    semesters: { year: number, semester: number }[]
+  }
+
+  export interface OwnTimetableSummary extends TimetableSummary {
+    isMain: boolean
+    isShared: boolean
   }
 
   export interface TimetableSummary {

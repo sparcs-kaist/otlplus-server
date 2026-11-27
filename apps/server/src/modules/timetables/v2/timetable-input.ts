@@ -119,6 +119,49 @@ export function parseTimetableChanges(input: unknown): ITimetableV2.TimetableCha
   })
 }
 
+export function parseTimetableItemUpdateForBuddyMigration(input: unknown): ITimetableV2.TimetableChange[] {
+  const body = object(input)
+  if (['customBlocks', 'adds', 'deletes', 'updates'].some((field) => field in body)) {
+    return fail('Provide either changes or grouped timetable changes')
+  }
+  // The legacy ValidationPipe stripped unrelated top-level fields before parsing changes.
+  return parseTimetableChanges(body.changes)
+}
+
+export function parseTimetableItemUpdate(input: unknown): ITimetableV2.TimetableChange[] {
+  const body = object(input)
+  keys(body, ['adds', 'deletes', 'updates'])
+  const adds = object(body.adds)
+  const deletes = object(body.deletes)
+  const updates = object(body.updates)
+  keys(adds, ['lectureIds', 'customBlocks'])
+  keys(deletes, ['lectureIds', 'customBlockIds'])
+  keys(updates, ['customBlocks'])
+  if (!Array.isArray(adds.lectureIds) || !Array.isArray(adds.customBlocks)
+    || !Array.isArray(deletes.lectureIds) || !Array.isArray(deletes.customBlockIds)
+    || !Array.isArray(updates.customBlocks)) {
+    return fail('Timetable item groups must be arrays')
+  }
+
+  const changes = [
+    ...deletes.lectureIds.map((value) => ({ op: 'remove', kind: TimetableItemKind.LECTURE, id: value })),
+    ...deletes.customBlockIds.map((value) => ({ op: 'remove', kind: TimetableItemKind.CUSTOM, id: value })),
+    ...updates.customBlocks.map((value) => {
+      const { id: blockId, ...data } = object(value)
+      return {
+        op: 'update', kind: TimetableItemKind.CUSTOM, id: blockId, data,
+      }
+    }),
+    ...adds.lectureIds.map((value) => ({ op: 'add', kind: TimetableItemKind.LECTURE, lectureId: value })),
+    ...adds.customBlocks.map((value) => {
+      const { id: _sourceId, ...data } = object(value)
+      return { op: 'add', kind: TimetableItemKind.CUSTOM, data }
+    }),
+  ]
+  if (changes.length === 0) return fail('At least one timetable item change is required')
+  return parseTimetableChanges(changes)
+}
+
 export function validateCreateTimetableInput(body: ITimetableV2.CreateReqDto): void {
   const hasLectures = body.lectureIds !== undefined
   const hasSource = body.sourceTimetableId !== undefined

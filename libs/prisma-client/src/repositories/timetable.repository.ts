@@ -31,19 +31,82 @@ export class TimetableRepository {
     })
   }
 
+  async lockUserTimetables(userId: number): Promise<void> {
+    if (!this.txHost.isTransactionActive()) throw new Error('Timetable selections require a transaction')
+    // Lock the owner before any timetable so creation, selection and deletion cannot race.
+    await this.txHost.tx.$queryRaw`SELECT id FROM session_userprofile WHERE id = ${userId} FOR UPDATE`
+  }
+
   async getHomeTimetable(userId: number, year: number, semester: number) {
-    return this.txHost.tx.timetable_home_selection.findUnique({
-      where: { user_id_year_semester: { user_id: userId, year, semester } },
+    return this.txHost.tx.timetable_timetable.findFirst({
+      where: {
+        user_id: userId, year, semester, is_main: true,
+      },
     })
   }
 
-  async setHomeTimetable(userId: number, year: number, semester: number, timetableId: number | null) {
-    return this.txHost.tx.timetable_home_selection.upsert({
-      where: { user_id_year_semester: { user_id: userId, year, semester } },
-      create: {
-        user_id: userId, year, semester, timetable_id: timetableId,
+  async setHomeTimetable(userId: number, year: number, semester: number, timetableId: number) {
+    return this.txHost.withTransaction(async () => {
+      await this.lockUserTimetables(userId)
+      await this.txHost.tx.timetable_timetable.updateMany({
+        where: {
+          user_id: userId, year, semester, is_main: true,
+        },
+        data: { is_main: false },
+      })
+      return this.txHost.tx.timetable_timetable.update({
+        where: {
+          id: timetableId, user_id: userId, year, semester,
+        },
+        data: { is_main: true },
+      })
+    })
+  }
+
+  async setSharedTimetableSelection(userId: number, year: number, semester: number, timetableId: number | null) {
+    return this.txHost.withTransaction(async () => {
+      await this.lockUserTimetables(userId)
+      await this.txHost.tx.timetable_timetable.updateMany({
+        where: {
+          user_id: userId, year, semester, is_shared: true,
+        },
+        data: { is_shared: false },
+      })
+      if (timetableId === null) return null
+      return this.txHost.tx.timetable_timetable.update({
+        where: {
+          id: timetableId, user_id: userId, year, semester,
+        },
+        data: { is_shared: true },
+      })
+    })
+  }
+
+  async getSharedTimetableSemesters(userId: number) {
+    const [shared, enrolled] = await Promise.all([
+      this.txHost.tx.timetable_timetable.findMany({
+        where: { user_id: userId, is_shared: true },
+        select: { year: true, semester: true },
+      }),
+      this.txHost.tx.subject_lecture.findMany({
+        where: { students: { some: { userprofile_id: userId } } },
+        select: { year: true, semester: true },
+        distinct: ['year', 'semester'],
+      }),
+    ])
+    const semesters = new Map<string, { year: number, semester: number }>()
+    for (const { year, semester } of [...shared, ...enrolled]) {
+      if (year !== null && semester !== null) semesters.set(`${year}-${semester}`, { year, semester })
+    }
+    return [...semesters.values()].sort((a, b) => b.year - a.year || b.semester - a.semester)
+  }
+
+  async getSharedTimetableForSemester(userId: number, year: number, semester: number) {
+    return this.txHost.tx.timetable_timetable.findFirst({
+      where: {
+        user_id: userId, year, semester, is_shared: true,
       },
-      update: { timetable_id: timetableId },
+      include: ETimetable.WithItems.include,
     })
   }
 
@@ -121,22 +184,27 @@ export class TimetableRepository {
     lectures: ELecture.Details[],
     name?: string,
   ): Promise<ETimetable.Details> {
-    return this.txHost.tx.timetable_timetable.create({
-      data: {
-        user_id: user.id,
-        year,
-        semester,
-        arrange_order: arrangeOrder,
-        name: name ?? '',
-        timetable_timetable_lectures: {
-          createMany: {
-            data: lectures.map((lecture) => ({
-              lecture_id: lecture.id,
-            })),
+    return this.txHost.withTransaction(async () => {
+      await this.lockUserTimetables(user.id)
+      const home = await this.getHomeTimetable(user.id, year, semester)
+      return this.txHost.tx.timetable_timetable.create({
+        data: {
+          user_id: user.id,
+          year,
+          semester,
+          arrange_order: arrangeOrder,
+          is_main: home === null,
+          name: name ?? '',
+          timetable_timetable_lectures: {
+            createMany: {
+              data: lectures.map((lecture) => ({
+                lecture_id: lecture.id,
+              })),
+            },
           },
         },
-      },
-      include: ETimetable.Details.include,
+        include: ETimetable.Details.include,
+      })
     })
   }
 
@@ -184,8 +252,9 @@ export class TimetableRepository {
     })
   }
 
-  async deleteById(timetableId: number) {
+  async deleteById(timetableId: number, userId: number) {
     return this.txHost.withTransaction(async () => {
+      await this.lockUserTimetables(userId)
       await this.lockTimetable(timetableId)
       const { tx } = this.txHost
       await tx.timetable_timetable_lectures.deleteMany({
@@ -194,9 +263,17 @@ export class TimetableRepository {
       await tx.timetable_timetable_customblocks.deleteMany({
         where: { timetable_id: timetableId },
       })
-      return tx.timetable_timetable.delete({
-        where: { id: timetableId },
-      })
+      const deleted = await tx.timetable_timetable.delete({ where: { id: timetableId } })
+      if (deleted.is_main && deleted.year !== null && deleted.semester !== null) {
+        const next = await tx.timetable_timetable.findFirst({
+          where: { user_id: userId, year: deleted.year, semester: deleted.semester },
+          orderBy: [{ arrange_order: 'asc' }, { id: 'asc' }],
+        })
+        if (next) {
+          await tx.timetable_timetable.update({ where: { id: next.id }, data: { is_main: true } })
+        }
+      }
+      return deleted
     })
   }
 

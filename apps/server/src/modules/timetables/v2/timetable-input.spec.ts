@@ -4,7 +4,9 @@ import { BadRequestException, ValidationPipe } from '@nestjs/common'
 import { ICustomblock } from '@otl/server-nest/common/interfaces/ICustomblock'
 import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
 
-import { parseTimetableChanges, validateCreateTimetableInput } from './timetable-input'
+import {
+  parseTimetableChanges, parseTimetableItemUpdate, parseTimetableItemUpdateForBuddyMigration, validateCreateTimetableInput,
+} from './timetable-input'
 
 const block = { block_name: 'Study', place: '', day: 0, begin: 600, end: 660 }
 const pipe = new ValidationPipe({ transform: true, whitelist: true })
@@ -15,7 +17,7 @@ describe('Timetable item request validation', () => {
       [{ op: 'add', kind: 'lecture', lectureId: 1 }],
       [{ op: 'remove', kind: 'lecture', id: 1 }, { op: 'add', kind: 'custom', data: block }],
     ]) {
-      const body = await pipe.transform({ changes }, { type: 'body', metatype: ITimetableV2.UpdateItemsReqDto })
+      const body = await pipe.transform({ changes }, { type: 'body', metatype: ITimetableV2.UpdateItemsReqDtoV1 })
       expect(parseTimetableChanges(body.changes)).toEqual(changes)
     }
   })
@@ -67,7 +69,7 @@ describe('Timetable item request validation', () => {
       .toThrow(BadRequestException)
   })
 
-  it('retains optional creation fields and explicit home deselection through the validation pipe', async () => {
+  it('retains optional creation fields and allows academic selection only for sharing through the validation pipe', async () => {
     const term = { year: 2026, semester: 3 }
     for (const body of [{ ...term, lectureIds: [] }, { ...term, sourceTimetableId: 1 }]) {
       const parsed = await pipe.transform(body, { type: 'body', metatype: ITimetableV2.CreateReqDto })
@@ -75,15 +77,93 @@ describe('Timetable item request validation', () => {
       expect(() => validateCreateTimetableInput(parsed)).not.toThrow()
     }
     const deselection = { ...term, timetableId: null }
-    await expect(pipe.transform(deselection, { type: 'body', metatype: ITimetableV2.SetHomeTimetableReqDto }))
+    await expect(pipe.transform(deselection, { type: 'body', metatype: ITimetableV2.SetSharedTimetableReqDto }))
       .resolves.toEqual(deselection)
-    for (const body of [term, { ...term, timetableId: '1' }, { ...term, timetableId: 0 }]) {
+    for (const body of [deselection, term, { ...term, timetableId: '1' }, { ...term, timetableId: 0 }]) {
       await expect(pipe.transform(body, { type: 'body', metatype: ITimetableV2.SetHomeTimetableReqDto }))
         .rejects.toThrow(BadRequestException)
     }
   })
 })
 
+describe('versioned timetable item updates', () => {
+  it('preserves V1 changes and ignores unrelated top-level fields as the old whitelist did', () => {
+    const changes = [{ op: 'remove', kind: 'lecture', id: 1 }, { op: 'add', kind: 'custom', data: block }]
+    expect(parseTimetableItemUpdateForBuddyMigration({ changes })).toEqual(changes)
+    expect(parseTimetableItemUpdateForBuddyMigration({ changes, unrelated: true })).toEqual(changes)
+  })
+
+  const empty = {
+    adds: { lectureIds: [], customBlocks: [] },
+    deletes: { lectureIds: [], customBlockIds: [] },
+    updates: { customBlocks: [] },
+  }
+
+  it.each([
+    undefined, null, [], {},
+    { changes: [] }, { changes: null },
+    { customBlocks: [{ id: 11, place: 'Library' }] },
+    ...Object.entries(empty).map(([group, operations]) => ({
+      changes: [{ op: 'remove', kind: 'lecture', id: 1 }], [group]: operations,
+    })),
+  ].map((body) => [body]))('rejects malformed or mixed requests in the V1 parser: %j', (body) => {
+    expect(() => parseTimetableItemUpdateForBuddyMigration(body)).toThrow(BadRequestException)
+  })
+
+  it('converts V2 operations in delete, update, add order without modifying the request', () => {
+    const times = [{ day: 0, begin: 600, end: 660 }, { day: 2, begin: 600, end: 660 }]
+    const body = {
+      adds: { lectureIds: [9], customBlocks: [{ id: 99, ...block, times }] },
+      deletes: { lectureIds: [1], customBlockIds: [1] },
+      updates: { customBlocks: [{ id: 12, place: '' }, { id: 11, ...block, times }] },
+    }
+    const before = structuredClone(body)
+    expect(parseTimetableItemUpdate(body)).toEqual([
+      { op: 'remove', kind: 'lecture', id: 1 },
+      { op: 'remove', kind: 'custom', id: 1 },
+      { op: 'update', kind: 'custom', id: 12, data: { place: '' } },
+      { op: 'update', kind: 'custom', id: 11, data: { ...block, times } },
+      { op: 'add', kind: 'lecture', lectureId: 9 },
+      { op: 'add', kind: 'custom', data: { ...block, times } },
+    ])
+    expect(body).toEqual(before)
+  })
+
+  it.each([
+    undefined, null, [], {}, empty,
+    { customBlocks: [{ id: 11, place: 'Library' }] },
+    { ...empty, changes: [{ op: 'remove', kind: 'lecture', id: 1 }] },
+    { ...empty, extra: true },
+    { ...empty, adds: null },
+    { ...empty, adds: { customBlocks: [block] } },
+    { ...empty, adds: { lectureIds: [1], customBlocks: [], extra: true } },
+    { ...empty, deletes: { lectureIds: [1], customBlockIds: null } },
+    { ...empty, updates: { customBlocks: [], lectureIds: [1] } },
+    { ...empty, adds: { lectures: [{ id: 1 }], customBlocks: [] } },
+    { ...empty, deletes: { lectures: [{ id: 1 }], customBlocks: [] } },
+    { ...empty, deletes: { lectureIds: [], customBlocks: [{ id: 11 }] } },
+    { ...empty, adds: { lectureIds: [1], customBlocks: [{ ...block, op: 'add' }] } },
+    { ...empty, adds: { lectureIds: [1], customBlocks: [{ ...block, times: [] }] } },
+    { ...empty, adds: { lectureIds: [1], customBlocks: [] }, deletes: { lectureIds: [1], customBlockIds: [] } },
+    { ...empty, deletes: { lectureIds: [], customBlockIds: [11] }, updates: { customBlocks: [{ id: 11, place: '' }] } },
+    { ...empty, adds: { lectureIds: [1, 1], customBlocks: [] } },
+    { ...empty, deletes: { lectureIds: [1, 1], customBlockIds: [] } },
+    { ...empty, deletes: { lectureIds: [], customBlockIds: [11, 11] } },
+    ...[null, [], {}, { id: 1 }, 0, -1, 1.5, '11', 2147483648].flatMap((invalid) => [
+      { ...empty, adds: { lectureIds: [invalid], customBlocks: [] } },
+      { ...empty, deletes: { lectureIds: [invalid], customBlockIds: [] } },
+      { ...empty, deletes: { lectureIds: [], customBlockIds: [invalid] } },
+    ]),
+    ...[
+      null, { place: 'Library' }, { id: 0, place: 'Library' }, { id: -1, place: 'Library' },
+      { id: 1.5, place: 'Library' }, { id: '11', place: 'Library' }, { id: 11 },
+      { id: 11, place: 'Library', extra: true }, { id: 11, block_name: ' ' },
+      { id: 11, place: null }, { id: 11, day: 7 }, { id: 11, times: [] },
+    ].map((invalid) => ({ ...empty, updates: { customBlocks: [invalid] } })),
+  ].map((body) => [body]))('rejects ambiguous or malformed V2 updates: %j', (body) => {
+    expect(() => parseTimetableItemUpdate(body)).toThrow(BadRequestException)
+  })
+})
 
 describe('custom block time arrays', () => {
   const first = { day: 0, begin: 600, end: 660 }
