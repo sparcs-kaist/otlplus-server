@@ -109,6 +109,15 @@ export class TimetablesControllerV2 {
     return await this.timetablesService.getTimetable(timetableId, user, language)
   }
 
+  @Get('/:timetableId/items')
+  async getTimetableItems(
+    @Param('timetableId', ParseIntPipe) timetableId: number,
+    @GetUser() user: session_userprofile,
+    @GetLanguage() language: Language,
+  ): Promise<ITimetableV2.TimetableDetailResDto> {
+    return await this.timetablesService.getTimetable(timetableId, user, language)
+  }
+
   @Patch('/:timetableId')
   async updateTimetableLecture(
     @GetUser() user: session_userprofile,

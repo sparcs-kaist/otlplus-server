@@ -47,6 +47,7 @@ it.each(['docs', 'src'])('documents split timetable contents and preserves mixed
   expect(document.paths['/api/v2/timetables/{timetableId}/items']).toHaveProperty('patch')
   for (const [endpoint, method, dto] of [
     ['/api/v2/timetables/{timetableId}', 'get', 'TimetableDetailResDto'],
+    ['/api/v2/timetables/{timetableId}/items', 'get', 'TimetableDetailResDto'],
     ['/api/v2/timetables/my-timetable', 'get', 'MyTimetableResDto'],
     ['/api/v2/timetables/home', 'get', 'HomeTimetableResDto'],
     ['/api/v2/timetables/home', 'patch', 'TimetableSelectionResDto'],
