@@ -94,8 +94,8 @@ describe('versioned timetable item updates', () => {
   })
 
   const empty = {
-    adds: { lectures: [], customBlocks: [] },
-    deletes: { lectures: [], customBlocks: [] },
+    adds: { lectureIds: [], customBlocks: [] },
+    deletes: { lectureIds: [], customBlockIds: [] },
     updates: { customBlocks: [] },
   }
 
@@ -113,8 +113,8 @@ describe('versioned timetable item updates', () => {
   it('converts V2 operations in delete, update, add order without modifying the request', () => {
     const times = [{ day: 0, begin: 600, end: 660 }, { day: 2, begin: 600, end: 660 }]
     const body = {
-      adds: { lectures: [{ id: 9, name: 'Lecture' }], customBlocks: [{ id: 99, ...block, times }] },
-      deletes: { lectures: [{ id: 1, name: 'Removed lecture' }], customBlocks: [{ id: 1, ...block, times }] },
+      adds: { lectureIds: [9], customBlocks: [{ id: 99, ...block, times }] },
+      deletes: { lectureIds: [1], customBlockIds: [1] },
       updates: { customBlocks: [{ id: 12, place: '' }, { id: 11, ...block, times }] },
     }
     const before = structuredClone(body)
@@ -136,17 +136,23 @@ describe('versioned timetable item updates', () => {
     { ...empty, extra: true },
     { ...empty, adds: null },
     { ...empty, adds: { customBlocks: [block] } },
-    { ...empty, adds: { lectures: [{ id: 1 }], customBlocks: [], extra: true } },
-    { ...empty, deletes: { lectures: [{ id: 1 }], customBlocks: null } },
-    { ...empty, updates: { customBlocks: [], lectures: [{ id: 1 }] } },
-    { ...empty, adds: { lectures: [{ id: 1 }], customBlocks: [{ ...block, op: 'add' }] } },
-    { ...empty, adds: { lectures: [{ id: 1 }], customBlocks: [{ ...block, times: [] }] } },
-    { ...empty, adds: { lectures: [{ id: 1 }], customBlocks: [] }, deletes: { lectures: [{ id: 1 }], customBlocks: [] } },
-    { ...empty, deletes: { lectures: [], customBlocks: [{ id: 11 }] }, updates: { customBlocks: [{ id: 11, place: '' }] } },
-    ...[null, [], 1, {}, { id: 0 }, { id: '11' }, { id: 2147483648 }].flatMap((invalid) => [
-      { ...empty, adds: { lectures: [invalid], customBlocks: [] } },
-      { ...empty, deletes: { lectures: [invalid], customBlocks: [] } },
-      { ...empty, deletes: { lectures: [], customBlocks: [invalid] } },
+    { ...empty, adds: { lectureIds: [1], customBlocks: [], extra: true } },
+    { ...empty, deletes: { lectureIds: [1], customBlockIds: null } },
+    { ...empty, updates: { customBlocks: [], lectureIds: [1] } },
+    { ...empty, adds: { lectures: [{ id: 1 }], customBlocks: [] } },
+    { ...empty, deletes: { lectures: [{ id: 1 }], customBlocks: [] } },
+    { ...empty, deletes: { lectureIds: [], customBlocks: [{ id: 11 }] } },
+    { ...empty, adds: { lectureIds: [1], customBlocks: [{ ...block, op: 'add' }] } },
+    { ...empty, adds: { lectureIds: [1], customBlocks: [{ ...block, times: [] }] } },
+    { ...empty, adds: { lectureIds: [1], customBlocks: [] }, deletes: { lectureIds: [1], customBlockIds: [] } },
+    { ...empty, deletes: { lectureIds: [], customBlockIds: [11] }, updates: { customBlocks: [{ id: 11, place: '' }] } },
+    { ...empty, adds: { lectureIds: [1, 1], customBlocks: [] } },
+    { ...empty, deletes: { lectureIds: [1, 1], customBlockIds: [] } },
+    { ...empty, deletes: { lectureIds: [], customBlockIds: [11, 11] } },
+    ...[null, [], {}, { id: 1 }, 0, -1, 1.5, '11', 2147483648].flatMap((invalid) => [
+      { ...empty, adds: { lectureIds: [invalid], customBlocks: [] } },
+      { ...empty, deletes: { lectureIds: [invalid], customBlockIds: [] } },
+      { ...empty, deletes: { lectureIds: [], customBlockIds: [invalid] } },
     ]),
     ...[
       null, { place: 'Library' }, { id: 0, place: 'Library' }, { id: -1, place: 'Library' },

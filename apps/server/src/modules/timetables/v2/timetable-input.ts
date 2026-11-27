@@ -134,25 +134,25 @@ export function parseTimetableItemUpdate(input: unknown): ITimetableV2.Timetable
   const adds = object(body.adds)
   const deletes = object(body.deletes)
   const updates = object(body.updates)
-  keys(adds, ['lectures', 'customBlocks'])
-  keys(deletes, ['lectures', 'customBlocks'])
+  keys(adds, ['lectureIds', 'customBlocks'])
+  keys(deletes, ['lectureIds', 'customBlockIds'])
   keys(updates, ['customBlocks'])
-  if (!Array.isArray(adds.lectures) || !Array.isArray(adds.customBlocks)
-    || !Array.isArray(deletes.lectures) || !Array.isArray(deletes.customBlocks)
+  if (!Array.isArray(adds.lectureIds) || !Array.isArray(adds.customBlocks)
+    || !Array.isArray(deletes.lectureIds) || !Array.isArray(deletes.customBlockIds)
     || !Array.isArray(updates.customBlocks)) {
     return fail('Timetable item groups must be arrays')
   }
 
   const changes = [
-    ...deletes.lectures.map((value) => ({ op: 'remove', kind: TimetableItemKind.LECTURE, id: object(value).id })),
-    ...deletes.customBlocks.map((value) => ({ op: 'remove', kind: TimetableItemKind.CUSTOM, id: object(value).id })),
+    ...deletes.lectureIds.map((value) => ({ op: 'remove', kind: TimetableItemKind.LECTURE, id: value })),
+    ...deletes.customBlockIds.map((value) => ({ op: 'remove', kind: TimetableItemKind.CUSTOM, id: value })),
     ...updates.customBlocks.map((value) => {
       const { id: blockId, ...data } = object(value)
       return {
         op: 'update', kind: TimetableItemKind.CUSTOM, id: blockId, data,
       }
     }),
-    ...adds.lectures.map((value) => ({ op: 'add', kind: TimetableItemKind.LECTURE, lectureId: object(value).id })),
+    ...adds.lectureIds.map((value) => ({ op: 'add', kind: TimetableItemKind.LECTURE, lectureId: value })),
     ...adds.customBlocks.map((value) => {
       const { id: _sourceId, ...data } = object(value)
       return { op: 'add', kind: TimetableItemKind.CUSTOM, data }

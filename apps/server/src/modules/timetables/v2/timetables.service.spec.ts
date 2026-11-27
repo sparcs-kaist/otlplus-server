@@ -26,8 +26,8 @@ const term = { year: 2026, semester: 3 }
 const customInput = { block_name: 'Study', place: 'Library', day: 0, begin: 540, end: 600 }
 const block = { id: 11, ...customInput }
 const empty = {
-  adds: { lectures: [], customBlocks: [] },
-  deletes: { lectures: [], customBlocks: [] },
+  adds: { lectureIds: [], customBlocks: [] },
+  deletes: { lectureIds: [], customBlockIds: [] },
   updates: { customBlocks: [] },
 }
 
@@ -135,8 +135,8 @@ describe('TimetablesServiceV2 unified items', () => {
       .mockResolvedValueOnce(timetable([addedLecture, lecture(15, 6)], [untouched, moved, added]))
 
     await expect(service.updateTimetableItems(user, {
-      adds: { lectures: [{ id: 14 }], customBlocks: [{ ...addedInput, id: deletedBlock.id }] },
-      deletes: { lectures: [{ id: 12 }], customBlocks: [{ id: 12 }] },
+      adds: { lectureIds: [14], customBlocks: [{ ...addedInput, id: deletedBlock.id }] },
+      deletes: { lectureIds: [12], customBlockIds: [12] },
       updates: { customBlocks: [{ id: block.id, day: 1 }] },
     }, 42, 'en')).resolves.toEqual({
       lectures: [expect.objectContaining({ id: 14 }), expect.objectContaining({ id: 15 })],
@@ -390,6 +390,37 @@ describe('TimetablesServiceV2 home selection', () => {
 
 
 describe('multi-time custom blocks', () => {
+  it.each(['v1 items', 'v2 items', 'custom block'])('accepts the reported two-day block update through %s and rejects a new Tuesday conflict', async (endpoint) => {
+    const data = {
+      block_name: 'dsa', place: 'da', day: 0, begin: 1080, end: 1290,
+      times: [{ day: 0, begin: 1080, end: 1290 }, { day: 1, begin: 1080, end: 1290 }],
+    }
+    const original = { ...data, id: 4, times: [data.times[0]] }
+    const patch = (service: TimetablesServiceV2) => {
+      if (endpoint === 'v1 items') return service.updateTimetableItemsForBuddyMigration(user, {
+        changes: [{ op: 'update', kind: 'custom', id: 4, data }],
+      }, 42, 'en')
+      if (endpoint === 'v2 items') return service.updateTimetableItems(user, {
+        ...empty, updates: { customBlocks: [{ id: 4, ...data }] },
+      }, 42, 'en')
+      return service.updateCustomblock(42, 4, data, user)
+    }
+    for (const hasTuesdayConflict of [false, true]) {
+      const classes = [lecture(12, 0, 1080, 1290), ...(hasTuesdayConflict ? [lecture(13, 1, 1200, 1260)] : [])]
+      const current = timetable(classes, [original])
+      const { service, repo, blocks } = setup(current)
+      repo.getLecturesWithClassTimes.mockResolvedValue(current.timetable_timetable_lectures)
+      if (hasTuesdayConflict) {
+        await expect(patch(service)).rejects.toBeInstanceOf(ConflictException)
+        expect(blocks.updateCustomblock).not.toHaveBeenCalled()
+      }
+      else {
+        await expect(patch(service)).resolves.toBeDefined()
+        expect(blocks.updateCustomblock).toHaveBeenCalledWith(4, data)
+      }
+    }
+  })
+
   it('preserves an old overlap but rejects new collisions through the standalone v1 service', async () => {
     const retained = { day: block.day, begin: block.begin, end: block.end }
     const appended = { ...retained, day: 1 }

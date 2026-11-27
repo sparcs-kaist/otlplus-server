@@ -273,25 +273,21 @@ export namespace ITimetableV2 {
     id: number
   }
 
-  export interface TimetableLectureRef extends Partial<LectureResDto> {
-    id: number
-  }
-
   export interface AddCustomBlockDto extends ICustomblock.CreateDto {
     /** Existing item IDs are ignored on creation. */
     id?: number
   }
 
   export interface AddItemsDto {
-    lectures: TimetableLectureRef[]
+    lectureIds: number[]
 
     customBlocks: AddCustomBlockDto[]
   }
 
   export interface DeleteItemsDto {
-    lectures: TimetableLectureRef[]
+    lectureIds: number[]
 
-    customBlocks: UpdateCustomBlockDto[]
+    customBlockIds: number[]
   }
 
   export interface UpdateItemsDto {

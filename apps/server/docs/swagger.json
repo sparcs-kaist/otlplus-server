@@ -12481,84 +12481,6 @@
         ],
         "additionalProperties": false
       },
-      "ITimetableV2.TimetableLectureRef": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "number"
-          },
-          "courseId": {
-            "type": "number"
-          },
-          "classNo": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "subtitle": {
-            "type": "string"
-          },
-          "department": {
-            "$ref": "#/components/schemas/ITimetableV2.DepartmentResDto"
-          },
-          "type": {
-            "type": "string"
-          },
-          "limitPeople": {
-            "type": "number"
-          },
-          "numPeople": {
-            "type": "number"
-          },
-          "credit": {
-            "type": "number"
-          },
-          "creditAU": {
-            "type": "number"
-          },
-          "averageGrade": {
-            "type": "number"
-          },
-          "averageLoad": {
-            "type": "number"
-          },
-          "averageSpeech": {
-            "type": "number"
-          },
-          "isEnglish": {
-            "type": "boolean"
-          },
-          "professors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ITimetableV2.ProfessorResDto"
-            }
-          },
-          "classes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ITimetableV2.ClassResDto"
-            }
-          },
-          "examTimes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ITimetableV2.ExamTimeResDto"
-            }
-          },
-          "classDuration": {
-            "type": "number"
-          },
-          "expDuration": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "id"
-        ],
-        "additionalProperties": false
-      },
       "ITimetableV2.AddCustomBlockDto": {
         "type": "object",
         "properties": {
@@ -12597,21 +12519,21 @@
       "ITimetableV2.AddItemsDto": {
         "type": "object",
         "properties": {
-          "lectures": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ITimetableV2.TimetableLectureRef"
-            }
-          },
           "customBlocks": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ITimetableV2.AddCustomBlockDto"
             }
+          },
+          "lectureIds": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
           }
         },
         "required": [
-          "lectures",
+          "lectureIds",
           "customBlocks"
         ],
         "additionalProperties": false
@@ -12619,22 +12541,22 @@
       "ITimetableV2.DeleteItemsDto": {
         "type": "object",
         "properties": {
-          "lectures": {
+          "lectureIds": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ITimetableV2.TimetableLectureRef"
+              "type": "number"
             }
           },
-          "customBlocks": {
+          "customBlockIds": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ITimetableV2.UpdateCustomBlockDto"
+              "type": "number"
             }
           }
         },
         "required": [
-          "lectures",
-          "customBlocks"
+          "lectureIds",
+          "customBlockIds"
         ],
         "additionalProperties": false
       },

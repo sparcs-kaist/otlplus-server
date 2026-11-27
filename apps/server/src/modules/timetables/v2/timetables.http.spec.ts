@@ -151,8 +151,8 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
   }
 
   const emptyBatch = {
-    adds: { lectures: [], customBlocks: [] },
-    deletes: { lectures: [], customBlocks: [] },
+    adds: { lectureIds: [], customBlocks: [] },
+    deletes: { lectureIds: [], customBlockIds: [] },
     updates: { customBlocks: [] },
   }
 
@@ -232,8 +232,8 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
 
     publishLectureNumUpdate.mockClear()
     const { body: result } = await patchItems(id, {
-      adds: { lectures: [], customBlocks: [{ ...takesLectureTime, id: removing.id }, takesBlockTime] },
-      deletes: { lectures: [lecture], customBlocks: [removing] },
+      adds: { lectureIds: [], customBlocks: [{ ...takesLectureTime, id: removing.id }, takesBlockTime] },
+      deletes: { lectureIds: [lecture.id], customBlockIds: [removing.id] },
       updates: { customBlocks: [{ id: moving.id, day: removing.day }] },
     }).expect(200)
     const added = result.customBlocks.find((entry: { block_name: string }) => entry.block_name === takesLectureTime.block_name)
@@ -251,8 +251,8 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     expect((await request(app.getHttpServer()).get(`${url}/items`).expect(200)).body).toEqual(result)
 
     const { body: restored } = await patchItems(id, {
-      deletes: { lectures: [], customBlocks: [{ id: added.id }] },
-      adds: { lectures: [{ ...lecture, name: 'Ignored client name' }], customBlocks: [] },
+      deletes: { lectureIds: [], customBlockIds: [added.id] },
+      adds: { lectureIds: [lecture.id], customBlocks: [] },
     }).expect(200)
     expect(restored.lectures).toEqual([lecture])
     expect(restored.customBlocks).toEqual(result.customBlocks.filter((entry: { id: number }) => entry.id !== added.id))
@@ -270,7 +270,7 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     const id = await create([lectureId])
     const url = `${prefix}/${id}/items`
     const { body: { customBlocks: [customBlock] } } = await patchItems(id, {
-      adds: { lectures: [], customBlocks: [block] },
+      adds: { lectureIds: [], customBlocks: [block] },
     }).expect(200)
     customIds.add(customBlock.id)
     const before = (await request(app.getHttpServer()).get(url).expect(200)).body
@@ -280,9 +280,16 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
       { ...emptyBatch, changes: [{ op: 'remove', kind: 'lecture', id: lectureId }] },
       { ...emptyBatch, updates: { customBlocks: [valid] }, unexpected: true },
       { ...emptyBatch, adds: { lectures: [lectureId], customBlocks: [] } },
+      { ...emptyBatch, adds: { lectureIds: [{ id: lectureId }], customBlocks: [] } },
+      { ...emptyBatch, deletes: { lectureIds: [], customBlocks: [customBlock] } },
+      ...[null, '1', 0, -1, 1.5, 2147483648].flatMap((invalid) => [
+        { ...emptyBatch, adds: { lectureIds: [invalid], customBlocks: [] } },
+        { ...emptyBatch, deletes: { lectureIds: [invalid], customBlockIds: [] } },
+        { ...emptyBatch, deletes: { lectureIds: [], customBlockIds: [invalid] } },
+      ]),
       { ...emptyBatch, deletes: { lectures: [{ id: lectureId }] } },
       { ...emptyBatch, updates: { customBlocks: [valid, valid] } },
-      { ...emptyBatch, updates: { customBlocks: [valid] }, deletes: { lectures: [], customBlocks: [customBlock] } },
+      { ...emptyBatch, updates: { customBlocks: [valid] }, deletes: { lectureIds: [], customBlockIds: [customBlock.id] } },
       { ...emptyBatch, updates: { customBlocks: [{ ...valid, times: [blockTime, blockTime] }] } },
     ]
     publishLectureNumUpdate.mockClear()
@@ -294,7 +301,7 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
   it('checks ownership and custom block membership for grouped PATCH requests', async () => {
     const id = await create()
     const otherId = await create()
-    const adds = { lectures: [], customBlocks: [block] }
+    const adds = { lectureIds: [], customBlocks: [block] }
     const { body: { customBlocks: [own] } } = await patchItems(id, { adds }).expect(200)
     const { body: { customBlocks: [foreign] } } = await patchItems(otherId, { adds }).expect(200)
     customIds.add(own.id)
@@ -304,7 +311,7 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     await patchItems(2147483647, { updates: { customBlocks: [edit] } }).expect(404)
     for (const invalidId of [foreign.id, 2147483647]) {
       await patchItems(id, { updates: { customBlocks: [edit, { id: invalidId, place: 'Invalid target' }] } }).expect(404)
-      await patchItems(id, { deletes: { lectures: [], customBlocks: [{ id: invalidId }] } }).expect(404)
+      await patchItems(id, { deletes: { lectureIds: [], customBlockIds: [invalidId] } }).expect(404)
     }
     expect((await request(app.getHttpServer()).get(`${prefix}/${id}/items`).expect(200)).body.customBlocks).toEqual([own])
     expect((await request(app.getHttpServer()).get(`${prefix}/${otherId}/items`).expect(200)).body.customBlocks).toEqual([foreign])
@@ -314,7 +321,7 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     const id = await create([lectureId])
     const url = `${prefix}/${id}/items`
     const { body: { customBlocks: [moving, removing] } } = await patchItems(id, {
-      adds: { lectures: [], customBlocks: [block, { ...block, day: 2 }] },
+      adds: { lectureIds: [], customBlocks: [block, { ...block, day: 2 }] },
     }).expect(200)
     customIds.add(moving.id)
     customIds.add(removing.id)
@@ -326,9 +333,9 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     publishLectureNumUpdate.mockClear()
     try {
       await patchItems(id, {
-        deletes: { lectures: [{ id: lectureId }], customBlocks: [removing] },
+        deletes: { lectureIds: [lectureId], customBlockIds: [removing.id] },
         updates: { customBlocks: [{ id: moving.id, place: 'Must roll back', day: 2 }] },
-        adds: { lectures: [], customBlocks: [{ ...block, block_name: failedName, day: 0, begin: 540, end: 600 }] },
+        adds: { lectureIds: [], customBlocks: [{ ...block, block_name: failedName, day: 0, begin: 540, end: 600 }] },
       }).expect(500)
       expect(mapping).toHaveBeenCalledTimes(1)
       expect(await prisma.block_custom_blocks.count({ where: { block_name: failedName } })).toBe(0)
@@ -358,20 +365,20 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     const emptyDetail = { lectures: [], customBlocks: [] }
     publishLectureNumUpdate.mockClear()
     await patchItems(id, {
-      adds: { lectures: [{ id: lectureId }], customBlocks: [{ ...block, day: 0, begin: 570, end: 630 }] },
+      adds: { lectureIds: [lectureId], customBlocks: [{ ...block, day: 0, begin: 570, end: 630 }] },
     }).expect(409)
     expect((await request(app.getHttpServer()).get(`${prefix}/${id}/items`).expect(200)).body).toEqual(emptyDetail)
 
     const { body: { id: otherTerm } } = await request(app.getHttpServer()).post(prefix)
       .send({ ...term, semester: 1, lectureIds: [] }).expect(201)
-    await patchItems(otherTerm, { adds: { lectures: [{ id: lectureId }], customBlocks: [block] } }).expect(400)
+    await patchItems(otherTerm, { adds: { lectureIds: [lectureId], customBlocks: [block] } }).expect(400)
     expect((await request(app.getHttpServer()).get(`${prefix}/${otherTerm}/items`).expect(200)).body).toEqual(emptyDetail)
     expect(publishLectureNumUpdate).not.toHaveBeenCalled()
 
-    await patchItems(id, { adds: { lectures: [{ id: lectureId }], customBlocks: [] } }).expect(200)
+    await patchItems(id, { adds: { lectureIds: [lectureId], customBlocks: [] } }).expect(200)
     const before = (await request(app.getHttpServer()).get(`${prefix}/${id}/items`).expect(200)).body
     publishLectureNumUpdate.mockClear()
-    await patchItems(id, { deletes: { lectures: [{ id: lectureId }], customBlocks: [{ id: 2147483647 }] } }).expect(404)
+    await patchItems(id, { deletes: { lectureIds: [lectureId], customBlockIds: [2147483647] } }).expect(404)
     expect((await request(app.getHttpServer()).get(`${prefix}/${id}/items`).expect(200)).body).toEqual(before)
     expect(publishLectureNumUpdate).not.toHaveBeenCalled()
   })

@@ -114,22 +114,25 @@ it.each(['docs', 'src'])('documents both PATCH /items contracts in %s/swagger.js
   expect(Object.keys(grouped.properties)).toEqual(['adds', 'deletes', 'updates'])
   expect(grouped.required).toEqual(['adds', 'deletes', 'updates'])
   expect(grouped.additionalProperties).toBe(false)
-  for (const [field, name, blockDto, hasLectures] of [
-    ['adds', 'AddItemsDto', 'AddCustomBlockDto', true],
-    ['deletes', 'DeleteItemsDto', 'UpdateCustomBlockDto', true],
-    ['updates', 'UpdateItemsDto', 'UpdateCustomBlockDto', false],
+  for (const [field, name, fields] of [
+    ['adds', 'AddItemsDto', ['customBlocks', 'lectureIds']],
+    ['deletes', 'DeleteItemsDto', ['customBlockIds', 'lectureIds']],
+    ['updates', 'UpdateItemsDto', ['customBlocks']],
   ] as const) {
     const group = schemas[`ITimetableV2.${name}`]
-    const fields = hasLectures ? ['customBlocks', 'lectures'] : ['customBlocks']
     expect(grouped.properties[field].$ref).toBe(`#/components/schemas/ITimetableV2.${name}`)
     expect(Object.keys(group.properties).sort()).toEqual(fields)
     expect([...group.required].sort()).toEqual(fields)
     expect(group.additionalProperties).toBe(false)
-    expect(group.properties.customBlocks.items.$ref).toBe(`#/components/schemas/ITimetableV2.${blockDto}`)
-    if (hasLectures) {
-      expect(group.properties.lectures.items.$ref).toBe('#/components/schemas/ITimetableV2.TimetableLectureRef')
+    for (const idField of ['lectureIds', 'customBlockIds']) {
+      if (idField in group.properties) expect(group.properties[idField]).toEqual({ type: 'array', items: { type: 'number' } })
+    }
+    if (field !== 'deletes') {
+      expect(group.properties.customBlocks.items.$ref)
+        .toBe(`#/components/schemas/ITimetableV2.${field === 'adds' ? 'AddCustomBlockDto' : 'UpdateCustomBlockDto'}`)
     }
   }
+  expect(schemas).not.toHaveProperty('ITimetableV2.TimetableLectureRef')
 
   const response = schemas['ITimetableV2.UpdateItemsResDtoV2']
   expect(Object.keys(response.properties).sort()).toEqual(['customBlocks', 'lectures'])
