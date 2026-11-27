@@ -134,6 +134,9 @@ export class TimetablesControllerV2 {
     @Body() body: ITimetableV2.UpdateItemsReqDtoV1 | ITimetableV2.UpdateItemsReqDtoV2,
     @GetLanguage() language: Language,
   ): Promise<ITimetableV2.UpdateItemsResDtoV1 | ITimetableV2.UpdateItemsResDtoV2> {
+    if (body && typeof body === 'object' && 'changes' in body) {
+      return this.timetablesService.updateTimetableItemsForBuddyMigration(user, body, timetableId, language)
+    }
     return await this.timetablesService.updateTimetableItems(user, body, timetableId, language)
   }
 

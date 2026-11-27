@@ -27,7 +27,8 @@ import { CustomblockRepository, LectureRepository, TimetableRepository } from '@
 import { ECustomblock } from '@otl/prisma-client/entities/ECustomblock'
 
 import {
-  parseCustomblockData, parseTimetableItems, parseTimetableItemUpdate, validateCreateTimetableInput, validateCustomblockTimes,
+  parseCustomblockData, parseTimetableItems, parseTimetableItemUpdate, parseTimetableItemUpdateForBuddyMigration,
+  validateCreateTimetableInput, validateCustomblockTimes,
 } from './timetable-input'
 
 @Injectable()
@@ -424,36 +425,22 @@ export class TimetablesServiceV2 {
     }
   }
 
-  updateTimetableItems(
+  async updateTimetableItemsForBuddyMigration(
     user: session_userprofile,
     body: ITimetableV2.UpdateItemsReqDtoV1,
     timetableId: number,
     language: Language,
-  ): Promise<ITimetableV2.UpdateItemsResDtoV1>
+  ): Promise<ITimetableV2.UpdateItemsResDtoV1> {
+    return this.applyTimetableChanges(user, parseTimetableItemUpdateForBuddyMigration(body), timetableId, language)
+  }
 
-  updateTimetableItems(
+  async updateTimetableItems(
     user: session_userprofile,
     body: ITimetableV2.UpdateItemsReqDtoV2,
     timetableId: number,
     language: Language,
-  ): Promise<ITimetableV2.UpdateItemsResDtoV2>
-
-  updateTimetableItems(
-    user: session_userprofile,
-    body: ITimetableV2.UpdateItemsReqDtoV1 | ITimetableV2.UpdateItemsReqDtoV2,
-    timetableId: number,
-    language: Language,
-  ): Promise<ITimetableV2.UpdateItemsResDtoV1 | ITimetableV2.UpdateItemsResDtoV2>
-
-  async updateTimetableItems(
-    user: session_userprofile,
-    body: ITimetableV2.UpdateItemsReqDtoV1 | ITimetableV2.UpdateItemsReqDtoV2,
-    timetableId: number,
-    language: Language,
-  ): Promise<ITimetableV2.UpdateItemsResDtoV1 | ITimetableV2.UpdateItemsResDtoV2> {
-    const { version, changes } = parseTimetableItemUpdate(body)
-    const result = await this.applyTimetableChanges(user, changes, timetableId, language)
-    if (version === 1) return result
+  ): Promise<ITimetableV2.UpdateItemsResDtoV2> {
+    const result = await this.applyTimetableChanges(user, parseTimetableItemUpdate(body), timetableId, language)
     return {
       customBlocks: result.results.map(({ id }) => {
         const item = result.timetableItems.find((entry) => entry.kind === TimetableItemKind.CUSTOM && entry.data.id === id)

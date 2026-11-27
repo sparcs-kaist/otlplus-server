@@ -4,7 +4,9 @@ import { BadRequestException, ValidationPipe } from '@nestjs/common'
 import { ICustomblock } from '@otl/server-nest/common/interfaces/ICustomblock'
 import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
 
-import { parseTimetableChanges, parseTimetableItems, parseTimetableItemUpdate, validateCreateTimetableInput } from './timetable-input'
+import {
+  parseTimetableChanges, parseTimetableItems, parseTimetableItemUpdate, parseTimetableItemUpdateForBuddyMigration, validateCreateTimetableInput,
+} from './timetable-input'
 
 const block = { block_name: 'Study', place: '', day: 0, begin: 600, end: 660 }
 const pipe = new ValidationPipe({ transform: true, whitelist: true })
@@ -87,26 +89,34 @@ describe('Timetable item request validation', () => {
 describe('versioned timetable item updates', () => {
   it('preserves V1 changes and ignores unrelated top-level fields as the old whitelist did', () => {
     const changes = [{ op: 'remove', kind: 'lecture', id: 1 }, { op: 'add', kind: 'custom', data: block }]
-    expect(parseTimetableItemUpdate({ changes })).toEqual({ version: 1, changes })
-    expect(parseTimetableItemUpdate({ changes, unrelated: true })).toEqual({ version: 1, changes })
+    expect(parseTimetableItemUpdateForBuddyMigration({ changes })).toEqual(changes)
+    expect(parseTimetableItemUpdateForBuddyMigration({ changes, unrelated: true })).toEqual(changes)
+  })
+
+  it.each([
+    undefined, null, [], {},
+    { changes: [] }, { changes: null },
+    { customBlocks: [{ id: 11, place: 'Library' }] },
+    { changes: [{ op: 'remove', kind: 'lecture', id: 1 }], customBlocks: [] },
+    { changes: [{ op: 'remove', kind: 'lecture', id: 1 }], customBlocks: [{ id: 11, place: 'Library' }] },
+  ].map((body) => [body]))('rejects malformed or mixed requests in the V1 parser: %j', (body) => {
+    expect(() => parseTimetableItemUpdateForBuddyMigration(body)).toThrow(BadRequestException)
   })
 
   it('converts V2 partial and full custom-block updates in request order without changing the input', () => {
     const times = [{ day: 0, begin: 600, end: 660 }, { day: 2, begin: 600, end: 660 }]
     const body = { customBlocks: [{ id: 12, place: '' }, { id: 11, ...block, times }] }
-    expect(parseTimetableItemUpdate(body)).toEqual({
-      version: 2,
-      changes: [
-        { op: 'update', kind: 'custom', id: 12, data: { place: '' } },
-        { op: 'update', kind: 'custom', id: 11, data: { ...block, times } },
-      ],
-    })
+    expect(parseTimetableItemUpdate(body)).toEqual([
+      { op: 'update', kind: 'custom', id: 12, data: { place: '' } },
+      { op: 'update', kind: 'custom', id: 11, data: { ...block, times } },
+    ])
     expect(body).toEqual({ customBlocks: [{ id: 12, place: '' }, { id: 11, ...block, times }] })
   })
 
   it.each([
     undefined, null, [], {},
     { changes: [] }, { changes: null },
+    { changes: [{ op: 'remove', kind: 'lecture', id: 1 }] },
     { changes: [{ op: 'remove', kind: 'lecture', id: 1 }], customBlocks: [] },
     { changes: [], customBlocks: [{ id: 11, place: 'Library' }] },
     { changes: null, customBlocks: [{ id: 11, place: 'Library' }] },
@@ -129,7 +139,7 @@ describe('versioned timetable item updates', () => {
     { customBlocks: [{ id: 11, begin: '600' }] },
     { customBlocks: [{ id: 11, begin: 600, end: 600 }] },
     { customBlocks: [{ id: 11, times: [] }] },
-  ].map((body) => [body]))('rejects ambiguous or malformed V1/V2 updates: %j', (body) => {
+  ].map((body) => [body]))('rejects ambiguous or malformed V2 updates: %j', (body) => {
     expect(() => parseTimetableItemUpdate(body)).toThrow(BadRequestException)
   })
 })

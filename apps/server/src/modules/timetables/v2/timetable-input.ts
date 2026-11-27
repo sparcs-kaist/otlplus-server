@@ -137,26 +137,27 @@ export function parseTimetableItems(input: unknown, op: 'add' | 'remove'): ITime
   ])
 }
 
-export function parseTimetableItemUpdate(input: unknown): { version: 1 | 2, changes: ITimetableV2.TimetableChange[] } {
+export function parseTimetableItemUpdateForBuddyMigration(input: unknown): ITimetableV2.TimetableChange[] {
   const body = object(input)
-  if (('changes' in body) === ('customBlocks' in body)) {
+  if ('customBlocks' in body) {
     return fail('Provide exactly one of changes and customBlocks')
   }
   // The legacy ValidationPipe stripped unrelated top-level fields before parsing changes.
-  if ('changes' in body) return { version: 1, changes: parseTimetableChanges(body.changes) }
+  return parseTimetableChanges(body.changes)
+}
+
+export function parseTimetableItemUpdate(input: unknown): ITimetableV2.TimetableChange[] {
+  const body = object(input)
   keys(body, ['customBlocks'])
   if (!Array.isArray(body.customBlocks) || body.customBlocks.length === 0) {
     return fail('customBlocks must be a non-empty array')
   }
-  return {
-    version: 2,
-    changes: parseTimetableChanges(body.customBlocks.map((value) => {
-      const { id: blockId, ...data } = object(value)
-      return {
-        op: 'update', kind: TimetableItemKind.CUSTOM, id: blockId, data,
-      }
-    })),
-  }
+  return parseTimetableChanges(body.customBlocks.map((value) => {
+    const { id: blockId, ...data } = object(value)
+    return {
+      op: 'update', kind: TimetableItemKind.CUSTOM, id: blockId, data,
+    }
+  }))
 }
 
 export function validateCreateTimetableInput(body: ITimetableV2.CreateReqDto): void {

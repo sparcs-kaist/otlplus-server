@@ -4,7 +4,9 @@ import { session_userprofile } from '@prisma/client'
 import { CustomblockRepository, LectureRepository, TimetableRepository } from '@otl/prisma-client'
 import { ELecture } from '@otl/prisma-client/entities/ELecture'
 import { ETimetable } from '@otl/prisma-client/entities/ETimetable'
+import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
 
+import { TimetablesControllerV2 } from './timetables.controller'
 import { TimetablesServiceV2 } from './timetables.service'
 
 // Transaction isolation/rollback is covered by the repository integration test.
@@ -87,6 +89,27 @@ function setup(current = timetable()) {
   )
   return { service, repo, blocks, lectures, mq }
 }
+
+describe('Timetable PATCH version routing', () => {
+  it.each([1, 2])('routes V%s to only its matching service and response contract', async (version) => {
+    const { service } = setup()
+    const legacy = jest.spyOn(service, 'updateTimetableItemsForBuddyMigration')
+    const current = jest.spyOn(service, 'updateTimetableItems')
+    const controller = new TimetablesControllerV2(service)
+    const body: ITimetableV2.UpdateItemsReqDtoV1 | ITimetableV2.UpdateItemsReqDtoV2 = version === 1
+      ? { changes: [{ op: 'update', kind: 'custom', id: block.id, data: { place: block.place } }] }
+      : { customBlocks: [{ id: block.id, place: block.place }] }
+    const updated = { ...block, times: [{ day: block.day, begin: block.begin, end: block.end }] }
+
+    await expect(controller.updateTimetableItems(user, 42, body, 'en')).resolves.toEqual(version === 1
+      ? { timetableItems: [{ kind: 'custom', data: updated }], results: [{ index: 0, kind: 'custom', id: block.id }] }
+      : { customBlocks: [updated] })
+    const [called, unused] = version === 1 ? [legacy, current] : [current, legacy]
+    expect(called).toHaveBeenCalledTimes(1)
+    expect(called).toHaveBeenCalledWith(user, body, 42, 'en')
+    expect(unused).not.toHaveBeenCalled()
+  })
+})
 
 describe('TimetablesServiceV2 unified items', () => {
   it('returns only updated custom blocks in request order while preserving omitted contents', async () => {
@@ -196,7 +219,7 @@ describe('TimetablesServiceV2 unified items', () => {
     const { service, repo, blocks, mq } = setup(timetable([lecture(11)], [block, { ...block, id: 12, day: 1 }]))
     repo.getLecturesByIds.mockResolvedValue([lecture(13, 2)])
     const addedBlock = { ...customInput, day: 3 }
-    const result = await service.updateTimetableItems(user, {
+    const result = await service.updateTimetableItemsForBuddyMigration(user, {
       changes: [
         { op: 'add', kind: 'lecture', lectureId: 13 },
         { op: 'add', kind: 'custom', data: addedBlock },
@@ -225,7 +248,7 @@ describe('TimetablesServiceV2 unified items', () => {
 
   it('checks collisions against the final state when a batch replaces a lecture with a block', async () => {
     const { service, repo, blocks } = setup(timetable([lecture(11)], []))
-    const result = await service.updateTimetableItems(user, {
+    const result = await service.updateTimetableItemsForBuddyMigration(user, {
       changes: [
         { op: 'add', kind: 'custom', data: customInput },
         { op: 'remove', kind: 'lecture', id: 11 },
@@ -242,7 +265,7 @@ describe('TimetablesServiceV2 unified items', () => {
 
   it('distinguishes a lecture and a custom block that have the same numeric ID', async () => {
     const { service, repo, blocks } = setup(timetable([lecture(11)]))
-    await service.updateTimetableItems(user, {
+    await service.updateTimetableItemsForBuddyMigration(user, {
       changes: [
         { op: 'remove', kind: 'lecture', id: 11 },
         { op: 'remove', kind: 'custom', id: 11 },
@@ -255,7 +278,7 @@ describe('TimetablesServiceV2 unified items', () => {
 
   it('allows a metadata edit despite an existing lecture/block overlap', async () => {
     const { service, blocks } = setup(timetable([lecture(11)]))
-    await service.updateTimetableItems(user, {
+    await service.updateTimetableItemsForBuddyMigration(user, {
       changes: [{ op: 'update', kind: 'custom', id: 11, data: { block_name: 'Renamed' } }],
     }, 42, 'en')
 
@@ -269,7 +292,7 @@ describe('TimetablesServiceV2 unified items', () => {
       ? { op: 'add' as const, kind, lectureId: 12 }
       : { op: 'add' as const, kind, data: customInput }
 
-    await expect(service.updateTimetableItems(user, { changes: [change] }, 42, 'en'))
+    await expect(service.updateTimetableItemsForBuddyMigration(user, { changes: [change] }, 42, 'en'))
       .rejects.toBeInstanceOf(ConflictException)
     expect(repo.addLectureToTimetable).not.toHaveBeenCalled()
     expect(blocks.createCustomblock).not.toHaveBeenCalled()
@@ -277,7 +300,7 @@ describe('TimetablesServiceV2 unified items', () => {
 
   it('allows unrelated additions while keeping a legacy overlap', async () => {
     const { service, blocks } = setup(timetable([lecture(12)]))
-    await service.updateTimetableItems(user, {
+    await service.updateTimetableItemsForBuddyMigration(user, {
       changes: [{ op: 'add', kind: 'custom', data: { ...customInput, day: 1 } }],
     }, 42, 'en')
 
@@ -286,7 +309,7 @@ describe('TimetablesServiceV2 unified items', () => {
 
   it('rejects edits to another user’s timetable', async () => {
     const { service, blocks } = setup({ ...timetable(), user_id: 8 })
-    await expect(service.updateTimetableItems(user, {
+    await expect(service.updateTimetableItemsForBuddyMigration(user, {
       changes: [{ op: 'remove', kind: 'custom', id: 11 }],
     }, 42, 'en')).rejects.toBeInstanceOf(ForbiddenException)
     expect(blocks.removeCustomblockFromTimetable).not.toHaveBeenCalled()
@@ -295,7 +318,7 @@ describe('TimetablesServiceV2 unified items', () => {
   it('rejects lectures from another semester', async () => {
     const { service, repo } = setup(timetable([], []))
     repo.getLecturesByIds.mockResolvedValue([{ ...lecture(12), semester: 1 }])
-    await expect(service.updateTimetableItems(user, {
+    await expect(service.updateTimetableItemsForBuddyMigration(user, {
       changes: [{ op: 'add', kind: 'lecture', lectureId: 12 }],
     }, 42, 'en')).rejects.toBeInstanceOf(BadRequestException)
     expect(repo.addLectureToTimetable).not.toHaveBeenCalled()
@@ -383,12 +406,12 @@ describe('multi-time custom blocks', () => {
 
   it('checks every occurrence when adding either a lecture or a custom block', async () => {
     const custom = setup(timetable([lecture(9, 2, 720, 780)], []))
-    await expect(custom.service.updateTimetableItems(user, {
+    await expect(custom.service.updateTimetableItemsForBuddyMigration(user, {
       changes: [{ op: 'add', kind: 'custom', data: { block_name: 'Study', place: '', times } }],
     }, 42, 'en')).rejects.toBeInstanceOf(ConflictException)
     const nextLecture = setup(timetable([], [grouped]))
     nextLecture.repo.getLecturesByIds.mockResolvedValue([lecture(9, 2, 720, 780)])
-    await expect(nextLecture.service.updateTimetableItems(user, {
+    await expect(nextLecture.service.updateTimetableItemsForBuddyMigration(user, {
       changes: [{ op: 'add', kind: 'lecture', lectureId: 9 }],
     }, 42, 'en')).rejects.toBeInstanceOf(ConflictException)
     expect(custom.blocks.createCustomblock).not.toHaveBeenCalled()
@@ -414,7 +437,7 @@ describe('multi-time custom blocks', () => {
 
   it('checks a replacement second occurrence against other blocks', async () => {
     const { service, blocks } = setup(timetable([], [grouped, { ...block, id: 12, day: 4 }]))
-    await expect(service.updateTimetableItems(user, {
+    await expect(service.updateTimetableItemsForBuddyMigration(user, {
       changes: [{ op: 'update', kind: 'custom', id: block.id, data: { times: [times[0], { ...times[0], day: 4 }] } }],
     }, 42, 'en')).rejects.toBeInstanceOf(ConflictException)
     expect(blocks.updateCustomblock).not.toHaveBeenCalled()
