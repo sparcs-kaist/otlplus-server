@@ -73,13 +73,44 @@ export class TimetablesControllerV2 {
   async setHomeTimetable(
     @GetUser() user: session_userprofile,
     @Body() body: ITimetableV2.SetHomeTimetableReqDto,
+  ): Promise<ITimetableV2.TimetableSelectionResDto> {
+    return await this.timetablesService.setHomeTimetable(user, body)
+  }
+
+  @Get('/shared')
+  async getSharedTimetable(
+    @Query() query: ITimetableV2.HomeTimetableReqDto,
+    @GetUser() user: session_userprofile,
     @GetLanguage() language: Language,
-  ): Promise<ITimetableV2.HomeTimetableResDto> {
-    return await this.timetablesService.setHomeTimetable(user, body, language)
+  ): Promise<ITimetableV2.SharedTimetableResDto> {
+    return this.timetablesService.getSharedTimetable(user, query, language)
+  }
+
+  @Get('/shared/semesters')
+  async getSharedTimetableSemesters(@GetUser() user: session_userprofile): Promise<ITimetableV2.SharedTimetableSemestersResDto> {
+    return this.timetablesService.getSharedTimetableSemesters(user)
+  }
+
+  @Patch('/shared')
+  async setSharedTimetable(
+    @GetUser() user: session_userprofile,
+    @GetLanguage() language: Language,
+    @Body() body: ITimetableV2.SetSharedTimetableReqDto,
+  ): Promise<ITimetableV2.TimetableSelectionResDto> {
+    return this.timetablesService.setSharedTimetable(user, body, language)
   }
 
   @Get('/:timetableId')
   async getTimetable(
+    @Param('timetableId', ParseIntPipe) timetableId: number,
+    @GetUser() user: session_userprofile,
+    @GetLanguage() language: Language,
+  ): Promise<ITimetableV2.TimetableDetailResDto> {
+    return await this.timetablesService.getTimetable(timetableId, user, language)
+  }
+
+  @Get('/:timetableId/items')
+  async getTimetableItems(
     @Param('timetableId', ParseIntPipe) timetableId: number,
     @GetUser() user: session_userprofile,
     @GetLanguage() language: Language,
@@ -100,9 +131,12 @@ export class TimetablesControllerV2 {
   async updateTimetableItems(
     @GetUser() user: session_userprofile,
     @Param('timetableId', ParseIntPipe) timetableId: number,
-    @Body() body: ITimetableV2.UpdateItemsReqDto,
+    @Body() body: ITimetableV2.UpdateItemsReqDtoV1 | ITimetableV2.UpdateItemsReqDtoV2,
     @GetLanguage() language: Language,
-  ): Promise<ITimetableV2.UpdateItemsResDto> {
+  ): Promise<ITimetableV2.UpdateItemsResDtoV1 | ITimetableV2.UpdateItemsResDtoV2> {
+    if (body && typeof body === 'object' && 'changes' in body) {
+      return this.timetablesService.updateTimetableItemsForBuddyMigration(user, body, timetableId, language)
+    }
     return await this.timetablesService.updateTimetableItems(user, body, timetableId, language)
   }
 

@@ -23,32 +23,34 @@ export class CourseRepositoryV2 {
     MR: 'Major Required',
   }
 
+  // departmentCode=ETC는 이 목록에 없는 학과 전체를 뜻함. 프론트 학과 필터 칩 목록과 맞춰야 함
   private MAJOR_ACRONYMS = [
+    'HSS',
     'CE',
-    'MSB',
+    'BTM',
     'ME',
     'PH',
     'BiS',
     'IE',
     'ID',
     'BS',
-    'CBE',
     'MAS',
-    'MS',
     'NQE',
-    'HSS',
     'EE',
     'CS',
     'AE',
     'CH',
+    'CBE',
+    'MS',
     'TS',
-    'BTM',
-    'BCS',
     'SS',
+    'BCS',
+    'AIC',
   ]
 
   public async getCourses(
     department: number[] | undefined,
+    departmentCode: string[] | undefined,
     type: string[] | undefined,
     level: number[] | undefined,
     keyword: string | undefined,
@@ -59,13 +61,19 @@ export class CourseRepositoryV2 {
   ): Promise<{ queryResult: ECourseV2.BasicWithProfessors[], totalCount: number }> {
     const DEFAULT_LIMIT = 150
     const departmentFilter = this.departmentFilter(department)
+    const departmentCodeFilter = this.departmentCodeFilter(departmentCode)
     const typeFilter = this.typeFilter(type)
     const keywordFilter = this.keywordFilter(keyword)
     const term_filter = this.termFilter(term)
     const levelFilter = this.levelFilter(level)
-    const filterList: object[] = [departmentFilter, typeFilter, keywordFilter, term_filter, levelFilter].filter(
-      (filter): filter is object => filter !== null,
-    )
+    const filterList: object[] = [
+      departmentFilter,
+      departmentCodeFilter,
+      typeFilter,
+      keywordFilter,
+      term_filter,
+      levelFilter,
+    ].filter((filter): filter is object => filter !== null)
 
     if (order === 'studentCount') {
       return this.getCoursesByStudentCount(filterList, offset ?? 0, limit ?? DEFAULT_LIMIT)
@@ -159,6 +167,22 @@ export class CourseRepositoryV2 {
         in: department_ids,
       },
     }
+  }
+
+  // 같은 코드의 학과(전신 학과 포함)를 모두 조회. ETC는 MAJOR_ACRONYMS에 없는 학과 전체
+  public departmentCodeFilter(departmentCodes?: string[]): object | null {
+    if (!departmentCodes) {
+      return null
+    }
+    const codes = departmentCodes.filter((code) => code !== 'ETC')
+    const conditions: object[] = []
+    if (codes.length > 0) {
+      conditions.push({ subject_department: { code: { in: codes } } })
+    }
+    if (departmentCodes.includes('ETC')) {
+      conditions.push({ subject_department: { code: { notIn: this.MAJOR_ACRONYMS } } })
+    }
+    return { OR: conditions }
   }
 
   public typeFilter(types?: string[]): object | null {

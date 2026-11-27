@@ -10,7 +10,7 @@ import { FriendsService } from './friends.service'
 
 describe('FriendCodeRateLimitGuard with FriendsController', () => {
   const redis = { eval: jest.fn(), disconnect: jest.fn() }
-  const service = { getCode: jest.fn(), addFriend: jest.fn() }
+  const service = { getCode: jest.fn(), regenerateCode: jest.fn(), addFriend: jest.fn() }
   let app: INestApplication
 
   beforeAll(async () => {
@@ -36,6 +36,7 @@ describe('FriendCodeRateLimitGuard with FriendsController', () => {
     jest.resetAllMocks()
     redis.eval.mockResolvedValue(0)
     service.getCode.mockResolvedValue({ code: 'K7L4MX' })
+    service.regenerateCode.mockResolvedValue({ code: 'ACDEFH' })
     service.addFriend.mockResolvedValue({ friend: { id: 100, name: 'Test Friend', isFavorite: false } })
   })
 
@@ -132,11 +133,22 @@ describe('FriendCodeRateLimitGuard with FriendsController', () => {
     expect(redis.eval).not.toHaveBeenCalled()
   })
 
-  it.each(['/api/v2/friends/invites', '/api/v2/friends/invites/accept'])(
+  it('regenerates the authenticated caller code via PUT, ignoring an injected owner or code', async () => {
+    const response = await request(app.getHttpServer())
+      .put('/api/v2/friends/code').set('x-test-user', '42')
+      .send({ userId: 999, code: 'AAAAAA' }).expect(200)
+    expect(response.body).toEqual({ code: 'ACDEFH' })
+    expect(response.headers['cache-control']).toBe('private, no-store')
+    expect(service.regenerateCode).toHaveBeenCalledWith({ id: 42 })
+    expect(redis.eval).not.toHaveBeenCalled()
+  })
+
+  it.each(['/api/v2/friends/invites', '/api/v2/friends/invites/accept', '/api/v2/friends/code'])(
     'removes the old POST %s endpoint',
     async (url) => {
       await request(app.getHttpServer()).post(url).set('x-test-user', '42').send({ token: 'old-token' }).expect(404)
       expect(service.addFriend).not.toHaveBeenCalled()
+      expect(service.regenerateCode).not.toHaveBeenCalled()
       expect(redis.eval).not.toHaveBeenCalled()
     },
   )
