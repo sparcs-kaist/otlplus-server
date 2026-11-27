@@ -47,8 +47,8 @@ export class MockAuthGuard implements CanActivate {
       request.user = user
       return true
     }
-    catch (e: any) {
-      if (e.message === 'jwt expired') {
+    catch (e: unknown) {
+      if ((e instanceof Error ? e.message : String(e)) === 'jwt expired') {
         try {
           const refreshToken = this.extractTokenFromCookie(request, 'refreshToken')
           if (!refreshToken) throw new UnauthorizedException()

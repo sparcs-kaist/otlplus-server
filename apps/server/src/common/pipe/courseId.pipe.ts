@@ -8,7 +8,7 @@ import { PrismaService } from '@otl/prisma-client/prisma.service'
 export class CourseIdPipe implements PipeTransform {
   constructor(private prismaService: PrismaService) {}
 
-  async transform(value: any, _metadata: ArgumentMetadata): Promise<number> {
+  async transform(value: string, _metadata: ArgumentMetadata): Promise<number> {
     const courseId = parseInt(value)
     if (Number.isNaN(courseId)) {
       throw new BadRequestException('Invalid course ID')

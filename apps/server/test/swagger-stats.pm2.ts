@@ -3,7 +3,7 @@
 // import { uuid } from 'uuidv4'
 //
 // /* if you use Bluebird, it makes using PM2 API easier, creating *Async functions */
-// const pm2 = Promise.promisifyAll(pm2Cb) as any
+// const pm2 = Promise.promisifyAll(pm2Cb) as unknown
 //
 // /** Total timeout for workers, ms */
 // const TIMEOUT = 2000
@@ -24,7 +24,7 @@
 //   type: string
 //   data: {
 //     instanceId: number
-//     register: any
+//     register: unknown
 //     success: boolean
 //     reqId: string
 //   }
@@ -78,7 +78,7 @@
 //     const targetId = instanceData.pm_id
 //     // don't send message to self
 //     if (targetId !== instanceId) {
-//       promises.push(pm2.sendDataToProcessIdAsync(targetId, requestData).catch((e: any) => console.error(e)))
+//       promises.push(pm2.sendDataToProcessIdAsync(targetId, requestData).catch((e: unknown) => console.error(e)))
 //     }
 //   }
 //
@@ -97,9 +97,9 @@
 //
 //   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 //   // @ts-expect-error
-//   const registryPromise = new Promise<any>((resolve, reject: (arg0: unknown) => void) => {
+//   const registryPromise = new Promise<unknown>((resolve, reject: (arg0: unknown) => void) => {
 //     const instancesCount = instancesData.length
-//     const registersPerInstance: any[] = []
+//     const registersPerInstance: unknown[] = []
 //     const busEventName = `process:${instanceId}`
 //     // master process metrics
 //     registersPerInstance[instanceId] = promClient.register.getMetricsAsJSON()
@@ -146,7 +146,7 @@
 // }
 //
 // /** Main middleware function */
-// export default async function swaggerStatsMetrics(req: any, res: { send: (arg0: string) => void }, _next: any) {
+// export default async function swaggerStatsMetrics(req: unknown, res: { send: (arg0: string) => void }, _next: unknown) {
 //   try {
 //     // create or use bus singleton
 //     pm2Bus = pm2Bus || (await pm2.launchBusAsync())

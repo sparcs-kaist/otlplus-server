@@ -33,8 +33,8 @@ export class OneAppCookieCommand implements AuthCommand {
       request.user = user
       return this.setAuthenticated(prevResult)
     }
-    catch (e: any) {
-      if (e.message === 'jwt expired' && refreshToken) {
+    catch (e: unknown) {
+      if ((e instanceof Error ? e.message : String(e)) === 'jwt expired' && refreshToken) {
         return this.handleRefreshToken(refreshToken, request, response, prevResult)
       }
       return prevResult
@@ -62,7 +62,7 @@ export class OneAppCookieCommand implements AuthCommand {
       const user = await this.getUserFromPayload(payload.uid)
 
       // 우리 서비스 쿠키 재발급에는 sid가 필요 → user.sid 또는 매핑에서 조회
-      const sid = (user as any)?.sid ?? (await this.authService.findSidByUid(String(payload.uid)))
+      const sid = user.sid ?? (await this.authService.findSidByUid(String(payload.uid)))
 
       if (!sid) return result
 

@@ -29,7 +29,7 @@ it.each(['docs', 'src'])('documents split timetable contents and preserves mixed
   expect(schemas['ITimetableV2.UpdateItemsReqDtoV1'].properties.changes.items.$ref)
     .toBe('#/components/schemas/ITimetableV2.TimetableChange')
   expect(schemas['ITimetableV2.TimetableItem'].anyOf).toHaveLength(2)
-  expect(schemas['ITimetableV2.TimetableItem'].anyOf.map((item: any) => item.properties.kind.const))
+  expect(schemas['ITimetableV2.TimetableItem'].anyOf.map((item: { properties: { kind: { const: string } } }) => item.properties.kind.const))
     .toEqual(['lecture', 'custom'])
   expect(schemas['ICustomblock.Basic'].required).toContain('times')
   expect(schemas['ICustomblock.Basic'].properties.times.items.$ref).toBe('#/components/schemas/ICustomblock.Time')

@@ -123,7 +123,7 @@ export class AuthService {
   }
 
   // (교체) 외부 토큰 검증: HS256 가정(= secret 동일) + 만료만 무시 옵션 + 디코드 폴백(개발)
-  async verifyOneAppJwt<T extends object = any>(
+  async verifyOneAppJwt<T extends object = Record<string, unknown>>(
     token: string,
     {
       allowExpired = false,
@@ -133,7 +133,7 @@ export class AuthService {
     const { oneAppSecret } = settings().getJwtConfig()
 
     // 1) alg 확인 (헤더만 먼저 디코드, verify 미수행)
-    const decodedComplete = jsonwebtoken.decode(token, { complete: true }) as { header?: any } | null
+    const decodedComplete = jsonwebtoken.decode(token, { complete: true })
     const alg = decodedComplete?.header?.alg
 
     try {
@@ -150,9 +150,9 @@ export class AuthService {
       //    지금은 필요없다면 아래로 진행
       throw new Error('ALG_MISMATCH_OR_RS_ALG')
     }
-    catch (e: any) {
+    catch (e: unknown) {
       // 만료만 무시
-      if (allowExpired && (e?.name === 'TokenExpiredError' || /expired|exp|jwt expired/i.test(e?.message))) {
+      if (allowExpired && e instanceof Error && (e.name === 'TokenExpiredError' || /expired|exp|jwt expired/i.test(e.message))) {
         if (!alg || /^HS\d+$/i.test(alg)) {
           return jsonwebtoken.verify(token, oneAppSecret ?? '', {
             ignoreExpiration: true,
@@ -342,15 +342,15 @@ export class AuthService {
     return await this.userRepository.updateUser(userId, user)
   }
 
-  async tokenRefresh(refreshToken: any) {
+  async tokenRefresh(refreshToken: string) {
     let payload
     try {
-      payload = await this.jwtService.verifyAsync(refreshToken, {
+      payload = await this.jwtService.verifyAsync<IAuth.JwtPayload>(refreshToken, {
         secret: this.jwtConfig.secret,
         ignoreExpiration: false,
       })
     }
-    catch (_: any) {
+    catch {
       throw new UnauthorizedException('Invalid or expired refresh token')
     }
 
@@ -393,7 +393,7 @@ export class AuthService {
 
     // 1) 정상 검증 (만료 체크)
     try {
-      const payload = this.jwtService.verify<any>(raw, {
+      const payload = this.jwtService.verify<Record<string, unknown>>(raw, {
         ignoreExpiration: !!opts?.allowExpired, // true면 exp 무시
       })
       return {
@@ -406,7 +406,7 @@ export class AuthService {
       // 2) exp 무시 추가 시도 (옵션을 켰는데도 검증 실패할 경우 대비)
       if (opts?.allowExpired) {
         try {
-          const payload = this.jwtService.verify<any>(raw, { ignoreExpiration: true })
+          const payload = this.jwtService.verify<Record<string, unknown>>(raw, { ignoreExpiration: true })
           return {
             sid: typeof payload?.sid === 'string' ? payload.sid : undefined,
             uid: payload?.uid != null ? String(payload.uid) : undefined,
@@ -418,11 +418,11 @@ export class AuthService {
         }
       }
       // 3) 마지막 폴백: 서명검증 없이 decode (운영에선 비권장, 필요시 주석처리)
-      const decoded = this.jwtService.decode(raw) as any
+      const decoded: unknown = this.jwtService.decode(raw)
       if (decoded && typeof decoded === 'object') {
         return {
-          sid: typeof decoded?.sid === 'string' ? decoded.sid : undefined,
-          uid: decoded?.uid != null ? String(decoded.uid) : undefined,
+          sid: 'sid' in decoded && typeof decoded.sid === 'string' ? decoded.sid : undefined,
+          uid: 'uid' in decoded && decoded.uid != null ? String(decoded.uid) : undefined,
           payload: decoded,
         }
       }
@@ -449,10 +449,8 @@ export class AuthService {
     }
 
     // 3) refreshToken 헤더/쿠키
-    const headerRefresh = (req.headers['X-REFRESH-TOKEN'] || (req.headers['X-REFRESH-TOKEN'] as any)) as
-      | string
-      | undefined
-    if (headerRefresh) {
+    const headerRefresh = req.headers['X-REFRESH-TOKEN']
+    if (typeof headerRefresh === 'string' && headerRefresh) {
       return this.extractSidUidFromToken(headerRefresh, opts)
     }
     const cookieRefresh = req.cookies?.refreshToken

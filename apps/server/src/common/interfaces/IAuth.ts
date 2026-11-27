@@ -1,6 +1,8 @@
 import { IsString } from 'class-validator'
 import { Request as _Request, Response as _Response } from 'express'
 
+import { ESSOUser } from '@otl/prisma-client/entities/ESSOUser'
+
 export namespace IAuth {
   export type Request = _Request & RequestExtra
 
@@ -19,8 +21,8 @@ export namespace IAuth {
     first_name?: string | null
     last_name?: string | null
     kaist_id?: string | null
-    kaist_info?: any | null
-    kaist_v2_info?: any
+    kaist_info?: Partial<ESSOUser.KaistInfo> | null
+    kaist_v2_info?: OneAppSsoPayload['kaist_v2_info'] & { std_prog_code?: string | number | null } | null
     iat?: number
     exp?: number
     iss?: string
@@ -30,7 +32,7 @@ export namespace IAuth {
   export type ExtractedIdentity = {
     sid?: string
     uid?: string
-    payload?: any
+    payload?: unknown
   }
 
   export type OneAppHeaderPayload = {

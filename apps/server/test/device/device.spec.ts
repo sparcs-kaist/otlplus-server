@@ -1,4 +1,4 @@
-import { MockFunctionMetadata, ModuleMocker } from 'jest-mock'
+import { ModuleMocker } from 'jest-mock'
 import { DEVICE_REPOSITORY, DeviceRepository } from '@otl/server-nest/modules/device/domain/device.repository'
 import { UserDevice, UserDeviceCreate } from '@otl/server-nest/modules/device/domain/device'
 import { UserException } from '@otl/common/exception/user.exception'
@@ -134,9 +134,10 @@ describe('DeviceService', () => {
           return repo
         }
         if (typeof token === 'function') {
-          const mockMetadata = moduleMocker.getMetadata(token) as MockFunctionMetadata<any, any>
+          const mockMetadata = moduleMocker.getMetadata(token)
+          if (!mockMetadata) throw new Error('Missing mock metadata')
           const Mock = moduleMocker.generateFromMetadata(mockMetadata)
-          return new Mock()
+          return Reflect.construct(Mock, [])
         }
       })
       .compile()
