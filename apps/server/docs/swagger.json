@@ -3414,7 +3414,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ITimetableV2.UpdateItemsResDto"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ITimetableV2.UpdateItemsResDtoV1"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ITimetableV2.UpdateItemsResDtoV2"
+                    }
+                  ]
                 }
               }
             }
@@ -3448,7 +3455,14 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ITimetableV2.UpdateItemsReqDto"
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/ITimetableV2.UpdateItemsReqDtoV1"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ITimetableV2.UpdateItemsReqDtoV2"
+                  }
+                ]
               }
             }
           }
@@ -11344,7 +11358,7 @@
           "custom"
         ]
       },
-      "ITimetableV2.UpdateItemsReqDto": {
+      "ITimetableV2.UpdateItemsReqDtoV1": {
         "type": "object",
         "properties": {
           "changes": {
@@ -11358,9 +11372,10 @@
         "required": [
           "changes"
         ],
-        "additionalProperties": false
+        "additionalProperties": false,
+        "description": "Legacy request. Cannot be combined with customBlocks; returns UpdateItemsResDtoV1."
       },
-      "ITimetableV2.UpdateItemsResDto": {
+      "ITimetableV2.UpdateItemsResDtoV1": {
         "type": "object",
         "properties": {
           "timetableItems": {
@@ -12529,6 +12544,71 @@
           "timetableId",
           "year"
         ]
+      },
+      "ITimetableV2.UpdateCustomBlockDto": {
+        "type": "object",
+        "properties": {
+          "block_name": {
+            "type": "string"
+          },
+          "place": {
+            "type": "string"
+          },
+          "day": {
+            "type": "number"
+          },
+          "begin": {
+            "type": "number"
+          },
+          "end": {
+            "type": "number"
+          },
+          "times": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ICustomblock.Time"
+            }
+          },
+          "id": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "ITimetableV2.UpdateItemsReqDtoV2": {
+        "type": "object",
+        "properties": {
+          "customBlocks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ITimetableV2.UpdateCustomBlockDto"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "customBlocks"
+        ],
+        "additionalProperties": false,
+        "description": "Update existing blocks by ID. Requires at least one block and one changed field per block. Cannot be combined with changes; returns UpdateItemsResDtoV2 in request order."
+      },
+      "ITimetableV2.UpdateItemsResDtoV2": {
+        "type": "object",
+        "properties": {
+          "customBlocks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ICustomblock.Basic"
+            }
+          }
+        },
+        "required": [
+          "customBlocks"
+        ],
+        "additionalProperties": false
       }
     },
     "securitySchemes": {

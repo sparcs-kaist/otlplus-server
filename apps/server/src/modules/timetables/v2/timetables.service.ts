@@ -27,7 +27,7 @@ import { CustomblockRepository, LectureRepository, TimetableRepository } from '@
 import { ECustomblock } from '@otl/prisma-client/entities/ECustomblock'
 
 import {
-  parseCustomblockData, parseTimetableChanges, parseTimetableItems, validateCreateTimetableInput, validateCustomblockTimes,
+  parseCustomblockData, parseTimetableItems, parseTimetableItemUpdate, validateCreateTimetableInput, validateCustomblockTimes,
 } from './timetable-input'
 
 @Injectable()
@@ -424,13 +424,43 @@ export class TimetablesServiceV2 {
     }
   }
 
-  async updateTimetableItems(
+  updateTimetableItems(
     user: session_userprofile,
-    body: ITimetableV2.UpdateItemsReqDto,
+    body: ITimetableV2.UpdateItemsReqDtoV1,
     timetableId: number,
     language: Language,
-  ): Promise<ITimetableV2.UpdateItemsResDto> {
-    return this.applyTimetableChanges(user, parseTimetableChanges(body.changes), timetableId, language)
+  ): Promise<ITimetableV2.UpdateItemsResDtoV1>
+
+  updateTimetableItems(
+    user: session_userprofile,
+    body: ITimetableV2.UpdateItemsReqDtoV2,
+    timetableId: number,
+    language: Language,
+  ): Promise<ITimetableV2.UpdateItemsResDtoV2>
+
+  updateTimetableItems(
+    user: session_userprofile,
+    body: ITimetableV2.UpdateItemsReqDtoV1 | ITimetableV2.UpdateItemsReqDtoV2,
+    timetableId: number,
+    language: Language,
+  ): Promise<ITimetableV2.UpdateItemsResDtoV1 | ITimetableV2.UpdateItemsResDtoV2>
+
+  async updateTimetableItems(
+    user: session_userprofile,
+    body: ITimetableV2.UpdateItemsReqDtoV1 | ITimetableV2.UpdateItemsReqDtoV2,
+    timetableId: number,
+    language: Language,
+  ): Promise<ITimetableV2.UpdateItemsResDtoV1 | ITimetableV2.UpdateItemsResDtoV2> {
+    const { version, changes } = parseTimetableItemUpdate(body)
+    const result = await this.applyTimetableChanges(user, changes, timetableId, language)
+    if (version === 1) return result
+    return {
+      customBlocks: result.results.map(({ id }) => {
+        const item = result.timetableItems.find((entry) => entry.kind === TimetableItemKind.CUSTOM && entry.data.id === id)
+        if (!item || item.kind !== TimetableItemKind.CUSTOM) throw new Error('Updated custom block is missing from its result')
+        return item.data
+      }),
+    }
   }
 
   async addTimetableItems(
@@ -469,7 +499,7 @@ export class TimetablesServiceV2 {
     changes: ITimetableV2.TimetableChange[],
     timetableId: number,
     language: Language,
-  ): Promise<ITimetableV2.UpdateItemsResDto> {
+  ): Promise<ITimetableV2.UpdateItemsResDtoV1> {
     const result = await this.updateTimetableItemsInTransaction(user, changes, timetableId, language)
     await this.publishLectureUpdates(changes.flatMap((change) => match(change)
       .with({ kind: TimetableItemKind.LECTURE, op: 'add' }, ({ lectureId }) => [lectureId])
@@ -485,7 +515,7 @@ export class TimetablesServiceV2 {
     changes: ITimetableV2.TimetableChange[],
     timetableId: number,
     language: Language,
-  ): Promise<ITimetableV2.UpdateItemsResDto> {
+  ): Promise<ITimetableV2.UpdateItemsResDtoV1> {
     await this.timetableRepository.lockTimetable(timetableId)
     await this.TimetableValidation(user, timetableId)
     const timetable = await this.timetableRepository.getTimeTableWithItemsById(timetableId)
@@ -550,7 +580,7 @@ export class TimetablesServiceV2 {
       }
     }
 
-    const results: ITimetableV2.UpdateItemsResDto['results'] = []
+    const results: ITimetableV2.UpdateItemsResDtoV1['results'] = []
     for (const [index, change] of changes.entries()) {
       const itemId = await match(change)
         .with({ kind: TimetableItemKind.LECTURE, op: 'add' }, async ({ lectureId }) => {

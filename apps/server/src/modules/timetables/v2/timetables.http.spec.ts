@@ -235,6 +235,129 @@ integration('Timetable HTTP compatibility (local MySQL)', () => {
     expect(publishLectureNumUpdate.mock.calls).toEqual([[lectureId], [lectureId]])
   })
 
+  it('updates only requested custom blocks and returns complete objects in request order', async () => {
+    const id = await create([lectureId])
+    const url = `${prefix}/${id}`
+    const added = (await request(app.getHttpServer()).post(`${url}/items`).send({ customBlocks: [
+      { ...block, times: [blockTime, { ...blockTime, day: 3 }] },
+      { ...block, block_name: 'Second', day: 2 },
+      { ...block, block_name: 'Untouched', day: 4 },
+    ] }).expect(200)).body.customBlocks
+    added.forEach((entry: { id: number }) => customIds.add(entry.id))
+    const [first, second, untouched] = added
+    const before = (await request(app.getHttpServer()).get(url).expect(200)).body
+    const times = [{ day: 5, begin: 720, end: 780 }, { day: 6, begin: 840, end: 900 }]
+    publishLectureNumUpdate.mockClear()
+    const updated = (await request(app.getHttpServer()).patch(`${url}/items`).send({ customBlocks: [
+      { id: second.id, place: '' },
+      { id: first.id, block_name: 'Updated', times },
+    ] }).expect(200)).body
+    expect(updated).toEqual({ customBlocks: [
+      { ...second, place: '' },
+      { ...first, block_name: 'Updated', ...times[0], times },
+    ] })
+    const current = (await request(app.getHttpServer()).get(url).expect(200)).body
+    expect(current.lectures).toEqual(before.lectures)
+    expect(current.customBlocks).toEqual(expect.arrayContaining([untouched, ...updated.customBlocks]))
+    expect(current.customBlocks).toHaveLength(3)
+    const full = { ...updated.customBlocks[0], block_name: 'Full object' }
+    expect((await request(app.getHttpServer()).patch(`${url}/items`)
+      .send({ customBlocks: [full] }).expect(200)).body).toEqual({ customBlocks: [full] })
+    expect(publishLectureNumUpdate).not.toHaveBeenCalled()
+  })
+
+  it('rejects malformed custom block PATCH bodies without changing stored content', async () => {
+    const id = await create()
+    const url = `${prefix}/${id}`
+    const customBlock = (await request(app.getHttpServer()).post(`${url}/items`)
+      .send({ customBlocks: [block] }).expect(200)).body.customBlocks[0]
+    customIds.add(customBlock.id)
+    const valid = { id: customBlock.id, place: 'Changed' }
+    const before = (await request(app.getHttpServer()).get(url).expect(200)).body
+    const bodies = [
+      {}, { customBlocks: [] }, { customBlocks: null }, { customBlocks: {} },
+      { customBlocks: [null] }, { customBlocks: [[]] }, { customBlocks: [1] },
+      { customBlocks: [{ place: 'Missing ID' }] }, { customBlocks: [{ id: 0, place: '' }] },
+      { customBlocks: [{ id: -1, place: '' }] }, { customBlocks: [{ id: 1.5, place: '' }] },
+      { customBlocks: [{ id: String(customBlock.id), place: '' }] },
+      { customBlocks: [valid, valid] }, { customBlocks: [{ id: customBlock.id }] },
+      { changes: [], customBlocks: [valid] }, { changes: null, customBlocks: [valid] },
+      { changes: [{ op: 'update', kind: 'custom', id: customBlock.id, data: { place: '' } }], customBlocks: [] },
+      { customBlocks: [valid], unexpected: true },
+      ...[
+        { block_name: ' ' }, { block_name: 'x'.repeat(256) }, { place: null }, { day: 7 },
+        { begin: '600' }, { begin: 660 }, { begin: -1 }, { end: 1441 }, { times: [] },
+        { times: [blockTime, blockTime] }, { day: 2, times: [blockTime] },
+        { kind: 'custom' }, { op: 'update' }, { data: { place: 'Nested' } },
+      ].map((data) => ({ customBlocks: [{ id: customBlock.id, ...data }] })),
+    ]
+    publishLectureNumUpdate.mockClear()
+    for (const body of bodies) await request(app.getHttpServer()).patch(`${url}/items`).send(body).expect(400)
+    expect((await request(app.getHttpServer()).get(url).expect(200)).body).toEqual(before)
+    expect(publishLectureNumUpdate).not.toHaveBeenCalled()
+  })
+
+  it('checks ownership and custom block membership for grouped PATCH requests', async () => {
+    const id = await create()
+    const otherId = await create()
+    const url = `${prefix}/${id}`
+    const own = (await request(app.getHttpServer()).post(`${url}/items`)
+      .send({ customBlocks: [block] }).expect(200)).body.customBlocks[0]
+    const foreign = (await request(app.getHttpServer()).post(`${prefix}/${otherId}/items`)
+      .send({ customBlocks: [block] }).expect(200)).body.customBlocks[0]
+    customIds.add(own.id)
+    customIds.add(foreign.id)
+    const body = { customBlocks: [{ id: own.id, place: 'Changed' }] }
+    await request(app.getHttpServer()).patch(`${url}/items`).set('x-test-other-user', '1').send(body).expect(403)
+    await request(app.getHttpServer()).patch(`${prefix}/2147483647/items`).send(body).expect(404)
+    for (const invalidId of [foreign.id, 2147483647]) {
+      await request(app.getHttpServer()).patch(`${url}/items`).send({ customBlocks: [
+        ...body.customBlocks, { id: invalidId, place: 'Invalid target' },
+      ] }).expect(404)
+    }
+    expect((await request(app.getHttpServer()).get(url).expect(200)).body.customBlocks).toEqual([own])
+    expect((await request(app.getHttpServer()).get(`${prefix}/${otherId}`).expect(200)).body.customBlocks).toEqual([foreign])
+  })
+
+  it('rolls back earlier custom block writes when a later grouped PATCH write fails', async () => {
+    const id = await create()
+    const url = `${prefix}/${id}`
+    const blocks = (await request(app.getHttpServer()).post(`${url}/items`).send({ customBlocks: [
+      block, { ...block, day: 2 },
+    ] }).expect(200)).body.customBlocks
+    blocks.forEach((entry: { id: number }) => customIds.add(entry.id))
+    const before = (await request(app.getHttpServer()).get(url).expect(200)).body
+    const repository = app.get(CustomblockRepository)
+    const update = repository.updateCustomblock.bind(repository)
+    const writes = jest.spyOn(repository, 'updateCustomblock')
+      .mockImplementationOnce(update)
+      .mockRejectedValueOnce(new Error('Injected second custom-block write failure'))
+    try {
+      await request(app.getHttpServer()).patch(`${url}/items`).send({ customBlocks: [
+        { id: blocks[0].id, place: 'Must roll back', times: [{ ...blockTime, day: 4 }] },
+        { id: blocks[1].id, place: 'Failed write' },
+      ] }).expect(500)
+      expect(writes.mock.calls.map(([id]) => id)).toEqual(blocks.map((entry: { id: number }) => entry.id))
+      expect((await request(app.getHttpServer()).get(url).expect(200)).body).toEqual(before)
+    }
+    finally {
+      writes.mockRestore()
+    }
+  })
+
+  it('keeps the legacy mixed response and ignores unrelated top-level fields', async () => {
+    const id = await create()
+    const updated = (await request(app.getHttpServer()).patch(`${prefix}/${id}/items`).send({
+      changes: [{ op: 'add', kind: 'custom', data: block }], ignoredLegacyField: true,
+    }).expect(200)).body
+    const customId = updated.results[0].id
+    customIds.add(customId)
+    expect(updated).toEqual({
+      timetableItems: [{ kind: 'custom', data: { ...block, id: customId, times: [blockTime] } }],
+      results: [{ index: 0, kind: 'custom', id: customId }],
+    })
+  })
+
   it('rejects item creation collisions, wrong semesters and incomplete removals atomically', async () => {
     const id = await create()
     const url = `${prefix}/${id}`

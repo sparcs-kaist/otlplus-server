@@ -122,9 +122,9 @@ export class TimetablesControllerV2 {
   async updateTimetableItems(
     @GetUser() user: session_userprofile,
     @Param('timetableId', ParseIntPipe) timetableId: number,
-    @Body() body: ITimetableV2.UpdateItemsReqDto,
+    @Body() body: ITimetableV2.UpdateItemsReqDtoV1 | ITimetableV2.UpdateItemsReqDtoV2,
     @GetLanguage() language: Language,
-  ): Promise<ITimetableV2.UpdateItemsResDto> {
+  ): Promise<ITimetableV2.UpdateItemsResDtoV1 | ITimetableV2.UpdateItemsResDtoV2> {
     return await this.timetablesService.updateTimetableItems(user, body, timetableId, language)
   }
 

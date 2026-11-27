@@ -291,9 +291,12 @@ async function main() {
           const paramType = param.getType()
           const paramTypeName = paramType.getText(param) // 단순히 텍스트로 보는 예시
           if (dName === 'body') {
+            const variants = paramType.isUnion() ? paramType.getUnionTypes() : []
             bodyParams.push({
               name: param.getName(),
-              schemaRef: paramTypeName, // 실제는 $ref를 찾는 로직 필요
+              schema: variants.length > 0 && variants.every((type) => type.isClassOrInterface())
+                ? { oneOf: variants.map((type) => ({ $ref: `#/components/schemas/${type.getText(param)}` })) }
+                : { $ref: `#/components/schemas/${paramTypeName}` },
               required: !param.isOptional(),
             })
           }
@@ -555,9 +558,7 @@ async function main() {
             required: bp.required,
             content: {
               'application/json': {
-                schema: {
-                  $ref: `#/components/schemas/${bp.schemaRef}`,
-                },
+                schema: bp.schema,
               },
             },
           }

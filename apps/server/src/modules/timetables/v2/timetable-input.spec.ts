@@ -4,7 +4,7 @@ import { BadRequestException, ValidationPipe } from '@nestjs/common'
 import { ICustomblock } from '@otl/server-nest/common/interfaces/ICustomblock'
 import { ITimetableV2 } from '@otl/server-nest/common/interfaces/v2'
 
-import { parseTimetableChanges, parseTimetableItems, validateCreateTimetableInput } from './timetable-input'
+import { parseTimetableChanges, parseTimetableItems, parseTimetableItemUpdate, validateCreateTimetableInput } from './timetable-input'
 
 const block = { block_name: 'Study', place: '', day: 0, begin: 600, end: 660 }
 const pipe = new ValidationPipe({ transform: true, whitelist: true })
@@ -15,7 +15,7 @@ describe('Timetable item request validation', () => {
       [{ op: 'add', kind: 'lecture', lectureId: 1 }],
       [{ op: 'remove', kind: 'lecture', id: 1 }, { op: 'add', kind: 'custom', data: block }],
     ]) {
-      const body = await pipe.transform({ changes }, { type: 'body', metatype: ITimetableV2.UpdateItemsReqDto })
+      const body = await pipe.transform({ changes }, { type: 'body', metatype: ITimetableV2.UpdateItemsReqDtoV1 })
       expect(parseTimetableChanges(body.changes)).toEqual(changes)
     }
   })
@@ -81,6 +81,56 @@ describe('Timetable item request validation', () => {
       await expect(pipe.transform(body, { type: 'body', metatype: ITimetableV2.SetHomeTimetableReqDto }))
         .rejects.toThrow(BadRequestException)
     }
+  })
+})
+
+describe('versioned timetable item updates', () => {
+  it('preserves V1 changes and ignores unrelated top-level fields as the old whitelist did', () => {
+    const changes = [{ op: 'remove', kind: 'lecture', id: 1 }, { op: 'add', kind: 'custom', data: block }]
+    expect(parseTimetableItemUpdate({ changes })).toEqual({ version: 1, changes })
+    expect(parseTimetableItemUpdate({ changes, unrelated: true })).toEqual({ version: 1, changes })
+  })
+
+  it('converts V2 partial and full custom-block updates in request order without changing the input', () => {
+    const times = [{ day: 0, begin: 600, end: 660 }, { day: 2, begin: 600, end: 660 }]
+    const body = { customBlocks: [{ id: 12, place: '' }, { id: 11, ...block, times }] }
+    expect(parseTimetableItemUpdate(body)).toEqual({
+      version: 2,
+      changes: [
+        { op: 'update', kind: 'custom', id: 12, data: { place: '' } },
+        { op: 'update', kind: 'custom', id: 11, data: { ...block, times } },
+      ],
+    })
+    expect(body).toEqual({ customBlocks: [{ id: 12, place: '' }, { id: 11, ...block, times }] })
+  })
+
+  it.each([
+    undefined, null, [], {},
+    { changes: [] }, { changes: null },
+    { changes: [{ op: 'remove', kind: 'lecture', id: 1 }], customBlocks: [] },
+    { changes: [], customBlocks: [{ id: 11, place: 'Library' }] },
+    { changes: null, customBlocks: [{ id: 11, place: 'Library' }] },
+    { customBlocks: [] }, { customBlocks: null }, { customBlocks: {} }, { customBlocks: [null] },
+    { customBlocks: [{ place: 'Library' }] },
+    { customBlocks: [{ id: 0, place: 'Library' }] },
+    { customBlocks: [{ id: -1, place: 'Library' }] },
+    { customBlocks: [{ id: 1.5, place: 'Library' }] },
+    { customBlocks: [{ id: '11', place: 'Library' }] },
+    { customBlocks: [{ id: 2147483648, place: 'Library' }] },
+    { customBlocks: [{ id: 11 }] },
+    { customBlocks: [{ id: 11, place: 'Library' }, { id: 11, block_name: 'Duplicate' }] },
+    { customBlocks: [{ id: 11, place: 'Library' }], extra: true },
+    { customBlocks: [{ id: 11, place: 'Library', extra: true }] },
+    { customBlocks: [{ id: 11, op: 'update', place: 'Library' }] },
+    { customBlocks: [{ id: 11, kind: 'custom', data: { place: 'Library' } }] },
+    { customBlocks: [{ id: 11, block_name: ' ' }] },
+    { customBlocks: [{ id: 11, place: null }] },
+    { customBlocks: [{ id: 11, day: 7 }] },
+    { customBlocks: [{ id: 11, begin: '600' }] },
+    { customBlocks: [{ id: 11, begin: 600, end: 600 }] },
+    { customBlocks: [{ id: 11, times: [] }] },
+  ].map((body) => [body]))('rejects ambiguous or malformed V1/V2 updates: %j', (body) => {
+    expect(() => parseTimetableItemUpdate(body)).toThrow(BadRequestException)
   })
 })
 

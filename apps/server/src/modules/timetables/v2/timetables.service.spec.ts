@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, ForbiddenException } from '@nestjs/common'
+import { BadRequestException, ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common'
 import { session_userprofile } from '@prisma/client'
 
 import { CustomblockRepository, LectureRepository, TimetableRepository } from '@otl/prisma-client'
@@ -89,6 +89,77 @@ function setup(current = timetable()) {
 }
 
 describe('TimetablesServiceV2 unified items', () => {
+  it('returns only updated custom blocks in request order while preserving omitted contents', async () => {
+    const second = { ...block, id: 12, day: 1, block_name: 'Second' }
+    const omitted = { ...block, id: 13, day: 2, block_name: 'Omitted' }
+    const current = timetable([lecture(11, 6)], [block, second, omitted])
+    const { service, repo, blocks, mq } = setup(current)
+    const renamed = { ...block, block_name: 'Renamed' }
+    const moved = { ...second, place: '' }
+    repo.getTimeTableWithItemsById
+      .mockResolvedValueOnce(current)
+      .mockResolvedValueOnce(timetable([lecture(11, 6)], [omitted, renamed, moved]))
+
+    await expect(service.updateTimetableItems(user, {
+      customBlocks: [{ id: 12, place: '' }, { id: 11, block_name: 'Renamed' }],
+    }, 42, 'en')).resolves.toEqual({
+      customBlocks: [moved, renamed].map((data) => ({
+        ...data, times: [{ day: data.day, begin: data.begin, end: data.end }],
+      })),
+    })
+    expect(blocks.updateCustomblock.mock.calls).toEqual([
+      [12, { place: '', times: [{ day: 1, begin: 540, end: 600 }] }],
+      [11, { block_name: 'Renamed', times: [{ day: 0, begin: 540, end: 600 }] }],
+    ])
+    expect(blocks.createCustomblock).not.toHaveBeenCalled()
+    expect(blocks.removeCustomblockFromTimetable).not.toHaveBeenCalled()
+    expect(repo.addLectureToTimetable).not.toHaveBeenCalled()
+    expect(repo.removeLectureFromTimetable).not.toHaveBeenCalled()
+    expect(mq.publishLectureNumUpdate).not.toHaveBeenCalled()
+  })
+
+  it('allows a V2 batch to swap occupied custom block times using the final composition', async () => {
+    const second = { ...block, id: 12, day: 1 }
+    const current = timetable([], [block, second])
+    const { service, repo, blocks } = setup(current)
+    repo.getTimeTableWithItemsById
+      .mockResolvedValueOnce(current)
+      .mockResolvedValueOnce(timetable([], [{ ...block, day: 1 }, { ...second, day: 0 }]))
+    await expect(service.updateTimetableItems(user, {
+      customBlocks: [{ id: 12, day: 0 }, { id: 11, day: 1 }],
+    }, 42, 'en')).resolves.toEqual({
+      customBlocks: [
+        { ...second, day: 0, times: [{ day: 0, begin: 540, end: 600 }] },
+        { ...block, day: 1, times: [{ day: 1, begin: 540, end: 600 }] },
+      ],
+    })
+    expect(blocks.updateCustomblock).toHaveBeenCalledTimes(2)
+  })
+
+  it('rejects a V2 batch with a later missing custom block before writing earlier edits', async () => {
+    const { service, blocks } = setup()
+    await expect(service.updateTimetableItems(user, {
+      customBlocks: [{ id: 11, place: 'Changed' }, { id: 99, place: 'Missing' }],
+    }, 42, 'en')).rejects.toBeInstanceOf(NotFoundException)
+    expect(blocks.updateCustomblock).not.toHaveBeenCalled()
+  })
+
+  it('rejects a V2 batch with a later lecture collision before writing earlier edits', async () => {
+    const { service, blocks } = setup(timetable([lecture(20, 2)], [block, { ...block, id: 12, day: 1 }]))
+    await expect(service.updateTimetableItems(user, {
+      customBlocks: [{ id: 11, place: 'Changed' }, { id: 12, day: 2 }],
+    }, 42, 'en')).rejects.toBeInstanceOf(ConflictException)
+    expect(blocks.updateCustomblock).not.toHaveBeenCalled()
+  })
+
+  it('rejects V2 custom-block edits to another user’s timetable', async () => {
+    const { service, blocks } = setup({ ...timetable(), user_id: 8 })
+    await expect(service.updateTimetableItems(user, {
+      customBlocks: [{ id: 11, block_name: 'Renamed' }],
+    }, 42, 'en')).rejects.toBeInstanceOf(ForbiddenException)
+    expect(blocks.updateCustomblock).not.toHaveBeenCalled()
+  })
+
   it('returns only added objects in each request group order despite database ordering', async () => {
     const current = timetable([lecture(11, 6)], [])
     const { service, repo, blocks, mq } = setup(current)

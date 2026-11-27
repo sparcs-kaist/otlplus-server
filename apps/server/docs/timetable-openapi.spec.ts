@@ -18,10 +18,10 @@ it.each(['docs', 'src'])('documents split timetable contents and preserves mixed
   expect(selectionResponse.properties.source.enum).toEqual(['saved', 'enrolled'])
   expect(selectionResponse.properties.timetableId.oneOf).toEqual([{ type: 'number' }, { type: 'null' }])
   expect(schemas).not.toHaveProperty('ITimetableV2.SetSharedTimetableResDto')
-  expect(schemas['ITimetableV2.UpdateItemsResDto'].properties.timetableItems.items.$ref)
+  expect(schemas['ITimetableV2.UpdateItemsResDtoV1'].properties.timetableItems.items.$ref)
     .toBe('#/components/schemas/ITimetableV2.TimetableItem')
-  expect(Object.keys(schemas['ITimetableV2.UpdateItemsResDto'].properties)).toEqual(['timetableItems', 'results'])
-  expect(schemas['ITimetableV2.UpdateItemsReqDto'].properties.changes.items.$ref)
+  expect(Object.keys(schemas['ITimetableV2.UpdateItemsResDtoV1'].properties)).toEqual(['timetableItems', 'results'])
+  expect(schemas['ITimetableV2.UpdateItemsReqDtoV1'].properties.changes.items.$ref)
     .toBe('#/components/schemas/ITimetableV2.TimetableChange')
   expect(schemas['ITimetableV2.TimetableItem'].anyOf).toHaveLength(2)
   expect(schemas['ITimetableV2.TimetableItem'].anyOf.map((item: any) => item.properties.kind.const))
@@ -32,7 +32,7 @@ it.each(['docs', 'src'])('documents split timetable contents and preserves mixed
   expect(schemas['ICustomblock.UpdateDto'].properties).toHaveProperty('times')
   expect(schemas.TimetableItemKind).toEqual({ type: 'string', enum: ['lecture', 'custom'] })
   expect(schemas['ITimetableV2.TimetableChange'].anyOf).toHaveLength(4)
-  expect(schemas['ITimetableV2.UpdateItemsResDto'].properties.results.items.properties.kind.$ref)
+  expect(schemas['ITimetableV2.UpdateItemsResDtoV1'].properties.results.items.properties.kind.$ref)
     .toBe('#/components/schemas/TimetableItemKind')
   const selection = schemas['ITimetableV2.SetHomeTimetableReqDto']
   expect(selection.required).toContain('timetableId')
@@ -53,7 +53,6 @@ it.each(['docs', 'src'])('documents split timetable contents and preserves mixed
     ['/api/v2/timetables/shared', 'get', 'SharedTimetableResDto'],
     ['/api/v2/timetables/shared', 'patch', 'TimetableSelectionResDto'],
     ['/api/v2/friends/{friendId}/timetables/shared', 'get', 'SharedTimetableResDto'],
-    ['/api/v2/timetables/{timetableId}/items', 'patch', 'UpdateItemsResDto'],
   ]) {
     expect(document.paths[endpoint][method].responses['200'].content['application/json'].schema.$ref)
       .toBe(`#/components/schemas/ITimetableV2.${dto}`)
@@ -90,8 +89,6 @@ it.each(['docs', 'src'])('documents grouped requests, added objects and removed 
   const document = JSON.parse(readFileSync(path.join(__dirname, '..', directory, 'swagger.json'), 'utf8'))
   const schemas = document.components.schemas
   const endpoint = document.paths['/api/v2/timetables/{timetableId}/items']
-  expect(endpoint.patch.requestBody.content['application/json'].schema.$ref)
-    .toBe('#/components/schemas/ITimetableV2.UpdateItemsReqDto')
   for (const [method, name] of [['post', 'AddItemsReqDto'], ['delete', 'RemoveItemsReqDto']]) {
     const requestSchema = schemas[`ITimetableV2.${name}`]
     expect(endpoint[method].requestBody.content['application/json'].schema.$ref)
@@ -122,4 +119,40 @@ it.each(['docs', 'src'])('documents grouped requests, added objects and removed 
   for (const field of ['lectureIds', 'customBlockIds']) {
     expect(response.properties[field]).toEqual({ type: 'array', items: { type: 'number' } })
   }
+})
+
+it.each(['docs', 'src'])('documents mutually exclusive PATCH versions and their corresponding responses in %s/swagger.json', (directory) => {
+  const document = JSON.parse(readFileSync(path.join(__dirname, '..', directory, 'swagger.json'), 'utf8'))
+  const schemas = document.components.schemas
+  const patch = document.paths['/api/v2/timetables/{timetableId}/items'].patch
+  expect(patch.requestBody.content['application/json'].schema).toEqual({
+    oneOf: ['UpdateItemsReqDtoV1', 'UpdateItemsReqDtoV2'].map((name) => ({ $ref: `#/components/schemas/ITimetableV2.${name}` })),
+  })
+  expect(patch.responses['200'].content['application/json'].schema).toEqual({
+    oneOf: ['UpdateItemsResDtoV1', 'UpdateItemsResDtoV2'].map((name) => ({ $ref: `#/components/schemas/ITimetableV2.${name}` })),
+  })
+  for (const [version, field] of [['V1', 'changes'], ['V2', 'customBlocks']]) {
+    const requestSchema = schemas[`ITimetableV2.UpdateItemsReqDto${version}`]
+    expect(Object.keys(requestSchema.properties)).toEqual([field])
+    expect(requestSchema.required).toEqual([field])
+    expect(requestSchema.additionalProperties).toBe(false)
+    expect(requestSchema.properties[field].minItems).toBe(1)
+    expect(requestSchema.description).toMatch(/cannot be combined/i)
+    expect(requestSchema.description).toContain(`UpdateItemsResDto${version}`)
+  }
+  expect(schemas['ITimetableV2.UpdateItemsReqDtoV2'].properties.customBlocks.items.$ref)
+    .toBe('#/components/schemas/ITimetableV2.UpdateCustomBlockDto')
+  const update = schemas['ITimetableV2.UpdateCustomBlockDto']
+  expect(update.required).toEqual(['id'])
+  expect(update.properties.id.type).toBe('number')
+  expect(update.properties).toHaveProperty('times')
+  expect(update.properties).not.toHaveProperty('kind')
+  expect(update.properties).not.toHaveProperty('op')
+  expect(update.properties).not.toHaveProperty('data')
+  const response = schemas['ITimetableV2.UpdateItemsResDtoV2']
+  expect(Object.keys(response.properties)).toEqual(['customBlocks'])
+  expect(response.required).toEqual(['customBlocks'])
+  expect(response.properties.customBlocks.items.$ref).toBe('#/components/schemas/ICustomblock.Basic')
+  expect(schemas).not.toHaveProperty('ITimetableV2.UpdateItemsReqDto')
+  expect(schemas).not.toHaveProperty('ITimetableV2.UpdateItemsResDto')
 })

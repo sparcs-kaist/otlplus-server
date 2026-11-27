@@ -262,10 +262,22 @@ export namespace ITimetableV2 {
     | { op: 'remove', kind: TimetableItemKind, id: number }
     | { op: 'update', kind: typeof TimetableItemKind.CUSTOM, id: number, data: ICustomblock.UpdateDto }
 
-  export class UpdateItemsReqDto {
+  /** Legacy request. Cannot be combined with customBlocks; returns UpdateItemsResDtoV1. */
+  export class UpdateItemsReqDtoV1 {
     @IsArray()
     @ArrayMinSize(1)
     changes!: TimetableChange[]
+  }
+
+  export interface UpdateCustomBlockDto extends ICustomblock.UpdateDto {
+    id: number
+  }
+
+  /** Update existing blocks by ID. Requires at least one block and one changed field per block.
+   * Cannot be combined with changes; returns UpdateItemsResDtoV2 in request order. */
+  export interface UpdateItemsReqDtoV2 {
+    /** @minItems 1 */
+    customBlocks: UpdateCustomBlockDto[]
   }
 
   // Keep the raw body for strict parsing instead of silently stripping unknown fields.
@@ -295,10 +307,14 @@ export namespace ITimetableV2 {
     customBlockIds!: number[]
   }
 
-  export class UpdateItemsResDto {
+  export class UpdateItemsResDtoV1 {
     timetableItems!: TimetableItem[]
 
     results!: { index: number, kind: TimetableItemKind, id: number }[]
+  }
+
+  export class UpdateItemsResDtoV2 {
+    customBlocks!: ICustomblock.Basic[]
   }
 
   export class UpdateLectureReqDto {
